@@ -25,7 +25,7 @@ public class InventoryIn extends Auditable {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @Column(name = "quantity", nullable = false)
     private Long quantity;
