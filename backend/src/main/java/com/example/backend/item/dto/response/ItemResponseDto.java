@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class ItemResponseDto {
     private Long id;
     private String name;
-    private String serialNumber;
+    private Long serialNumber;
     private Long totalQuantity;
     private Long availableQuantity;
     private String purchaseSource;

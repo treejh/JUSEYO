@@ -35,7 +35,7 @@ public class Category extends Auditable {
 
     @Id
     @Column(name = "id")
-    private String id;
+    private Long id;
 
     @Column(name = "name", nullable = false)
     private String name;

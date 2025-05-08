@@ -32,13 +32,13 @@ public class Item extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private String id;
+    private Long id;
 
     @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "serial_number", nullable = false)
-    private String serialNumber;
+    private Long serialNumber;
 
     @Column(name = "total_quantity", nullable = false)
     private Long totalQuantity;
