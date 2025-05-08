@@ -1,0 +1,70 @@
+package com.example.backend.managementDashboard.entity;
+
+import com.example.backend.auditable.Auditable;
+import com.example.backend.category.entity.Category;
+import com.example.backend.enums.Status;
+import com.example.backend.item.entity.Item;
+import com.example.backend.mainDashboard.entity.MainDashboard;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
+@Entity
+@Table(name = "management_dashboards")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
+public class ManagementDashboard extends Auditable { // Auditable 상속
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 스키마 VARCHAR와 충돌 가능성 있음
+    private Long id;
+
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private Status status;
+
+
+    @Column(name = "approval", nullable = false)
+    private boolean approval;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "main_dashboard_id", nullable = false)
+    private MainDashboard mainDashboard;
+
+    @OneToMany(mappedBy = "managementDashboard", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    List<Category> categoryList = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "managementDashboard", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    List<Item> itemList = new ArrayList<>();
+
+
+
+
+
+
+}
