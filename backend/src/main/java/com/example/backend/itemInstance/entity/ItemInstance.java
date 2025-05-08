@@ -1,11 +1,8 @@
 package com.example.backend.itemInstance.entity;
 
 import com.example.backend.auditable.Auditable;
-import com.example.backend.category.entity.Category;
-import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Outbound;
 import com.example.backend.item.entity.Item;
-import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
-package com.example.backend.mainDashboard.entity;
+package com.example.backend.maindashboard.entity;
 
 import com.example.backend.auditable.Auditable;
-import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.managementdashboard.entity.ManagementDashboard;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
