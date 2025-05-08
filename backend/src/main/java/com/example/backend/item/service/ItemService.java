@@ -1,11 +1,16 @@
 package com.example.backend.item.service;
 
+import com.example.backend.category.entity.Category;
+import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.item.dto.request.ItemRequestDto;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
+import com.example.backend.managementdashboard.entity.ManagementDashboard;
+import com.example.backend.managementdashboard.repository.ManagementDashboardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,8 +18,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ItemService {
     private final ItemRepository repo;
+    private final CategoryRepository categoryRepo;
+    private final ManagementDashboardRepository mgmtRepo;
 
+    @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
+        Category category = categoryRepo.findById(dto.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
+                .orElseThrow(() -> new IllegalArgumentException("ManagementDashboard not found"));
+
         Item entity = Item.builder()
                 .name(dto.getName())
                 .serialNumber(dto.getSerialNumber())
@@ -23,30 +36,46 @@ public class ItemService {
                 .purchaseSource(dto.getPurchaseSource())
                 .location(dto.getLocation())
                 .isReturnRequired(dto.getIsReturnRequired())
-                // categoryId, managementId 로 연관 엔티티 조회 후 set
+                .category(category)
+                .managementDashboard(mgmt)
                 .build();
+
         Item saved = repo.save(entity);
         return mapToDto(saved);
     }
 
+    @Transactional
     public ItemResponseDto updateItem(Long id, ItemRequestDto dto) {
         Item entity = repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+
+        // category & management 조회
+        Category category = categoryRepo.findById(dto.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
+                .orElseThrow(() -> new IllegalArgumentException("ManagementDashboard not found"));
+
+        // 필드 업데이트
         entity.setName(dto.getName());
         entity.setSerialNumber(dto.getSerialNumber());
         entity.setPurchaseSource(dto.getPurchaseSource());
         entity.setLocation(dto.getLocation());
         entity.setIsReturnRequired(dto.getIsReturnRequired());
+        entity.setCategory(category);
+        entity.setManagementDashboard(mgmt);
+
         Item updated = repo.save(entity);
         return mapToDto(updated);
     }
 
+    @Transactional(readOnly = true)
     public ItemResponseDto getItem(Long id) {
         return repo.findById(id)
                 .map(this::mapToDto)
                 .orElseThrow(() -> new IllegalArgumentException("Item not found"));
     }
 
+    @Transactional(readOnly = true)
     public List<ItemResponseDto> getAllItems() {
         return repo.findAll().stream()
                 .map(this::mapToDto)
