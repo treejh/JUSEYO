@@ -1,0 +1,53 @@
+server:
+  port: 8080
+  tomcat:
+    max-http-form-post-size: -1
+    max-swallow-size: -1
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+  profiles:
+    active: dev
+    include: secret
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+
+
+
+logging:
+  level:
+    com.ll.blog: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
+custom:
+  dev:
+    cookieDomain: localhost
+    frontUrl: "http://${custom.dev.cookieDomain}:3000"
+    backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
+  prod:
+    cookieDomain: booktri.site #api.booktri.site
+    frontUrl: "https://www.${custom.prod.cookieDomain}"
+    backUrl: "https://api.${custom.prod.cookieDomain}"
+  site:
+    name: "BLOG DEV"
+    cookieDomain: "${custom.dev.cookieDomain}"
+    frontUrl: "${custom.dev.frontUrl}"
+    backUrl: "${custom.dev.backUrl}"
