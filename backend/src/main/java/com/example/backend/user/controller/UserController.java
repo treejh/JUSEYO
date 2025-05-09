@@ -2,6 +2,7 @@ package com.example.backend.user.controller;
 
 
 
+import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserLoginRequestDto;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @AllArgsConstructor
 @Tag(name = "유저 관리 컨트롤러")
+@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -73,6 +76,10 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity login(){
+
+        Role role = tokenService.getRoleFromToken();
+        String name = role.getRole().name();
+        log.info("역할 잘 들어오는지 확인 " + name);
         tokenService.deleteCookie("refreshToken");
         tokenService.deleteCookie("accessToken");
         return new ResponseEntity<>("로그아웃 성공", HttpStatus.OK);
