@@ -40,6 +40,7 @@ public class SecurityConfigJuseyo {
                         ).permitAll()
                         //회원
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/*","/api/v1/users/login").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
