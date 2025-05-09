@@ -6,7 +6,7 @@ import com.example.backend.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import com.example.backend.managementdashboard.entity.ManagementDashboard;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;

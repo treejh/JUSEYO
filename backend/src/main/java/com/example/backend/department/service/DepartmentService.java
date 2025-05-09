@@ -8,7 +8,7 @@ import com.example.backend.department.entity.Department;
 import com.example.backend.department.repository.DepartmentRepository;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
-import com.example.backend.managementdashboard.entity.ManagementDashboard;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
@@ -44,7 +45,6 @@ public class DepartmentService {
     }
 
     // 부서 전체 조회
-    @Transactional(readOnly = true)
     public List<Department> findAllDepartments() {
         return departmentRepository.findAll();
     }

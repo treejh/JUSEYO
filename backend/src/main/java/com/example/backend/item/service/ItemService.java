@@ -6,6 +6,7 @@ import com.example.backend.item.dto.request.ItemRequestDto;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -32,7 +33,7 @@ public class ItemService {
         // ② 연관 엔티티 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-        com.example.backend.managementdashboard.entity.ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
+        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
                 .orElseThrow(() -> new IllegalArgumentException("ManagementDashboard not found"));
 
         // ③ 엔티티 생성
@@ -61,7 +62,7 @@ public class ItemService {
         // category & management 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-        com.example.backend.managementdashboard.entity.ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
+        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
                 .orElseThrow(() -> new IllegalArgumentException("ManagementDashboard not found"));
 
         // 필드 업데이트

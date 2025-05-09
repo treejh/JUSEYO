@@ -1,9 +1,8 @@
-package com.example.backend.inventoryout.controller;
+package com.example.backend.inventoryOut.controller;
 
-import com.example.backend.inventoryout.dto.request.InventoryOutRequestDto;
-import com.example.backend.inventoryout.dto.response.InventoryOutResponseDto;
-import com.example.backend.inventoryout.entity.InventoryOut;
-import com.example.backend.inventoryout.service.InventoryOutService;
+import com.example.backend.inventoryOut.dto.request.InventoryOutRequestDto;
+import com.example.backend.inventoryOut.dto.response.InventoryOutResponseDto;
+import com.example.backend.inventoryOut.service.InventoryOutService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

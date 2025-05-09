@@ -1,9 +1,9 @@
-package com.example.backend.inventoryout.service;
+package com.example.backend.inventoryOut.service;
 
-import com.example.backend.inventoryout.dto.request.InventoryOutRequestDto;
-import com.example.backend.inventoryout.dto.response.InventoryOutResponseDto;
-import com.example.backend.inventoryout.entity.InventoryOut;
-import com.example.backend.inventoryout.repository.InventoryOutRepository;
+import com.example.backend.inventoryOut.dto.request.InventoryOutRequestDto;
+import com.example.backend.inventoryOut.dto.response.InventoryOutResponseDto;
+import com.example.backend.inventoryOut.entity.InventoryOut;
+import com.example.backend.inventoryOut.repository.InventoryOutRepository;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
 import com.example.backend.enums.Outbound;

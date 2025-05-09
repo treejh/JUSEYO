@@ -1,4 +1,4 @@
-package com.example.backend.inventoryout.dto.request;
+package com.example.backend.inventoryOut.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

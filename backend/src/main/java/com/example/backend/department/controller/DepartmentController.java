@@ -34,8 +34,6 @@ public class DepartmentController {
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
-    String email = tokenService.getEmailFromToken();
-    Long userId = tokenService.getIdFromToken();
 
 
     // 부서 전체 조회
