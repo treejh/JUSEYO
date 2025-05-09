@@ -1,4 +1,4 @@
-package com.example.backend.supplyrequest.dto.response;
+package com.example.backend.supplyRequest.dto.response;
 
 import com.example.backend.enums.ApprovalStatus;
 import lombok.Builder;

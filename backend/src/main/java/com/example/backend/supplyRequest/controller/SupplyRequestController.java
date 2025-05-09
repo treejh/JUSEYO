@@ -1,8 +1,8 @@
-package com.example.backend.supplyrequest.controller;
+package com.example.backend.supplyRequest.controller;
 
-import com.example.backend.supplyrequest.dto.request.SupplyRequestRequestDto;
-import com.example.backend.supplyrequest.dto.response.SupplyRequestResponseDto;
-import com.example.backend.supplyrequest.service.SupplyRequestService;
+import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
+import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
+import com.example.backend.supplyRequest.service.SupplyRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

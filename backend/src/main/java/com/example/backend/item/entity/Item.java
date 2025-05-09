@@ -3,9 +3,10 @@ package com.example.backend.item.entity;
 import com.example.backend.auditable.Auditable;
 import com.example.backend.category.entity.Category;
 import com.example.backend.inventoryIn.entity.InventoryIn;
-import com.example.backend.inventoryout.entity.InventoryOut;
+import com.example.backend.inventoryOut.entity.InventoryOut;
 import com.example.backend.itemInstance.entity.ItemInstance;
-import com.example.backend.supplyrequest.entity.SupplyRequest;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.supplyRequest.entity.SupplyRequest;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;

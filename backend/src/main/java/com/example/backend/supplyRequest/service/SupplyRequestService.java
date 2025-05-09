@@ -1,10 +1,10 @@
-package com.example.backend.supplyrequest.service;
+package com.example.backend.supplyRequest.service;
 
 import com.example.backend.item.repository.ItemRepository;
-import com.example.backend.supplyrequest.dto.request.SupplyRequestRequestDto;
-import com.example.backend.supplyrequest.dto.response.SupplyRequestResponseDto;
-import com.example.backend.supplyrequest.entity.SupplyRequest;
-import com.example.backend.supplyrequest.repository.SupplyRequestRepository;
+import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
+import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
+import com.example.backend.supplyRequest.entity.SupplyRequest;
+import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
