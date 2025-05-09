@@ -1,5 +1,6 @@
 package com.example.backend.mainDashboard.controller;
 
+import com.example.backend.mainDashboard.dto.MainDashBoardRequestDto;
 import com.example.backend.mainDashboard.dto.MainDashBoardResponseDto;
 import com.example.backend.mainDashboard.service.MainDashBoardService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,15 +41,15 @@ public class MainDashBoardController {
     @Operation(summary = "대시보드 생성")
     @PostMapping
     public ResponseEntity<MainDashBoardResponseDto> createMainDashBoard(
-            @Parameter(description = "대시보드 이름") @RequestBody String name) {
-        return ResponseEntity.ok(mainDashBoardService.createMainDashBoard(name));
+            @RequestBody MainDashBoardRequestDto requestDto) {
+        return ResponseEntity.ok(mainDashBoardService.createMainDashBoard(requestDto.getName()));
     }
 
     @Operation(summary = "대시보드 이름 수정")
     @PostMapping("/{id}")
     public ResponseEntity<MainDashBoardResponseDto> updateMainDashBoard(
-            @RequestBody String name,
+            @RequestBody MainDashBoardRequestDto requestDto,
             @PathVariable(name = "id") Long id) {
-        return ResponseEntity.ok(mainDashBoardService.updateMainDashBoard(id, name));
+        return ResponseEntity.ok(mainDashBoardService.updateMainDashBoard(id, requestDto.getName()));
     }
 }
