@@ -86,12 +86,12 @@ public class UserService {
     @Transactional
     public User findByEmail(String email){
         return userRepository.findByEmail(email).orElseThrow(
-                () -> new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL));
+                () -> new BusinessLogicException(ExceptionCode.EMAIL_NOT_FOUND));
     }
     @Transactional
     public User findByPhoneNumber(String phoneNumber){
         return userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
-                () -> new BusinessLogicException(ExceptionCode.ALREADY_HAS_PHONENUMBER));
+                () -> new BusinessLogicException(ExceptionCode.PHONE_NUMBER_NOT_FOUND));
     }
 
 
@@ -102,13 +102,13 @@ public class UserService {
     }
 
     public void validateEmail(String email) {
-        if (userRepository.findByEmail(email).isPresent()) {
+        if (!userRepository.findByEmail(email).isPresent()) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
         }
     }
 
     public void validatePhoneNumber(String phone) {
-        if (userRepository.findByPhoneNumber(phone).isPresent()) {
+        if (!userRepository.findByPhoneNumber(phone).isPresent()) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
         }
     }

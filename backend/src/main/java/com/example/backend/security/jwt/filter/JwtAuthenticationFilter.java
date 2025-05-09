@@ -39,8 +39,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String accessToken = getAccessToken(request);
-
-
         if(StringUtils.hasText(accessToken)){
             try{
                 Authentication authentication = getAuthentication(accessToken);
