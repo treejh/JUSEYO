@@ -1,5 +1,8 @@
 package com.example.backend.security.jwt.util;
 
+import com.example.backend.enums.RoleType;
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -107,7 +110,7 @@ public class JwtTokenizer {
 
     public String getEmailFromToken(String token){
         if(token == null || token.isBlank()){
-            throw new IllegalArgumentException("JWT 토큰이 없습니다.");
+            throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_FOUND);
         }
 
 
@@ -128,10 +131,33 @@ public class JwtTokenizer {
 
     }
 
+    public String getRoleFromToken(String token){
+        if(token == null || token.isBlank()){
+            throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_FOUND);
+        }
+
+
+        Claims claims = parseToken(token, accessSecret);
+
+        if(claims == null){
+            throw new IllegalArgumentException("유효하지 않은 형식입니다.");
+        }
+
+        Object roles = claims.get("roles");
+
+        if (roles instanceof List<?> roleList && !roleList.isEmpty()) {
+            return roleList.get(0).toString();
+        } else {
+            throw new IllegalArgumentException("JWT토큰에서 roles를 찾을 수 없습니다.");
+        }
+
+
+    }
+
 
     public Long getUserIdFromToken(String token){
         if(token == null || token.isBlank()){
-            throw new IllegalArgumentException("JWT 토큰이 없습니다.");
+            throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_FOUND);
         }
 
         Claims claims = parseToken(token, accessSecret);
