@@ -1,16 +1,12 @@
 package com.example.backend.department.entity;
 
 import com.example.backend.auditable.Auditable;
-import com.example.backend.enums.Outbound;
-import com.example.backend.item.entity.Item;
-import com.example.backend.managementDashboard.entity.ManagementDashboard;
-import com.example.backend.notification.entity.Notification;
+
 import com.example.backend.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import com.example.backend.managementdashboard.entity.ManagementDashboard;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
