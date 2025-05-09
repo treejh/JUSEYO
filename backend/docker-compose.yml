@@ -1,0 +1,47 @@
+version: '3' # Docker Compose 버전 명시
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: juseyo-mysql-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw # MySQL 루트 비밀번호
+      MYSQL_DATABASE: juseyodb   # 생성할 기본 데이터베이스 이름
+      MYSQL_USER: testuser       # 사용자 이름
+      MYSQL_PASSWORD: testpw     # 사용자 비밀번호
+    ports:
+      - "3307:3306"              # 호스트 포트 3307 -> 컨테이너 포트 3306 매핑
+    volumes:
+      - mysql-data:/var/lib/mysql # 데이터 지속성을 위한 볼륨 설정
+    healthcheck:                  # 헬스체크 추가 (MySQL 상태 확인)
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - juseyo-network
+
+  redis:
+    image: redis:latest
+    container_name: juseyo-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - juseyo-network
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  juseyo-network:
+    driver: bridge

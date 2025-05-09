@@ -61,6 +61,29 @@ dependencies {
 
 }
 
+
+tasks.register<Exec>("dockerUp") {
+    group = "docker"
+    description = "Starts the Docker containers"
+
+    commandLine("docker", "compose", "-f", "docker-compose.yml", "up", "-d")
+}
+
+tasks.register<Exec>("dockerDown") {
+    group = "docker"
+    description = "Stops the Docker containers"
+
+    commandLine("docker", "compose", "-f", "docker-compose.yml", "down")
+}
+
+tasks.named("bootRun") {
+    dependsOn("dockerUp")
+    finalizedBy("dockerDown")
+}
+
+
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
