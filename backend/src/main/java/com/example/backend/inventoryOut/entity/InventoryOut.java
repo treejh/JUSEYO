@@ -1,4 +1,4 @@
-package com.example.backend.inventoryout.entity;
+package com.example.backend.inventoryOut.entity;
 
 import com.example.backend.auditable.Auditable;
 import com.example.backend.enums.Outbound;

@@ -1,4 +1,4 @@
-package com.example.backend.supplyrequest.dto.request;
+package com.example.backend.supplyRequest.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

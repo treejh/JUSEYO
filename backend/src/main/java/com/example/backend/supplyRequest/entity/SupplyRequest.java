@@ -1,4 +1,4 @@
-package com.example.backend.supplyrequest.entity;
+package com.example.backend.supplyRequest.entity;
 
 import com.example.backend.auditable.Auditable;
 import com.example.backend.enums.ApprovalStatus;

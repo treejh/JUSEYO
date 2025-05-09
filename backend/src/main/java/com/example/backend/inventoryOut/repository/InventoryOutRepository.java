@@ -1,6 +1,6 @@
-package com.example.backend.inventoryout.repository;
+package com.example.backend.inventoryOut.repository;
 
-import com.example.backend.inventoryout.entity.InventoryOut;
+import com.example.backend.inventoryOut.entity.InventoryOut;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
