@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 public class SupplyRequestRequestDto {
     private Long itemId;
     private Long userId;
+    private Long managementId;
+    private String serialNumber;
+    private Boolean reRequest;
     private String productName;
     private Long quantity;
     private String purpose;

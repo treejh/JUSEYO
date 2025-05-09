@@ -40,6 +40,9 @@ public class Item extends Auditable {
     @Column(name = "serial_number", nullable = false)
     private String serialNumber;
 
+    @Column(name = "minimum_quantity", nullable = false)
+    private Long minimumQuantity;
+
     @Column(name = "total_quantity", nullable = false)
     private Long totalQuantity;
 
@@ -57,6 +60,9 @@ public class Item extends Auditable {
 
     @Column(name = "is_return_required", nullable = false)
     private Boolean isReturnRequired; //반납 필수 여부
+
+    @Column(name = "image")
+    private String image;
 
     @ManyToOne
     @JoinColumn(name = "management_id")
@@ -77,6 +83,5 @@ public class Item extends Auditable {
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.LAZY)
     List<SupplyRequest> supplyRequestList = new ArrayList<>();
-
 
 }

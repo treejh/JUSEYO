@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 @Builder
 public class InventoryOutResponseDto {
     private Long id;
+    private Long supplyRequestId;
     private Long itemId;
+    private Long categoryId;
+    private Long managementId;
     private Long quantity;
     private String outbound;
     private LocalDateTime createdAt;

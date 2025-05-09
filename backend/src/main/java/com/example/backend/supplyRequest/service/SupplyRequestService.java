@@ -13,9 +13,11 @@ import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.repository.UserRepository;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
+import com.example.backend.enums.ApprovalStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.example.backend.enums.ApprovalStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -26,25 +28,32 @@ public class SupplyRequestService {
     private final SupplyRequestRepository repo;
     private final ItemRepository itemRepo;
     private final UserRepository userRepo;
+    private final ManagementDashboardRepository mgmtRepo;
     private final InventoryOutService outService;
     private final InventoryInService inService;
 
     @Transactional
     public SupplyRequestResponseDto createRequest(SupplyRequestRequestDto dto) {
-        // ① 아이템 조회
+        // 1) 아이템, 유저, 관리페이지 조회
         Item item = itemRepo.findById(dto.getItemId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+        var user = userRepo.findById(dto.getUserId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
 
-        // ② 요청 수량 검증
+        // 2) 요청 수량 검증
         if (dto.getQuantity() > item.getAvailableQuantity()) {
             throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
         }
 
-        // ③ 요청서 빌드 (rental 플래그 포함)
+        // 3) 요청서 생성
         SupplyRequest req = SupplyRequest.builder()
                 .item(item)
-                .user(userRepo.findById(dto.getUserId())
-                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND)))
+                .user(user)
+                .managementDashboard(mgmt)
+                .serialNumber(dto.getSerialNumber())
+                .reRequest(dto.getReRequest())
                 .productName(dto.getProductName())
                 .quantity(dto.getQuantity())
                 .purpose(dto.getPurpose())
@@ -53,8 +62,8 @@ public class SupplyRequestService {
                 .rental(dto.isRental())
                 .approvalStatus(ApprovalStatus.REQUESTED)
                 .build();
-
         SupplyRequest saved = repo.save(req);
+
         return mapToDto(saved);
     }
 
@@ -65,38 +74,23 @@ public class SupplyRequestService {
                 .toList();
     }
 
-    private SupplyRequestResponseDto mapToDto(SupplyRequest e) {
-        return SupplyRequestResponseDto.builder()
-                .id(e.getId())
-                .itemId(e.getItem().getId())
-                .userId(e.getUser().getId())
-                .productName(e.getProductName())
-                .quantity(e.getQuantity())
-                .purpose(e.getPurpose())
-                .useDate(e.getUseDate())
-                .returnDate(e.getReturnDate())
-                .rental(e.isRental())
-                .approvalStatus(e.getApprovalStatus())
-                .createdAt(e.getCreatedAt())
-                .modifiedAt(e.getModifiedAt())
-                .build();
-    }
-
     @Transactional
     public SupplyRequestResponseDto updateRequestStatus(Long requestId, ApprovalStatus newStatus) {
         SupplyRequest req = repo.findById(requestId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
 
-        // ① 승인(매니저가 클릭) 로직
         if (newStatus == ApprovalStatus.APPROVED) {
-            // 출고 처리: 재고 차감
+            // 1. 출고 처리
             InventoryOutRequestDto outDto = new InventoryOutRequestDto();
+            outDto.setSupplyRequestId(req.getId());
             outDto.setItemId(req.getItem().getId());
+            outDto.setCategoryId(req.getItem().getCategory().getId());
+            outDto.setManagementId(req.getItem().getManagementDashboard().getId());
             outDto.setQuantity(req.getQuantity());
             outDto.setOutbound("USAGE");
             outService.removeOutbound(outDto);
 
-            // 상태 설정: 대여 요청이면 반납대기, 아니면 승인
+            // 2. 상태 전환
             if (req.isRental()) {
                 req.setApprovalStatus(ApprovalStatus.RETURN_PENDING);
             } else {
@@ -104,9 +98,8 @@ public class SupplyRequestService {
             }
         }
 
-        // ② 반납 완료 처리 (매니저 또는 자동 반납 트리거)
-        if (newStatus == ApprovalStatus.RETURNED) {
-            // 입고 처리: 재고 복구
+        if (newStatus == ApprovalStatus.RETURNED && req.isRental()) {
+            // 3. 반납 입고 처리
             InventoryInRequestDto inDto = new InventoryInRequestDto();
             inDto.setItemId(req.getItem().getId());
             inDto.setQuantity(req.getQuantity());
@@ -119,11 +112,30 @@ public class SupplyRequestService {
             inDto.setIsReturnRequired(req.getItem().getIsReturnRequired());
             inService.addInbound(inDto);
 
-            // 반납 완료 상태로 설정
             req.setApprovalStatus(ApprovalStatus.RETURNED);
         }
 
         SupplyRequest updated = repo.save(req);
         return mapToDto(updated);
+    }
+
+    private SupplyRequestResponseDto mapToDto(SupplyRequest e) {
+        return SupplyRequestResponseDto.builder()
+                .id(e.getId())
+                .itemId(e.getItem().getId())
+                .userId(e.getUser().getId())
+                .managementId(e.getManagementDashboard().getId())
+                .serialNumber(e.getSerialNumber())
+                .reRequest(e.getReRequest())
+                .productName(e.getProductName())
+                .quantity(e.getQuantity())
+                .purpose(e.getPurpose())
+                .useDate(e.getUseDate())
+                .returnDate(e.getReturnDate())
+                .rental(e.isRental())
+                .approvalStatus(e.getApprovalStatus())
+                .createdAt(e.getCreatedAt())
+                .modifiedAt(e.getModifiedAt())
+                .build();
     }
 }
