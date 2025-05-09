@@ -2,9 +2,7 @@ package com.example.backend.category.entity;
 
 import com.example.backend.auditable.Auditable;
 import com.example.backend.enums.Outbound;
-import com.example.backend.enums.Status;
 import com.example.backend.item.entity.Item;
-import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,7 +34,7 @@ public class Category extends Auditable {
 
     @Id
     @Column(name = "id")
-    private String id;
+    private Long id;
 
     @Column(name = "name", nullable = false)
     private String name;

@@ -1,11 +1,11 @@
-package com.example.backend.managementDashboard.entity;
+package com.example.backend.managementdashboard.entity;
 
 import com.example.backend.auditable.Auditable;
 import com.example.backend.category.entity.Category;
 import com.example.backend.department.entity.Department;
 import com.example.backend.enums.Status;
 import com.example.backend.item.entity.Item;
-import com.example.backend.mainDashboard.entity.MainDashboard;
+import com.example.backend.maindashboard.entity.MainDashboard;
 import com.example.backend.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
