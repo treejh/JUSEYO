@@ -92,6 +92,14 @@ public class ItemService {
                 .toList();
     }
 
+    @Transactional
+    public void deleteItem(Long id) {
+        if (!repo.existsById(id)) {
+            throw new IllegalArgumentException("Item not found");
+        }
+        repo.deleteById(id);
+    }
+
     private ItemResponseDto mapToDto(Item e) {
         return ItemResponseDto.builder()
                 .id(e.getId())
