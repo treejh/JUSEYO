@@ -19,7 +19,7 @@ public enum ExceptionCode {
     INVENTORY_IN_NOT_FOUND(404, "입고내역을 찾을 수 없습니다."),
     INVENTORY_OUT_NOT_FOUND(404, "출고내역을 찾을 수 없습니다."),
     SUPPLY_REQUEST_NOT_FOUND(404, "비품요청서를 찾을 수 없습니다."),
-
+    INSUFFICIENT_STOCK(400, "비품 보유 수량이 부족합니다."),
     ;
 
 
