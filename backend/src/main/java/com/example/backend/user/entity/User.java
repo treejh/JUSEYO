@@ -1,6 +1,7 @@
 package com.example.backend.user.entity;
 
 import com.example.backend.auditable.Auditable;
+import com.example.backend.department.entity.Department;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Status;
 import com.example.backend.item.entity.Item;
@@ -75,7 +76,11 @@ public class User extends Auditable { // Auditable 상속
     @JoinColumn(name = "management_id")
     private ManagementDashboard managementDashboard;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.LAZY)
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.EAGER)
     List<Notification> notificationList = new ArrayList<>();
 
 

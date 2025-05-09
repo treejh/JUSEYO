@@ -2,6 +2,8 @@ package com.example.backend.user.service;
 
 
 
+import com.example.backend.department.entity.Department;
+import com.example.backend.department.service.DepartmentService;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;
 import com.example.backend.enums.Status;
@@ -33,19 +35,24 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final ManagementDashboardService managementDashboardService;
+    private final DepartmentService departmentService;
+
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public User createUser(UserSignRequestDto userSignRequestDto) {
-        //유저는 관리 페이지 꼭 있어야 함 ㅇㅇ
 
         Role role = roleService.findRoleByRoleType(RoleType.USER);
         ManagementDashboard managementDashboard = managementDashboardService.findByPageName(userSignRequestDto.getManagementPageName());
+        Department department =departmentService.findDepartmentByName(managementDashboard.getId(),
+                userSignRequestDto.getDepartmentName());
+
 
         User user =User.builder()
                 .email(userSignRequestDto.getEmail())
                 .name(userSignRequestDto.getName())
                 .managementDashboard(managementDashboard)
+                .department(department)
                 .phoneNumber(userSignRequestDto.getPhoneNumber())
                 .password(passwordEncoder.encode(userSignRequestDto.getPassword()))
                 .status(Status.ACTIVE)

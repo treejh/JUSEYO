@@ -43,10 +43,9 @@ public class UserController {
             description = "일반 사용자(User)의 회원가입을 처리합니다."
     )
     public ResponseEntity signupUser(@Valid @RequestBody UserSignRequestDto userSignRequestDto) {
-        //BoardEntity response = BoardService.createBoard(BoardMapper.boardDtoPostToBoard(post));
+        userService.createUser(userSignRequestDto);
 
-        // return new ResponseEntity<>(response, HttpStatus.CREATED);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>("일반 회원 생성 성공",HttpStatus.CREATED);
     }
 
     //Manager signup

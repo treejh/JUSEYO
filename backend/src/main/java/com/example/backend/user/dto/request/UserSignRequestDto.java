@@ -21,15 +21,12 @@ public class UserSignRequestDto {
     private String email;
 
     @NotBlank
-    @Email
     private String name;
 
     @NotBlank
-    @Email
     private String managementPageName;
 
     @NotBlank
-    @Email
     private String departmentName;
 
     @NotEmpty

@@ -2,6 +2,7 @@ package com.example.backend.managementDashboard.entity;
 
 import com.example.backend.auditable.Auditable;
 import com.example.backend.category.entity.Category;
+import com.example.backend.department.entity.Department;
 import com.example.backend.enums.Status;
 import com.example.backend.item.entity.Item;
 import com.example.backend.mainDashboard.entity.MainDashboard;
@@ -66,8 +67,8 @@ public class ManagementDashboard extends Auditable { // Auditable 상속
     @OneToMany(mappedBy = "managementDashboard", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<User> userList = new ArrayList<>();
 
-
-
+    @OneToMany(mappedBy = "managementDashboard", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    List<Department> departmentList = new ArrayList<>();
 
 
 
