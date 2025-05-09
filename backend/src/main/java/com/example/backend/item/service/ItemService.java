@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.security.SecureRandom;
+
 
 import java.util.List;
 
@@ -23,13 +25,25 @@ public class ItemService {
     private final ItemRepository repo;
     private final CategoryRepository categoryRepo;
     private final ManagementDashboardRepository mgmtRepo;
+    private static final SecureRandom RNG = new SecureRandom();
+    private static final String ALPHANUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    private String generateSerial(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(ALPHANUM.charAt(RNG.nextInt(ALPHANUM.length())));
+        }
+        return sb.toString();
+    }
 
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
-        // ① 시리얼 넘버 결정
+        // ① 시리얼 넘버 결정 (빈 값이면 15자리 랜덤 + 중복 체크)
         String serial = dto.getSerialNumber();
         if (serial == null || serial.isBlank()) {
-            serial = RandomStringUtils.randomAlphanumeric(15);
+            do {
+                serial = generateSerial(15);
+            } while (repo.existsBySerialNumber(serial));
         }
 
         // ② 연관 엔티티 조회

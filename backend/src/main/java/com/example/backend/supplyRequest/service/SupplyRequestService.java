@@ -87,32 +87,40 @@ public class SupplyRequestService {
         SupplyRequest req = repo.findById(requestId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
 
-        req.setApprovalStatus(newStatus);
-
-        // — 승인되면 무조건 출고(재고 차감)
+        // ① 승인(매니저가 클릭) 로직
         if (newStatus == ApprovalStatus.APPROVED) {
+            // 출고 처리: 재고 차감
             InventoryOutRequestDto outDto = new InventoryOutRequestDto();
             outDto.setItemId(req.getItem().getId());
             outDto.setQuantity(req.getQuantity());
-            outDto.setOutbound("USAGE");  // 예: 기본 출고 유형
+            outDto.setOutbound("USAGE");
             outService.removeOutbound(outDto);
+
+            // 상태 설정: 대여 요청이면 반납대기, 아니면 승인
+            if (req.isRental()) {
+                req.setApprovalStatus(ApprovalStatus.RETURN_PENDING);
+            } else {
+                req.setApprovalStatus(ApprovalStatus.APPROVED);
+            }
         }
 
-        // — 대여 요청(rental==true)일 때, 반납 완료 시 입고(재고 복구)
-        if (newStatus == ApprovalStatus.RETURNED && req.isRental()) {
+        // ② 반납 완료 처리 (매니저 또는 자동 반납 트리거)
+        if (newStatus == ApprovalStatus.RETURNED) {
+            // 입고 처리: 재고 복구
             InventoryInRequestDto inDto = new InventoryInRequestDto();
             inDto.setItemId(req.getItem().getId());
             inDto.setQuantity(req.getQuantity());
             inDto.setInbound("RETURN");
-            // 신규 아이템 생성용 필드(이미 DTO에 포함되어 있다면 생략)
             inDto.setName(req.getItem().getName());
             inDto.setCategoryId(req.getItem().getCategory().getId());
             inDto.setManagementId(req.getItem().getManagementDashboard().getId());
             inDto.setPurchaseSource(req.getItem().getPurchaseSource());
             inDto.setLocation(req.getItem().getLocation());
             inDto.setIsReturnRequired(req.getItem().getIsReturnRequired());
-
             inService.addInbound(inDto);
+
+            // 반납 완료 상태로 설정
+            req.setApprovalStatus(ApprovalStatus.RETURNED);
         }
 
         SupplyRequest updated = repo.save(req);
