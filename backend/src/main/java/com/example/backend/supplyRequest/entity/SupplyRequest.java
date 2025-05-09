@@ -4,14 +4,8 @@ import com.example.backend.auditable.Auditable;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.item.entity.Item;
 import com.example.backend.user.entity.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,11 +25,11 @@ import lombok.experimental.SuperBuilder;
 public class SupplyRequest extends Auditable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-
-    @Column(name = "produdct_name", nullable = false)
+    @Column(name = "product_name", nullable = false)
     private String productName;
 
     @Column(name = "quantity", nullable = false)
@@ -44,35 +38,25 @@ public class SupplyRequest extends Auditable {
     @Column(name = "purpose", nullable = false)
     private String purpose; //사용 목적
 
-
     @Column(name = "use_date")
     private LocalDateTime useDate;  //사용 날짜
 
     @Column(name = "return_date")
     private LocalDateTime returnDate;  //반납 날짜
 
-
     @Column(name = "rental", nullable = false)
     private boolean rental; //대여 사용 여부
-
 
     @Enumerated(EnumType.STRING)
     @Column(name = "outbound_type", nullable = false)
     private ApprovalStatus approvalStatus; // 승인 상태
 
-
     @ManyToOne
     @JoinColumn(name = "item_id")
     private Item item;
 
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-
-
-
-
 
 }
