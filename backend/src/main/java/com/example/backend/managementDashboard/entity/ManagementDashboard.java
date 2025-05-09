@@ -45,6 +45,15 @@ public class ManagementDashboard extends Auditable { // Auditable 상속
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "onwer")
+    private String onwer;
+
+    @Column(name = "company_name")
+    private String companyName;
+
+    @Column(name = "business _registration_number")
+    private String businessRegistrationNumber;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status;
