@@ -51,14 +51,14 @@ public class DepartmentService {
 
     // 부서명 수정
     @Transactional
-    public Department updateDepartment(DepartmentUpdateRequestDTO dto) {
-        Department department = departmentRepository.findById(dto.getId())
+    public Department updateDepartment(Long id, DepartmentUpdateRequestDTO dto) {
+        Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_NOT_FOUND));
 
         department.setName(dto.getName());
-
         return departmentRepository.save(department);
     }
+
 
     // 부서 삭제
     @Transactional

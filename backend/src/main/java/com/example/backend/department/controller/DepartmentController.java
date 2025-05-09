@@ -53,14 +53,7 @@ public class DepartmentController {
             @PathVariable Long id,
             @RequestBody @Valid DepartmentUpdateRequestDTO dto) {
 
-        // PathVariable의 id와 DTO의 id가 다를 경우 명확한 메시지 포함
-        if (!id.equals(dto.getId())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body("요청 경로의 ID와 본문의 ID가 일치하지 않습니다.");
-        }
-
-        Department updated = departmentService.updateDepartment(dto);
+        Department updated = departmentService.updateDepartment(id, dto);
         return ResponseEntity.ok(DepartmentResponseDTO.fromEntity(updated));
     }
 
