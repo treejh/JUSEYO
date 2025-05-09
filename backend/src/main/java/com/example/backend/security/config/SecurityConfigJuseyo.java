@@ -33,15 +33,15 @@ public class SecurityConfigJuseyo {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/swagger-ui/**"
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
 
 
                         ).permitAll()
                         //회원
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/*","/api/v1/users/login").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/*","/api/v1/user/login").permitAll()
+                        .anyRequest().authenticated()
                 )
-
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session
