@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class ItemRequestDto {
     private String name;
-    private Long serialNumber;
+    private String serialNumber;
     private Long totalQuantity;
     private Long availableQuantity;
     private String purchaseSource;

@@ -38,7 +38,7 @@ public class Item extends Auditable {
     private String name;
 
     @Column(name = "serial_number", nullable = false)
-    private Long serialNumber;
+    private String serialNumber;
 
     @Column(name = "total_quantity", nullable = false)
     private Long totalQuantity;

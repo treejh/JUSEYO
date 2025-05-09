@@ -9,6 +9,7 @@ import com.example.backend.item.repository.ItemRepository;
 import com.example.backend.managementdashboard.entity.ManagementDashboard;
 import com.example.backend.managementdashboard.repository.ManagementDashboardRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +24,22 @@ public class ItemService {
 
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
+        // ① 시리얼 넘버 결정
+        String serial = dto.getSerialNumber();
+        if (serial == null || serial.isBlank()) {
+            serial = RandomStringUtils.randomAlphanumeric(15);
+        }
+
+        // ② 연관 엔티티 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
         ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
                 .orElseThrow(() -> new IllegalArgumentException("ManagementDashboard not found"));
 
+        // ③ 엔티티 생성
         Item entity = Item.builder()
                 .name(dto.getName())
-                .serialNumber(dto.getSerialNumber())
+                .serialNumber(serial)
                 .totalQuantity(dto.getTotalQuantity())
                 .availableQuantity(dto.getAvailableQuantity())
                 .purchaseSource(dto.getPurchaseSource())
@@ -40,6 +49,7 @@ public class ItemService {
                 .managementDashboard(mgmt)
                 .build();
 
+        // ④ 저장 & DTO 반환
         Item saved = repo.save(entity);
         return mapToDto(saved);
     }
