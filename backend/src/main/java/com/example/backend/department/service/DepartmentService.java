@@ -33,8 +33,11 @@ public class DepartmentService {
     // 부서 생성
     @Transactional
     public Department createDepartment(DepartmentCreateRequestDTO dto) {
-        ManagementDashboard managementDashboard = managementDashboardRepository.findById(dto.getManagementDashboardId()).orElseThrow(() -> new IllegalArgumentException("관리 대시보드를 찾을 수 없습니다."));
+        ManagementDashboard managementDashboard = managementDashboardRepository.findById(dto.getManagementDashboardId()).orElseThrow(()->new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
 
+        if (departmentRepository.existsByName(dto.getName())) {
+            throw new BusinessLogicException(ExceptionCode.AlREADY_HAS_DEPARTMENT);
+        }
         Department department = Department.builder()
                 .id(dto.getId())
                 .name(dto.getName())
@@ -47,6 +50,10 @@ public class DepartmentService {
     // 부서 전체 조회
     public List<Department> findAllDepartments() {
         return departmentRepository.findAll();
+    }
+
+    public Department findDepartmentById(Long id) {
+        return departmentRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_NOT_FOUND));
     }
 
     // 부서명 수정
