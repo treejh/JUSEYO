@@ -1,15 +1,17 @@
-package com.example.backend.category.entity;
+package com.example.backend.department.entity;
 
 import com.example.backend.auditable.Auditable;
 import com.example.backend.enums.Outbound;
-import com.example.backend.enums.Status;
 import com.example.backend.item.entity.Item;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.notification.entity.Notification;
+import com.example.backend.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -25,18 +27,18 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "department")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-public class Category extends Auditable {
+public class Department extends Auditable {
 
     @Id
     @Column(name = "id")
-    private String id;
+    private Long id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -46,16 +48,8 @@ public class Category extends Auditable {
     @JoinColumn(name = "management_id")
     private ManagementDashboard managementDashboard;
 
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "outbound_type", nullable = false)
-    private Outbound outbound; //출고 유형
-
-
-    @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE, orphanRemoval = false)
-    List<Item> itemList = new ArrayList<>();
-
-
+    @OneToMany(mappedBy = "department", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.EAGER)
+    List<User> userList = new ArrayList<>();
 
 
 }
