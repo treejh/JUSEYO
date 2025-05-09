@@ -6,7 +6,6 @@ import com.example.backend.item.dto.request.ItemRequestDto;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
-import com.example.backend.managementdashboard.entity.ManagementDashboard;
 import com.example.backend.managementdashboard.repository.ManagementDashboardRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;

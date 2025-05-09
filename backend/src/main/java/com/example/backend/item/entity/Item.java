@@ -5,7 +5,6 @@ import com.example.backend.category.entity.Category;
 import com.example.backend.inventoryIn.entity.InventoryIn;
 import com.example.backend.inventoryout.entity.InventoryOut;
 import com.example.backend.itemInstance.entity.ItemInstance;
-import com.example.backend.managementdashboard.entity.ManagementDashboard;
 import com.example.backend.supplyrequest.entity.SupplyRequest;
 import jakarta.persistence.*;
 
