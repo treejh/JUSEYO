@@ -2,8 +2,11 @@ package com.example.backend.security.jwt.service;
 
 
 
+import com.example.backend.enums.RoleType;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
+import com.example.backend.role.entity.Role;
+import com.example.backend.role.repository.RoleRepository;
 import com.example.backend.security.jwt.util.JwtTokenizer;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
@@ -22,6 +25,7 @@ public class TokenService {
     private final HttpServletRequest httpServletRequest;
     private final HttpServletResponse httpServletResponse;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final JwtTokenizer jwtTokenizer;
 
 
@@ -44,7 +48,7 @@ public class TokenService {
         String token = getTokenFromRequest();
 
         if (token == null) {
-            throw new IllegalArgumentException("Token is missing");  // 토큰이 없으면 예외 처리
+            throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_FOUND);  // 토큰이 없으면 예외 처리
         }
 
         userRepository.findByEmail(jwtTokenizer.getEmailFromToken(token))
@@ -55,11 +59,25 @@ public class TokenService {
         return jwtTokenizer.getEmailFromToken(token);
     }
 
+    public Role getRoleFromToken(){
+        String token = getTokenFromRequest();
+
+        if (token == null) {
+            throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_FOUND);  // 토큰이 없으면 예외 처리
+        }
+
+        RoleType roleType = RoleType.valueOf(jwtTokenizer.getRoleFromToken(token)); // 문자열을 enum으로 변환
+
+        return roleRepository.findByRole(roleType).orElseThrow(
+                ()-> new BusinessLogicException(ExceptionCode.ROLE_NOT_FOUND)
+        );
+    }
+
     public Long getIdFromToken(){
         String token = getTokenFromRequest();
 
         if (token == null) {
-            throw new IllegalArgumentException("Token is missing");  // 토큰이 없으면 예외 처리
+            throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_FOUND); // 토큰이 없으면 예외 처리
         }
 
         userRepository.findById(jwtTokenizer.getUserIdFromToken(token))
