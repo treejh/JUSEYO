@@ -6,6 +6,7 @@ import com.example.backend.base.entity.BoardEntity;
 import com.example.backend.base.repository.BoardRepository;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
+import com.example.backend.security.jwt.service.TokenService;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,12 @@ public class BoardService {
 
         private final BoardRepository boardRepository;
 
+
         //Create
         public BoardEntity createBoard(BoardEntity board) {
             return boardRepository.save(board);
         }
 
-        // Read
         public BoardEntity findBoard(long projectId) {
             BoardEntity board = verifiedBoard(projectId);
             return board;

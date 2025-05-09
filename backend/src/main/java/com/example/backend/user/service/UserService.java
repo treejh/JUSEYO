@@ -76,20 +76,34 @@ public class UserService {
         return userRepository.save(manager);
     }
 
+    @Transactional
     public User findByEmail(String email){
         return userRepository.findByEmail(email).orElseThrow(
                 () -> new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL));
     }
-
+    @Transactional
     public User findByPhoneNumber(String phoneNumber){
         return userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
                 () -> new BusinessLogicException(ExceptionCode.ALREADY_HAS_PHONENUMBER));
     }
 
-    @Transactional
+
+
     public void userValid(User user){
-        findByEmail(user.getEmail());
-        findByPhoneNumber(user.getPhoneNumber());
+        validateEmail(user.getEmail());
+        validatePhoneNumber(user.getPhoneNumber());
+    }
+
+    public void validateEmail(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
+        }
+    }
+
+    public void validatePhoneNumber(String phone) {
+        if (userRepository.findByPhoneNumber(phone).isPresent()) {
+            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
+        }
     }
 
 
