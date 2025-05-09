@@ -2,6 +2,8 @@ package com.example.backend.item.service;
 
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import com.example.backend.item.dto.request.ItemRequestDto;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
@@ -57,7 +59,7 @@ public class ItemService {
     @Transactional
     public ItemResponseDto updateItem(Long id, ItemRequestDto dto) {
         Item entity = repo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
         // category & management 조회
         Category category = categoryRepo.findById(dto.getCategoryId())

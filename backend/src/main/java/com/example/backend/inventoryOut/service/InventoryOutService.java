@@ -1,5 +1,7 @@
 package com.example.backend.inventoryOut.service;
 
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryOut.dto.request.InventoryOutRequestDto;
 import com.example.backend.inventoryOut.dto.response.InventoryOutResponseDto;
 import com.example.backend.inventoryOut.entity.InventoryOut;
@@ -21,7 +23,7 @@ public class InventoryOutService {
     public InventoryOutResponseDto removeOutbound(InventoryOutRequestDto dto) {
         // 1) 아이템 조회
         Item item = itemRepo.findById(dto.getItemId())
-                .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
         // 2) 재고 충분 여부 검사
         if (item.getAvailableQuantity() < dto.getQuantity()) {

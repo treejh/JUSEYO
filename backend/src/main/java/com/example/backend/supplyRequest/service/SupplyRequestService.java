@@ -1,5 +1,7 @@
 package com.example.backend.supplyRequest.service;
 
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import com.example.backend.item.repository.ItemRepository;
 import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
@@ -25,7 +27,7 @@ public class SupplyRequestService {
         // 엔티티 빌드
         SupplyRequest req = SupplyRequest.builder()
                 .item(itemRepo.findById(dto.getItemId())
-                        .orElseThrow(() -> new IllegalArgumentException("Item not found")))
+                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND)))
                 .user(userRepo.findById(dto.getUserId())
                         .orElseThrow(() -> new IllegalArgumentException("User not found")))
                 .productName(dto.getProductName())
