@@ -12,7 +12,7 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "inventory_ins")
+@Table(name = "inventory_outs")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -24,7 +24,7 @@ public class InventoryOut extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private String id;
+    private Long id;
 
     @Column(name = "quantity", nullable = false)
     private Long quantity;
