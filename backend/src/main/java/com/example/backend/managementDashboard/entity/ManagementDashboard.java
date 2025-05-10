@@ -5,19 +5,15 @@ import com.example.backend.category.entity.Category;
 import com.example.backend.department.entity.Department;
 import com.example.backend.enums.Status;
 import com.example.backend.item.entity.Item;
-import com.example.backend.mainDashboard.entity.MainDashboard;
 import com.example.backend.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
@@ -42,33 +38,27 @@ public class ManagementDashboard extends Auditable { // Auditable 상속
     private Long id;
 
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name",nullable = false)
     private String name;
 
-    @Column(name = "onwer")
-    private String onwer;
+    @Column(name = "onwer",nullable = false)
+    private String owner;
 
-    @Column(name = "company_name")
+    @Column(name = "company_name",nullable = false)
     private String companyName;
 
-    @Column(name = "business _registration_number")
+    @Column(name = "business _registration_number",nullable = false)
     private String businessRegistrationNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status;
 
-
     @Column(name = "approval", nullable = false)
     private boolean approval;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "main_dashboard_id", nullable = false)
-    private MainDashboard mainDashboard;
-
     @OneToMany(mappedBy = "managementDashboard", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<Category> categoryList = new ArrayList<>();
-
 
     @OneToMany(mappedBy = "managementDashboard", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<Item> itemList = new ArrayList<>();
