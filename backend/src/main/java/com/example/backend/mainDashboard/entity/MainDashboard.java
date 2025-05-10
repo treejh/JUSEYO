@@ -36,7 +36,7 @@ public class MainDashboard extends Auditable { // Auditable 상속
     @Column(name = "name", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "mainDashboard", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.LAZY)
-    List<ManagementDashboard> dashboardList = new ArrayList<>();
+//    @OneToMany(mappedBy = "mainDashboard", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.LAZY)
+//    List<ManagementDashboard> dashboardList = new ArrayList<>();
 
 }
