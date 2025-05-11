@@ -368,7 +368,7 @@ public class UserService {
 
     public void validatePhoneNumber(String phone) {
         if (userRepository.findByPhoneNumber(phone).isPresent()) {
-            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
+            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_PHONENUMBER);
         }
     }
 
