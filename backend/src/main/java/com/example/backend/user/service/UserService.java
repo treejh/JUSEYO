@@ -128,11 +128,12 @@ public class UserService {
     public Page<User> getApprovedList(String managementDashboardName, Pageable pageable){
 
         ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
+        Role role = roleService.findRoleByRoleType(RoleType.USER);
         //admin은 다 조회가 가능해야 함
         if(tokenService.getRoleFromToken().getRole().equals(RoleType.ADMIN)){
-            return userRepository.findByManagementDashboardAndApprovalStatus(
+            return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
                     managementDashboard,
-                    ApprovalStatus.APPROVED,pageable
+                    ApprovalStatus.APPROVED,pageable,role
             );
         }
 
@@ -142,23 +143,23 @@ public class UserService {
         //매니저가 맞는지 확인
         validManager();
 
-        return userRepository.findByManagementDashboardAndApprovalStatus(
+        return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
                 managementDashboard,
-                ApprovalStatus.APPROVED,pageable
+                ApprovalStatus.APPROVED,pageable,role
         );
     }
 
     //요청된 유저 리스트 가지고오기
-    //근데 역할이 MANAGER이여야 하고, 만약 InitialManager이면 maskedPhoneNumber 로 가게 -> 이건 controller에서 ㄱ ?
+    //근데 요청하는 역할이 MANAGER이여야 하고, 만약 InitialManager이면 maskedPhoneNumber 로 가게 -> 이건 controller에서 ㄱ ?
     public Page<User> getRequestList(String managementDashboardName, Pageable pageable){
 
         ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
-
+        Role role = roleService.findRoleByRoleType(RoleType.USER);
         //admin은 다 조회가 가능해야 함
         if(tokenService.getRoleFromToken().getRole().equals(RoleType.ADMIN)){
-            return userRepository.findByManagementDashboardAndApprovalStatus(
+            return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
                     managementDashboard,
-                    ApprovalStatus.REQUESTED,pageable
+                    ApprovalStatus.REQUESTED,pageable,role
             );
 
         }
@@ -169,11 +170,16 @@ public class UserService {
         //매니저가 맞는지 확인
         validManager();
 
-        return userRepository.findByManagementDashboardAndApprovalStatus(
+        return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
                 managementDashboard,
-                ApprovalStatus.REQUESTED,pageable
+                ApprovalStatus.REQUESTED,pageable,role
         );
 
+    }
+
+    public User findById(Long userId){
+        return userRepository.findById(userId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }
 
 
