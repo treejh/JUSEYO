@@ -22,11 +22,12 @@ public class SupplyRequestRequestDto {
     private String purpose;
 
     @NotNull
-    private Boolean reRequest;
-
-    @NotNull
     private Boolean rental;        // 대여 여부
 
     private LocalDateTime useDate;     // rental=true일 때만 클라이언트 전달, 빌리지 않은경우에는 요청한 날로 자동설정
     private LocalDateTime returnDate;  // rental=true일 때만 클라이언트 전달
+
+    public boolean isRental() {
+        return Boolean.TRUE.equals(this.rental);
+    }
 }

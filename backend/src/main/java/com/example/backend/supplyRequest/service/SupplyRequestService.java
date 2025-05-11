@@ -8,16 +8,15 @@ import com.example.backend.inventoryOut.dto.request.InventoryOutRequestDto;
 import com.example.backend.inventoryOut.service.InventoryOutService;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
-import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
-import com.example.backend.managementDashboard.entity.ManagementDashboard;
-import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.enums.ApprovalStatus;
+import com.example.backend.security.jwt.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,22 +55,25 @@ public class SupplyRequestService {
 
         // 5) 날짜 자동 처리
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime useDate    = dto.getRental() ? dto.getUseDate()    : now;
-        LocalDateTime returnDate = dto.getRental() ? dto.getReturnDate() : null;
+        LocalDateTime useDate    = dto.isRental() ? dto.getUseDate()    : now;
+        LocalDateTime returnDate = dto.isRental() ? dto.getReturnDate() : null;
 
-        // 6) 요청 생성
+        // 6) 재요청 여부 자동 계산
+        boolean isReRequest = repo.existsByUserIdAndItemId(userId, item.getId());
+
+        // 7) 요청 엔티티 생성
         SupplyRequest req = SupplyRequest.builder()
                 .item(item)
                 .user(user)
                 .managementDashboard(mgmt)
                 .serialNumber(item.getSerialNumber())
-                .reRequest(dto.getReRequest())
+                .reRequest(isReRequest)
                 .productName(item.getName())
                 .quantity(dto.getQuantity())
                 .purpose(dto.getPurpose())
                 .useDate(useDate)
                 .returnDate(returnDate)
-                .rental(dto.getRental())
+                .rental(dto.isRental())
                 .approvalStatus(ApprovalStatus.REQUESTED)
                 .build();
 
