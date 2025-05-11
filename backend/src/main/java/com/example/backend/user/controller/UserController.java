@@ -48,7 +48,7 @@ public class UserController {
     private final ManagementDashboardService managementDashboardService;
 
 
-    // user signup
+
     @PostMapping("/signup")
     @Operation(
             summary = "회원 가입 (일반 사용자)",
@@ -59,6 +59,8 @@ public class UserController {
 
         return new ResponseEntity<>("일반 회원 생성 성공",HttpStatus.CREATED);
     }
+
+
 
     @GetMapping("/approve")
     @Operation(
@@ -88,7 +90,6 @@ public class UserController {
     }
 
 
-    // user signup
     @GetMapping("/request")
     @Operation(
             summary = "해당 관리 페이지 사용을 요청한 유저 ",
@@ -100,6 +101,35 @@ public class UserController {
 
         // dashboardName으로 필터링 등 필요한 로직 수행 가능
         Page<User> approveUserList = userService.getRequestList(managementDashboardName,
+                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+
+        //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
+        ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
+        Page<?> responseList;
+        if (userService.isInitialManager(dashboard)) {
+            responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
+        } else {
+            responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
+        }
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "조회 성공", responseList),
+                HttpStatus.OK
+        );
+
+    }
+
+    @GetMapping("/reject")
+    @Operation(
+            summary = "해당 관리 페이지 사용이 거부된 유저  ",
+            description = "해당 관리 페이지 사용이 거부된 유저 리스트를 조회할 수 있습니다."
+    )
+    public ResponseEntity<?> getRejectUser(@RequestParam String managementDashboardName
+            ,@RequestParam(name = "page", defaultValue = "1") int page,
+                                            @RequestParam(name="size", defaultValue = "10") int size) {
+
+        // dashboardName으로 필터링 등 필요한 로직 수행 가능
+        Page<User> approveUserList = userService.getRejectList(managementDashboardName,
                 PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
 
         //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드

@@ -120,8 +120,9 @@ public class UserService {
 
         ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
         Role role = roleService.findRoleByRoleType(RoleType.USER);
+
         //admin은 다 조회가 가능해야 함
-        if(tokenService.getRoleFromToken().getRole().equals(RoleType.ADMIN)){
+        if(isAdmin()){
             return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
                     managementDashboard,
                     ApprovalStatus.APPROVED,pageable,role
@@ -147,7 +148,7 @@ public class UserService {
         ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
         Role role = roleService.findRoleByRoleType(RoleType.USER);
         //admin은 다 조회가 가능해야 함
-        if(tokenService.getRoleFromToken().getRole().equals(RoleType.ADMIN)){
+        if(isAdmin()){
             return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
                     managementDashboard,
                     ApprovalStatus.REQUESTED,pageable,role
@@ -167,6 +168,33 @@ public class UserService {
 
     }
 
+    //거부된 유저 리스트 가지고오기
+    //근데 요청하는 역할이 MANAGER이여야 하고, 만약 InitialManager이면 maskedPhoneNumber 로 가게 -> 이건 controller에서 ㄱ ?
+    public Page<User> getRejectList(String managementDashboardName, Pageable pageable){
+
+        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
+        Role role = roleService.findRoleByRoleType(RoleType.USER);
+        //admin은 다 조회가 가능해야 함
+        if(isAdmin()){
+            return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
+                    managementDashboard,
+                    ApprovalStatus.REJECTED,pageable,role
+            );
+        }
+
+        //해당 관리 페이지에 속한 유저인지 확인
+        isManagementDashboardUser(managementDashboard);
+
+        //매니저가 맞는지 확인
+        validManager();
+
+        return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
+                managementDashboard,
+                ApprovalStatus.REJECTED,pageable,role
+        );
+
+    }
+
     public User findById(Long userId){
         return userRepository.findById(userId)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
@@ -178,9 +206,15 @@ public class UserService {
     public void approveUser(Long userId){
         //현재 로그인한 매니저
         User currentLoginUser = findById(tokenService.getIdFromToken()) ;
+        User requestUser = findById(userId);
+
+        if(isAdmin()){
+            requestUser.setApprovalStatus(ApprovalStatus.APPROVED);
+            userRepository.save(requestUser);
+            return;
+        }
 
         //관리페이지에 권한을 요청하려는 유저 아이디
-        User requestUser = findById(userId);
 
         ManagementDashboard LoginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
 
@@ -199,15 +233,26 @@ public class UserService {
 
     }
 
+    private boolean isAdmin() {
+        return tokenService.getRoleFromToken().getRole().equals(RoleType.ADMIN);
+    }
+
     //관리 페이지에 요청한 유저를 거부하는 메서드
     @Transactional
     public void rejectUser(Long userId){
         //현재 로그인한 매니저
         User currentLoginUser = findById(tokenService.getIdFromToken()) ;
 
+
+
         //관리페이지 권한을 거부하려는 유저 아이디
         User requestUser = findById(userId);
 
+        if(isAdmin()){
+            requestUser.setApprovalStatus(ApprovalStatus.REJECTED);
+            userRepository.save(requestUser);
+            return;
+        }
         ManagementDashboard LoginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
 
         //요청한 유저와, 요청을 받는 매니저가 다른 대시보드에 속해있는 경우 예외처리
@@ -228,6 +273,7 @@ public class UserService {
     //매니저인지 확인하는 메서드
     //접근 권한도 매니저로만 주긴 할거임 ㅇㅇ
     public void validManager(){
+        log.info("매니저인지 확인 !! " + tokenService.getRoleFromToken().getRole().name());
         if(!tokenService.getRoleFromToken().getRole().equals(RoleType.MANAGER)){
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED_ROLE);
         }
