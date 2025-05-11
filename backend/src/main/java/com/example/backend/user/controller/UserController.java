@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -116,6 +117,34 @@ public class UserController {
         );
 
     }
+
+
+    @PostMapping("/approve/{userId}")
+    @Operation(
+            summary = "매니저가 유저가 관리페이지를 사용할 수 있도록 승인",
+            description = "매니저는 특정 유저를 관리페이지를 사용할 수 있도록 승인할 수 있습니다. "
+    )
+    public ResponseEntity<?> approveUserAccess(@PathVariable Long userId) {
+        userService.approveUser(userId);
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "접근 권한이 승인되었습니다."),
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/reject/{userId}")
+    @Operation(
+            summary = "매니저가 특정 유저의 요청을 거부",
+            description = "매니저는 특정 유저를 관리페이지를 사용을 거부할 수 있습니다. "
+    )
+    public ResponseEntity<?> rejectUserAccess(@PathVariable Long userId) {
+
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
+
+
 
 
 

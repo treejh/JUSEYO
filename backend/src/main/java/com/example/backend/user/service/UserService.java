@@ -113,15 +113,6 @@ public class UserService {
         return userRepository.save(manager);
     }
 
-    public User findByEmail(String email){
-        return userRepository.findByEmail(email).orElseThrow(
-                () -> new BusinessLogicException(ExceptionCode.EMAIL_NOT_FOUND));
-    }
-
-    public User findByPhoneNumber(String phoneNumber){
-        return userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
-                () -> new BusinessLogicException(ExceptionCode.PHONE_NUMBER_NOT_FOUND));
-    }
 
     //승인된 유저 리스트 가지고오기
     //근데 역할이 MANAGER이여야 하고, 만약 InitialManager이면 maskedPhoneNumber 로 가게 -> 이건 controller에서 ㄱ ?
@@ -161,7 +152,6 @@ public class UserService {
                     managementDashboard,
                     ApprovalStatus.REQUESTED,pageable,role
             );
-
         }
 
         //해당 관리 페이지에 속한 유저인지 확인
@@ -183,6 +173,30 @@ public class UserService {
     }
 
 
+    //관리 페이지에 요청한 유저를 승인하는 메서드
+    @Transactional
+    public void approveUser(Long userId){
+        //현재 로그인한 매니저
+        User currentLoginUser = findById(tokenService.getIdFromToken()) ;
+
+        //관리페이지에 권한을 요청한 유저
+        User requestUser = findById(userId);
+
+        ManagementDashboard LoginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
+
+        //요청한 유저와, 요청을 받는 매니저가 다른 대시보드에 속해있는 경우 예외처리
+        if(!LoginUsermanagementDashboard.equals(requestUser.getManagementDashboard())){
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
+        }
+
+        //매니저가 맞는지 확인
+        validManager();
+
+        requestUser.setApprovalStatus(ApprovalStatus.APPROVED);
+        userRepository.save(requestUser);
+
+    }
+
     //매니저인지 확인하는 메서드
     //접근 권한도 매니저로만 주긴 할거임 ㅇㅇ
     public void validManager(){
@@ -200,6 +214,7 @@ public class UserService {
                 );
     }
 
+
     //해당 관리페이지에 속하고, 최초 매니저인지 확인하는 메서드
     public boolean isInitialManager(ManagementDashboard managementDashboard){
 
@@ -214,31 +229,6 @@ public class UserService {
 
 
 
-
-
-    public void userValid(User user){
-        validateEmail(user.getEmail());
-        validatePhoneNumber(user.getPhoneNumber());
-    }
-
-    public void validateEmail(String email) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
-        }
-    }
-
-    public void validatePhoneNumber(String phone) {
-        if (userRepository.findByPhoneNumber(phone).isPresent()) {
-            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
-        }
-    }
-
-
-    public void validPassword(String dtoPassword, String userPassword) {
-        if (!passwordEncoder.matches(dtoPassword, userPassword)) {
-            throw new BusinessLogicException(ExceptionCode.INVALID_PASSWORD);  // 비밀번호 불일치시 예외 던지기
-        }
-    }
 
     @Transactional
     public String findPassword(String email){
@@ -279,4 +269,41 @@ public class UserService {
             userRepository.delete(user);
         }
 
+    public User findByEmail(String email){
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new BusinessLogicException(ExceptionCode.EMAIL_NOT_FOUND));
     }
+
+    public User findByPhoneNumber(String phoneNumber){
+        return userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
+                () -> new BusinessLogicException(ExceptionCode.PHONE_NUMBER_NOT_FOUND));
+    }
+
+    public void userValid(User user){
+        validateEmail(user.getEmail());
+        validatePhoneNumber(user.getPhoneNumber());
+    }
+
+
+
+    public void validateEmail(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
+        }
+    }
+
+    public void validatePhoneNumber(String phone) {
+        if (userRepository.findByPhoneNumber(phone).isPresent()) {
+            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
+        }
+    }
+
+
+    public void validPassword(String dtoPassword, String userPassword) {
+        if (!passwordEncoder.matches(dtoPassword, userPassword)) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_PASSWORD);  // 비밀번호 불일치시 예외 던지기
+        }
+    }
+
+
+}
