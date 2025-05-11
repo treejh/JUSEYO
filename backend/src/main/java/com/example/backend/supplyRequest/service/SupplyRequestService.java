@@ -8,10 +8,12 @@ import com.example.backend.inventoryOut.dto.request.InventoryOutRequestDto;
 import com.example.backend.inventoryOut.service.InventoryOutService;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
+import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
+import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,42 +31,51 @@ public class SupplyRequestService {
     private final SupplyRequestRepository repo;
     private final ItemRepository itemRepo;
     private final UserRepository userRepo;
-    private final ManagementDashboardRepository mgmtRepo;
+    private final TokenService tokenService;
     private final InventoryOutService outService;
     private final InventoryInService inService;
 
     @Transactional
     public SupplyRequestResponseDto createRequest(SupplyRequestRequestDto dto) {
-        // 1) 아이템, 유저, 관리페이지 조회
-        Item item = itemRepo.findById(dto.getItemId())
+        // 1) 아이템 이름으로 조회
+        Item item = itemRepo.findByName(dto.getProductName())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
-        var user = userRepo.findById(dto.getUserId())
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
-        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
 
-        // 2) 요청 수량 검증
+        // 2) 요청자(로그인 유저) 조회
+        Long userId = tokenService.getIdFromToken();
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
+        // 3) 관리페이지는 아이템이 속한 managementDashboard 사용
+        ManagementDashboard mgmt = item.getManagementDashboard();
+
+        // 4) 수량 체크
         if (dto.getQuantity() > item.getAvailableQuantity()) {
             throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
         }
 
-        // 3) 요청서 생성
+        // 5) 날짜 자동 처리
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime useDate    = dto.getRental() ? dto.getUseDate()    : now;
+        LocalDateTime returnDate = dto.getRental() ? dto.getReturnDate() : null;
+
+        // 6) 요청 생성
         SupplyRequest req = SupplyRequest.builder()
                 .item(item)
                 .user(user)
                 .managementDashboard(mgmt)
-                .serialNumber(dto.getSerialNumber())
+                .serialNumber(item.getSerialNumber())
                 .reRequest(dto.getReRequest())
-                .productName(dto.getProductName())
+                .productName(item.getName())
                 .quantity(dto.getQuantity())
                 .purpose(dto.getPurpose())
-                .useDate(dto.getUseDate())
-                .returnDate(dto.getReturnDate())
-                .rental(dto.isRental())
+                .useDate(useDate)
+                .returnDate(returnDate)
+                .rental(dto.getRental())
                 .approvalStatus(ApprovalStatus.REQUESTED)
                 .build();
-        SupplyRequest saved = repo.save(req);
 
+        SupplyRequest saved = repo.save(req);
         return mapToDto(saved);
     }
 
