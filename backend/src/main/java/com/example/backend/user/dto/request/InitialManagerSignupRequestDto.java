@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ManagerSignupRequestDto {
+public class InitialManagerSignupRequestDto {
 
     @NotBlank
     @Email
@@ -21,8 +21,6 @@ public class ManagerSignupRequestDto {
     @NotBlank
     private String name;
 
-    @NotBlank
-    private String managementPageName;
 
     @NotEmpty
     @Pattern(

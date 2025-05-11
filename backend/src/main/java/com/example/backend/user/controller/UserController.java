@@ -2,27 +2,32 @@ package com.example.backend.user.controller;
 
 
 
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserLoginRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
+import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
+import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
+import com.example.backend.utils.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +44,10 @@ public class UserController {
 
     private final UserService userService;
     private final TokenService tokenService;
+    private final ManagementDashboardService managementDashboardService;
 
+
+    // user signup
     @PostMapping("/signup")
     @Operation(
             summary = "회원 가입 (일반 사용자)",
@@ -51,11 +59,84 @@ public class UserController {
         return new ResponseEntity<>("일반 회원 생성 성공",HttpStatus.CREATED);
     }
 
+    @GetMapping("/approve")
+    @Operation(
+            summary = "해당 관리 페이지 사용이 승인된 유저",
+            description = "해당 관리 페이지 사용이 승인된 유저 리스트를 조회할 수 있습니다."
+    )
+    public ResponseEntity<?> getApproveUser(@RequestParam String managementDashboardName
+                                                 ,@RequestParam(name = "page", defaultValue = "1") int page,
+                                                    @RequestParam(name="size", defaultValue = "10") int size) {
+        // dashboardName으로 필터링 등 필요한 로직 수행 가능
+        Page<User> approveUserList = userService.getApprovedList(managementDashboardName,
+                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+
+        //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
+        ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
+        Page<?> responseList;
+        if (userService.isInitialManager(dashboard)) {
+            responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
+        } else {
+            responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
+        }
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "조회 성공", responseList),
+                HttpStatus.OK
+        );
+
+    }
+
+
+    // user signup
+    @GetMapping("/request")
+    @Operation(
+            summary = "해당 관리 페이지 사용을 요청한 유저 ",
+            description = "해당 관리 페이지 사용을 요청한 유저 리스트를 조회할 수 있습니다."
+    )
+    public ResponseEntity<?> getRequestUser(@RequestParam String managementDashboardName
+                                        ,@RequestParam(name = "page", defaultValue = "1") int page,
+                                         @RequestParam(name="size", defaultValue = "10") int size) {
+
+        // dashboardName으로 필터링 등 필요한 로직 수행 가능
+        Page<User> approveUserList = userService.getRequestList(managementDashboardName,
+                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+
+        //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
+        ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
+        Page<?> responseList;
+        if (userService.isInitialManager(dashboard)) {
+            responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
+        } else {
+            responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
+        }
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "조회 성공", responseList),
+                HttpStatus.OK
+        );
+
+    }
+
+
+
+    //Initial Manager signup
+    @PostMapping("/signup/manager/initial")
+    @Operation(
+            summary = "회원 가입 (최초 매니저)",
+            description = "최초 매니저(Initial Manager)의 회원가입을 처리합니다."
+    )
+    public ResponseEntity signupInitialManager(@Valid @RequestBody InitialManagerSignupRequestDto initialManagerSignupRequestDto) {
+        userService.createInitialManager(initialManagerSignupRequestDto);
+        return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
+
+
+    }
+
     //Manager signup
     @PostMapping("/signup/manager")
     @Operation(
-            summary = "회원 가입 (매니저)",
-            description = "매니저(Manager)의 회원가입을 처리합니다."
+            summary = "회원 가입 (일반 매니저)",
+            description = "일반 매니저(Initial Manager)의 회원가입을 처리합니다."
     )
     public ResponseEntity signupManager(@Valid @RequestBody ManagerSignupRequestDto managerSignupRequestDto) {
         userService.createManager(managerSignupRequestDto);
@@ -63,8 +144,26 @@ public class UserController {
 
     }
 
+    @PostMapping("/findPassword")
+    @Operation(
+            summary = "비밀번호 찾기",
+            description = "비밀번호를 update를 한 후 return "
+    )
+    public ResponseEntity login(@RequestParam String email){
+
+        String response = userService.findPassword(email);
+
+
+        return new ResponseEntity<>( ApiResponse.of(HttpStatus.OK.value(), "비밀번호", response), HttpStatus.OK);
+    }
+
+
 
     @PostMapping("/login")
+    @Operation(
+            summary = "로그인",
+            description = "로그인을 처리합니다."
+    )
     public ResponseEntity login(@RequestBody UserLoginRequestDto userLoginRequestDto){
         User user = userService.findByEmail(userLoginRequestDto.getEmail());
         //비밀번호 일치하는지 확인
@@ -75,6 +174,10 @@ public class UserController {
     }
 
     @PostMapping("/logout")
+    @Operation(
+            summary = "로그아웃",
+            description = "로그아웃을 처리합니다."
+    )
     public ResponseEntity login(){
 
         Role role = tokenService.getRoleFromToken();
@@ -84,6 +187,11 @@ public class UserController {
         tokenService.deleteCookie("accessToken");
         return new ResponseEntity<>("로그아웃 성공", HttpStatus.OK);
     }
+
+
+
+
+
 
 
 

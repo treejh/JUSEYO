@@ -39,7 +39,10 @@ public class SecurityConfigJuseyo {
 
                         ).permitAll()
                         //회원
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/*","/api/v1/users/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request")
+                        .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
@@ -56,6 +59,9 @@ public class SecurityConfigJuseyo {
 
         return http.build();
     }
+
+
+
 
 
 
