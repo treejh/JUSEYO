@@ -65,6 +65,7 @@ public class UserService {
                 .approvalStatus(ApprovalStatus.REQUESTED)
                 .role(role)
                 .build();
+        userValid(user);
 
         return userRepository.save(user);
     }
@@ -233,11 +234,13 @@ public class UserService {
         }
     }
 
+    @Transactional
     public String findPassword(String email){
         User user = userRepository.findByEmail(email)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.EMAIL_NOT_FOUND));
         String randomPassword = CreateRandomNumber.randomNumber();
         user.setPassword(passwordEncoder.encode(randomPassword));
+
         userRepository.save(user);
         return randomPassword;
     }

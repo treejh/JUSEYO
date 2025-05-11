@@ -147,14 +147,17 @@ public class UserController {
     @PostMapping("/findPassword")
     @Operation(
             summary = "비밀번호 찾기",
-            description = "비밀번호를 update를 한 후 return "
+            description = "비밀번호를 업데이트 한 후 결과를 반환"
     )
-    public ResponseEntity login(@RequestParam String email){
-
+    public ResponseEntity<ApiResponse<String>> findPassword(@RequestParam String email) {
+        // 비밀번호 찾기 로직을 수행하고, 해당 결과를 response로 반환
         String response = userService.findPassword(email);
 
-
-        return new ResponseEntity<>( ApiResponse.of(HttpStatus.OK.value(), "비밀번호", response), HttpStatus.OK);
+        // 비밀번호 찾기 성공 메시지와 데이터를 포함하는 ApiResponse 생성
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "비밀번호 재설정 ", response),
+                HttpStatus.OK
+        );
     }
 
 

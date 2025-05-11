@@ -39,7 +39,7 @@ public class SecurityConfigJuseyo {
 
                         ).permitAll()
                         //회원
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/findPassword").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
 
