@@ -179,7 +179,7 @@ public class UserService {
         //현재 로그인한 매니저
         User currentLoginUser = findById(tokenService.getIdFromToken()) ;
 
-        //관리페이지에 권한을 요청한 유저
+        //관리페이지에 권한을 요청하려는 유저 아이디
         User requestUser = findById(userId);
 
         ManagementDashboard LoginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
@@ -192,10 +192,38 @@ public class UserService {
         //매니저가 맞는지 확인
         validManager();
 
+
+        //승인 상태로 변경
         requestUser.setApprovalStatus(ApprovalStatus.APPROVED);
         userRepository.save(requestUser);
 
     }
+
+    //관리 페이지에 요청한 유저를 거부하는 메서드
+    @Transactional
+    public void rejectUser(Long userId){
+        //현재 로그인한 매니저
+        User currentLoginUser = findById(tokenService.getIdFromToken()) ;
+
+        //관리페이지 권한을 거부하려는 유저 아이디
+        User requestUser = findById(userId);
+
+        ManagementDashboard LoginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
+
+        //요청한 유저와, 요청을 받는 매니저가 다른 대시보드에 속해있는 경우 예외처리
+        if(!LoginUsermanagementDashboard.equals(requestUser.getManagementDashboard())){
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
+        }
+
+        //매니저가 맞는지 확인
+        validManager();
+
+        //거부 상태로 변경
+        requestUser.setApprovalStatus(ApprovalStatus.REJECTED);
+        userRepository.save(requestUser);
+
+    }
+
 
     //매니저인지 확인하는 메서드
     //접근 권한도 매니저로만 주긴 할거임 ㅇㅇ

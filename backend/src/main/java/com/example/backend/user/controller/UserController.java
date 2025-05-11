@@ -140,7 +140,12 @@ public class UserController {
     )
     public ResponseEntity<?> rejectUserAccess(@PathVariable Long userId) {
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        userService.rejectUser(userId);
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "접근 권한이 거부되었습니다."),
+                HttpStatus.OK
+        );
 
     }
 

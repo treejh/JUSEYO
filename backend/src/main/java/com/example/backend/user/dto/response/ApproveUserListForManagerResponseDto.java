@@ -13,6 +13,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ApproveUserListForManagerResponseDto {
 
+    Long userId;
+
     String name;
 
     String email;
@@ -20,6 +22,7 @@ public class ApproveUserListForManagerResponseDto {
     String maskedPhoneNumber;
 
     public ApproveUserListForManagerResponseDto(User user) {
+        this.userId = user.getId();
         this.name = user.getName();
         this.email = user.getEmail();
         this.maskedPhoneNumber = maskPhoneNumber(user.getPhoneNumber());
