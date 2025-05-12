@@ -40,7 +40,7 @@ public class SecurityConfigJuseyo {
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
                         //회원
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/*","/api/v1/users/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/user/signup/*","/api/v1/user/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)

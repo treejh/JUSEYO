@@ -24,6 +24,4 @@ public interface ManagementDashboardRepository extends CrudRepository<Management
                                                                     @Param("approval") boolean approval,
                                                                     Pageable pageable);
 
-
-
 }
