@@ -29,8 +29,15 @@ public class ItemInstanceService {
         Item item = itemRepo.findById(dto.getItemId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
-        String code = item.getSerialNumber()
-                + "-" + UUID.randomUUID().toString().substring(0, 8);
+        // 1) 순번 계산 (기존 인스턴스 개수 + 1)
+        long seq = instanceRepo.countByItemId(item.getId()) + 1;
+
+        // 2) 랜덤 8글자
+        String random = UUID.randomUUID().toString().substring(0, 8);
+
+        // 3) 비품명-8자리 순번-랜덤 예:PEN_Example-00000001-a1b2c3d4
+        String namePart = item.getName().replaceAll("\\s+", "_");
+        String code = String.format("%s-%08d-%s", namePart, seq, random);
 
         ItemInstance inst = ItemInstance.builder()
                 .item(item)
