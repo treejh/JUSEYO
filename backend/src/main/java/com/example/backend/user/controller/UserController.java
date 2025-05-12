@@ -63,89 +63,42 @@ public class UserController {
 
 
     @GetMapping("/approve")
-    @Operation(
-            summary = "해당 관리 페이지 사용이 승인된 유저 리스트 ",
-            description = "해당 관리 페이지 사용이 승인된 유저 리스트를 조회할 수 있습니다."
-    )
-    public ResponseEntity<?> getApproveUser(@RequestParam String managementDashboardName
-                                                 ,@RequestParam(name = "page", defaultValue = "1") int page,
-                                                    @RequestParam(name="size", defaultValue = "10") int size) {
-        // dashboardName으로 필터링 등 필요한 로직 수행 가능
-        Page<User> approveUserList = userService.getApprovedList(managementDashboardName,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
-
-        //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
-        ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
-        Page<?> responseList;
-        if (userService.validInitialManager(dashboard)) {
-            responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
-        } else {
-            responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
-        }
-        return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "해당 관리 페이지 사용이 승인된 유저 리스트 조회 성공", responseList),
-                HttpStatus.OK
+    public ResponseEntity<?> getApprovedUsers(@RequestParam String managementDashboardName,
+                                              @RequestParam(defaultValue = "1") int page,
+                                              @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<?> responseList = userService.getUserStatusResponseList(
+                managementDashboardName,
+                pageRequest,
+                name -> userService.getApprovedList(name, pageRequest)
         );
-
+        return ResponseEntity.ok(ApiResponse.of(200, "승인된 유저 리스트 조회 성공", responseList));
     }
 
-
     @GetMapping("/request")
-    @Operation(
-            summary = "해당 관리 페이지 사용을 요청한 유저 리스트 ",
-            description = "해당 관리 페이지 사용을 요청한 유저 리스트를 조회할 수 있습니다."
-    )
-    public ResponseEntity<?> getRequestUser(@RequestParam String managementDashboardName
-                                        ,@RequestParam(name = "page", defaultValue = "1") int page,
-                                         @RequestParam(name="size", defaultValue = "10") int size) {
-
-        // dashboardName으로 필터링 등 필요한 로직 수행 가능
-        Page<User> approveUserList = userService.getRequestList(managementDashboardName,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
-
-        //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
-        ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
-        Page<?> responseList;
-        if (userService.validInitialManager(dashboard)) {
-            responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
-        } else {
-            responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
-        }
-
-        return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "해당 관리 페이지 사용을 요청한 유저 리스트 조회 성공", responseList),
-                HttpStatus.OK
+    public ResponseEntity<?> getRequestedUsers(@RequestParam String managementDashboardName,
+                                               @RequestParam(defaultValue = "1") int page,
+                                               @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<?> responseList = userService.getUserStatusResponseList(
+                managementDashboardName,
+                pageRequest,
+                name -> userService.getRequestList(name, pageRequest)
         );
-
+        return ResponseEntity.ok(ApiResponse.of(200, "요청한 유저 리스트 조회 성공", responseList));
     }
 
     @GetMapping("/reject")
-    @Operation(
-            summary = "해당 관리 페이지 사용이 거부된 유저 리스트  ",
-            description = "해당 관리 페이지 사용이 거부된 유저 리스트를 조회할 수 있습니다."
-    )
-    public ResponseEntity<?> getRejectUser(@RequestParam String managementDashboardName
-            ,@RequestParam(name = "page", defaultValue = "1") int page,
-                                            @RequestParam(name="size", defaultValue = "10") int size) {
-
-        // dashboardName으로 필터링 등 필요한 로직 수행 가능
-        Page<User> approveUserList = userService.getRejectList(managementDashboardName,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
-
-        //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
-        ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
-        Page<?> responseList;
-        if (userService.validInitialManager(dashboard)) {
-            responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
-        } else {
-            responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
-        }
-
-        return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "해당 관리 페이지 사용이 거부된 유저 리스트 조회 성공", responseList),
-                HttpStatus.OK
+    public ResponseEntity<?> getRejectedUsers(@RequestParam String managementDashboardName,
+                                              @RequestParam(defaultValue = "1") int page,
+                                              @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<?> responseList = userService.getUserStatusResponseList(
+                managementDashboardName,
+                pageRequest,
+                name -> userService.getRejectList(name, pageRequest)
         );
-
+        return ResponseEntity.ok(ApiResponse.of(200, "거절된 유저 리스트 조회 성공", responseList));
     }
 
 

@@ -18,11 +18,14 @@ import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
+import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
+import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -431,6 +434,23 @@ public class UserService {
                 ()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND)
         );
     }
+
+    public Page<?> getUserStatusResponseList(
+            String managementDashboardName,
+            Pageable pageable,
+            Function<String, Page<User>> userListFetcher // approve/request/reject 중 하나
+    ) {
+        Page<User> users = userListFetcher.apply(managementDashboardName);
+        ManagementDashboard dashboard = findByPageName(managementDashboardName);
+
+        if (validInitialManager(dashboard)) {
+            return users.map(ApproveUserListForInitialManagerResponseDto::new);
+        } else {
+            return users.map(ApproveUserListForManagerResponseDto::new);
+        }
+    }
+
+
 
 
 }
