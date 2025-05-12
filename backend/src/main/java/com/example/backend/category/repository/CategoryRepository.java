@@ -16,4 +16,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     // 관리 페이지에 속한 카테고리 페이징 조회
     Page<Category> findByManagementDashboardId(Long managementDashboardId, Pageable pageable);
+
+    // 관리 페이지 내 카테고리 이름 중복 체크 추가
+    boolean existsByNameAndManagementDashboardId(String name, Long managementDashboardId);
+
 }

@@ -35,7 +35,8 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api/v1/management/**" //테스트용 인증 열어두기
+                                "/api/v1/management/**", //테스트용 인증 열어두기
+                                "/api/v1/categories/**" //TODO 테스트 후 닫기, 테스트용 인증 열어둔 상태
 
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
