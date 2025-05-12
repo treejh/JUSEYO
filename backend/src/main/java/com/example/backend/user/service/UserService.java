@@ -102,13 +102,13 @@ public class UserService {
     }
 
     public void validateEmail(String email) {
-        if (!userRepository.findByEmail(email).isPresent()) {
+        if (userRepository.findByEmail(email).isPresent()) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
         }
     }
 
     public void validatePhoneNumber(String phone) {
-        if (!userRepository.findByPhoneNumber(phone).isPresent()) {
+        if (userRepository.findByPhoneNumber(phone).isPresent()) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
         }
     }
