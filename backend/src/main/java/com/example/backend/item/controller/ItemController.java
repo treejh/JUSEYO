@@ -5,6 +5,7 @@ import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.service.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class ItemController {
         return service.createItem(dto);
     }
 
+    @PreAuthorize("hasRole('MANAGER')") // 매니저만 수정가능
     @PutMapping("/{id}")
     public ItemResponseDto update(@PathVariable Long id, @RequestBody ItemRequestDto dto) {
         return service.updateItem(id, dto);

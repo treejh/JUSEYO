@@ -10,8 +10,10 @@ import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
+import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.entity.User;
+import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
@@ -27,6 +29,8 @@ public class ItemService {
     private final ManagementDashboardRepository mgmtRepo;
     private static final SecureRandom RNG = new SecureRandom();
     private static final String ALPHANUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private final UserRepository userRepo;
+    private final TokenService tokenService;
 
     private String generateSerial(int length) {
         StringBuilder sb = new StringBuilder(length);
@@ -56,11 +60,13 @@ public class ItemService {
         Item entity = Item.builder()
                 .name(dto.getName())
                 .serialNumber(serial)
+                .minimumQuantity(dto.getMinimumQuantity())
                 .totalQuantity(dto.getTotalQuantity())
                 .availableQuantity(dto.getAvailableQuantity())
                 .purchaseSource(dto.getPurchaseSource())
                 .location(dto.getLocation())
                 .isReturnRequired(dto.getIsReturnRequired())
+                .image(dto.getImage())
                 .category(category)
                 .managementDashboard(mgmt)
                 .build();
@@ -94,16 +100,28 @@ public class ItemService {
         return mapToDto(updated);
     }
 
+    // 자신이 소속 관리페이지의 단일 아이템 조회 가능
     @Transactional(readOnly = true)
     public ItemResponseDto getItem(Long id) {
-        return repo.findById(id)
+        Long userId = tokenService.getIdFromToken();
+        User me = userRepo.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
+        Long mgmtId = me.getManagementDashboard().getId();
+        return repo.findByIdAndManagementDashboardId(id, mgmtId)
                 .map(this::mapToDto)
-                .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
     }
 
+    // 자신이 소속 관리페이지의 모든 아이템 조회 가능
     @Transactional(readOnly = true)
     public List<ItemResponseDto> getAllItems() {
-        return repo.findAll().stream()
+        Long userId = tokenService.getIdFromToken();
+        User me = userRepo.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
+        Long mgmtId = me.getManagementDashboard().getId();
+        return repo.findAllByManagementDashboardId(mgmtId).stream()
                 .map(this::mapToDto)
                 .toList();
     }
@@ -121,11 +139,13 @@ public class ItemService {
                 .id(e.getId())
                 .name(e.getName())
                 .serialNumber(e.getSerialNumber())
+                .minimumQuantity(e.getMinimumQuantity())
                 .totalQuantity(e.getTotalQuantity())
                 .availableQuantity(e.getAvailableQuantity())
                 .purchaseSource(e.getPurchaseSource())
                 .location(e.getLocation())
                 .isReturnRequired(e.getIsReturnRequired())
+                .image(e.getImage())
                 .categoryId(e.getCategory().getId())
                 .managementId(e.getManagementDashboard().getId())
                 .createdAt(e.getCreatedAt())

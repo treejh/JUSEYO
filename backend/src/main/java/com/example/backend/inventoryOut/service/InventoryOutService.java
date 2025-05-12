@@ -8,6 +8,12 @@ import com.example.backend.inventoryOut.entity.InventoryOut;
 import com.example.backend.inventoryOut.repository.InventoryOutRepository;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
+import com.example.backend.supplyRequest.entity.SupplyRequest;
+import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
+import com.example.backend.category.entity.Category;
+import com.example.backend.category.repository.CategoryRepository;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.enums.Outbound;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,21 +24,35 @@ import org.springframework.transaction.annotation.Transactional;
 public class InventoryOutService {
     private final InventoryOutRepository outRepo;
     private final ItemRepository itemRepo;
+    private final SupplyRequestRepository supplyRequestRepo;
+    private final CategoryRepository categoryRepo;
+    private final ManagementDashboardRepository mgmtRepo;
 
     @Transactional
     public InventoryOutResponseDto removeOutbound(InventoryOutRequestDto dto) {
-        // 1) 아이템 조회
+        // 0) SupplyRequest, Category, ManagementDashboard 조회
+        SupplyRequest req = supplyRequestRepo.findById(dto.getSupplyRequestId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
+        Category category = categoryRepo.findById(dto.getCategoryId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        // 1) Item 조회
         Item item = itemRepo.findById(dto.getItemId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
         // 2) 재고 충분 여부 검사
         if (item.getAvailableQuantity() < dto.getQuantity()) {
-            throw new IllegalArgumentException("Not enough inventory");
+            throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
         }
 
         // 3) 출고 내역 엔티티 생성 및 저장
         InventoryOut entity = InventoryOut.builder()
+                .supplyRequest(req)
                 .item(item)
+                .category(category)
+                .managementDashboard(mgmt)
                 .quantity(dto.getQuantity())
                 .outbound(Outbound.valueOf(dto.getOutbound()))
                 .build();
@@ -44,7 +64,10 @@ public class InventoryOutService {
         // 5) 응답 DTO 반환
         return InventoryOutResponseDto.builder()
                 .id(saved.getId())
+                .supplyRequestId(saved.getSupplyRequest().getId())
                 .itemId(saved.getItem().getId())
+                .categoryId(saved.getCategory().getId())
+                .managementId(saved.getManagementDashboard().getId())
                 .quantity(saved.getQuantity())
                 .outbound(saved.getOutbound().name())
                 .createdAt(saved.getCreatedAt())
