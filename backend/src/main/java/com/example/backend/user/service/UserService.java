@@ -14,11 +14,11 @@ import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
-import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.RoleService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.dto.request.AdminSignupRequestDto;
+import com.example.backend.user.dto.request.EmailVerificationRequest;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserPatchRequestDto;
@@ -29,12 +29,10 @@ import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties.Admin;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -497,6 +495,7 @@ public class UserService {
         return user.orElseThrow(() -> new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND));
     }
 
+    //이메일 관련 로직
     @Transactional
     public void findPasswordByEmail(String email){
         EmailMessage emailMessage = EmailMessage.builder()
@@ -508,9 +507,34 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(randomPassword));
         userRepository.save(user);
 
-        emailService.sendMail(emailMessage, "password",randomPassword);
+        emailService.sendPassword(emailMessage, "password",randomPassword);
 
     }
+
+    @Transactional
+    public void sendCertificationNumber(String email){
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(email)
+                .subject("[Juseyo] 인증번호 발급")
+                .build();
+        //이메일 중복 회원가입 불가
+        validateEmail(email);
+
+        emailService.sendCertificationNumber(emailMessage, "certificationNumber");
+
+    }
+
+    @Transactional
+    public void verifyEmailCode(EmailVerificationRequest emailVerificationRequest){
+        //이메일 중복 회원가입 불가
+        validateEmail(emailVerificationRequest.getEmail());
+        if(!emailService.verifiedCode(emailVerificationRequest.getEmail(),emailVerificationRequest.getAuthCode())){
+            throw new BusinessLogicException(ExceptionCode.EMAIL_VERIFICATION_FAILED);
+        };
+
+    }
+
+
 
 
 

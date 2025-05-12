@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class FindPwToEmailRequestDto {
+public class EmailRequestDto {
 
     @NotBlank
     @Email

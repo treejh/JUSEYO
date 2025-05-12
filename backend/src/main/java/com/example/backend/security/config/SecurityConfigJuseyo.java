@@ -42,7 +42,7 @@ public class SecurityConfigJuseyo {
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
                         //회원
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/findPassword").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request","/api/v1/users/approve/**","/api/v1/users/reject/**")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능

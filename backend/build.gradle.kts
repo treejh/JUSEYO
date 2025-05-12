@@ -65,6 +65,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-mail")
 
 
+    //redis 의존성
+    implementation ("org.springframework.boot:spring-boot-starter-data-redis")
+
+
 
 
 
