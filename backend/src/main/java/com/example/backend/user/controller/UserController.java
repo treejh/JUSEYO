@@ -7,6 +7,7 @@ import com.example.backend.managementDashboard.service.ManagementDashboardServic
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.dto.request.AdminSignupRequestDto;
+import com.example.backend.user.dto.request.FindPwToEmailRequestDto;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserLoginRequestDto;
@@ -364,13 +365,12 @@ public class UserController {
             summary = "비밀번호 찾기",
             description = "비밀번호를 업데이트 한 후 결과를 반환"
     )
-    public ResponseEntity<ApiResponse<String>> findPassword(@RequestParam String email) {
+    public ResponseEntity<?> findPassword(@Valid @RequestBody FindPwToEmailRequestDto findPwToEmailRequestDto) {
         // 비밀번호 찾기 로직을 수행하고, 해당 결과를 response로 반환
-        String response = userService.findPassword(email);
+       userService.findPasswordByEmail(findPwToEmailRequestDto.getEmail());
 
-        // 비밀번호 찾기 성공 메시지와 데이터를 포함하는 ApiResponse 생성
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "비밀번호 재설정 ", response),
+                ApiResponse.of(HttpStatus.OK.value(), "비밀번호 재설정 이메일 전송"),
                 HttpStatus.OK
         );
     }

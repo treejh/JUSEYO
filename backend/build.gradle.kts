@@ -61,6 +61,10 @@ dependencies {
     //Valid
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
+    //이메일 의존성 추가
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+
+
 
 
 

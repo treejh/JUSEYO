@@ -5,6 +5,8 @@ package com.example.backend.user.service;
 import com.example.backend.department.entity.Department;
 import com.example.backend.department.repository.DepartmentRepository;
 import com.example.backend.department.service.DepartmentService;
+import com.example.backend.email.entity.EmailMessage;
+import com.example.backend.email.service.EmailService;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;
 import com.example.backend.enums.Status;
@@ -52,6 +54,7 @@ public class UserService {
 
     private final RoleService roleService;
     private final DepartmentService departmentService;
+    private final EmailService emailService;
 
 
     private final PasswordEncoder passwordEncoder;
@@ -492,6 +495,21 @@ public class UserService {
     public User verifiedUser(long projectId) {
         Optional<User> user = userRepository.findById(projectId);
         return user.orElseThrow(() -> new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND));
+    }
+
+    @Transactional
+    public void findPasswordByEmail(String email){
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(email)
+                .subject("[Juseyo] 임시 비밀번호 발급")
+                .build();
+        User user = findByEmail(email);
+        String randomPassword = CreateRandomNumber.randomNumber();
+        user.setPassword(passwordEncoder.encode(randomPassword));
+        userRepository.save(user);
+
+        emailService.sendMail(emailMessage, "password",randomPassword);
+
     }
 
 
