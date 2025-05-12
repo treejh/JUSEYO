@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -27,12 +28,14 @@ public class InventoryInController {
     private final InventoryInService service;
 
     @Operation(summary = "입고 등록", description = "새로운 입고 내역을 등록합니다.")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping
     public InventoryInResponseDto addInbound(@RequestBody @Valid InventoryInRequestDto dto) {
         return service.addInbound(dto);
     }
 
     @Operation(summary = "입고 목록 조회", description = "입고 내역을 페이징 조회합니다. 필터로 입고 유형(Inbound)을 선택할 수 있습니다.")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping
     public Page<InventoryInResponseDto> getAllInbounds(
             @Parameter(description = "페이지 번호 (1부터 시작)", example = "1")
@@ -50,6 +53,7 @@ public class InventoryInController {
     }
 
     @Operation(summary = "입고 상세 조회", description = "입고 ID를 통해 단일 입고 내역을 조회합니다.")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/{id}")
     public InventoryInResponseDto getInventoryIn(
             @Parameter(description = "입고 ID", example = "1") @PathVariable(name = "id") Long id
