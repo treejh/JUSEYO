@@ -19,32 +19,31 @@ import java.util.List;
 public class ItemInstanceController {
     private final ItemInstanceService service;
 
-    // 1) 인스턴스 생성 (매니저만)
+    // (1) 개별 인스턴스 생성 - 매니저만
     @PreAuthorize("hasRole('MANAGER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ItemInstanceResponseDto create(
             @RequestBody CreateItemInstanceRequestDto dto
     ) {
-        return service.createInstance(dto.getItemId());
+        return service.createInstance(dto);
     }
 
-    //  조회는 로그인한 유저면 모두 가능
-    @PreAuthorize("isAuthenticated()")
+    // (2) 특정 아이템 인스턴스 조회 - 로그인한 모든 유저
     @GetMapping("/by-item/{itemId}")
-    public List<ItemInstanceResponseDto> listByItem(@PathVariable Long itemId) {
+    public List<ItemInstanceResponseDto> listByItem(
+            @PathVariable Long itemId
+    ) {
         return service.getByItem(itemId);
     }
 
-    // 3) 인스턴스 상태 변경 (매니저만)
+    // (3) 인스턴스 상태 변경 - 매니저만
     @PreAuthorize("hasRole('MANAGER')")
     @PatchMapping("/{instanceId}/status")
     public ItemInstanceResponseDto updateStatus(
             @PathVariable Long instanceId,
             @RequestBody UpdateItemInstanceStatusRequestDto dto
     ) {
-        return service.updateStatus(instanceId, dto.getStatus());
+        return service.updateStatus(instanceId, dto);
     }
-
-
 }

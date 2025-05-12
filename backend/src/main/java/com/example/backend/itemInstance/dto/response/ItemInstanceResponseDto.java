@@ -1,5 +1,6 @@
 package com.example.backend.itemInstance.dto.response;
 
+import com.example.backend.enums.Outbound;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,7 +12,9 @@ public class ItemInstanceResponseDto {
     private Long id;
     private Long itemId;
     private String instanceCode;
-    private InstanceStatus status;
+    private Outbound status;
+    private String image;
+    private String finalImage;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }

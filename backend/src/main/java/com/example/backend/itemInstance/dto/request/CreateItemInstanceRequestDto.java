@@ -11,4 +11,6 @@ import lombok.Setter;
 public class CreateItemInstanceRequestDto {
     @NotNull
     private Long itemId;
+
+    private String image;
 }

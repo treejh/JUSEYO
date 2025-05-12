@@ -3,14 +3,7 @@ package com.example.backend.itemInstance.entity;
 import com.example.backend.auditable.Auditable;
 import com.example.backend.enums.Outbound;
 import com.example.backend.item.entity.Item;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,26 +22,27 @@ import lombok.experimental.SuperBuilder;
 public class ItemInstance extends Auditable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private String id;
+    private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "outbound_type", nullable = false)
-    private Outbound outboundout; // 승인 상태
+    @Column(name = "status", nullable = false, length = 20)
+    private Outbound status; // 현재상태
 
 
     @Column(name = "image", nullable = false)
     private String image; //비품 이미지
 
-    @Column(name = "fina_image", nullable = false)
-    private String finalImage; //비품 이미지
+    @Column(name = "final_image", nullable = false)
+    private String finalImage; //비품 최종 이미지
 
     @ManyToOne
     @JoinColumn(name = "item_id")
     private Item item;
 
-
-
-
+    // 예: “PEN-001-a1b2c3d4”
+    @Column(name = "instance_code", nullable = false, length = 50, unique = true)
+    private String instanceCode;
 
 }
