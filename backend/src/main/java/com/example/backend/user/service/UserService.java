@@ -480,6 +480,7 @@ public class UserService {
         userRepository.delete(adminUser);
     }
 
+
     @Transactional
     public void deleteUser(){
         User loginUser = findById(tokenService.getIdFromToken());

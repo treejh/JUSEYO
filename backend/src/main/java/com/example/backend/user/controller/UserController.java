@@ -422,6 +422,17 @@ public class UserController {
 
     }
 
+
+
+        userService.deleteAdmin();
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "amdin 유저 삭제 완료"),
+                HttpStatus.OK
+        );
+
+    }
+
     @DeleteMapping()
     @Operation(
             summary = "유저 삭제(manager, user)  구현  ",
