@@ -2,6 +2,8 @@ package com.example.backend.item.service;
 
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import com.example.backend.item.dto.request.ItemRequestDto;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
@@ -12,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.security.SecureRandom;
+
 
 import java.util.List;
 
@@ -21,13 +25,25 @@ public class ItemService {
     private final ItemRepository repo;
     private final CategoryRepository categoryRepo;
     private final ManagementDashboardRepository mgmtRepo;
+    private static final SecureRandom RNG = new SecureRandom();
+    private static final String ALPHANUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    private String generateSerial(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(ALPHANUM.charAt(RNG.nextInt(ALPHANUM.length())));
+        }
+        return sb.toString();
+    }
 
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
-        // ① 시리얼 넘버 결정
+        // ① 시리얼 넘버 결정 (빈 값이면 15자리 랜덤 + 중복 체크)
         String serial = dto.getSerialNumber();
         if (serial == null || serial.isBlank()) {
-            serial = RandomStringUtils.randomAlphanumeric(15);
+            do {
+                serial = generateSerial(15);
+            } while (repo.existsBySerialNumber(serial));
         }
 
         // ② 연관 엔티티 조회
@@ -57,7 +73,7 @@ public class ItemService {
     @Transactional
     public ItemResponseDto updateItem(Long id, ItemRequestDto dto) {
         Item entity = repo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
         // category & management 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
@@ -90,6 +106,14 @@ public class ItemService {
         return repo.findAll().stream()
                 .map(this::mapToDto)
                 .toList();
+    }
+
+    @Transactional
+    public void deleteItem(Long id) {
+        if (!repo.existsById(id)) {
+            throw new IllegalArgumentException("Item not found");
+        }
+        repo.deleteById(id);
     }
 
     private ItemResponseDto mapToDto(Item e) {

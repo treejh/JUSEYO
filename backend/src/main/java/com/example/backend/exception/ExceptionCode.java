@@ -17,8 +17,13 @@ public enum ExceptionCode {
     ALREADY_HAS_EMAIL(404,"이미 존재하는 이메일입니다."),
     ALREADY_HAS_PHONENUMBER(404,"이미 존재하는 전화번호입니다."),
     INVALID_PASSWORD(404,"비밀번호가 일치하지 않습니다."),
-    AlREADY_HAS_DEPARTMENT(404, "이미 존재하는 부서입니다.");
-
+    AlREADY_HAS_DEPARTMENT(404, "이미 존재하는 부서입니다."),
+    ITEM_NOT_FOUND(404, "비품을 찾을 수 없습니다."),
+    INVENTORY_IN_NOT_FOUND(404, "입고내역을 찾을 수 없습니다."),
+    INVENTORY_OUT_NOT_FOUND(404, "출고내역을 찾을 수 없습니다."),
+    SUPPLY_REQUEST_NOT_FOUND(404, "비품요청서를 찾을 수 없습니다."),
+    INSUFFICIENT_STOCK(400, "비품 보유 수량이 부족합니다."),
+    ;
 
 
     @Getter

@@ -1,5 +1,6 @@
 package com.example.backend.supplyRequest.controller;
 
+import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
 import com.example.backend.supplyRequest.service.SupplyRequestService;
@@ -24,4 +25,12 @@ public class SupplyRequestController {
     public List<SupplyRequestResponseDto> list() {
         return service.getAllRequests();
     }
+
+    @PatchMapping("/{id}/status")
+    public SupplyRequestResponseDto changeStatus(
+            @PathVariable Long id,
+            @RequestParam ApprovalStatus status) {
+        return service.updateRequestStatus(id, status);
+    }
+
 }
