@@ -6,6 +6,7 @@ import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.dto.request.AdminSignupRequestDto;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserLoginRequestDto;
@@ -59,6 +60,64 @@ public class UserController {
 
         return new ResponseEntity<>("일반 회원 생성 성공",HttpStatus.CREATED);
     }
+
+
+    //Initial Manager signup
+    @PostMapping("/signup/manager/initial")
+    @Operation(
+            summary = "회원 가입 (최초 매니저)",
+            description = "최초 매니저(Initial Manager)의 회원가입을 처리합니다."
+    )
+    public ResponseEntity signupInitialManager(@Valid @RequestBody InitialManagerSignupRequestDto initialManagerSignupRequestDto) {
+        userService.createInitialManager(initialManagerSignupRequestDto);
+        return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
+
+
+    }
+
+    //Manager signup
+    @PostMapping("/signup/manager")
+    @Operation(
+            summary = "회원 가입 (일반 매니저)",
+            description = "일반 매니저(Initial Manager)의 회원가입을 처리합니다."
+    )
+    public ResponseEntity signupManager(@Valid @RequestBody ManagerSignupRequestDto managerSignupRequestDto) {
+        userService.createManager(managerSignupRequestDto);
+        return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
+
+    }
+
+    //admin signup
+    @PostMapping("/signup/admin")
+    @Operation(
+            summary = "회원 가입 ( 최고 관리자 )",
+            description = "최고 관리자(Admin)의 회원가입을 처리합니다."
+    )
+    public ResponseEntity signupAdmin(@Valid @RequestBody AdminSignupRequestDto adminSignupRequestDto) {
+        userService.createAdmin(adminSignupRequestDto);
+        return new ResponseEntity<>(" admin( 최고 관리자 ) 생성 성공", HttpStatus.CREATED);
+
+    }
+
+    @GetMapping("/admin")
+    @Operation(
+            summary = "최고 관리자 ( admin ) 리스트 조회 ",
+            description = "존재하는 최고 관리자 리스트를 조회합니다. "
+    )
+    public ResponseEntity getAdminList(
+                                       @RequestParam(name = "page", defaultValue = "1") int page,
+                                       @RequestParam(name="size", defaultValue = "10") int size) {
+
+       Page<User> approveUserList = userService.getAdminList(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), " admin( 최고 관리자 ) 리스트 조회 성공", approveUserList),
+                HttpStatus.OK
+        );
+
+
+    }
+
+
 
 
 
@@ -273,35 +332,6 @@ public class UserController {
 
 
 
-
-
-
-
-
-    //Initial Manager signup
-    @PostMapping("/signup/manager/initial")
-    @Operation(
-            summary = "회원 가입 (최초 매니저)",
-            description = "최초 매니저(Initial Manager)의 회원가입을 처리합니다."
-    )
-    public ResponseEntity signupInitialManager(@Valid @RequestBody InitialManagerSignupRequestDto initialManagerSignupRequestDto) {
-        userService.createInitialManager(initialManagerSignupRequestDto);
-        return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
-
-
-    }
-
-    //Manager signup
-    @PostMapping("/signup/manager")
-    @Operation(
-            summary = "회원 가입 (일반 매니저)",
-            description = "일반 매니저(Initial Manager)의 회원가입을 처리합니다."
-    )
-    public ResponseEntity signupManager(@Valid @RequestBody ManagerSignupRequestDto managerSignupRequestDto) {
-        userService.createManager(managerSignupRequestDto);
-        return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
-
-    }
 
     @PostMapping("/findPassword")
     @Operation(

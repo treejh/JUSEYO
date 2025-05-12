@@ -15,6 +15,7 @@ import com.example.backend.managementDashboard.service.ManagementDashboardServic
 import com.example.backend.role.RoleService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.dto.request.AdminSignupRequestDto;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties.Admin;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -115,6 +117,39 @@ public class UserService {
         return userRepository.save(manager);
     }
 
+    @Transactional
+    public User createAdmin(AdminSignupRequestDto adminSignupRequestDto) {
+
+        Role role = roleService.findRoleByRoleType(RoleType.ADMIN);
+
+        User manager =User.builder()
+                .email(adminSignupRequestDto.getEmail())
+                .name(adminSignupRequestDto.getName())
+                .password(passwordEncoder.encode(adminSignupRequestDto.getPassword()))
+                .phoneNumber(adminSignupRequestDto.getPhoneNumber())
+                .role(role)
+                .status(Status.ACTIVE)
+                .approvalStatus(ApprovalStatus.APPROVED)
+                .build();
+        userValid(manager);
+
+        return userRepository.save(manager);
+    }
+
+    public Page<User> getAdminList(Pageable pageable) {
+
+        Role role = roleService.findRoleByRoleType(RoleType.ADMIN);
+        // admin이 아닌 경우 예외 처리
+        if (!isAdmin()) {
+            throw new BusinessLogicException(ExceptionCode.NOT_ADMIN);
+        }
+
+        return userRepository.findByRole(role,pageable);
+
+
+    }
+
+
 
     // 매니저가 관리페이지에 요청된 권한 리스트들을 조회하는 공통 로직
     private Page<User> getUserListByApprovalStatus(String managementDashboardName, ApprovalStatus approvalStatus, Pageable pageable) {
@@ -136,6 +171,7 @@ public class UserService {
         return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
                 managementDashboard, approvalStatus, pageable, role);
     }
+
 
     // 승인된 유저 리스트 가져오기
     public Page<User> getApprovedList(String managementDashboardName, Pageable pageable) {
