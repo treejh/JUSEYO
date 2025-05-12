@@ -4,6 +4,7 @@ import com.example.backend.enums.RoleType;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -172,6 +173,15 @@ public class JwtTokenizer {
             throw new IllegalArgumentException("JWT토큰에서 userId를 찾을 수 없습니다.");
         }
 
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser().setSigningKey(accessSecret).parseClaimsJws(token); // 유효한 JWT인지 확인
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false; // 예외 발생 시 토큰이 유효하지 않음
+        }
     }
 
 
