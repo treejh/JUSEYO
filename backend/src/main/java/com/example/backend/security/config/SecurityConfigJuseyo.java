@@ -52,6 +52,7 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/**").hasRole("MANAGER")
 
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가

@@ -363,14 +363,14 @@ public class UserController {
     @PostMapping("/findPassword")
     @Operation(
             summary = "비밀번호 찾기",
-            description = "비밀번호를 업데이트 한 후 결과를 반환"
+            description = "비밀번호를 업데이트 한 후 이메일로 결과를 반환"
     )
     public ResponseEntity<?> findPassword(@Valid @RequestBody FindPwToEmailRequestDto findPwToEmailRequestDto) {
         // 비밀번호 찾기 로직을 수행하고, 해당 결과를 response로 반환
        userService.findPasswordByEmail(findPwToEmailRequestDto.getEmail());
 
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "비밀번호 재설정 이메일 전송"),
+                ApiResponse.of(HttpStatus.OK.value(), "임시 비밀번호 이메일 전송 완료"),
                 HttpStatus.OK
         );
     }
