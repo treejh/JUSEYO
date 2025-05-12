@@ -10,9 +10,11 @@ import com.example.backend.user.dto.request.AdminSignupRequestDto;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserLoginRequestDto;
+import com.example.backend.user.dto.request.UserPatchRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
+import com.example.backend.user.dto.response.UserProfileResponseDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import com.example.backend.utils.dto.ApiResponse;
@@ -29,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -113,9 +116,64 @@ public class UserController {
                 ApiResponse.of(HttpStatus.OK.value(), " admin( 최고 관리자 ) 리스트 조회 성공", approveUserList),
                 HttpStatus.OK
         );
+    }
 
+    @PatchMapping("/name")
+    @Operation(
+            summary = "유저 이름 수정 ",
+            description = "로그인한 유저의 이름을 수정할 수 있습니다. "
+    )
+    public ResponseEntity updateName(@Valid @RequestBody UserPatchRequestDto.changeName changeNameDto) {
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserName(changeNameDto));
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), " 이름 수정 성공 ", userProfileResponseDto),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping("/email")
+    @Operation(
+            summary = "유저 이메일 수정  ",
+            description = "로그인한 유저의 이메일을 수정할 수 있습니다. "
+    )
+    public ResponseEntity updateEmail(@Valid @RequestBody UserPatchRequestDto.changeEmail changeEmailDto) {
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserEmail(changeEmailDto));
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), " 이메일 수정 성공 ", userProfileResponseDto),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping("/password")
+    @Operation(
+            summary = "유저 비밀번호 수정  ",
+            description = "로그인한 유저의 비밀번호를 수정할 수 있습니다. "
+    )
+    public ResponseEntity updatePassword(@Valid @RequestBody UserPatchRequestDto.changePassword changePassword) {
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updatePassword(changePassword));
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), " 비밀번호 수정 성공 ",userProfileResponseDto),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping("/phoneNumber")
+    @Operation(
+            summary = "유저 핸드폰 번호 수정  ",
+            description = "로그인한 유저의 핸드폰 번호를 수정할 수 있습니다. "
+    )
+    public ResponseEntity updatePhoneNumber(@Valid @RequestBody UserPatchRequestDto.changePhoneNumber changePhoneNumberDto) {
+
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserPhoneNumber(changePhoneNumberDto));
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호 수정 성공", userProfileResponseDto),
+                HttpStatus.OK
+        );
 
     }
+
 
 
 

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,7 +19,9 @@ public class AdminSignupRequestDto {
     @Email
     private String email;
 
-    @NotBlank
+    @NotEmpty(message = "이름은 필수입니다.")
+    @Size(max = 20, message = "이름은 최대 20자까지 가능합니다.")
+    @Pattern(regexp = "^[가-힣]+$", message = "이름은 한글만 입력 가능합니다.")
     private String name;
 
 

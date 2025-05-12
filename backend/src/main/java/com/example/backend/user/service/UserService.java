@@ -18,10 +18,12 @@ import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.dto.request.AdminSignupRequestDto;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
+import com.example.backend.user.dto.request.UserPatchRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -146,8 +148,8 @@ public class UserService {
 
         return userRepository.findByRole(role,pageable);
 
-
     }
+
 
 
 
@@ -313,6 +315,48 @@ public class UserService {
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }
 
+    //수정 로직
+
+    public User updateUserName(UserPatchRequestDto.changeName nameDto){
+        User user = findById(tokenService.getIdFromToken());
+        user.setName(nameDto.getName());
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    public User updateUserEmail(UserPatchRequestDto.changeEmail emailDto){
+        User user = findById(tokenService.getIdFromToken());
+        user.setEmail(emailDto.getEmail());
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    public User updateUserPhoneNumber(UserPatchRequestDto.changePhoneNumber phoneNumberDto){
+        User user = findById(tokenService.getIdFromToken());
+        user.setPhoneNumber(phoneNumberDto.getPhoneNumber());
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    public User updatePassword(UserPatchRequestDto.changePassword changePasswordDto){
+        User user = findById(tokenService.getIdFromToken());
+
+        //비밀번호 다르면 변경 불가
+        pwValidation(changePasswordDto.getBeforePassword(),user.getPassword());
+
+        user.setPassword(passwordEncoder.encode(changePasswordDto.getChangePassword()));
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+
+    public void pwValidation(String beforePassword, String currentPassword){
+        if (!passwordEncoder.matches(beforePassword, currentPassword)) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_PASSWORD);
+        }
+    }
+
+
 
 
     private boolean isAdmin() {
@@ -399,20 +443,6 @@ public class UserService {
         return user.orElseThrow(() -> new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND));
     }
 
-//        // Update
-//        public User updateUser(User user) {
-//            User findUser = verifiedUser(user.getProjectId());
-//            //Optional.ofNullable(user.getMemberId()).ifPresent(findUser::setMemberId);
-//            Optional.ofNullable(user.getRecruitmentSize()).ifPresent(findUser::setRecruitmentSize);
-//            Optional.ofNullable(user.getTitle()).ifPresent(findUser::setTitle);
-//            Optional.ofNullable(user.getUserContent()).ifPresent(findUser::setUserContent);
-//            Optional.ofNullable(user.getUserGoal()).ifPresent(findUser::setUserGoal);
-//            Optional.ofNullable(user.getUserPartner()).ifPresent(findUser::setUserPartner);
-//            Optional.ofNullable(user.getRecruitmentPeriod()).ifPresent(findUser::setRecruitmentPeriod);
-//            Optional.ofNullable(user.getExpectedDuration()).ifPresent(findUser::setExpectedDuration);
-//
-//            return userRepository.save(findUser);
-//        }
 
         // Delete
         public void deleteUser(long ProjectId) {
