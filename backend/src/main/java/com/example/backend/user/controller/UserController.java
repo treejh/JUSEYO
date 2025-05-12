@@ -376,17 +376,23 @@ public class UserController {
 
     //인증번호 발급
     @PostMapping("/emails/certificationNumber")
+    @Operation(
+            summary = "이메일로 인증번호 전송",
+            description = "사용자가 제공한 이메일 주소로 인증번호를 전송합니다. 인증번호는 이메일 인증을 위한 코드로 사용됩니다."
+    )
     public ResponseEntity sendCertificationNumberMail(@Valid @RequestBody EmailRequestDto emailRequestDto) {
         userService.sendCertificationNumber(emailRequestDto.getEmail());
-
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "인증번호 이메일 전송 완료 "),
                 HttpStatus.OK
         );
     }
 
-    //인증번호 발급
     @PostMapping("/emails/verification")
+    @Operation(
+            summary = "이메일 인증 확인",
+            description = "사용자가 입력한 인증코드를 확인하여 이메일 인증을 진행합니다. 인증번호가 유효한 경우 인증이 완료됩니다."
+    )
     public ResponseEntity sendCertificationNumberValid(@Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
         userService.verifyEmailCode(emailVerificationRequest);
 
@@ -395,9 +401,6 @@ public class UserController {
                 HttpStatus.OK
         );
     }
-
-
-
 
 
 

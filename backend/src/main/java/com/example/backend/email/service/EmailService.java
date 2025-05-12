@@ -65,7 +65,7 @@ public class EmailService {
         String certificationNumber = CreateRandomNumber.randomNumber();
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
-        redisService.saveData(AUTH_CODE_PREFIX + emailMessage.getSubject(),
+        redisService.saveData(AUTH_CODE_PREFIX + emailMessage.getTo(),
                 certificationNumber, Duration.ofMillis(this.authCodeExpirationMillis));
 
         try {
