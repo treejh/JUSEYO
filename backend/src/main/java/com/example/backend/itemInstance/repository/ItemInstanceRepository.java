@@ -1,0 +1,12 @@
+package com.example.backend.itemInstance.repository;
+
+import com.example.backend.itemInstance.entity.ItemInstance;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long> {
+    List<ItemInstance> findAllByItemId(Long itemId);  // 특정 Item 소속 인스턴스 조회
+}
