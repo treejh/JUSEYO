@@ -3,6 +3,7 @@ package com.example.backend.user.service;
 
 
 import com.example.backend.department.entity.Department;
+import com.example.backend.department.repository.DepartmentRepository;
 import com.example.backend.department.service.DepartmentService;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;
@@ -10,20 +11,28 @@ import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.RoleService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.dto.request.AdminSignupRequestDto;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
+import com.example.backend.user.dto.request.UserPatchRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
+import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
+import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties.Admin;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,9 +47,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ManagementDashboardRepository managementDashboardRepository;
+    private final DepartmentRepository departmentRepository;
+
     private final RoleService roleService;
-    private final ManagementDashboardService managementDashboardService;
     private final DepartmentService departmentService;
+
 
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
@@ -49,7 +61,8 @@ public class UserService {
     public User createUser(UserSignRequestDto userSignRequestDto) {
 
         Role role = roleService.findRoleByRoleType(RoleType.USER);
-        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(userSignRequestDto.getManagementPageName());
+        ManagementDashboard managementDashboard = findByPageName(userSignRequestDto.getManagementPageName());
+
         Department department =departmentService.findDepartmentByName(managementDashboard.getId(),
                 userSignRequestDto.getDepartmentName());
 
@@ -95,7 +108,7 @@ public class UserService {
     public User createManager(ManagerSignupRequestDto managerSignupRequestDto) {
 
         Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
-        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managerSignupRequestDto.getManagementPageName());
+        ManagementDashboard managementDashboard = findByPageName(managerSignupRequestDto.getManagementPageName());
 
         User manager =User.builder()
                 .email(managerSignupRequestDto.getEmail())
@@ -113,10 +126,43 @@ public class UserService {
         return userRepository.save(manager);
     }
 
+    @Transactional
+    public User createAdmin(AdminSignupRequestDto adminSignupRequestDto) {
+
+        Role role = roleService.findRoleByRoleType(RoleType.ADMIN);
+
+        User manager =User.builder()
+                .email(adminSignupRequestDto.getEmail())
+                .name(adminSignupRequestDto.getName())
+                .password(passwordEncoder.encode(adminSignupRequestDto.getPassword()))
+                .phoneNumber(adminSignupRequestDto.getPhoneNumber())
+                .role(role)
+                .status(Status.ACTIVE)
+                .approvalStatus(ApprovalStatus.APPROVED)
+                .build();
+        userValid(manager);
+
+        return userRepository.save(manager);
+    }
+
+    public Page<User> getAdminList(Pageable pageable) {
+
+        Role role = roleService.findRoleByRoleType(RoleType.ADMIN);
+        // admin이 아닌 경우 예외 처리
+        if (!isAdmin()) {
+            throw new BusinessLogicException(ExceptionCode.NOT_ADMIN);
+        }
+
+        return userRepository.findByRole(role,pageable);
+
+    }
+
+
+
 
     // 매니저가 관리페이지에 요청된 권한 리스트들을 조회하는 공통 로직
     private Page<User> getUserListByApprovalStatus(String managementDashboardName, ApprovalStatus approvalStatus, Pageable pageable) {
-        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
+        ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
         Role role = roleService.findRoleByRoleType(RoleType.USER);
 
         // admin은 모든 유저를 조회할 수 있어야 함
@@ -135,6 +181,7 @@ public class UserService {
                 managementDashboard, approvalStatus, pageable, role);
     }
 
+
     // 승인된 유저 리스트 가져오기
     public Page<User> getApprovedList(String managementDashboardName, Pageable pageable) {
         return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.APPROVED, pageable);
@@ -152,7 +199,7 @@ public class UserService {
 
 
     private Page<User> getManagerListByApprovalStatus(String managementDashboardName, ApprovalStatus approvalStatus, Pageable pageable) {
-        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
+        ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
         Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
 
         // admin은 모든 유저를 조회할 수 있어야 함
@@ -275,6 +322,75 @@ public class UserService {
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }
 
+    //수정 로직
+
+    @Transactional
+    public User updateUserName(UserPatchRequestDto.changeName nameDto){
+        User user = findById(tokenService.getIdFromToken());
+        user.setName(nameDto.getName());
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateUserEmail(UserPatchRequestDto.changeEmail emailDto){
+        User user = findById(tokenService.getIdFromToken());
+        user.setEmail(emailDto.getEmail());
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateUserPhoneNumber(UserPatchRequestDto.changePhoneNumber phoneNumberDto){
+        User user = findById(tokenService.getIdFromToken());
+        user.setPhoneNumber(phoneNumberDto.getPhoneNumber());
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateUserDepartment(Long departmentId){
+        User user = findById(tokenService.getIdFromToken());
+
+        Department changeDepartment = departmentRepository.findById(departmentId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.DEPARTMENT_NOT_FOUND));
+
+        //해당 부서가, 유저의 관리페이지에 존재하는 부서인지 확인해야함
+
+        //1. 현재 로그인한 유저의 관리 페이지
+        ManagementDashboard loginUsermanagementDashboard = user.getManagementDashboard();
+
+        //2. 해당 부서의 관리 페이지가, 유저의 관리 페이지와 같지 않다면, 해당 관리 페이지에 속한 부서가 아니라는 뜻
+        if(!changeDepartment.getManagementDashboard().equals(loginUsermanagementDashboard)){
+            throw new BusinessLogicException(ExceptionCode.DEPARTMENT_NOT_IN_DASHBOARD);
+        }
+
+        user.setDepartment(changeDepartment);
+        userRepository.save(user);
+        user.setModifiedAt(LocalDateTime.now());
+
+        return userRepository.save(user);
+    }
+
+    public User updatePassword(UserPatchRequestDto.changePassword changePasswordDto){
+        User user = findById(tokenService.getIdFromToken());
+
+        //비밀번호 다르면 변경 불가
+        pwValidation(changePasswordDto.getBeforePassword(),user.getPassword());
+
+        user.setPassword(passwordEncoder.encode(changePasswordDto.getChangePassword()));
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+
+    public void pwValidation(String beforePassword, String currentPassword){
+        if (!passwordEncoder.matches(beforePassword, currentPassword)) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_PASSWORD);
+        }
+    }
+
+
 
 
     private boolean isAdmin() {
@@ -284,11 +400,18 @@ public class UserService {
 
     //현재 로그인한 유저가 매니저인지 확인하는 메서드
     //접근 권한도 매니저로만 주긴 할거임 ㅇㅇ
-    private void validManager(){
+    public void validManager(){
         if(!tokenService.getRoleFromToken().getRole().equals(RoleType.MANAGER)){
             throw new BusinessLogicException(ExceptionCode.NOT_MANAGER);
         }
     }
+
+    public void validateUserHasManagement() {
+        if (findById(tokenService.getIdFromToken()).getManagementDashboard() != null) {
+            throw new BusinessLogicException(ExceptionCode.USER_HAS_MANAGEMENT_DASHBOARD);
+        }
+    }
+
 
 
     //파라미터로 받은 유저가 매니저인지 확인하는 메서드
@@ -320,16 +443,21 @@ public class UserService {
         return true;
     }
 
+    //현재 로그인한 유저가, 해당 페이지에 존재하는 최초 매니저가 맞는지 확인
     public boolean validInitialManager(ManagementDashboard managementDashboard){
         User user = userRepository.findByIdAndManagementDashboard(tokenService.getIdFromToken(), managementDashboard)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD));
 
         return user.isInitialManager();
     }
-    
-    
 
-
+    //관리 페이지를 생성할때, 해당 유저가 최초 매니저인지 확인하는 메서드
+    public void validCreateInitialManager(){
+        if(!findById(tokenService.getIdFromToken()).isInitialManager()){
+            throw  new BusinessLogicException(ExceptionCode.NOT_INITIAL_MANAGER);
+        }
+    }
+    
 
 
     @Transactional
@@ -343,6 +471,22 @@ public class UserService {
         return randomPassword;
     }
 
+    @Transactional
+    public void deleteAdmin(){
+        User adminUser = findById(tokenService.getIdFromToken());
+        if (!isAdmin()) {
+            throw new BusinessLogicException(ExceptionCode.NOT_ADMIN);
+        }
+        userRepository.delete(adminUser);
+    }
+
+
+    @Transactional
+    public void deleteUser(){
+        User loginUser = findById(tokenService.getIdFromToken());
+        loginUser.setStatus(Status.STOP);
+        userRepository.save(loginUser);
+    }
 
 
     public User verifiedUser(long projectId) {
@@ -350,26 +494,8 @@ public class UserService {
         return user.orElseThrow(() -> new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND));
     }
 
-//        // Update
-//        public User updateUser(User user) {
-//            User findUser = verifiedUser(user.getProjectId());
-//            //Optional.ofNullable(user.getMemberId()).ifPresent(findUser::setMemberId);
-//            Optional.ofNullable(user.getRecruitmentSize()).ifPresent(findUser::setRecruitmentSize);
-//            Optional.ofNullable(user.getTitle()).ifPresent(findUser::setTitle);
-//            Optional.ofNullable(user.getUserContent()).ifPresent(findUser::setUserContent);
-//            Optional.ofNullable(user.getUserGoal()).ifPresent(findUser::setUserGoal);
-//            Optional.ofNullable(user.getUserPartner()).ifPresent(findUser::setUserPartner);
-//            Optional.ofNullable(user.getRecruitmentPeriod()).ifPresent(findUser::setRecruitmentPeriod);
-//            Optional.ofNullable(user.getExpectedDuration()).ifPresent(findUser::setExpectedDuration);
-//
-//            return userRepository.save(findUser);
-//        }
 
-        // Delete
-        public void deleteUser(long ProjectId) {
-            User user = verifiedUser(ProjectId);
-            userRepository.delete(user);
-        }
+
 
     public User findByEmail(String email){
         return userRepository.findByEmail(email).orElseThrow(
@@ -396,7 +522,7 @@ public class UserService {
 
     private void validatePhoneNumber(String phone) {
         if (userRepository.findByPhoneNumber(phone).isPresent()) {
-            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_PHONENUMBER);
+            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_PHONE_NUMBER);
         }
     }
 
@@ -412,6 +538,29 @@ public class UserService {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
         }
     }
+
+    public ManagementDashboard findByPageName(String name){
+        return  managementDashboardRepository.findByName(name).orElseThrow(
+                ()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND)
+        );
+    }
+
+    public Page<?> getUserStatusResponseList(
+            String managementDashboardName,
+            Pageable pageable,
+            Function<String, Page<User>> userListFetcher // approve/request/reject 중 하나
+    ) {
+        Page<User> users = userListFetcher.apply(managementDashboardName);
+        ManagementDashboard dashboard = findByPageName(managementDashboardName);
+
+        if (validInitialManager(dashboard)) {
+            return users.map(ApproveUserListForInitialManagerResponseDto::new);
+        } else {
+            return users.map(ApproveUserListForManagerResponseDto::new);
+        }
+    }
+
+
 
 
 }

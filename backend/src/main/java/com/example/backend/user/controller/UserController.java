@@ -6,12 +6,15 @@ import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.dto.request.AdminSignupRequestDto;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserLoginRequestDto;
+import com.example.backend.user.dto.request.UserPatchRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
+import com.example.backend.user.dto.response.UserProfileResponseDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import com.example.backend.utils.dto.ApiResponse;
@@ -27,7 +30,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -61,91 +66,171 @@ public class UserController {
     }
 
 
-
-    @GetMapping("/approve")
+    //Initial Manager signup
+    @PostMapping("/signup/manager/initial")
     @Operation(
-            summary = "해당 관리 페이지 사용이 승인된 유저",
-            description = "해당 관리 페이지 사용이 승인된 유저 리스트를 조회할 수 있습니다."
+            summary = "회원 가입 (최초 매니저)",
+            description = "최초 매니저(Initial Manager)의 회원가입을 처리합니다."
     )
-    public ResponseEntity<?> getApproveUser(@RequestParam String managementDashboardName
-                                                 ,@RequestParam(name = "page", defaultValue = "1") int page,
-                                                    @RequestParam(name="size", defaultValue = "10") int size) {
-        // dashboardName으로 필터링 등 필요한 로직 수행 가능
-        Page<User> approveUserList = userService.getApprovedList(managementDashboardName,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+    public ResponseEntity signupInitialManager(@Valid @RequestBody InitialManagerSignupRequestDto initialManagerSignupRequestDto) {
+        userService.createInitialManager(initialManagerSignupRequestDto);
+        return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
 
-        //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
-        ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
-        Page<?> responseList;
-        if (userService.validInitialManager(dashboard)) {
-            responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
-        } else {
-            responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
-        }
+
+    }
+
+    //Manager signup
+    @PostMapping("/signup/manager")
+    @Operation(
+            summary = "회원 가입 (일반 매니저)",
+            description = "일반 매니저(Initial Manager)의 회원가입을 처리합니다."
+    )
+    public ResponseEntity signupManager(@Valid @RequestBody ManagerSignupRequestDto managerSignupRequestDto) {
+        userService.createManager(managerSignupRequestDto);
+        return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
+
+    }
+
+    //admin signup
+    @PostMapping("/signup/admin")
+    @Operation(
+            summary = "회원 가입 ( 최고 관리자 )",
+            description = "최고 관리자(Admin)의 회원가입을 처리합니다."
+    )
+    public ResponseEntity signupAdmin(@Valid @RequestBody AdminSignupRequestDto adminSignupRequestDto) {
+        userService.createAdmin(adminSignupRequestDto);
+        return new ResponseEntity<>(" admin( 최고 관리자 ) 생성 성공", HttpStatus.CREATED);
+
+    }
+
+    @GetMapping("/admin")
+    @Operation(
+            summary = "최고 관리자 ( admin ) 리스트 조회 ",
+            description = "존재하는 최고 관리자 리스트를 조회합니다. "
+    )
+    public ResponseEntity getAdminList(
+                                       @RequestParam(name = "page", defaultValue = "1") int page,
+                                       @RequestParam(name="size", defaultValue = "10") int size) {
+
+       Page<User> approveUserList = userService.getAdminList(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "조회 성공", responseList),
+                ApiResponse.of(HttpStatus.OK.value(), " admin( 최고 관리자 ) 리스트 조회 성공", approveUserList),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping("/name")
+    @Operation(
+            summary = "유저 이름 수정 ",
+            description = "로그인한 유저의 이름을 수정할 수 있습니다. "
+    )
+    public ResponseEntity updateName(@Valid @RequestBody UserPatchRequestDto.changeName changeNameDto) {
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserName(changeNameDto));
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), " 이름 수정 성공 ", userProfileResponseDto),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping("/email")
+    @Operation(
+            summary = "유저 이메일 수정  ",
+            description = "로그인한 유저의 이메일을 수정할 수 있습니다. "
+    )
+    public ResponseEntity updateEmail(@Valid @RequestBody UserPatchRequestDto.changeEmail changeEmailDto) {
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserEmail(changeEmailDto));
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), " 이메일 수정 성공 ", userProfileResponseDto),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping("/password")
+    @Operation(
+            summary = "유저 비밀번호 수정  ",
+            description = "로그인한 유저의 비밀번호를 수정할 수 있습니다. "
+    )
+    public ResponseEntity updatePassword(@Valid @RequestBody UserPatchRequestDto.changePassword changePassword) {
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updatePassword(changePassword));
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), " 비밀번호 수정 성공 ",userProfileResponseDto),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping("/phoneNumber")
+    @Operation(
+            summary = "유저 핸드폰 번호 수정  ",
+            description = "로그인한 유저의 핸드폰 번호를 수정할 수 있습니다. "
+    )
+    public ResponseEntity updatePhoneNumber(@Valid @RequestBody UserPatchRequestDto.changePhoneNumber changePhoneNumberDto) {
+
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserPhoneNumber(changePhoneNumberDto));
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호 수정 성공", userProfileResponseDto),
+                HttpStatus.OK
+        );
+
+    }
+
+    @PatchMapping("/department/{departmentId}")
+    @Operation(
+            summary = "유저 부서 수정  ",
+            description = "로그인한 유저의 부서를 수정할 수 있습니다. "
+    )
+    public ResponseEntity updateDepartment(@PathVariable Long departmentId ) {
+
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserDepartment(departmentId));
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호 수정 성공", userProfileResponseDto),
                 HttpStatus.OK
         );
 
     }
 
 
-    @GetMapping("/request")
-    @Operation(
-            summary = "해당 관리 페이지 사용을 요청한 유저 ",
-            description = "해당 관리 페이지 사용을 요청한 유저 리스트를 조회할 수 있습니다."
-    )
-    public ResponseEntity<?> getRequestUser(@RequestParam String managementDashboardName
-                                        ,@RequestParam(name = "page", defaultValue = "1") int page,
-                                         @RequestParam(name="size", defaultValue = "10") int size) {
 
-        // dashboardName으로 필터링 등 필요한 로직 수행 가능
-        Page<User> approveUserList = userService.getRequestList(managementDashboardName,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
 
-        //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
-        ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
-        Page<?> responseList;
-        if (userService.validInitialManager(dashboard)) {
-            responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
-        } else {
-            responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
-        }
-
-        return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "조회 성공", responseList),
-                HttpStatus.OK
+    @GetMapping("/approve")
+    public ResponseEntity<?> getApprovedUsers(@RequestParam String managementDashboardName,
+                                              @RequestParam(defaultValue = "1") int page,
+                                              @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<?> responseList = userService.getUserStatusResponseList(
+                managementDashboardName,
+                pageRequest,
+                name -> userService.getApprovedList(name, pageRequest)
         );
+        return ResponseEntity.ok(ApiResponse.of(200, "승인된 유저 리스트 조회 성공", responseList));
+    }
 
+    @GetMapping("/request")
+    public ResponseEntity<?> getRequestedUsers(@RequestParam String managementDashboardName,
+                                               @RequestParam(defaultValue = "1") int page,
+                                               @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<?> responseList = userService.getUserStatusResponseList(
+                managementDashboardName,
+                pageRequest,
+                name -> userService.getRequestList(name, pageRequest)
+        );
+        return ResponseEntity.ok(ApiResponse.of(200, "요청한 유저 리스트 조회 성공", responseList));
     }
 
     @GetMapping("/reject")
-    @Operation(
-            summary = "해당 관리 페이지 사용이 거부된 유저  ",
-            description = "해당 관리 페이지 사용이 거부된 유저 리스트를 조회할 수 있습니다."
-    )
-    public ResponseEntity<?> getRejectUser(@RequestParam String managementDashboardName
-            ,@RequestParam(name = "page", defaultValue = "1") int page,
-                                            @RequestParam(name="size", defaultValue = "10") int size) {
-
-        // dashboardName으로 필터링 등 필요한 로직 수행 가능
-        Page<User> approveUserList = userService.getRejectList(managementDashboardName,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
-
-        //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
-        ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
-        Page<?> responseList;
-        if (userService.validInitialManager(dashboard)) {
-            responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
-        } else {
-            responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
-        }
-
-        return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "조회 성공", responseList),
-                HttpStatus.OK
+    public ResponseEntity<?> getRejectedUsers(@RequestParam String managementDashboardName,
+                                              @RequestParam(defaultValue = "1") int page,
+                                              @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<?> responseList = userService.getUserStatusResponseList(
+                managementDashboardName,
+                pageRequest,
+                name -> userService.getRejectList(name, pageRequest)
         );
-
+        return ResponseEntity.ok(ApiResponse.of(200, "거절된 유저 리스트 조회 성공", responseList));
     }
 
 
@@ -200,9 +285,7 @@ public class UserController {
             description = "최초 생성 매니저가 일반 매니저의 관리페이지 접근 요청을 거부합니다."
     )
     public ResponseEntity<?> rejectManagerAccess(@PathVariable Long userId) {
-
         userService.rejectManager(userId);
-
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "접근 권한이 거부되었습니다."),
                 HttpStatus.OK
@@ -276,35 +359,6 @@ public class UserController {
 
 
 
-
-
-
-
-    //Initial Manager signup
-    @PostMapping("/signup/manager/initial")
-    @Operation(
-            summary = "회원 가입 (최초 매니저)",
-            description = "최초 매니저(Initial Manager)의 회원가입을 처리합니다."
-    )
-    public ResponseEntity signupInitialManager(@Valid @RequestBody InitialManagerSignupRequestDto initialManagerSignupRequestDto) {
-        userService.createInitialManager(initialManagerSignupRequestDto);
-        return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
-
-
-    }
-
-    //Manager signup
-    @PostMapping("/signup/manager")
-    @Operation(
-            summary = "회원 가입 (일반 매니저)",
-            description = "일반 매니저(Initial Manager)의 회원가입을 처리합니다."
-    )
-    public ResponseEntity signupManager(@Valid @RequestBody ManagerSignupRequestDto managerSignupRequestDto) {
-        userService.createManager(managerSignupRequestDto);
-        return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
-
-    }
-
     @PostMapping("/findPassword")
     @Operation(
             summary = "비밀번호 찾기",
@@ -352,12 +406,36 @@ public class UserController {
         return new ResponseEntity<>("로그아웃 성공", HttpStatus.OK);
     }
 
+    @DeleteMapping("/admin")
+    @Operation(
+            summary = "admin 유저 삭제 구현  ",
+            description = "admin 유저를 삭제할 수 있습니다.  "
+    )
+    public ResponseEntity deleteAdmin( ) {
 
+        userService.deleteAdmin();
 
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "amdin 유저 삭제 완료"),
+                HttpStatus.OK
+        );
 
+    }
 
+    @DeleteMapping()
+    @Operation(
+            summary = "유저 삭제(manager, user)  구현  ",
+            description = "유저 삭제(manager, user)를 삭제할 수 있습니다.  "
+    )
+    public ResponseEntity updateDepartment( ) {
 
+        userService.deleteUser();
 
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "amdin 유저 삭제 완료( stop 상태 ) "),
+                HttpStatus.OK
+        );
+    }
 
 
 }
