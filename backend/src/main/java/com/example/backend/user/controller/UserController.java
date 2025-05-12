@@ -77,7 +77,7 @@ public class UserController {
         //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
         ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
         Page<?> responseList;
-        if (userService.isInitialManager(dashboard)) {
+        if (userService.validInitialManager(dashboard)) {
             responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
         } else {
             responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
@@ -106,7 +106,7 @@ public class UserController {
         //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
         ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
         Page<?> responseList;
-        if (userService.isInitialManager(dashboard)) {
+        if (userService.validInitialManager(dashboard)) {
             responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
         } else {
             responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
@@ -135,7 +135,7 @@ public class UserController {
         //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
         ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
         Page<?> responseList;
-        if (userService.isInitialManager(dashboard)) {
+        if (userService.validInitialManager(dashboard)) {
             responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
         } else {
             responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
@@ -178,6 +178,103 @@ public class UserController {
         );
 
     }
+
+    @PostMapping("/approve/manager/{userId}")
+    @Operation(
+            summary = "최초 매니저가 일반 매니저를 승인",
+            description = "최초 생성 매니저가 일반 매니저의 관리페이지 접근 요청을 승인합니다."
+    )
+    public ResponseEntity<?> approveManagerAccess(@PathVariable Long userId) {
+        userService.approveManager(userId);
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "접근 권한이 승인되었습니다."),
+                HttpStatus.OK
+        );
+    }
+
+
+    @PostMapping("/reject/manager/{userId}")
+    @Operation(
+            summary = "최초 매니저가 일반 매니저를 거부",
+            description = "최초 생성 매니저가 일반 매니저의 관리페이지 접근 요청을 거부합니다."
+    )
+    public ResponseEntity<?> rejectManagerAccess(@PathVariable Long userId) {
+
+        userService.rejectManager(userId);
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "접근 권한이 거부되었습니다."),
+                HttpStatus.OK
+        );
+
+    }
+
+    @GetMapping("/reject/manager")
+    @Operation(
+            summary = "해당 관리 페이지 사용이 거부된 매니저 리스트 조회 ",
+            description = "해당 관리 페이지 사용이 거부된 매니저 리스트를 조회할 수 있습니다."
+    )
+    public ResponseEntity<?> getRejectManager(@RequestParam String managementDashboardName
+            ,@RequestParam(name = "page", defaultValue = "1") int page,
+                                           @RequestParam(name="size", defaultValue = "10") int size) {
+
+        Page<User> approveUserList = userService.getRejectManagerList(managementDashboardName,
+                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+
+        Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);;
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "사용이 거부된 매니저 리스트 조회 성공", responseList),
+                HttpStatus.OK
+        );
+
+    }
+
+    @GetMapping("/approve/manager")
+    @Operation(
+            summary = "해당 관리 페이지 사용이 승인된 매니저 리스트 조회  ",
+            description = "해당 관리 페이지 사용이 승인된 매니저 리스트를 조회할 수 있습니다."
+    )
+    public ResponseEntity<?> getApproveManager(@RequestParam String managementDashboardName
+            ,@RequestParam(name = "page", defaultValue = "1") int page,
+                                              @RequestParam(name="size", defaultValue = "10") int size) {
+
+        Page<User> approveUserList = userService.getApprovedManagerList(managementDashboardName,
+                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+
+        Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);;
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "사용이 승인된 매니저 리스트 조회 성공", responseList),
+                HttpStatus.OK
+        );
+
+    }
+
+    @GetMapping("/request/manager")
+    @Operation(
+            summary = "해당 관리 페이지 사용을 요청한 매니저 리스트 조회  ",
+            description = "해당 관리 페이지 사용을 요청한 매니저 리스트를 조회할 수 있습니다."
+    )
+    public ResponseEntity<?> getRequestManager(@RequestParam String managementDashboardName
+            ,@RequestParam(name = "page", defaultValue = "1") int page,
+                                               @RequestParam(name="size", defaultValue = "10") int size) {
+
+        Page<User> approveUserList = userService.getRequestManagerList(managementDashboardName,
+                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+
+        Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);;
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "사용을 요청한 매니저 리스트 조회 성공", responseList),
+                HttpStatus.OK
+        );
+
+    }
+
+
+
 
 
 
