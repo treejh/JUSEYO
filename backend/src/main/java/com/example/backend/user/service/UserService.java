@@ -114,155 +114,120 @@ public class UserService {
     }
 
 
-    //승인된 유저 리스트 가지고오기
-    //근데 역할이 MANAGER이여야 하고, 만약 InitialManager이면 maskedPhoneNumber 로 가게 -> 이건 controller에서 ㄱ ?
-    public Page<User> getApprovedList(String managementDashboardName, Pageable pageable){
-
+    // 매니저가 관리페이지에 요청된 권한 리스트들을 조회하는 공통 로직
+    private Page<User> getUserListByApprovalStatus(String managementDashboardName, ApprovalStatus approvalStatus, Pageable pageable) {
         ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
         Role role = roleService.findRoleByRoleType(RoleType.USER);
 
-        //admin은 다 조회가 가능해야 함
-        if(isAdmin()){
+        // admin은 모든 유저를 조회할 수 있어야 함
+        if (isAdmin()) {
             return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
-                    managementDashboard,
-                    ApprovalStatus.APPROVED,pageable,role
-            );
+                    managementDashboard, approvalStatus, pageable, role);
         }
 
-        //해당 관리 페이지에 속한 유저인지 확인
-        isManagementDashboardUser(managementDashboard);
+        // 해당 관리 페이지에 속한 유저인지 확인
+        validateManagementDashboardUser(managementDashboard);
 
-        //매니저가 맞는지 확인
+        //현재 로그인한 유저가 매니저인지 확인하는 메서드
         validManager();
 
         return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
-                managementDashboard,
-                ApprovalStatus.APPROVED,pageable,role
-        );
+                managementDashboard, approvalStatus, pageable, role);
     }
 
-    //요청된 유저 리스트 가지고오기
-    //근데 요청하는 역할이 MANAGER이여야 하고, 만약 InitialManager이면 maskedPhoneNumber 로 가게 -> 이건 controller에서 ㄱ ?
-    public Page<User> getRequestList(String managementDashboardName, Pageable pageable){
+    // 승인된 유저 리스트 가져오기
+    public Page<User> getApprovedList(String managementDashboardName, Pageable pageable) {
+        return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.APPROVED, pageable);
+    }
 
+    // 요청된 유저 리스트 가져오기
+    public Page<User> getRequestList(String managementDashboardName, Pageable pageable) {
+        return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.REQUESTED, pageable);
+    }
+
+    // 거부된 유저 리스트 가져오기
+    public Page<User> getRejectList(String managementDashboardName, Pageable pageable) {
+        return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.REJECTED, pageable);
+    }
+
+
+    private Page<User> getManagerListByApprovalStatus(String managementDashboardName, ApprovalStatus approvalStatus, Pageable pageable) {
         ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
-        Role role = roleService.findRoleByRoleType(RoleType.USER);
-        //admin은 다 조회가 가능해야 함
-        if(isAdmin()){
+        Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
+
+        // admin은 모든 유저를 조회할 수 있어야 함
+        if (isAdmin()) {
             return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
-                    managementDashboard,
-                    ApprovalStatus.REQUESTED,pageable,role
-            );
+                    managementDashboard, approvalStatus, pageable, role);
         }
 
-        //해당 관리 페이지에 속한 유저인지 확인
-        isManagementDashboardUser(managementDashboard);
 
-        //매니저가 맞는지 확인
+        //1. 현재 로그인한 유저가 매니저인지 확인하는 메서드
         validManager();
 
-        return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
-                managementDashboard,
-                ApprovalStatus.REQUESTED,pageable,role
-        );
-
-    }
-
-    //거부된 유저 리스트 가지고오기
-    //근데 요청하는 역할이 MANAGER이여야 하고, 만약 InitialManager이면 maskedPhoneNumber 로 가게 -> 이건 controller에서 ㄱ ?
-    public Page<User> getRejectList(String managementDashboardName, Pageable pageable){
-
-        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
-        Role role = roleService.findRoleByRoleType(RoleType.USER);
-        //admin은 다 조회가 가능해야 함
-        if(isAdmin()){
-            return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
-                    managementDashboard,
-                    ApprovalStatus.REJECTED,pageable,role
-            );
-        }
-
-        //해당 관리 페이지에 속한 유저인지 확인
-        isManagementDashboardUser(managementDashboard);
-
-        //매니저가 맞는지 확인
-        validManager();
+        // 2. 현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
+        validInitialManager(managementDashboard);
 
         return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
-                managementDashboard,
-                ApprovalStatus.REJECTED,pageable,role
-        );
-
+                managementDashboard, approvalStatus, pageable, role);
     }
 
-    public User findById(Long userId){
-        return userRepository.findById(userId)
-                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    // 승인된 매니저 리스트 가져오기
+    public Page<User> getApprovedManagerList(String managementDashboardName, Pageable pageable) {
+        return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.APPROVED, pageable);
+    }
+
+    // 요청된 매니저 리스트 가져오기
+    public Page<User> getRequestManagerList(String managementDashboardName, Pageable pageable) {
+        return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.REQUESTED, pageable);
+    }
+
+    // 거부된 매니저 리스트 가져오기
+    public Page<User> getRejectManagerList(String managementDashboardName, Pageable pageable) {
+        return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.REJECTED, pageable);
     }
 
 
-    //관리 페이지에 요청한 유저를 승인하는 메서드
     @Transactional
-    public void approveUser(Long userId){
-        //현재 로그인한 매니저
-        User currentLoginUser = findById(tokenService.getIdFromToken()) ;
+    public void approveOrRejectUser(Long userId, ApprovalStatus approvalStatus){
+        // 현재 로그인한 매니저
+        User currentLoginUser = findById(tokenService.getIdFromToken());
         User requestUser = findById(userId);
 
-        if(isAdmin()){
-            requestUser.setApprovalStatus(ApprovalStatus.APPROVED);
+        if (isAdmin()) {
+            requestUser.setApprovalStatus(approvalStatus);
             userRepository.save(requestUser);
             return;
         }
 
-        //관리페이지에 권한을 요청하려는 유저 아이디
-
+        // 관리 페이지에 권한을 요청하려는 유저 아이디
         ManagementDashboard loginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
 
-        //요청한 유저와, 요청을 받는 매니저가 다른 대시보드에 속해있는 경우 예외처리
-        if(!loginUsermanagementDashboard.equals(requestUser.getManagementDashboard())){
+        // 요청한 유저와, 요청을 받는 매니저가 다른 대시보드에 속해 있는 경우 예외처리
+        if (!loginUsermanagementDashboard.equals(requestUser.getManagementDashboard())) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
         }
 
-        //매니저가 맞는지 확인
+        // 매니저가 맞는지 확인
         validManager();
 
-
-        //승인 상태로 변경
-        requestUser.setApprovalStatus(ApprovalStatus.APPROVED);
+        // 상태 변경
+        requestUser.setApprovalStatus(approvalStatus);
         userRepository.save(requestUser);
-
     }
 
-
-    //관리 페이지에 요청한 유저를 거부하는 메서드
+    // 일반 회원 승인 처리
     @Transactional
-    public void rejectUser(Long userId){
-        //현재 로그인한 매니저
-        User currentLoginUser = findById(tokenService.getIdFromToken()) ;
-
-        //관리페이지 권한을 거부하려는 유저 아이디
-        User requestUser = findById(userId);
-
-        if(isAdmin()){
-            requestUser.setApprovalStatus(ApprovalStatus.REJECTED);
-            userRepository.save(requestUser);
-            return;
-        }
-        ManagementDashboard loginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
-
-        //현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
-        if(!loginUsermanagementDashboard.equals(requestUser.getManagementDashboard())){
-            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
-        }
-
-        //현재 로그인한 유저가 매니저가 맞는지 확인
-        validManager();
-
-        //거부 상태로 변경
-        requestUser.setApprovalStatus(ApprovalStatus.REJECTED);
-        userRepository.save(requestUser);
-
+    public void approveUser(Long userId) {
+        approveOrRejectUser(userId, ApprovalStatus.APPROVED);
     }
+
+    // 일반 회원 거부 처리
+    @Transactional
+    public void rejectUser(Long userId) {
+        approveOrRejectUser(userId, ApprovalStatus.REJECTED);
+    }
+
 
     @Transactional
     public void approveOrRejectManager(Long userId, ApprovalStatus approvalStatus){
@@ -286,23 +251,28 @@ public class UserService {
         validateSameDashboardOrThrow(currentLoginUser, requestUser);
 
         // 4. 현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
-        validateInitialManager(requestUser.getManagementDashboard());
+        validInitialManager(requestUser.getManagementDashboard());
 
         // 승인 또는 거부 상태로 변경
         requestUser.setApprovalStatus(approvalStatus);
         userRepository.save(requestUser);
     }
 
-    // 승인 처리
+    // 매니저 승인 처리
     @Transactional
     public void approveManager(Long userId) {
         approveOrRejectManager(userId, ApprovalStatus.APPROVED);
     }
 
-    // 거부 처리
+    // 매니저 거부 처리
     @Transactional
     public void rejectManager(Long userId) {
         approveOrRejectManager(userId, ApprovalStatus.REJECTED);
+    }
+
+    public User findById(Long userId){
+        return userRepository.findById(userId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }
 
 
@@ -316,12 +286,12 @@ public class UserService {
     //접근 권한도 매니저로만 주긴 할거임 ㅇㅇ
     private void validManager(){
         if(!tokenService.getRoleFromToken().getRole().equals(RoleType.MANAGER)){
-            throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED_ROLE);
+            throw new BusinessLogicException(ExceptionCode.NOT_MANAGER);
         }
     }
 
 
-    //해당 유저가 매니저인지 확인하는 메서드
+    //파라미터로 받은 유저가 매니저인지 확인하는 메서드
     private void validateNotManager(User user){
         if(user.getRole().getRole().equals(RoleType.MANAGER)){
             throw new BusinessLogicException(ExceptionCode.INVALID_APPROVAL_TARGET_ROLE);
@@ -329,8 +299,8 @@ public class UserService {
     }
 
 
-    //해당 관리 페이지에속한 유저인지 확인하는 유효성 검사 메서드
-    private void isManagementDashboardUser(ManagementDashboard managementDashboard){
+    //현재 로그인한 유저가, 해당 관리 페이지에속한 유저인지 확인하는 유효성 검사 메서드
+    private void validateManagementDashboardUser(ManagementDashboard managementDashboard){
         userRepository.findByIdAndManagementDashboard(tokenService.getIdFromToken(),managementDashboard)
                 .orElseThrow(
                         () -> new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD)
@@ -340,7 +310,7 @@ public class UserService {
 
     //현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
     //true면 맞다는말
-    public boolean validateInitialManager(ManagementDashboard managementDashboard){
+    public boolean validInitialManager(ManagementDashboard managementDashboard){
         User user = userRepository.findByIdAndManagementDashboard(tokenService.getIdFromToken(), managementDashboard)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD));
 
