@@ -1,6 +1,5 @@
 package com.example.backend.notification.entity;
 
-import com.example.backend.enums.NotificationType;
 import com.example.backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,6 +17,7 @@ public class Notification extends Auditable {
 
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
 

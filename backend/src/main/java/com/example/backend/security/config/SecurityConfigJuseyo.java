@@ -73,6 +73,7 @@ public class SecurityConfigJuseyo {
 
 
 
+
     //특정 포트 번호 허락
     public CorsConfigurationSource configurationSource(){
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
