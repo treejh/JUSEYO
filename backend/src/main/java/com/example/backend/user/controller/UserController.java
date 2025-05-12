@@ -185,7 +185,7 @@ public class UserController {
             description = "최초 생성 매니저가 일반 매니저의 관리페이지 접근 요청을 승인합니다."
     )
     public ResponseEntity<?> approveManagerAccess(@PathVariable Long userId) {
-        userService.approveUser(userId);
+        userService.approveManager(userId);
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "접근 권한이 승인되었습니다."),
