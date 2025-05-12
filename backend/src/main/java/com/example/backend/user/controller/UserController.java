@@ -411,7 +411,7 @@ public class UserController {
             summary = "admin 유저 삭제 구현  ",
             description = "admin 유저를 삭제할 수 있습니다.  "
     )
-    public ResponseEntity updateDepartment( ) {
+    public ResponseEntity deleteAdmin( ) {
 
         userService.deleteAdmin();
 
@@ -422,8 +422,20 @@ public class UserController {
 
     }
 
+    @DeleteMapping()
+    @Operation(
+            summary = "유저 삭제(manager, user)  구현  ",
+            description = "유저 삭제(manager, user)를 삭제할 수 있습니다.  "
+    )
+    public ResponseEntity updateDepartment( ) {
 
+        userService.deleteUser();
 
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "amdin 유저 삭제 완료( stop 상태 ) "),
+                HttpStatus.OK
+        );
+    }
 
 
 }
