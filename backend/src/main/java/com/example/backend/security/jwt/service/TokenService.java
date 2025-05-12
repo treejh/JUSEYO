@@ -10,6 +10,8 @@ import com.example.backend.role.repository.RoleRepository;
 import com.example.backend.security.jwt.util.JwtTokenizer;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,7 +31,7 @@ public class TokenService {
     private final JwtTokenizer jwtTokenizer;
 
 
-    private String getTokenFromRequest() {
+    public String getTokenFromRequest() {
 
         //쿠키에 있는지 확인
         Cookie[] cookies = httpServletRequest.getCookies();
@@ -140,6 +142,8 @@ public class TokenService {
 
 
 
+
+
     public void deleteCookie(String name) {
         ResponseCookie cookie = ResponseCookie.from(name, null)
                 .path("/")
@@ -150,6 +154,10 @@ public class TokenService {
                 .build();
 
         httpServletResponse.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    public boolean validateToken(String token) {
+        return jwtTokenizer.validateToken(token);
     }
 
 
