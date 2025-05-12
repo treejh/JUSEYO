@@ -1,5 +1,8 @@
 package com.example.backend.inventoryOut.service;
 
+import com.example.backend.category.entity.Category;
+import com.example.backend.category.repository.CategoryRepository;
+import com.example.backend.enums.Outbound;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryOut.dto.request.InventoryOutRequestDto;
@@ -8,13 +11,14 @@ import com.example.backend.inventoryOut.entity.InventoryOut;
 import com.example.backend.inventoryOut.repository.InventoryOutRepository;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
-import com.example.backend.supplyRequest.entity.SupplyRequest;
-import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
-import com.example.backend.category.entity.Category;
-import com.example.backend.category.repository.CategoryRepository;
+import com.example.backend.itemInstance.dto.request.UpdateItemInstanceStatusRequestDto;
+import com.example.backend.itemInstance.entity.ItemInstance;
+import com.example.backend.itemInstance.repository.ItemInstanceRepository;
+import com.example.backend.itemInstance.service.ItemInstanceService;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
-import com.example.backend.enums.Outbound;
+import com.example.backend.supplyRequest.entity.SupplyRequest;
+import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +31,8 @@ public class InventoryOutService {
     private final SupplyRequestRepository supplyRequestRepo;
     private final CategoryRepository categoryRepo;
     private final ManagementDashboardRepository mgmtRepo;
+    private final ItemInstanceService instanceService;
+    private final ItemInstanceRepository instanceRepo;
 
     @Transactional
     public InventoryOutResponseDto removeOutbound(InventoryOutRequestDto dto) {
@@ -61,7 +67,18 @@ public class InventoryOutService {
         // 4) 아이템 재고 차감
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());
 
-        // 5) 응답 DTO 반환
+        // 5) 개별자산단위 상태 변경 (출고: AVAILABLE → LEND 또는 ISSUE)
+        for (int i = 0; i < saved.getQuantity(); i++) {
+            ItemInstance inst = instanceRepo
+                    .findFirstByItemIdAndStatus(item.getId(), Outbound.AVAILABLE)
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+            UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
+            upd.setStatus(saved.getOutbound());  // LEND 또는 ISSUE
+            upd.setFinalImage(null);
+            instanceService.updateStatus(inst.getId(), upd);
+        }
+
+        // 6) 응답 DTO 반환
         return InventoryOutResponseDto.builder()
                 .id(saved.getId())
                 .supplyRequestId(saved.getSupplyRequest().getId())

@@ -41,7 +41,7 @@ public class ItemInstance extends Auditable {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    // 예: “PEN-001-a1b2c3d4”
+    // 예: PEN(비품명)-001-a1b2c3d4
     @Column(name = "instance_code", nullable = false, length = 50, unique = true)
     private String instanceCode;
 
