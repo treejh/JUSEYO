@@ -32,16 +32,14 @@ public class DepartmentService {
 
     // 부서 생성
     @Transactional
-    public Department createDepartment(DepartmentCreateRequestDTO dto) {
-        ManagementDashboard managementDashboard = managementDashboardRepository.findById(dto.getManagementDashboardId()).orElseThrow(()->new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
-
+    public Department createDepartment(DepartmentCreateRequestDTO dto, ManagementDashboard dashboard) {
         if (departmentRepository.existsByName(dto.getName())) {
             throw new BusinessLogicException(ExceptionCode.AlREADY_HAS_DEPARTMENT);
         }
         Department department = Department.builder()
                 .id(dto.getId())
                 .name(dto.getName())
-                .managementDashboard(managementDashboard)
+                .managementDashboard(dashboard)
                 .build();
 
         return departmentRepository.save(department);
