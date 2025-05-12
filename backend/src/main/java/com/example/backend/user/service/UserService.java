@@ -468,6 +468,15 @@ public class UserService {
         return randomPassword;
     }
 
+    @Transactional
+    public void deleteAdmin(){
+        User adminUser = findById(tokenService.getIdFromToken());
+        if (!isAdmin()) {
+            throw new BusinessLogicException(ExceptionCode.NOT_ADMIN);
+        }
+        userRepository.delete(adminUser);
+    }
+
 
     public User verifiedUser(long projectId) {
         Optional<User> user = userRepository.findById(projectId);
@@ -475,11 +484,7 @@ public class UserService {
     }
 
 
-        // Delete
-        public void deleteUser(long ProjectId) {
-            User user = verifiedUser(ProjectId);
-            userRepository.delete(user);
-        }
+
 
     public User findByEmail(String email){
         return userRepository.findByEmail(email).orElseThrow(
