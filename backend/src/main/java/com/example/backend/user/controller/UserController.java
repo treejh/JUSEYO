@@ -77,7 +77,7 @@ public class UserController {
         //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
         ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
         Page<?> responseList;
-        if (userService.isInitialManager(dashboard)) {
+        if (userService.validateInitialManager(dashboard)) {
             responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
         } else {
             responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
@@ -106,7 +106,7 @@ public class UserController {
         //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
         ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
         Page<?> responseList;
-        if (userService.isInitialManager(dashboard)) {
+        if (userService.validateInitialManager(dashboard)) {
             responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
         } else {
             responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
@@ -135,7 +135,7 @@ public class UserController {
         //현재 로그인한 유저가 최초 매니저인지, 일반 매너지인지에 따라 제공하는 정보를 다르게 하기 위한 코드
         ManagementDashboard dashboard = managementDashboardService.findByPageName(managementDashboardName);
         Page<?> responseList;
-        if (userService.isInitialManager(dashboard)) {
+        if (userService.validateInitialManager(dashboard)) {
             responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);
         } else {
             responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
@@ -177,6 +177,20 @@ public class UserController {
                 HttpStatus.OK
         );
 
+    }
+
+    @PostMapping("/approve/manager/{userId}")
+    @Operation(
+            summary = "최초 매니저가 일반 매니저를 승인",
+            description = "최초 생성 매니저가 일반 매니저의 관리페이지 접근 요청을 승인합니다."
+    )
+    public ResponseEntity<?> approveManagerAccess(@PathVariable Long userId) {
+        userService.approveUser(userId);
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "접근 권한이 승인되었습니다."),
+                HttpStatus.OK
+        );
     }
 
 

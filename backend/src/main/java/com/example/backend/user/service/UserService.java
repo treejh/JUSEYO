@@ -216,15 +216,45 @@ public class UserService {
 
         //관리페이지에 권한을 요청하려는 유저 아이디
 
-        ManagementDashboard LoginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
+        ManagementDashboard loginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
 
         //요청한 유저와, 요청을 받는 매니저가 다른 대시보드에 속해있는 경우 예외처리
-        if(!LoginUsermanagementDashboard.equals(requestUser.getManagementDashboard())){
+        if(!loginUsermanagementDashboard.equals(requestUser.getManagementDashboard())){
             throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
         }
 
         //매니저가 맞는지 확인
         validManager();
+
+
+        //승인 상태로 변경
+        requestUser.setApprovalStatus(ApprovalStatus.APPROVED);
+        userRepository.save(requestUser);
+
+    }
+
+    @Transactional
+    public void approveManager(Long userId){
+        //현재 로그인한 매니저
+        User currentLoginUser = findById(tokenService.getIdFromToken());
+        User requestUser = findById(userId);
+
+        if(isAdmin()){
+            requestUser.setApprovalStatus(ApprovalStatus.APPROVED);
+            userRepository.save(requestUser);
+            return;
+        }
+        //1. 매니저 승인 요청을 한 사용자가 매니저가 아닐 경우 예외처리
+        validateNotManager(requestUser);
+
+        //2. 현재 로그인한 유저가 매니저인지 확인( 매니저여야 한다)
+        validManager();
+
+        //3.  같은 대시보드여야 함
+        validateSameDashboardOrThrow(currentLoginUser,requestUser);
+
+        //4. 현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
+        validateInitialManager(requestUser.getManagementDashboard());
 
 
         //승인 상태로 변경
@@ -243,8 +273,6 @@ public class UserService {
         //현재 로그인한 매니저
         User currentLoginUser = findById(tokenService.getIdFromToken()) ;
 
-
-
         //관리페이지 권한을 거부하려는 유저 아이디
         User requestUser = findById(userId);
 
@@ -253,14 +281,14 @@ public class UserService {
             userRepository.save(requestUser);
             return;
         }
-        ManagementDashboard LoginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
+        ManagementDashboard loginUsermanagementDashboard = currentLoginUser.getManagementDashboard();
 
-        //요청한 유저와, 요청을 받는 매니저가 다른 대시보드에 속해있는 경우 예외처리
-        if(!LoginUsermanagementDashboard.equals(requestUser.getManagementDashboard())){
+        //현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
+        if(!loginUsermanagementDashboard.equals(requestUser.getManagementDashboard())){
             throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
         }
 
-        //매니저가 맞는지 확인
+        //현재 로그인한 유저가 매니저가 맞는지 확인
         validManager();
 
         //거부 상태로 변경
@@ -270,18 +298,25 @@ public class UserService {
     }
 
 
-    //매니저인지 확인하는 메서드
+    //현재 로그인한 유저가 매니저인지 확인하는 메서드
     //접근 권한도 매니저로만 주긴 할거임 ㅇㅇ
-    public void validManager(){
-        log.info("매니저인지 확인 !! " + tokenService.getRoleFromToken().getRole().name());
+    private void validManager(){
         if(!tokenService.getRoleFromToken().getRole().equals(RoleType.MANAGER)){
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED_ROLE);
         }
     }
 
 
+    //해당 유저가 매니저인지 확인하는 메서드
+    private void validateNotManager(User user){
+        if(user.getRole().getRole().equals(RoleType.MANAGER)){
+            throw new BusinessLogicException(ExceptionCode.INVALID_APPROVAL_TARGET_ROLE);
+        }
+    }
+
+
     //해당 관리 페이지에속한 유저인지 확인하는 유효성 검사 메서드
-    public void isManagementDashboardUser(ManagementDashboard managementDashboard){
+    private void isManagementDashboardUser(ManagementDashboard managementDashboard){
         userRepository.findByIdAndManagementDashboard(tokenService.getIdFromToken(),managementDashboard)
                 .orElseThrow(
                         () -> new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD)
@@ -289,16 +324,16 @@ public class UserService {
     }
 
 
-    //해당 관리페이지에 속하고, 최초 매니저인지 확인하는 메서드
-    public boolean isInitialManager(ManagementDashboard managementDashboard){
+    //현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
+    //true면 맞다는말
+    public boolean validateInitialManager(ManagementDashboard managementDashboard){
+        User user = userRepository.findByIdAndManagementDashboard(tokenService.getIdFromToken(), managementDashboard)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD));
 
-
-        User user = userRepository.findByIdAndManagementDashboard(tokenService.getIdFromToken(),managementDashboard)
-                .orElseThrow(
-                        () -> new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD)
-                );
-        return user.isInitialManager();
-
+        if (!user.isInitialManager()) {
+            throw new BusinessLogicException(ExceptionCode.NOT_INITIAL_MANAGER);
+        }
+        return true;
     }
 
 
@@ -360,13 +395,13 @@ public class UserService {
 
 
 
-    public void validateEmail(String email) {
+    private void validateEmail(String email) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_EMAIL);
         }
     }
 
-    public void validatePhoneNumber(String phone) {
+    private void validatePhoneNumber(String phone) {
         if (userRepository.findByPhoneNumber(phone).isPresent()) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_PHONENUMBER);
         }
@@ -376,6 +411,12 @@ public class UserService {
     public void validPassword(String dtoPassword, String userPassword) {
         if (!passwordEncoder.matches(dtoPassword, userPassword)) {
             throw new BusinessLogicException(ExceptionCode.INVALID_PASSWORD);  // 비밀번호 불일치시 예외 던지기
+        }
+    }
+
+    private void validateSameDashboardOrThrow(User current, User target) {
+        if (!current.getManagementDashboard().equals(target.getManagementDashboard())) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
         }
     }
 
