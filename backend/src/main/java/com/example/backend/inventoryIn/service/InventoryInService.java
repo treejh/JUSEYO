@@ -1,78 +1,107 @@
 package com.example.backend.inventoryIn.service;
 
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryIn.dto.request.InventoryInRequestDto;
 import com.example.backend.inventoryIn.dto.response.InventoryInResponseDto;
 import com.example.backend.inventoryIn.entity.InventoryIn;
 import com.example.backend.inventoryIn.repository.InventoryInRepository;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
-import com.example.backend.category.entity.Category;
-import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.enums.Inbound;
+import com.example.backend.supplyReturn.entity.SupplyReturn;
+import com.example.backend.supplyReturn.repository.SupplyReturnRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.RandomStringUtils;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class InventoryInService {
     private final InventoryInRepository inRepo;
     private final ItemRepository itemRepo;
-    private final CategoryRepository categoryRepo;
-    private final ManagementDashboardRepository mgmtRepo;
+    private final SupplyReturnRepository returnRequestRepository;
+    private final ManagementDashboardRepository managementDashboardRepository;
 
+
+    // 입고 생성
     @Transactional
     public InventoryInResponseDto addInbound(InventoryInRequestDto dto) {
-        // 1) 입고 내역 저장
+        // 1) 아이템 처리: 수량 증가
+        Item item;
+        item = itemRepo.findById(dto.getItemId())
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+        item.setTotalQuantity(item.getTotalQuantity() + dto.getQuantity());
+        item.setAvailableQuantity(item.getAvailableQuantity() + dto.getQuantity());
+
+        SupplyReturn supplyReturn =null;
+        if(dto.getInbound()==Inbound.RETURN){
+            supplyReturn =returnRequestRepository.findById(dto.getReturnId()).orElse(null);
+            if(supplyReturn ==null){
+                throw new BusinessLogicException(ExceptionCode.SUPPLY_RETURN_NOT_FOUND);
+            }
+        }
+        // 2) 입고 내역 저장
+        ManagementDashboard managementDashboard=managementDashboardRepository.findById(dto.getManagementId()).orElse(null);
+        if(managementDashboard==null){
+            throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
+        }
         InventoryIn inbound = InventoryIn.builder()
-                .item(itemRepo.findById(dto.getItemId()).orElse(null))
+                .item(item)
                 .quantity(dto.getQuantity())
-                .inbound(Inbound.valueOf(dto.getInbound()))
+                .inbound(dto.getInbound())
+                .supplyReturn(supplyReturn)
+                .category(item.getCategory())
+                .managementDashboard(managementDashboard)
+                .quantity(dto.getQuantity())
                 .build();
         InventoryIn savedInbound = inRepo.save(inbound);
-
-        // 2) 아이템 처리: 기존 아이템이 있으면 수량 증가, 없으면 새로 생성
-        Item item;
-        if (itemRepo.existsById(dto.getItemId())) {
-            item = itemRepo.findById(dto.getItemId())
-                    .orElseThrow(() -> new IllegalArgumentException("Item not found"));
-            item.setTotalQuantity(item.getTotalQuantity() + savedInbound.getQuantity());
-            item.setAvailableQuantity(item.getAvailableQuantity() + savedInbound.getQuantity());
-        } else {
-            // 2-a) 연관 엔티티 조회
-            Category category = categoryRepo.findById(dto.getCategoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-            ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                    .orElseThrow(() -> new IllegalArgumentException("ManagementDashboard not found"));
-
-            // 2-b) 신규 아이템 생성 (시리얼 자동 생성)
-            String serial = RandomStringUtils.randomAlphanumeric(15);
-            item = Item.builder()
-                    .name(dto.getName())
-                    .serialNumber(serial)
-                    .totalQuantity(savedInbound.getQuantity())
-                    .availableQuantity(savedInbound.getQuantity())
-                    .purchaseSource(dto.getPurchaseSource())
-                    .location(dto.getLocation())
-                    .isReturnRequired(dto.getIsReturnRequired())
-                    .category(category)
-                    .managementDashboard(mgmt)
-                    .createdAt(savedInbound.getCreatedAt())  // 생성일자를 입고일로 설정
-                    .build();
-            item = itemRepo.save(item);
-        }
 
         // 3) 응답 DTO 반환
         return InventoryInResponseDto.builder()
                 .id(savedInbound.getId())
                 .itemId(item.getId())
+                .itemName(item.getName())
                 .quantity(savedInbound.getQuantity())
-                .inbound(savedInbound.getInbound().name())
+                .inbound(savedInbound.getInbound())
                 .createdAt(savedInbound.getCreatedAt())
-                .modifiedAt(savedInbound.getModifiedAt())
                 .build();
     }
+
+    //입고 내역 목록 조회
+    public Page<InventoryInResponseDto> getInventoryIns(Pageable pageable,Inbound inbound) {
+        if (inbound != null) {
+            return inRepo.getInventoryInsByInbound(inbound, pageable);
+        } else {
+            return inRepo.getInventoryIns(pageable);
+        }
+
+    }
+
+    //입고 내역 조회 (단건)
+    public InventoryInResponseDto getInventoryIn(Long id) {
+        return toDto(inRepo.findById(id)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.INVENTORY_IN_NOT_FOUND)));
+    }
+
+    public InventoryInResponseDto toDto(InventoryIn inventoryIn) {
+        InventoryInResponseDto inventoryInResponseDto = InventoryInResponseDto.builder()
+                .id(inventoryIn.getId())
+                .itemId(inventoryIn.getItem().getId())
+                .itemName(inventoryIn.getItem().getName())
+                .quantity(inventoryIn.getQuantity())
+                .inbound(inventoryIn.getInbound())
+                .createdAt(inventoryIn.getCreatedAt())
+                .build();
+        return inventoryInResponseDto;
+    }
+
 }
