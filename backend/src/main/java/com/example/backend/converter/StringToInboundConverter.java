@@ -12,7 +12,7 @@ public class StringToInboundConverter implements Converter<String, Inbound> {
         try {
             return Inbound.valueOf(source.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status value: " + source);
+            throw new IllegalArgumentException("Invalid Inbound value: " + source);
         }
     }
 }
