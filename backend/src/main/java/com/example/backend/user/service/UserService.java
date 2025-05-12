@@ -10,6 +10,7 @@ import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.RoleService;
 import com.example.backend.role.entity.Role;
@@ -39,8 +40,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleService roleService;
-    private final ManagementDashboardService managementDashboardService;
     private final DepartmentService departmentService;
+    private final ManagementDashboardRepository managementDashboardRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
@@ -49,7 +50,8 @@ public class UserService {
     public User createUser(UserSignRequestDto userSignRequestDto) {
 
         Role role = roleService.findRoleByRoleType(RoleType.USER);
-        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(userSignRequestDto.getManagementPageName());
+        ManagementDashboard managementDashboard = findByPageName(userSignRequestDto.getManagementPageName());
+
         Department department =departmentService.findDepartmentByName(managementDashboard.getId(),
                 userSignRequestDto.getDepartmentName());
 
@@ -95,7 +97,7 @@ public class UserService {
     public User createManager(ManagerSignupRequestDto managerSignupRequestDto) {
 
         Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
-        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managerSignupRequestDto.getManagementPageName());
+        ManagementDashboard managementDashboard = findByPageName(managerSignupRequestDto.getManagementPageName());
 
         User manager =User.builder()
                 .email(managerSignupRequestDto.getEmail())
@@ -116,7 +118,7 @@ public class UserService {
 
     // 매니저가 관리페이지에 요청된 권한 리스트들을 조회하는 공통 로직
     private Page<User> getUserListByApprovalStatus(String managementDashboardName, ApprovalStatus approvalStatus, Pageable pageable) {
-        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
+        ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
         Role role = roleService.findRoleByRoleType(RoleType.USER);
 
         // admin은 모든 유저를 조회할 수 있어야 함
@@ -152,7 +154,7 @@ public class UserService {
 
 
     private Page<User> getManagerListByApprovalStatus(String managementDashboardName, ApprovalStatus approvalStatus, Pageable pageable) {
-        ManagementDashboard managementDashboard = managementDashboardService.findByPageName(managementDashboardName);
+        ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
         Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
 
         // admin은 모든 유저를 조회할 수 있어야 함
@@ -284,11 +286,18 @@ public class UserService {
 
     //현재 로그인한 유저가 매니저인지 확인하는 메서드
     //접근 권한도 매니저로만 주긴 할거임 ㅇㅇ
-    private void validManager(){
+    public void validManager(){
         if(!tokenService.getRoleFromToken().getRole().equals(RoleType.MANAGER)){
             throw new BusinessLogicException(ExceptionCode.NOT_MANAGER);
         }
     }
+
+    public void validateUserHasManagement() {
+        if (findById(tokenService.getIdFromToken()).getManagementDashboard() != null) {
+            throw new BusinessLogicException(ExceptionCode.USER_HAS_MANAGEMENT_DASHBOARD);
+        }
+    }
+
 
 
     //파라미터로 받은 유저가 매니저인지 확인하는 메서드
@@ -320,16 +329,21 @@ public class UserService {
         return true;
     }
 
+    //현재 로그인한 유저가, 해당 페이지에 존재하는 최초 매니저가 맞는지 확인
     public boolean validInitialManager(ManagementDashboard managementDashboard){
         User user = userRepository.findByIdAndManagementDashboard(tokenService.getIdFromToken(), managementDashboard)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD));
 
         return user.isInitialManager();
     }
-    
-    
 
-
+    //관리 페이지를 생성할때, 해당 유저가 최초 매니저인지 확인하는 메서드
+    public void validCreateInitialManager(){
+        if(!findById(tokenService.getIdFromToken()).isInitialManager()){
+            throw  new BusinessLogicException(ExceptionCode.NOT_INITIAL_MANAGER);
+        }
+    }
+    
 
 
     @Transactional
@@ -342,7 +356,6 @@ public class UserService {
         userRepository.save(user);
         return randomPassword;
     }
-
 
 
     public User verifiedUser(long projectId) {
@@ -396,7 +409,7 @@ public class UserService {
 
     private void validatePhoneNumber(String phone) {
         if (userRepository.findByPhoneNumber(phone).isPresent()) {
-            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_PHONENUMBER);
+            throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_PHONE_NUMBER);
         }
     }
 
@@ -411,6 +424,12 @@ public class UserService {
         if (!current.getManagementDashboard().equals(target.getManagementDashboard())) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
         }
+    }
+
+    public ManagementDashboard findByPageName(String name){
+        return  managementDashboardRepository.findByName(name).orElseThrow(
+                ()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND)
+        );
     }
 
 
