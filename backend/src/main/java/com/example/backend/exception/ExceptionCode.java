@@ -21,6 +21,7 @@ public enum ExceptionCode {
 
     //유저 예외 처리
     NOT_INITIAL_MANAGER(403, "해당 기능은 최초 생성 매니저만 사용할 수 있습니다."),
+    NOT_ADMIN(403, "해당 기능은 최초 최고 관리자(Admin)만 사용할 수 있습니다."),
     NOT_MANAGER(403, "해당 기능은 매니저만 사용할 수 있습니다."),
     INVALID_APPROVAL_TARGET_ROLE(400, "승인 대상 유저는 매니저 권한을 가져야 합니다."),
     ROLE_NOT_FOUND(404,"존재하지 않는 역할입니다."),
