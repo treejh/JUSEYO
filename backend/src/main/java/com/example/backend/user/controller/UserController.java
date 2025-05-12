@@ -212,7 +212,7 @@ public class UserController {
 
     @GetMapping("/reject/manager")
     @Operation(
-            summary = "해당 관리 페이지 사용이 거부된 매니저  ",
+            summary = "해당 관리 페이지 사용이 거부된 매니저 리스트 조회 ",
             description = "해당 관리 페이지 사용이 거부된 매니저 리스트를 조회할 수 있습니다."
     )
     public ResponseEntity<?> getRejectManager(@RequestParam String managementDashboardName
@@ -233,7 +233,7 @@ public class UserController {
 
     @GetMapping("/approve/manager")
     @Operation(
-            summary = "해당 관리 페이지 사용이 승인된 매니저  ",
+            summary = "해당 관리 페이지 사용이 승인된 매니저 리스트 조회  ",
             description = "해당 관리 페이지 사용이 승인된 매니저 리스트를 조회할 수 있습니다."
     )
     public ResponseEntity<?> getApproveManager(@RequestParam String managementDashboardName
@@ -246,7 +246,7 @@ public class UserController {
         Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);;
 
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "사용이 거부된 매니저 리스트 조회 성공", responseList),
+                ApiResponse.of(HttpStatus.OK.value(), "사용이 승인된 매니저 리스트 조회 성공", responseList),
                 HttpStatus.OK
         );
 
@@ -254,8 +254,8 @@ public class UserController {
 
     @GetMapping("/request/manager")
     @Operation(
-            summary = "해당 관리 페이지 사용이 승인된 매니저  ",
-            description = "해당 관리 페이지 사용이 승인된 매니저 리스트를 조회할 수 있습니다."
+            summary = "해당 관리 페이지 사용을 요청한 매니저 리스트 조회  ",
+            description = "해당 관리 페이지 사용을 요청한 매니저 리스트를 조회할 수 있습니다."
     )
     public ResponseEntity<?> getRequestManager(@RequestParam String managementDashboardName
             ,@RequestParam(name = "page", defaultValue = "1") int page,
@@ -267,7 +267,7 @@ public class UserController {
         Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);;
 
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "사용이 거부된 매니저 리스트 조회 성공", responseList),
+                ApiResponse.of(HttpStatus.OK.value(), "사용을 요청한 매니저 리스트 조회 성공", responseList),
                 HttpStatus.OK
         );
 

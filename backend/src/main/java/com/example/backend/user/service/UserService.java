@@ -166,7 +166,7 @@ public class UserService {
         validManager();
 
         // 2. 현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
-        validInitialManager(managementDashboard);
+        validateInitialManager(managementDashboard);
 
         return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
                 managementDashboard, approvalStatus, pageable, role);
@@ -174,17 +174,17 @@ public class UserService {
 
     // 승인된 매니저 리스트 가져오기
     public Page<User> getApprovedManagerList(String managementDashboardName, Pageable pageable) {
-        return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.APPROVED, pageable);
+        return getManagerListByApprovalStatus(managementDashboardName, ApprovalStatus.APPROVED, pageable);
     }
 
     // 요청된 매니저 리스트 가져오기
     public Page<User> getRequestManagerList(String managementDashboardName, Pageable pageable) {
-        return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.REQUESTED, pageable);
+        return getManagerListByApprovalStatus(managementDashboardName, ApprovalStatus.REQUESTED, pageable);
     }
 
     // 거부된 매니저 리스트 가져오기
     public Page<User> getRejectManagerList(String managementDashboardName, Pageable pageable) {
-        return getUserListByApprovalStatus(managementDashboardName, ApprovalStatus.REJECTED, pageable);
+        return getManagerListByApprovalStatus(managementDashboardName, ApprovalStatus.REJECTED, pageable);
     }
 
 
@@ -251,7 +251,7 @@ public class UserService {
         validateSameDashboardOrThrow(currentLoginUser, requestUser);
 
         // 4. 현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
-        validInitialManager(requestUser.getManagementDashboard());
+        validateInitialManager(requestUser.getManagementDashboard());
 
         // 승인 또는 거부 상태로 변경
         requestUser.setApprovalStatus(approvalStatus);
@@ -293,7 +293,7 @@ public class UserService {
 
     //파라미터로 받은 유저가 매니저인지 확인하는 메서드
     private void validateNotManager(User user){
-        if(user.getRole().getRole().equals(RoleType.MANAGER)){
+        if(!user.getRole().getRole().equals(RoleType.MANAGER)){
             throw new BusinessLogicException(ExceptionCode.INVALID_APPROVAL_TARGET_ROLE);
         }
     }
@@ -310,7 +310,7 @@ public class UserService {
 
     //현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
     //true면 맞다는말
-    public boolean validInitialManager(ManagementDashboard managementDashboard){
+    public boolean validateInitialManager(ManagementDashboard managementDashboard){
         User user = userRepository.findByIdAndManagementDashboard(tokenService.getIdFromToken(), managementDashboard)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD));
 
@@ -319,6 +319,15 @@ public class UserService {
         }
         return true;
     }
+
+    public boolean validInitialManager(ManagementDashboard managementDashboard){
+        User user = userRepository.findByIdAndManagementDashboard(tokenService.getIdFromToken(), managementDashboard)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD));
+
+        return user.isInitialManager();
+    }
+    
+    
 
 
 
