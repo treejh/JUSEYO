@@ -1,5 +1,6 @@
 package com.example.backend.inventoryIn.service;
 
+import com.example.backend.enums.Outbound;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryIn.dto.request.InventoryInRequestDto;
@@ -8,6 +9,11 @@ import com.example.backend.inventoryIn.entity.InventoryIn;
 import com.example.backend.inventoryIn.repository.InventoryInRepository;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
+import com.example.backend.itemInstance.dto.request.CreateItemInstanceRequestDto;
+import com.example.backend.itemInstance.dto.request.UpdateItemInstanceStatusRequestDto;
+import com.example.backend.itemInstance.entity.ItemInstance;
+import com.example.backend.itemInstance.repository.ItemInstanceRepository;
+import com.example.backend.itemInstance.service.ItemInstanceService;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.enums.Inbound;
@@ -30,6 +36,8 @@ public class InventoryInService {
     private final ItemRepository itemRepo;
     private final SupplyReturnRepository returnRequestRepository;
     private final ManagementDashboardRepository managementDashboardRepository;
+    private final ItemInstanceService instanceService;
+    private final ItemInstanceRepository instanceRepo;
 
 
     // 입고 생성
@@ -65,7 +73,30 @@ public class InventoryInService {
                 .build();
         InventoryIn savedInbound = inRepo.save(inbound);
 
-        // 3) 응답 DTO 반환
+        // 3) 개별자산단위 자동 생성/반납 처리
+        if (savedInbound.getInbound() == Inbound.PURCHASE) {
+            // 구매 입고: 수량만큼 신규 인스턴스 생성
+            for(int i = 0; i < savedInbound.getQuantity(); i++) {
+                CreateItemInstanceRequestDto cri = new CreateItemInstanceRequestDto();
+                cri.setItemId(item.getId());
+                cri.setImage(item.getImage());
+                instanceService.createInstance(cri);
+            }
+        } else if (savedInbound.getInbound() == Inbound.RETURN) {
+            // 반납 입고: 수량만큼 가장 오래된 대여중 인스턴스를 AVAILABLE로
+            for (int i = 0; i < savedInbound.getQuantity(); i++) {
+                ItemInstance inst = instanceRepo
+                        .findFirstByItemIdAndStatus(item.getId(), Outbound.LEND)
+                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+                UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
+                upd.setStatus(Outbound.AVAILABLE);
+                upd.setFinalImage(null);
+                instanceService.updateStatus(inst.getId(), upd);
+            }
+        }
+
+
+        // 4) 응답 DTO 반환
         return InventoryInResponseDto.builder()
                 .id(savedInbound.getId())
                 .itemId(item.getId())
