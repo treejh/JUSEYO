@@ -194,6 +194,25 @@ public class UserController {
     }
 
 
+    @PostMapping("/reject/manager/{userId}")
+    @Operation(
+            summary = "최초 매니저가 일반 매니저를 거부",
+            description = "최초 생성 매니저가 일반 매니저의 관리페이지 접근 요청을 거부합니다."
+    )
+    public ResponseEntity<?> rejectManagerAccess(@PathVariable Long userId) {
+
+        userService.rejectManager(userId);
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "접근 권한이 거부되었습니다."),
+                HttpStatus.OK
+        );
+
+    }
+
+
+
+
 
 
 

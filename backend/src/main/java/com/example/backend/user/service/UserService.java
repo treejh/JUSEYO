@@ -233,39 +233,6 @@ public class UserService {
 
     }
 
-    @Transactional
-    public void approveManager(Long userId){
-        //현재 로그인한 매니저
-        User currentLoginUser = findById(tokenService.getIdFromToken());
-        User requestUser = findById(userId);
-
-        if(isAdmin()){
-            requestUser.setApprovalStatus(ApprovalStatus.APPROVED);
-            userRepository.save(requestUser);
-            return;
-        }
-        //1. 매니저 승인 요청을 한 사용자가 매니저가 아닐 경우 예외처리
-        validateNotManager(requestUser);
-
-        //2. 현재 로그인한 유저가 매니저인지 확인( 매니저여야 한다)
-        validManager();
-
-        //3.  같은 대시보드여야 함
-        validateSameDashboardOrThrow(currentLoginUser,requestUser);
-
-        //4. 현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
-        validateInitialManager(requestUser.getManagementDashboard());
-
-
-        //승인 상태로 변경
-        requestUser.setApprovalStatus(ApprovalStatus.APPROVED);
-        userRepository.save(requestUser);
-
-    }
-
-    private boolean isAdmin() {
-        return tokenService.getRoleFromToken().getRole().equals(RoleType.ADMIN);
-    }
 
     //관리 페이지에 요청한 유저를 거부하는 메서드
     @Transactional
@@ -295,6 +262,53 @@ public class UserService {
         requestUser.setApprovalStatus(ApprovalStatus.REJECTED);
         userRepository.save(requestUser);
 
+    }
+
+    @Transactional
+    public void approveOrRejectManager(Long userId, ApprovalStatus approvalStatus){
+        //현재 로그인한 매니저
+        User currentLoginUser = findById(tokenService.getIdFromToken());
+        User requestUser = findById(userId);
+
+        if(isAdmin()){
+            requestUser.setApprovalStatus(approvalStatus);
+            userRepository.save(requestUser);
+            return;
+        }
+
+        // 1. 매니저 승인 요청을 한 사용자가 매니저가 아닐 경우 예외처리
+        validateNotManager(requestUser);
+
+        // 2. 현재 로그인한 유저가 매니저인지 확인(매니저여야 한다)
+        validManager();
+
+        // 3. 같은 대시보드여야 함
+        validateSameDashboardOrThrow(currentLoginUser, requestUser);
+
+        // 4. 현재 로그인한 유저가 해당 관리페이지에 속하고, 해당 관리 페이지의 최초 매니저인지 확인하는 메서드
+        validateInitialManager(requestUser.getManagementDashboard());
+
+        // 승인 또는 거부 상태로 변경
+        requestUser.setApprovalStatus(approvalStatus);
+        userRepository.save(requestUser);
+    }
+
+    // 승인 처리
+    @Transactional
+    public void approveManager(Long userId) {
+        approveOrRejectManager(userId, ApprovalStatus.APPROVED);
+    }
+
+    // 거부 처리
+    @Transactional
+    public void rejectManager(Long userId) {
+        approveOrRejectManager(userId, ApprovalStatus.REJECTED);
+    }
+
+
+
+    private boolean isAdmin() {
+        return tokenService.getRoleFromToken().getRole().equals(RoleType.ADMIN);
     }
 
 
