@@ -1,22 +1,11 @@
 package com.example.backend.department.entity;
 
 import com.example.backend.auditable.Auditable;
-import com.example.backend.enums.Outbound;
-import com.example.backend.item.entity.Item;
-import com.example.backend.managementDashboard.entity.ManagementDashboard;
-import com.example.backend.notification.entity.Notification;
+
 import com.example.backend.user.entity.User;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -37,6 +26,7 @@ import lombok.experimental.SuperBuilder;
 public class Department extends Auditable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 

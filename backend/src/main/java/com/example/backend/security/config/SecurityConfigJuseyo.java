@@ -34,10 +34,11 @@ public class SecurityConfigJuseyo {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
-
+                                "/v3/api-docs/**",
+                                "/api/v1/management/**" //테스트용 인증 열어두기
 
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
                         //회원
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/*","/api/v1/users/login").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
