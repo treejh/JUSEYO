@@ -24,6 +24,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class InventoryInService {
@@ -106,5 +108,20 @@ public class InventoryInService {
                 .createdAt(savedInbound.getCreatedAt())
                 .modifiedAt(savedInbound.getModifiedAt())
                 .build();
+    }
+
+    /** 전체 입고내역 조회 (Excel용) */
+    @Transactional(readOnly = true)
+    public List<InventoryInResponseDto> getAllInbound() {
+        return inRepo.findAll().stream()
+                .map(in -> InventoryInResponseDto.builder()
+                        .id(in.getId())
+                        .itemId(in.getItem().getId())
+                        .quantity(in.getQuantity())
+                        .inbound(in.getInbound().name())
+                        .createdAt(in.getCreatedAt())
+                        .modifiedAt(in.getModifiedAt())
+                        .build())
+                .toList();
     }
 }
