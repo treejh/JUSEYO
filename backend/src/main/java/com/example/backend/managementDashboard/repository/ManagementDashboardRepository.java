@@ -1,7 +1,10 @@
 package com.example.backend.managementDashboard.repository;
 
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ManagementDashboardRepository extends CrudRepository<ManagementDashboard, Long> {
+import java.util.Optional;
+
+public interface ManagementDashboardRepository extends JpaRepository<ManagementDashboard, Long> {
+    Optional<ManagementDashboard> findById(Long id);
 }
