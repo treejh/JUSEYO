@@ -10,6 +10,8 @@ public enum ExceptionCode {
     TOKEN_NOT_FOUND(404,"토큰 찾을 수 없습니다. "),//삭제 해도 됨
     ALREADY_HAS_BLOG(404, "블로그를 이미 가지고 있습니다."),
     ROLE_NOT_FOUND(404,"존재하지 않는 역할입니다."),
+    UNAUTHORIZED_ROLE(403, "접근 권한이 없는 역할입니다."),
+    USER_NOT_IN_MANAGEMENT_DASHBOARD(403, "해당 관리 페이지에 속한 유저가 아닙니다."),
     DEPARTMENT_NOT_FOUND(404,"존재하지 않는 부서입니다."),
     EMAIL_NOT_FOUND(404,"존재하지 않는 이메일입니다."),
     PHONE_NUMBER_NOT_FOUND(404,"핸드폰 번호를 찾을 수 없습니다."),

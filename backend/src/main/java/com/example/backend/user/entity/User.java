@@ -68,6 +68,10 @@ public class User extends Auditable { // Auditable 상속
     @Column(name = "status", nullable = false)
     private Status status;
 
+
+    @Column(name = "initial_manager")
+    private boolean initialManager;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "approval_status",nullable = false) // NULL 허용, 목적 불분명
     private ApprovalStatus approvalStatus; // Enum 타입이 더 적합할 수 있음
@@ -79,6 +83,8 @@ public class User extends Auditable { // Auditable 상속
     @ManyToOne
     @JoinColumn(name = "department_id")
     private Department department;
+
+
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.EAGER)
     List<Notification> notificationList = new ArrayList<>();
