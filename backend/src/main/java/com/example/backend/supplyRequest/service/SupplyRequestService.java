@@ -1,5 +1,6 @@
 package com.example.backend.supplyRequest.service;
 
+import com.example.backend.enums.Inbound;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryIn.dto.request.InventoryInRequestDto;
@@ -117,13 +118,9 @@ public class SupplyRequestService {
             InventoryInRequestDto inDto = new InventoryInRequestDto();
             inDto.setItemId(req.getItem().getId());
             inDto.setQuantity(req.getQuantity());
-            inDto.setInbound("RETURN");
-            inDto.setName(req.getItem().getName());
+            inDto.setInbound(Inbound.RETURN);
             inDto.setCategoryId(req.getItem().getCategory().getId());
             inDto.setManagementId(req.getItem().getManagementDashboard().getId());
-            inDto.setPurchaseSource(req.getItem().getPurchaseSource());
-            inDto.setLocation(req.getItem().getLocation());
-            inDto.setIsReturnRequired(req.getItem().getIsReturnRequired());
             inService.addInbound(inDto);
 
             req.setApprovalStatus(ApprovalStatus.RETURNED);
