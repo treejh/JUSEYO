@@ -64,7 +64,7 @@ public class UserController {
 
     @GetMapping("/approve")
     @Operation(
-            summary = "해당 관리 페이지 사용이 승인된 유저",
+            summary = "해당 관리 페이지 사용이 승인된 유저 리스트 ",
             description = "해당 관리 페이지 사용이 승인된 유저 리스트를 조회할 수 있습니다."
     )
     public ResponseEntity<?> getApproveUser(@RequestParam String managementDashboardName
@@ -83,7 +83,7 @@ public class UserController {
             responseList = approveUserList.map(ApproveUserListForManagerResponseDto::new);
         }
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "조회 성공", responseList),
+                ApiResponse.of(HttpStatus.OK.value(), "해당 관리 페이지 사용이 승인된 유저 리스트 조회 성공", responseList),
                 HttpStatus.OK
         );
 
@@ -92,7 +92,7 @@ public class UserController {
 
     @GetMapping("/request")
     @Operation(
-            summary = "해당 관리 페이지 사용을 요청한 유저 ",
+            summary = "해당 관리 페이지 사용을 요청한 유저 리스트 ",
             description = "해당 관리 페이지 사용을 요청한 유저 리스트를 조회할 수 있습니다."
     )
     public ResponseEntity<?> getRequestUser(@RequestParam String managementDashboardName
@@ -113,7 +113,7 @@ public class UserController {
         }
 
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "조회 성공", responseList),
+                ApiResponse.of(HttpStatus.OK.value(), "해당 관리 페이지 사용을 요청한 유저 리스트 조회 성공", responseList),
                 HttpStatus.OK
         );
 
@@ -121,7 +121,7 @@ public class UserController {
 
     @GetMapping("/reject")
     @Operation(
-            summary = "해당 관리 페이지 사용이 거부된 유저  ",
+            summary = "해당 관리 페이지 사용이 거부된 유저 리스트  ",
             description = "해당 관리 페이지 사용이 거부된 유저 리스트를 조회할 수 있습니다."
     )
     public ResponseEntity<?> getRejectUser(@RequestParam String managementDashboardName
@@ -142,7 +142,7 @@ public class UserController {
         }
 
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "조회 성공", responseList),
+                ApiResponse.of(HttpStatus.OK.value(), "해당 관리 페이지 사용이 거부된 유저 리스트 조회 성공", responseList),
                 HttpStatus.OK
         );
 
@@ -200,9 +200,7 @@ public class UserController {
             description = "최초 생성 매니저가 일반 매니저의 관리페이지 접근 요청을 거부합니다."
     )
     public ResponseEntity<?> rejectManagerAccess(@PathVariable Long userId) {
-
         userService.rejectManager(userId);
-
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "접근 권한이 거부되었습니다."),
                 HttpStatus.OK
