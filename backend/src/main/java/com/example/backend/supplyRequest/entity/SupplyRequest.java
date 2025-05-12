@@ -3,6 +3,7 @@ package com.example.backend.supplyRequest.entity;
 import com.example.backend.auditable.Auditable;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.item.entity.Item;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.user.entity.User;
 import jakarta.persistence.*;
 
@@ -28,6 +29,16 @@ public class SupplyRequest extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "management_id", nullable = false)
+    private ManagementDashboard managementDashboard;
+
+    @Column(name = "serial_number")
+    private String serialNumber;
+
+    @Column(name = "field")
+    private Boolean reRequest;
 
     @Column(name = "product_name", nullable = false)
     private String productName;

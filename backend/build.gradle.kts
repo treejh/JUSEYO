@@ -55,6 +55,12 @@ dependencies {
     // Gson - JSON 메시지를 다루기 위한 라이브러리
     implementation("com.google.code.gson:gson")
 
+    //JSON 데이터 역직렬화, 자바 객체 직렬화
+    implementation ("com.fasterxml.jackson.core:jackson-databind")
+
+    //Valid
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
 
 
 
