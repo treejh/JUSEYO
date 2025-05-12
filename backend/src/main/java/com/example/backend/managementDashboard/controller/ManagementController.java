@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,7 @@ public class ManagementController {
     private final ManagementDashboardService managementDashboardService;
 
     @Operation(summary = "관리 페이지 등록", description = "새로운 관리 페이지를 등록합니다.")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping
     public ResponseEntity<ManagementDashBoardResponseDto> addManagementDashboard(
             @RequestBody @Valid ManagementDashBoardRequestDto managementDashBoardRequestDto) {
@@ -37,6 +39,7 @@ public class ManagementController {
     }
 
     @Operation(summary = "관리 페이지 목록 조회", description = "승인 여부에 따라 관리 페이지 목록을 페이징 처리하여 조회합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<ManagementDashBoardResponseDto>> getManagementDashboards(
             @Parameter(description = "페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int page,
@@ -50,6 +53,7 @@ public class ManagementController {
     }
 
     @Operation(summary = "관리 페이지 단건 조회", description = "ID를 기반으로 특정 관리 페이지를 조회합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ManagementDashBoardResponseDto> getManagementDashboard(
             @Parameter(description = "관리 페이지 ID") @PathVariable(name = "id") Long id) {
@@ -57,6 +61,7 @@ public class ManagementController {
     }
 
     @Operation(summary = "관리 페이지 수정", description = "ID를 기준으로 관리 페이지를 수정합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}")
     public ResponseEntity<ManagementDashBoardResponseDto> updateManagementDashboard(
             @Parameter(description = "관리 페이지 ID") @PathVariable(name = "id") Long id,
@@ -65,6 +70,7 @@ public class ManagementController {
     }
 
     @Operation(summary = "관리 페이지 삭제", description = "ID를 기준으로 관리 페이지를 삭제합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteManagementDashboard(
             @Parameter(description = "관리 페이지 ID") @PathVariable(name = "id") Long id) {
@@ -73,6 +79,7 @@ public class ManagementController {
     }
 
     @Operation(summary = "관리 페이지 승인", description = "ID를 기준으로 관리 페이지를 승인 처리합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/approve/{id}")
     public ResponseEntity<Void> approveManagementDashboard(
             @Parameter(description = "관리 페이지 ID") @PathVariable(name = "id") Long id) {
