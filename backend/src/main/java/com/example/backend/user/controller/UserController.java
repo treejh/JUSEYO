@@ -174,8 +174,21 @@ public class UserController {
 
     }
 
+    @PatchMapping("/department/{departmentId}")
+    @Operation(
+            summary = "유저 부서 수정  ",
+            description = "로그인한 유저의 부서를 수정할 수 있습니다. "
+    )
+    public ResponseEntity updateDepartment(@PathVariable Long departmentId ) {
 
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserDepartment(departmentId));
 
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호 수정 성공", userProfileResponseDto),
+                HttpStatus.OK
+        );
+
+    }
 
 
 

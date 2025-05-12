@@ -3,6 +3,7 @@ package com.example.backend.user.service;
 
 
 import com.example.backend.department.entity.Department;
+import com.example.backend.department.repository.DepartmentRepository;
 import com.example.backend.department.service.DepartmentService;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;
@@ -43,9 +44,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ManagementDashboardRepository managementDashboardRepository;
+    private final DepartmentRepository departmentRepository;
+
     private final RoleService roleService;
     private final DepartmentService departmentService;
-    private final ManagementDashboardRepository managementDashboardRepository;
+
 
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
@@ -317,6 +321,7 @@ public class UserService {
 
     //수정 로직
 
+    @Transactional
     public User updateUserName(UserPatchRequestDto.changeName nameDto){
         User user = findById(tokenService.getIdFromToken());
         user.setName(nameDto.getName());
@@ -324,6 +329,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public User updateUserEmail(UserPatchRequestDto.changeEmail emailDto){
         User user = findById(tokenService.getIdFromToken());
         user.setEmail(emailDto.getEmail());
@@ -331,10 +337,35 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public User updateUserPhoneNumber(UserPatchRequestDto.changePhoneNumber phoneNumberDto){
         User user = findById(tokenService.getIdFromToken());
         user.setPhoneNumber(phoneNumberDto.getPhoneNumber());
         user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateUserDepartment(Long departmentId){
+        User user = findById(tokenService.getIdFromToken());
+
+        Department changeDepartment = departmentRepository.findById(departmentId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.DEPARTMENT_NOT_FOUND));
+
+        //해당 부서가, 유저의 관리페이지에 존재하는 부서인지 확인해야함
+
+        //1. 현재 로그인한 유저의 관리 페이지
+        ManagementDashboard loginUsermanagementDashboard = user.getManagementDashboard();
+
+        //2. 해당 부서의 관리 페이지가, 유저의 관리 페이지와 같지 않다면, 해당 관리 페이지에 속한 부서가 아니라는 뜻
+        if(!changeDepartment.getManagementDashboard().equals(loginUsermanagementDashboard)){
+            throw new BusinessLogicException(ExceptionCode.DEPARTMENT_NOT_IN_DASHBOARD);
+        }
+
+        user.setDepartment(changeDepartment);
+        userRepository.save(user);
+        user.setModifiedAt(LocalDateTime.now());
+
         return userRepository.save(user);
     }
 

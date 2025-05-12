@@ -39,7 +39,11 @@ public enum ExceptionCode {
     ALREADY_HAS_MANAGEMENT_DASHBOARD(404, "이미 존재하는 관리페이지 입니다."),
     USER_HAS_MANAGEMENT_DASHBOARD(404, "이미 관리자페이지에 속해있습니다."),
     USER_NOT_IN_MANAGEMENT_DASHBOARD(403, "해당 관리 페이지에 속한 유저가 아닙니다."),
-    MANAGEMENT_DASHBOARD_NOT_FOUND(404,"존재하지 않는 관리 페이지입니다.")
+    MANAGEMENT_DASHBOARD_NOT_FOUND(404,"존재하지 않는 관리 페이지입니다."),
+
+    //부서 예외 처리
+    DEPARTMENT_NOT_IN_DASHBOARD(403, "해당 관리 페이지에 속한 부서가 아닙니다.")
+
 
     ;
 
