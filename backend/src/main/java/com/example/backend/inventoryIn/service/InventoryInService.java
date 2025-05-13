@@ -115,9 +115,8 @@ public class InventoryInService {
                         .id(in.getId())
                         .itemId(in.getItem().getId())
                         .quantity(in.getQuantity())
-                        .inbound(in.getInbound().name())
+                        .inbound(Inbound.valueOf(in.getInbound().name()))
                         .createdAt(in.getCreatedAt())
-                        .modifiedAt(in.getModifiedAt())
                         .build())
                 .toList();
     }
