@@ -24,92 +24,77 @@ public class CategoryService {
     private final ManagementDashboardRepository managementDashboardRepository;
 
     /**
-     * 🔹 특정 대시보드 내에서 이름으로 카테고리 조회
-     */
-    @Transactional
-    public Category findCategoryByName(Long managementId, String name) {
-        return categoryRepository.findByManagementDashboardIdAndName(managementId, name)
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
-    }
-
-    /**
-     * 🔹 카테고리 생성 메서드
-     * @param dto - 생성할 카테고리 정보
-     * @param dashboard - 연관된 관리 대시보드 정보
-     * @return 생성된 카테고리 DTO (변경된 부분)
+     * 🔹 카테고리 생성
      */
     @Transactional
     public CategoryResponseDTO createCategory(CategoryCreateRequestDTO dto, ManagementDashboard dashboard) {
-
-        // 🔸 중복 체크
         if (categoryRepository.existsByNameAndManagementDashboardId(dto.getName(), dashboard.getId())) {
             throw new BusinessLogicException(ExceptionCode.CATEGORY_ALREADY_EXISTS);
         }
 
-        // 🔸 카테고리 생성 및 저장
         Category category = Category.builder()
                 .name(dto.getName())
                 .managementDashboard(dashboard)
                 .build();
 
-        Category savedCategory = categoryRepository.save(category);
+        categoryRepository.save(category);
+        return CategoryResponseDTO.fromEntity(category);
+    }
 
-        // 🔸 수정된 부분: Service에서 DTO로 매핑하여 반환
-        return CategoryResponseDTO.fromEntity(savedCategory);
+    /**
+     * 🔹 카테고리 수정
+     */
+    @Transactional
+    public CategoryResponseDTO updateCategory(Long id, CategoryUpdateRequestDTO dto, ManagementDashboard dashboard) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+
+        if (!category.getManagementDashboard().getId().equals(dashboard.getId())) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
+        }
+
+        category.setName(dto.getName());
+        categoryRepository.save(category);
+
+        return CategoryResponseDTO.fromEntity(category);
+    }
+
+    /**
+     * 🔹 카테고리 삭제
+     */
+    @Transactional
+    public void deleteCategory(Long id, ManagementDashboard dashboard) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+
+        if (!category.getManagementDashboard().getId().equals(dashboard.getId())) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
+        }
+
+        categoryRepository.delete(category);
     }
 
     /**
      * 🔹 전체 카테고리 조회
-     * @param managementId - 관리 대시보드 ID
-     * @return 조회된 카테고리 리스트
      */
-    public List<CategoryResponseDTO> findAllCategoriesByDashboard(Long managementId) {
-        List<Category> categories = categoryRepository.findByManagementDashboardId(managementId);
+    public List<CategoryResponseDTO> findAllCategoriesByDashboard(Long dashboardId) {
+        List<Category> categories = categoryRepository.findByManagementDashboardId(dashboardId);
         return categories.stream()
                 .map(CategoryResponseDTO::fromEntity)
                 .toList();
     }
 
     /**
-     * 🔹 카테고리 단일 조회
-     * @param id - 카테고리 ID
-     * @return 조회된 카테고리 DTO (변경된 부분)
+     * 🔹 특정 카테고리 조회
      */
-    public CategoryResponseDTO findCategoryById(Long id) {
+    public CategoryResponseDTO findCategoryById(Long id, ManagementDashboard dashboard) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
 
-        // 🔸 수정된 부분: DTO로 매핑하여 반환
+        if (!category.getManagementDashboard().getId().equals(dashboard.getId())) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
+        }
+
         return CategoryResponseDTO.fromEntity(category);
-    }
-
-    /**
-     * 🔹 카테고리 수정
-     * @param id - 수정할 카테고리 ID
-     * @param dto - 수정할 정보
-     * @return 수정된 카테고리 DTO (변경된 부분)
-     */
-    @Transactional
-    public CategoryResponseDTO updateCategory(Long id, CategoryUpdateRequestDTO dto) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
-
-        category.setName(dto.getName());
-        Category updatedCategory = categoryRepository.save(category);
-
-        // 🔸 수정된 부분: DTO로 매핑하여 반환
-        return CategoryResponseDTO.fromEntity(updatedCategory);
-    }
-
-    /**
-     * 🔹 카테고리 삭제
-     * @param id - 삭제할 카테고리 ID
-     */
-    @Transactional
-    public void deleteCategory(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
-
-        categoryRepository.delete(category);
     }
 }

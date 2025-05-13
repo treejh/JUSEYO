@@ -4,6 +4,7 @@ import com.example.backend.category.dto.request.CategoryCreateRequestDTO;
 import com.example.backend.category.dto.request.CategoryUpdateRequestDTO;
 import com.example.backend.category.dto.response.CategoryResponseDTO;
 import com.example.backend.category.service.CategoryService;
+import com.example.backend.enums.RoleType;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
@@ -41,16 +42,13 @@ public class CategoryController {
             description = "매니저의 카테고리 생성을 처리합니다."
     )
     public ResponseEntity<CategoryResponseDTO> createCategory(@Valid @RequestBody CategoryCreateRequestDTO dto) {
-        // ✅ 사용자 검증 (GlobalExceptionHandler에서 처리될 예외 발생)
         User user = getAuthorizedManager();
-
-        // 관리 페이지 대시보드 조회
         ManagementDashboard dashboard = user.getManagementDashboard();
 
-        // Service 호출 - 생성 후 DTO 반환
+        // ✅ Service 호출 - 생성 후 DTO 반환
         CategoryResponseDTO responseDTO = categoryService.createCategory(dto, dashboard);
 
-        // 생성된 카테고리 반환
+        // ✅ 생성된 카테고리 반환
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
@@ -63,7 +61,6 @@ public class CategoryController {
             description = "대시보드 내 전체 카테고리 조회를 처리합니다."
     )
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
-        // ✅ 사용자 정보 가져오기
         User user = getAuthorizedUser();
         ManagementDashboard dashboard = user.getManagementDashboard();
 
@@ -71,10 +68,9 @@ public class CategoryController {
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
 
-        // 2️⃣ Service 호출 - 전체 조회 후 DTO로 반환
+        // ✅ Service 호출 - 전체 조회 후 DTO로 반환
         List<CategoryResponseDTO> response = categoryService.findAllCategoriesByDashboard(dashboard.getId());
 
-        // 3️⃣ 조회된 리스트 반환
         return ResponseEntity.ok(response);
     }
 
@@ -87,7 +83,6 @@ public class CategoryController {
             description = "특정 카테고리 조회를 처리합니다."
     )
     public ResponseEntity<CategoryResponseDTO> getCategoryById(@PathVariable Long id) {
-        // ✅ 사용자 정보 가져오기
         User user = getAuthorizedUser();
         ManagementDashboard dashboard = user.getManagementDashboard();
 
@@ -95,15 +90,50 @@ public class CategoryController {
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
 
-        // 🔹 해당 카테고리가 관리 페이지에 속해 있는지 확인
-        CategoryResponseDTO response = categoryService.findCategoryById(id);
+        // ✅ Service 호출 - 권한 체크 포함된 단일 조회
+        CategoryResponseDTO response = categoryService.findCategoryById(id, dashboard);
 
-        if (!response.getManagementDashboardId().equals(dashboard.getId())) {
-            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
-        }
-
-        // 2️⃣ DTO 반환
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 🔹 카테고리 수정 (매니저만 가능)
+     */
+    @PutMapping("/{id}")
+    @Operation(
+            summary = "카테고리 수정",
+            description = "매니저가 카테고리를 수정합니다."
+    )
+    public ResponseEntity<CategoryResponseDTO> updateCategory(
+            @PathVariable Long id,
+            @Valid @RequestBody CategoryUpdateRequestDTO dto) {
+
+        User user = getAuthorizedManager();
+        ManagementDashboard dashboard = user.getManagementDashboard();
+
+        // ✅ Service 호출 - 업데이트 처리
+        CategoryResponseDTO responseDTO = categoryService.updateCategory(id, dto, dashboard);
+
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    /**
+     * 🔹 카테고리 삭제 (매니저만 가능)
+     */
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "카테고리 삭제",
+            description = "매니저가 카테고리를 삭제합니다."
+    )
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        User user = getAuthorizedManager();
+        ManagementDashboard dashboard = user.getManagementDashboard();
+
+        // ✅ Service 호출 - 삭제 처리
+        categoryService.deleteCategory(id, dashboard);
+
+        return ResponseEntity.noContent().build();
+
     }
 
     /**
@@ -117,9 +147,11 @@ public class CategoryController {
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
 
-        if (!"MANAGER".equals(user.getRole())) {
+        if (!RoleType.MANAGER.equals(user.getRole().getRole())) {
+            log.error("매니저 권한이 아닌 사용자가 접근 시도: {}", user.getRole().getRole());
             throw new BusinessLogicException(ExceptionCode.NOT_MANAGER);
         }
+
         return user;
     }
 
