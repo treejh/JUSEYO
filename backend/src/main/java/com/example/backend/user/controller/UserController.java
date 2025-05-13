@@ -1,19 +1,10 @@
 package com.example.backend.user.controller;
 
 
-
-import com.example.backend.email.entity.EmailMessage;
 import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
-import com.example.backend.user.dto.request.AdminSignupRequestDto;
-import com.example.backend.user.dto.request.EmailRequestDto;
-import com.example.backend.user.dto.request.EmailVerificationRequest;
-import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
-import com.example.backend.user.dto.request.ManagerSignupRequestDto;
-import com.example.backend.user.dto.request.UserLoginRequestDto;
-import com.example.backend.user.dto.request.UserPatchRequestDto;
-import com.example.backend.user.dto.request.UserSignRequestDto;
+import com.example.backend.user.dto.request.*;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.user.dto.response.UserProfileResponseDto;
 import com.example.backend.user.entity.User;
@@ -30,15 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -394,7 +377,7 @@ public class UserController {
             description = "사용자가 입력한 인증코드를 확인하여 이메일 인증을 진행합니다. 인증번호가 유효한 경우 인증이 완료됩니다."
     )
     public ResponseEntity sendCertificationNumberValid(@Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
-        userService.verifyEmailCode(emailVerificationRequest);
+        //userService.verifyEmailCode(emailVerificationRequest);
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "이메일 인증 성공 (인증 번호 인증 성공) "),

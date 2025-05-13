@@ -1,7 +1,6 @@
 package com.example.backend.user.service;
 
 
-
 import com.example.backend.department.entity.Department;
 import com.example.backend.department.repository.DepartmentRepository;
 import com.example.backend.department.service.DepartmentService;
@@ -17,20 +16,12 @@ import com.example.backend.managementDashboard.repository.ManagementDashboardRep
 import com.example.backend.role.RoleService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
-import com.example.backend.user.dto.request.AdminSignupRequestDto;
-import com.example.backend.user.dto.request.EmailVerificationRequest;
-import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
-import com.example.backend.user.dto.request.ManagerSignupRequestDto;
-import com.example.backend.user.dto.request.UserPatchRequestDto;
-import com.example.backend.user.dto.request.UserSignRequestDto;
+import com.example.backend.user.dto.request.*;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,6 +29,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.function.Function;
 
 
 @Service
@@ -524,15 +519,15 @@ public class UserService {
 
     }
 
-    @Transactional
-    public void verifyEmailCode(EmailVerificationRequest emailVerificationRequest){
-        //이메일 중복 회원가입 불가
-        validateEmail(emailVerificationRequest.getEmail());
-        if(!emailService.verifiedCode(emailVerificationRequest.getEmail(),emailVerificationRequest.getAuthCode())){
-            throw new BusinessLogicException(ExceptionCode.EMAIL_VERIFICATION_FAILED);
-        };
-
-    }
+//    @Transactional
+//    public void verifyEmailCode(EmailVerificationRequest emailVerificationRequest){
+//        //이메일 중복 회원가입 불가
+//        validateEmail(emailVerificationRequest.getEmail());
+//        if(!emailService.verifiedCode(emailVerificationRequest.getEmail(),emailVerificationRequest.getAuthCode())){
+//            throw new BusinessLogicException(ExceptionCode.EMAIL_VERIFICATION_FAILED);
+//        };
+//
+//    }
 
 
 

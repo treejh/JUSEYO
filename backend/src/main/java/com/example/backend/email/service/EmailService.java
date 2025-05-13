@@ -1,11 +1,9 @@
 package com.example.backend.email.service;
 
 import com.example.backend.email.entity.EmailMessage;
-import com.example.backend.redis.RedisService;
 import com.example.backend.utils.CreateRandomNumber;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +28,7 @@ public class EmailService {
     private long authCodeExpirationMillis;
 
     private final SpringTemplateEngine templateEngine;
-    private final RedisService redisService;
+//    private final RedisService redisService;
     private static final String AUTH_CODE_PREFIX = "certification:email:";
 
 
@@ -65,8 +63,8 @@ public class EmailService {
         String certificationNumber = CreateRandomNumber.randomNumber();
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
-        redisService.saveData(AUTH_CODE_PREFIX + emailMessage.getTo(),
-                certificationNumber, Duration.ofMillis(this.authCodeExpirationMillis));
+//        redisService.saveData(AUTH_CODE_PREFIX + emailMessage.getTo(),
+//                certificationNumber, Duration.ofMillis(this.authCodeExpirationMillis));
 
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
@@ -85,10 +83,10 @@ public class EmailService {
 
     }
 
-    public boolean verifiedCode(String email, String authCode) {
-        String redisAuthCode = redisService.getData(AUTH_CODE_PREFIX + email);
-        return redisAuthCode != null && redisAuthCode.equals(authCode);
-    }
+//    public boolean verifiedCode(String email, String authCode) {
+//        String redisAuthCode = redisService.getData(AUTH_CODE_PREFIX + email);
+//        return redisAuthCode != null && redisAuthCode.equals(authCode);
+//    }
 
 
 

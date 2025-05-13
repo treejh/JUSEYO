@@ -105,14 +105,23 @@ public class ItemService {
     // 자신이 소속 관리페이지의 단일 아이템 조회 가능
     @Transactional(readOnly = true)
     public ItemResponseDto getItem(Long id) {
-        Long userId = tokenService.getIdFromToken();
-        User me = userRepo.findById(userId)
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        // 1) 현재 사용자 조회 & 관리대시보드 ID
+        Long currentUserId = tokenService.getIdFromToken();
+        ManagementDashboard userMgmt = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard();
 
-        Long mgmtId = me.getManagementDashboard().getId();
-        return repo.findByIdAndManagementDashboardId(id, mgmtId)
-                .map(this::mapToDto)
+        // 2) 실제 아이템 조회
+        Item entity = repo.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+
+        // 3) 권한 확인
+        if (!entity.getManagementDashboard().getId().equals(userMgmt.getId())) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
+        // 4) DTO 반환
+        return mapToDto(entity);
     }
 
     // 자신이 소속 관리페이지의 모든 아이템 조회 가능
