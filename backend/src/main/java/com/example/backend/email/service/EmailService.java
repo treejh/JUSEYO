@@ -2,6 +2,7 @@ package com.example.backend.email.service;
 
 import com.example.backend.email.entity.EmailMessage;
 //import com.example.backend.redis.RedisService;
+import com.example.backend.redis.RedisService;
 import com.example.backend.utils.CreateRandomNumber;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -30,7 +31,7 @@ public class EmailService {
     private long authCodeExpirationMillis;
 
     private final SpringTemplateEngine templateEngine;
-//    private final RedisService redisService;
+    private final RedisService redisService;
     private static final String AUTH_CODE_PREFIX = "certification:email:";
 
 
