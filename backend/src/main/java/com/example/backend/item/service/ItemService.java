@@ -1,5 +1,6 @@
 package com.example.backend.item.service;
 
+import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.exception.BusinessLogicException;
@@ -15,6 +16,8 @@ import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,7 @@ public class ItemService {
     private static final String ALPHANUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private final UserRepository userRepo;
     private final TokenService tokenService;
+    private final InventoryAnalysisService analysisService;
 
     /**
      * 랜덤 8자리 알파벳+숫자 생성
@@ -75,6 +79,7 @@ public class ItemService {
                 .build();
         Item saved = repo.save(entity);
 
+        analysisService.clearCategoryCache(); // 캐시 무효화
         return mapToDto(saved);
     }
 
@@ -99,6 +104,7 @@ public class ItemService {
         entity.setManagementDashboard(mgmt);
 
         Item updated = repo.save(entity);
+        analysisService.clearCategoryCache(); // 캐시 무효화
         return mapToDto(updated);
     }
 
@@ -143,6 +149,7 @@ public class ItemService {
             throw new IllegalArgumentException("Item not found");
         }
         repo.deleteById(id);
+        analysisService.clearCategoryCache(); // 캐시 무효화
     }
 
     private ItemResponseDto mapToDto(Item e) {
@@ -163,4 +170,9 @@ public class ItemService {
                 .modifiedAt(e.getModifiedAt())
                 .build();
     }
+
+    public Page<ItemResponseDto> getItemsPagedSorted(Pageable pageable) {
+        return repo.findAllAsDto(pageable);
+    }
+
 }

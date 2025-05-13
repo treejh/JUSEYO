@@ -4,7 +4,6 @@ import com.example.backend.enums.Outbound;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryIn.dto.request.InventoryInRequestDto;
-import com.example.backend.inventoryIn.dto.response.InventoryInExcelResponseDto;
 import com.example.backend.inventoryIn.dto.response.InventoryInResponseDto;
 import com.example.backend.inventoryIn.entity.InventoryIn;
 import com.example.backend.inventoryIn.repository.InventoryInRepository;
@@ -110,16 +109,14 @@ public class InventoryInService {
 
 
     /** 전체 입고내역 조회 (Excel용) */
-    public List<InventoryInExcelResponseDto> getAllInboundForExcel() {
+    public List<InventoryInResponseDto> getAllInbound() {
         return inRepo.findAll().stream()
-                .map(in -> InventoryInExcelResponseDto.builder()
+                .map(in -> InventoryInResponseDto.builder()
                         .id(in.getId())
                         .itemId(in.getItem().getId())
-                        .itemName(in.getItem().getName())
                         .quantity(in.getQuantity())
-                        .inbound(in.getInbound())
+                        .inbound(Inbound.valueOf(in.getInbound().name()))
                         .createdAt(in.getCreatedAt())
-                        .modifiedAt(in.getModifiedAt())
                         .build())
                 .toList();
     }

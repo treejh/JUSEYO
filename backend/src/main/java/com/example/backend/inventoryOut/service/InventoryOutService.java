@@ -1,5 +1,7 @@
 package com.example.backend.inventoryOut.service;
 
+import com.example.backend.analysis.service.InventoryAnalysisService;
+import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.enums.Outbound;
@@ -22,12 +24,14 @@ import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class InventoryOutService {
     private final InventoryOutRepository outRepo;
@@ -39,10 +43,12 @@ public class InventoryOutService {
     private final ItemInstanceRepository instanceRepo;
     private final UserRepository userRepo;
     private final TokenService tokenService;
+    private final InventoryAnalysisService inventoryAnalysisService;
+
 
     @Transactional
     public InventoryOutResponseDto removeOutbound(InventoryOutRequestDto dto) {
-        
+
         //권한체크
         Long currentUserId = tokenService.getIdFromToken();
         SupplyRequest req = supplyRequestRepo.findById(dto.getSupplyRequestId())
@@ -82,6 +88,14 @@ public class InventoryOutService {
                 .outbound(Outbound.valueOf(dto.getOutbound()))
                 .build();
         InventoryOut saved = outRepo.save(entity);
+
+        // Redis 사용 빈도 증가
+        try {
+            inventoryAnalysisService.increaseItemUsage(saved.getItem().getName(), saved.getQuantity());
+        } catch (Exception e) {
+            log.warn("Redis 사용 빈도 증가 실패: {}", e.getMessage());
+        }
+
 
         // 4) 아이템 재고 차감
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());

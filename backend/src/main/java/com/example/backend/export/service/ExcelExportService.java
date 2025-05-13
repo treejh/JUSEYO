@@ -1,6 +1,6 @@
 package com.example.backend.export.service;
 
-import com.example.backend.inventoryIn.dto.response.InventoryInExcelResponseDto;
+import com.example.backend.inventoryIn.dto.response.InventoryInResponseDto;
 import com.example.backend.inventoryOut.dto.response.InventoryOutResponseDto;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.itemInstance.dto.response.ItemInstanceResponseDto;
@@ -15,19 +15,20 @@ import java.util.List;
 @Service
 public class ExcelExportService {
 
-    public void exportInventoryIn(List<InventoryInExcelResponseDto> ins, HttpServletResponse response) throws Exception {
+    // 기존 exportItems, exportInstances 메서드 그대로…
+
+    public void exportInventoryIn(List<InventoryInResponseDto> ins, HttpServletResponse response) throws Exception {
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("InventoryIn");
-            createHeader(sheet, new String[]{"ID","ItemId","Quantity","InboundType","CreatedAt","ModifiedAt"});
+            createHeader(sheet, new String[]{"ID","ItemId","Quantity","InboundType","CreatedAt"});
             int r = 1;
-            for (InventoryInExcelResponseDto dto : ins) {
+            for (var dto : ins) {
                 Row row = sheet.createRow(r++);
                 row.createCell(0).setCellValue(dto.getId());
                 row.createCell(1).setCellValue(dto.getItemId());
                 row.createCell(2).setCellValue(dto.getQuantity());
-                row.createCell(3).setCellValue(dto.getInbound().name());
+                row.createCell(3).setCellValue(dto.getInbound().ordinal());
                 row.createCell(4).setCellValue(dto.getCreatedAt().toString());
-                row.createCell(5).setCellValue(dto.getModifiedAt().toString());
             }
             writeToResponse(wb, response, "inventory_in.xlsx");
         }
@@ -38,7 +39,7 @@ public class ExcelExportService {
             Sheet sheet = wb.createSheet("InventoryOut");
             createHeader(sheet, new String[]{"ID","SupplyRequestId","ItemId","CategoryId","ManagementId","Quantity","OutboundType","CreatedAt"});
             int r = 1;
-            for (InventoryOutResponseDto dto : outs) {
+            for (var dto : outs) {
                 Row row = sheet.createRow(r++);
                 row.createCell(0).setCellValue(dto.getId());
                 row.createCell(1).setCellValue(dto.getSupplyRequestId());
@@ -61,7 +62,7 @@ public class ExcelExportService {
                     "Quantity","Purpose","UseDate","ReturnDate","Rental","ApprovalStatus","CreatedAt"
             });
             int r = 1;
-            for (SupplyRequestResponseDto dto : reqs) {
+            for (var dto : reqs) {
                 Row row = sheet.createRow(r++);
                 row.createCell(0).setCellValue(dto.getId());
                 row.createCell(1).setCellValue(dto.getItemId());
@@ -72,8 +73,8 @@ public class ExcelExportService {
                 row.createCell(6).setCellValue(dto.getProductName());
                 row.createCell(7).setCellValue(dto.getQuantity());
                 row.createCell(8).setCellValue(dto.getPurpose());
-                row.createCell(9).setCellValue(dto.getUseDate() != null ? dto.getUseDate().toString() : "");
-                row.createCell(10).setCellValue(dto.getReturnDate() != null ? dto.getReturnDate().toString() : "");
+                row.createCell(9).setCellValue(dto.getUseDate()!=null?dto.getUseDate().toString():"");
+                row.createCell(10).setCellValue(dto.getReturnDate()!=null?dto.getReturnDate().toString():"");
                 row.createCell(11).setCellValue(dto.isRental());
                 row.createCell(12).setCellValue(dto.getApprovalStatus().name());
                 row.createCell(13).setCellValue(dto.getCreatedAt().toString());
@@ -120,6 +121,7 @@ public class ExcelExportService {
         }
     }
 
+    // 공통 유틸 메서드 (기존과 동일)
     private void createHeader(Sheet sheet, String[] headers) {
         Row header = sheet.createRow(0);
         CellStyle style = sheet.getWorkbook().createCellStyle();
