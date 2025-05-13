@@ -27,7 +27,7 @@ public class ExcelExportService {
                 row.createCell(0).setCellValue(dto.getId());
                 row.createCell(1).setCellValue(dto.getItemId());
                 row.createCell(2).setCellValue(dto.getQuantity());
-                row.createCell(3).setCellValue(dto.getInbound());
+                row.createCell(3).setCellValue(dto.getInbound().ordinal());
                 row.createCell(4).setCellValue(dto.getCreatedAt().toString());
             }
             writeToResponse(wb, response, "inventory_in.xlsx");
