@@ -4,12 +4,14 @@ package com.example.backend.security.config;
 
 
 import com.example.backend.security.jwt.filter.JwtAuthenticationFilter;
+import com.example.backend.security.jwt.filter.UserStatusCheckFilter;
 import com.example.backend.security.jwt.util.JwtTokenizer;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -24,9 +26,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfigJuseyo {
 
     private final JwtTokenizer jwtTokenizer;
+    private final UserStatusCheckFilter userStatusCheckFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -34,25 +38,27 @@ public class SecurityConfigJuseyo {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/api/v1/management/**", //테스트용 인증 열어두기
-                                "/api/v1/categories/**" //TODO 테스트 후 닫기, 테스트용 인증 열어둔 상태
-
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
                         //회원
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/findPassword").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request","/api/v1/users/approve/**","/api/v1/users/reject/**")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
+                        //비품
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
-                        // 부서
+                        //부서
                         .requestMatchers(HttpMethod.POST, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/departments/**").hasAnyRole("MANAGER", "USER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/**").hasRole("MANAGER")
+                        // 알림(테스트 목적으로 permitAll)
+                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").permitAll()
 
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session
@@ -67,6 +73,7 @@ public class SecurityConfigJuseyo {
 
         return http.build();
     }
+
 
 
 

@@ -1,9 +1,12 @@
 package com.example.backend.item.repository;
 
+import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +20,12 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     // 단일 조회 + 소속 확인
     Optional<Item> findByIdAndManagementDashboardId(Long id, Long managementDashboardId);
+
+    @Query("SELECT new com.example.backend.item.dto.response.ItemResponseDto(" +
+            "i.id, i.name, i.serialNumber, i.minimumQuantity, " +
+            "i.totalQuantity, i.availableQuantity, i.purchaseSource, " +
+            "i.location, i.isReturnRequired, i.image, " +
+            "i.category.id, i.managementDashboard.id, i.createdAt, i.modifiedAt) " +
+            "FROM Item i")
+    Page<ItemResponseDto> findAllAsDto(Pageable pageable);
 }

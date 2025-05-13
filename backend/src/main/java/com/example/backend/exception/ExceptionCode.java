@@ -13,19 +13,23 @@ public enum ExceptionCode {
     INVALID_PASSWORD(401,"비밀번호가 일치하지 않습니다."),
     AlREADY_HAS_DEPARTMENT(404, "이미 존재하는 부서입니다."),
     ITEM_NOT_FOUND(404, "비품을 찾을 수 없습니다."),
+    ITEM_INSTANCE_NOT_FOUND(404, "존재하지 않는 개별 자산 입니다. "),
     INVENTORY_IN_NOT_FOUND(404, "입고내역을 찾을 수 없습니다."),
     INVENTORY_OUT_NOT_FOUND(404, "출고내역을 찾을 수 없습니다."),
-    SUPPLY_REQUEST_NOT_FOUND(404, "비품요청서를 찾을 수 없습니다."),
+    SUPPLY_REQUEST_NOT_FOUND(404, "비품 요청서를 찾을 수 없습니다."),
+    SUPPLY_RETURN_NOT_FOUND(404,"비품 반납서를 찾을 수 없습니다."),
     INSUFFICIENT_STOCK(400, "비품 보유 수량이 부족합니다."),
     CATEGORY_NOT_FOUND(404, "카테고리를 찾을 수 없습니다."),
-    CATEGORY_ALREADY_EXISTS(409, "관리 페이지에 이미 존재하는 카테고리 이름입니다."),
+    NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
 
     //유저 예외 처리
     NOT_INITIAL_MANAGER(403, "해당 기능은 최초 생성 매니저만 사용할 수 있습니다."),
+    NOT_ADMIN(403, "해당 기능은 최초 최고 관리자(Admin)만 사용할 수 있습니다."),
     NOT_MANAGER(403, "해당 기능은 매니저만 사용할 수 있습니다."),
     INVALID_APPROVAL_TARGET_ROLE(400, "승인 대상 유저는 매니저 권한을 가져야 합니다."),
     ROLE_NOT_FOUND(404,"존재하지 않는 역할입니다."),
     UNAUTHORIZED_ROLE(403, "접근 권한이 없는 역할입니다."),
+    EMAIL_VERIFICATION_FAILED(400, "이메일 인증을 실패하였습니다."),
 
     //회원가입 예외 처리
     ALREADY_HAS_EMAIL(409,"이미 존재하는 이메일입니다."),
@@ -40,6 +44,10 @@ public enum ExceptionCode {
     USER_HAS_MANAGEMENT_DASHBOARD(404, "이미 관리자페이지에 속해있습니다."),
     USER_NOT_IN_MANAGEMENT_DASHBOARD(403, "해당 관리 페이지에 속한 유저가 아닙니다."),
     MANAGEMENT_DASHBOARD_NOT_FOUND(404,"존재하지 않는 관리 페이지입니다."),
+
+    //부서 예외 처리
+    DEPARTMENT_NOT_IN_DASHBOARD(403, "해당 관리 페이지에 속한 부서가 아닙니다.")
+
 
     ;
 
