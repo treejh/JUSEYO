@@ -5,7 +5,9 @@ import com.example.backend.exception.ExceptionCode;
 import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.Notification;
 import com.example.backend.notification.repository.NotificationRepository;
+import com.example.backend.notification.service.strategy.NotificationStrategyFactory;
 import com.example.backend.notification.sse.EmitterRepository;
+import com.example.backend.notification.strategy.NotificationStrategy;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +24,20 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final EmitterRepository emitterRepository;
+    private final NotificationStrategyFactory strategyFactory; // ✅ 추가
 
     public Notification createNotification(NotificationRequestDTO request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
+        NotificationStrategy strategy = strategyFactory.getStrategy(request.getNotificationType());
+
+        String finalMessage = strategy.generateMessage(request.getMessage());
+
+
         Notification notification = Notification.builder()
                 .notificationType(request.getNotificationType())
-                .message(request.getMessage())
+                .message(finalMessage)
                 .readStatus(false)
                 .user(user)
                 .build();
@@ -50,7 +58,7 @@ public class NotificationService {
         return saved;
     }
 
-    public SseEmitter streamNotifications(Long userId) {
+    public SseEmitter streamNotifications(Long userId) throws IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
@@ -68,6 +76,14 @@ public class NotificationService {
                     .data("SSE 연결 완료"));
         } catch (IOException e) {
             emitter.completeWithError(e);
+        }
+
+        // ⬇️ 안 읽은 알림도 같이 보내기
+        List<Notification> unread = notificationRepository.findByUserAndReadStatus(user, false);
+        for (Notification notification : unread) {
+            emitter.send(SseEmitter.event()
+                    .name("notification")
+                    .data(notification));
         }
 
         return emitter;

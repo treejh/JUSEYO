@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -43,7 +44,7 @@ public class NotificationController {
 
     // SSE를 통한 실시간 알림 전송
     @GetMapping(value = "/stream/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamNotifications(@PathVariable Long userId) {
+    public SseEmitter streamNotifications(@PathVariable Long userId) throws IOException {
         System.out.println("📡 SSE 요청 받음: userId = " + userId);
 
         return notificationService.streamNotifications(userId);
