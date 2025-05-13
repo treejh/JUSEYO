@@ -20,6 +20,7 @@ public enum ExceptionCode {
     SUPPLY_RETURN_NOT_FOUND(404,"비품 반납서를 찾을 수 없습니다."),
     INSUFFICIENT_STOCK(400, "비품 보유 수량이 부족합니다."),
     CATEGORY_NOT_FOUND(404, "카테고리를 찾을 수 없습니다."),
+    NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
 
     //유저 예외 처리
     NOT_INITIAL_MANAGER(403, "해당 기능은 최초 생성 매니저만 사용할 수 있습니다."),
