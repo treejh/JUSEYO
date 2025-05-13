@@ -5,7 +5,7 @@ import com.example.backend.exception.ExceptionCode;
 import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.Notification;
 import com.example.backend.notification.repository.NotificationRepository;
-import com.example.backend.notification.service.strategy.NotificationStrategyFactory;
+import com.example.backend.notification.strategy.NotificationStrategyFactory;
 import com.example.backend.notification.sse.EmitterRepository;
 import com.example.backend.notification.strategy.NotificationStrategy;
 import com.example.backend.user.entity.User;

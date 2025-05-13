@@ -1,19 +1,19 @@
 package com.example.backend.notification.strategy;
 
-import com.example.backend.notification.strategy.context.ItemStockContext;
+import com.example.backend.notification.strategy.context.ReturnDueDateContext;
+
+import java.time.LocalDateTime;
 
 public class ReturnDueDateExceededStrategy implements NotificationStrategy {
     @Override
     public String generateMessage(Object context) {
-
-        // 추후 구현
-        return null;
+        ReturnDueDateContext ctx = (ReturnDueDateContext) context;
+        return "📦 반납 기한 초과: " + ctx.getItemName() + "의 반납일(" + ctx.getReturnDate() + ")이 지났습니다.";
     }
 
     @Override
     public boolean shouldTrigger(Object context) {
-
-        // 추후 구현
-        return false;
+        ReturnDueDateContext ctx = (ReturnDueDateContext) context;
+        return ctx.getReturnDate() != null && ctx.getReturnDate().isBefore(LocalDateTime.now());
     }
 }

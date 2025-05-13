@@ -1,11 +1,7 @@
-package com.example.backend.notification.service.strategy;
+package com.example.backend.notification.strategy;
 
 
 import com.example.backend.notification.entity.NotificationType;
-import com.example.backend.notification.strategy.NotificationStrategy;
-import com.example.backend.notification.strategy.ReturnDueDateExceededStrategy;
-import com.example.backend.notification.strategy.StockShortageStrategy;
-import com.example.backend.notification.strategy.SupplyRequestStrategy;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
