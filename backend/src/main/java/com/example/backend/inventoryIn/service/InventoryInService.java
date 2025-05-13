@@ -25,7 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.List;
 
 
 @Service
@@ -107,6 +107,21 @@ public class InventoryInService {
                 .build();
     }
 
+
+    /** 전체 입고내역 조회 (Excel용) */
+    public List<InventoryInResponseDto> getAllInbound() {
+        return inRepo.findAll().stream()
+                .map(in -> InventoryInResponseDto.builder()
+                        .id(in.getId())
+                        .itemId(in.getItem().getId())
+                        .quantity(in.getQuantity())
+                        .inbound(in.getInbound().name())
+                        .createdAt(in.getCreatedAt())
+                        .modifiedAt(in.getModifiedAt())
+                        .build())
+                .toList();
+    }
+
     //입고 내역 목록 조회
     public Page<InventoryInResponseDto> getInventoryIns(Pageable pageable,Inbound inbound) {
         if (inbound != null) {
@@ -134,5 +149,6 @@ public class InventoryInService {
                 .build();
         return inventoryInResponseDto;
     }
+
 
 }
