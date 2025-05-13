@@ -36,6 +36,7 @@ public enum ExceptionCode {
     ALREADY_HAS_EMAIL(409,"이미 존재하는 이메일입니다."),
     ALREADY_HAS_PHONE_NUMBER(409,"이미 존재하는 전화번호입니다."),
 
+
     //로그인 예외 처리
     EMAIL_NOT_FOUND(404,"존재하지 않는 이메일입니다."),
     PHONE_NUMBER_NOT_FOUND(404,"핸드폰 번호를 찾을 수 없습니다."),
@@ -47,9 +48,10 @@ public enum ExceptionCode {
     MANAGEMENT_DASHBOARD_NOT_FOUND(404,"존재하지 않는 관리 페이지입니다."),
 
     //부서 예외 처리
-    DEPARTMENT_NOT_IN_DASHBOARD(403, "해당 관리 페이지에 속한 부서가 아닙니다.")
+    DEPARTMENT_NOT_IN_DASHBOARD(403, "해당 관리 페이지에 속한 부서가 아닙니다."),
 
-
+    //카테고리 예외 처리
+    CATEGORY_ALREADY_EXISTS(409, "이미 존재하는 카테고리입니다.")
     ;
 
     @Getter
