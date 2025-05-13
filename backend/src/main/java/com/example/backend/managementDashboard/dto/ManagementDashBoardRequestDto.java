@@ -11,8 +11,8 @@ import lombok.Data;
 public class ManagementDashBoardRequestDto {
 
     @NotBlank(message = "이름은 필수입니다.")
-    @Schema(description = "사용자 이름", example = "홍길동")
-    private String name;
+    @Schema(description = "관리 페이지 이름", example = "ABC주식회사 주식회사 관리 페이지")
+    private String pageName;
 
     @NotBlank(message = "대표 정보는 필수입니다.")
     @Schema(description = "대표 정보", example = "이순신")

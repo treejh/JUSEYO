@@ -4,16 +4,8 @@ import com.example.backend.auditable.Auditable;
 import com.example.backend.enums.Outbound;
 import com.example.backend.item.entity.Item;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -33,28 +25,22 @@ import lombok.experimental.SuperBuilder;
 @ToString
 public class Category extends Auditable {
 
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private Long id; // PK
 
     @Column(name = "name", nullable = false)
-    private String name;
+    private String name; // 카테고리 이름
 
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "management_id")
-    private ManagementDashboard managementDashboard;
-
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "outbound_type", nullable = false)
-    private Outbound outbound; //출고 유형
-
+    private ManagementDashboard managementDashboard; // 관리 페이지 - 대시보드 매핑
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE, orphanRemoval = false)
-    List<Item> itemList = new ArrayList<>();
-
-
+    @ToString.Exclude
+    List<Item> itemList = new ArrayList<>(); //해당 카테고리에 속한 아이템 리스트
 
 
 }

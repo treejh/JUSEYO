@@ -1,10 +1,12 @@
 package com.example.backend.email.service;
 
 import com.example.backend.email.entity.EmailMessage;
+//import com.example.backend.redis.RedisService;
 import com.example.backend.redis.RedisService;
 import com.example.backend.utils.CreateRandomNumber;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +17,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
-
-import java.time.Duration;
 
 @Service
 @Slf4j
