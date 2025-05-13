@@ -44,6 +44,8 @@ public class NotificationController {
     // SSE를 통한 실시간 알림 전송
     @GetMapping(value = "/stream/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamNotifications(@PathVariable Long userId) {
+        System.out.println("📡 SSE 요청 받음: userId = " + userId);
+
         return notificationService.streamNotifications(userId);
     }
 

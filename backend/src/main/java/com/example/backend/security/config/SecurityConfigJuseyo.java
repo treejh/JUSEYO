@@ -51,7 +51,9 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.GET, "/api/v1/departments/**").hasAnyRole("MANAGER", "USER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/**").hasRole("MANAGER")
-
+                        // 알림(테스트 목적으로 permitAll)
+                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").permitAll()
 
                         .anyRequest().authenticated()
                 )
