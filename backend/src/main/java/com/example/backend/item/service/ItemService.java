@@ -14,11 +14,11 @@ import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.security.SecureRandom;
-
-
 import java.util.List;
 
 @Service
@@ -32,31 +32,34 @@ public class ItemService {
     private final UserRepository userRepo;
     private final TokenService tokenService;
 
-    private String generateSerial(int length) {
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            sb.append(ALPHANUM.charAt(RNG.nextInt(ALPHANUM.length())));
-        }
-        return sb.toString();
+    /**
+     * 랜덤 8자리 알파벳+숫자 생성
+     */
+    private String randomSuffix() {
+        return RandomStringUtils.randomAlphanumeric(8);
     }
 
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
-        // ① 시리얼 넘버 결정 (빈 값이면 15자리 랜덤 + 중복 체크)
+        // 1) 시리얼 결정: 빈 값이면 비품명-순번-랜덤8 로 생성
         String serial = dto.getSerialNumber();
         if (serial == null || serial.isBlank()) {
-            do {
-                serial = generateSerial(15);
-            } while (repo.existsBySerialNumber(serial));
+            String namePart = dto.getName().replaceAll("\\s+", "_");
+            long seq = repo.countByName(dto.getName()) + 1;
+            serial = String.format("%s-%d-%s", namePart, seq, randomSuffix());
+            // 중복 방지
+            while (repo.existsBySerialNumber(serial)) {
+                serial = String.format("%s-%d-%s", namePart, seq, randomSuffix());
+            }
         }
 
-        // ② 연관 엔티티 조회
+        // 2) 연관 엔티티 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                .orElseThrow(() -> new IllegalArgumentException("ManagementDashboard not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
 
-        // ③ 엔티티 생성
+        // 3) 엔티티 빌드 및 저장
         Item entity = Item.builder()
                 .name(dto.getName())
                 .serialNumber(serial)
@@ -70,9 +73,8 @@ public class ItemService {
                 .category(category)
                 .managementDashboard(mgmt)
                 .build();
-
-        // ④ 저장 & DTO 반환
         Item saved = repo.save(entity);
+
         return mapToDto(saved);
     }
 
