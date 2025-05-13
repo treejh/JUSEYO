@@ -79,16 +79,16 @@ dependencies {
 
 tasks.register<Exec>("dockerUp") {
     group = "docker"
-    description = "Starts the Docker containers"
-
-    commandLine("docker", "compose", "-f", "docker-compose.yml", "up", "-d")
+    description = "Starts Docker containers"
+    commandLine("docker", "compose", "up", "-d")
+    isIgnoreExitValue = false
 }
 
 tasks.register<Exec>("dockerDown") {
     group = "docker"
-    description = "Stops the Docker containers"
-
-    commandLine("docker", "compose", "-f", "docker-compose.yml", "down")
+    description = "Stops Docker containers"
+    commandLine("docker", "compose", "down")
+    isIgnoreExitValue = false
 }
 
 tasks.named("bootRun") {
