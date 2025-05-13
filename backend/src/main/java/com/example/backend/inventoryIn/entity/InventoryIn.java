@@ -1,8 +1,11 @@
 package com.example.backend.inventoryIn.entity;
 
 import com.example.backend.auditable.Auditable;
+import com.example.backend.category.entity.Category;
 import com.example.backend.enums.Inbound;
 import com.example.backend.item.entity.Item;
+import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.supplyReturn.entity.SupplyReturn;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -27,15 +30,27 @@ public class InventoryIn extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "quantity", nullable = false)
-    private Long quantity;
+    @ManyToOne
+    @JoinColumn(name = "return_id", nullable = true)
+    private SupplyReturn supplyReturn;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @ManyToOne
+    @JoinColumn(name = "management_id", nullable = false)
+    private ManagementDashboard managementDashboard;
 
     @ManyToOne
     @JoinColumn(name = "item_id")
     private Item item;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "outbound_type", nullable = false)
+    @Column(name = "inbound_type", nullable = false)
     private Inbound inbound; //입고 유형
+
+    @Column(name = "quantity", nullable = false)
+    private Long quantity;
 
 }
