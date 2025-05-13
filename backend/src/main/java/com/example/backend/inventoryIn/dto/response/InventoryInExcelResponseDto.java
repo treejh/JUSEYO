@@ -25,6 +25,9 @@ public class InventoryInExcelResponseDto {
     @Schema(description = "아이템 이름")
     private String itemName;
 
+    @Schema(description = "카테고리 이름")
+    private String categoryName;
+
     @Schema(description = "입고 수량")
     private Long quantity;
 

@@ -32,6 +32,7 @@ public class InventoryOut extends Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "suuply_id", nullable = false)
     private SupplyRequest supplyRequest;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -43,8 +44,8 @@ public class InventoryOut extends Auditable {
     @Column(name = "quantity", nullable = false)
     private Long quantity;
 
-    @ManyToOne
-    @JoinColumn(name = "item_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
     @Enumerated(EnumType.STRING)

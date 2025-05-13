@@ -1,6 +1,6 @@
 package com.example.backend.export.service;
 
-import com.example.backend.inventoryIn.dto.response.InventoryInResponseDto;
+import com.example.backend.inventoryIn.dto.response.InventoryInExcelResponseDto;
 import com.example.backend.inventoryOut.dto.response.InventoryOutResponseDto;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.itemInstance.dto.response.ItemInstanceResponseDto;
@@ -15,21 +15,27 @@ import java.util.List;
 @Service
 public class ExcelExportService {
 
-    // 기존 exportItems, exportInstances 메서드 그대로…
-
-    public void exportInventoryIn(List<InventoryInResponseDto> ins, HttpServletResponse response) throws Exception {
+    public void exportInventoryIn(List<InventoryInExcelResponseDto> ins, HttpServletResponse response) throws Exception {
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("InventoryIn");
-            createHeader(sheet, new String[]{"ID","ItemId","Quantity","InboundType","CreatedAt"});
+            createHeader(sheet, new String[]{
+                    "ID","ItemId","ItemName","CategoryName",
+                    "Quantity","InboundType","CreatedAt","ModifiedAt"
+            });
+
             int r = 1;
             for (var dto : ins) {
                 Row row = sheet.createRow(r++);
                 row.createCell(0).setCellValue(dto.getId());
                 row.createCell(1).setCellValue(dto.getItemId());
-                row.createCell(2).setCellValue(dto.getQuantity());
-                row.createCell(3).setCellValue(dto.getInbound().ordinal());
-                row.createCell(4).setCellValue(dto.getCreatedAt().toString());
+                row.createCell(2).setCellValue(dto.getItemName());
+                row.createCell(3).setCellValue(dto.getCategoryName());
+                row.createCell(4).setCellValue(dto.getQuantity());
+                row.createCell(5).setCellValue(dto.getInbound().name());
+                row.createCell(6).setCellValue(dto.getCreatedAt().toString());
+                row.createCell(7).setCellValue(dto.getModifiedAt().toString());
             }
+
             writeToResponse(wb, response, "inventory_in.xlsx");
         }
     }

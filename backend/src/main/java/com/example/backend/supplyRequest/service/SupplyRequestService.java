@@ -1,6 +1,8 @@
 package com.example.backend.supplyRequest.service;
 
+import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Inbound;
+import com.example.backend.enums.Outbound;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryIn.dto.request.InventoryInRequestDto;
@@ -10,14 +12,13 @@ import com.example.backend.inventoryOut.service.InventoryOutService;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
-import com.example.backend.enums.ApprovalStatus;
-import com.example.backend.security.jwt.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,7 +120,7 @@ public class SupplyRequestService {
             outDto.setCategoryId(req.getItem().getCategory().getId());
             outDto.setManagementId(req.getItem().getManagementDashboard().getId());
             outDto.setQuantity(req.getQuantity());
-            outDto.setOutbound("USAGE");
+            outDto.setOutbound(req.isRental() ? Outbound.LEND.name() : Outbound.ISSUE.name());
             outService.removeOutbound(outDto);
 
             // 2. 상태 전환
