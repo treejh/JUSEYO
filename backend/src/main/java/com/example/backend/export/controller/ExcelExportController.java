@@ -46,7 +46,7 @@ public class ExcelExportController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/api/v1/export/inventory-in")
     public void downloadInventoryIn(HttpServletResponse resp) throws Exception {
-        var list = inService.getAllInbound();  // 새로 직접 목록 조회 메서드 필요
+        var list = inService.getAllInboundForExcel();
         excelService.exportInventoryIn(list, resp);
     }
 

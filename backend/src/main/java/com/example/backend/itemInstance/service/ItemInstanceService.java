@@ -10,6 +10,8 @@ import com.example.backend.itemInstance.dto.request.UpdateItemInstanceStatusRequ
 import com.example.backend.itemInstance.dto.response.ItemInstanceResponseDto;
 import com.example.backend.itemInstance.entity.ItemInstance;
 import com.example.backend.itemInstance.repository.ItemInstanceRepository;
+import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +25,25 @@ import java.util.stream.Collectors;
 public class ItemInstanceService {
     private final ItemRepository itemRepo;
     private final ItemInstanceRepository instanceRepo;
+    private final UserRepository userRepo;
+    private final TokenService tokenService;
 
     @Transactional
     public ItemInstanceResponseDto createInstance(CreateItemInstanceRequestDto dto) {
+
+        // 권한체크
+        Long currentUserId = tokenService.getIdFromToken();
         Item item = itemRepo.findById(dto.getItemId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+
+        Long userMgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        if (!item.getManagementDashboard().getId().equals(userMgmtId)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
 
         // 1) 순번 계산 (기존 인스턴스 개수 + 1)
         long seq = instanceRepo.countByItemId(item.getId()) + 1;
@@ -52,6 +68,20 @@ public class ItemInstanceService {
 
     @Transactional(readOnly = true)
     public List<ItemInstanceResponseDto> getByItem(Long itemId) {
+        // 권한체크
+        Long currntUserId = tokenService.getIdFromToken();
+        Long userMgmtId = userRepo.findById(currntUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        // 대상 아이템 조회 및 대시보드 비교
+        Item item = itemRepo.findById(itemId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+        if (!item.getManagementDashboard().getId().equals(userMgmtId)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
+        // 권한 통과한 경우에만 인스턴스 반환
         return instanceRepo.findAllByItemId(itemId).stream()
                 .map(this::map)
                 .collect(Collectors.toList());
@@ -59,8 +89,18 @@ public class ItemInstanceService {
 
     @Transactional
     public ItemInstanceResponseDto updateStatus(Long instanceId, UpdateItemInstanceStatusRequestDto dto) {
+
         ItemInstance inst = instanceRepo.findById(instanceId)
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+
+        Long currentUserId = tokenService.getIdFromToken();
+        Long userMgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        if (!inst.getItem().getManagementDashboard().getId().equals(userMgmtId)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
 
         inst.setStatus(dto.getStatus());
         inst.setFinalImage(dto.getFinalImage());

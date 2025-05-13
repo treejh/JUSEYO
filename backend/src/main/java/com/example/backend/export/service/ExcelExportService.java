@@ -1,10 +1,11 @@
 package com.example.backend.export.service;
 
-import com.example.backend.inventoryIn.dto.response.InventoryInResponseDto;
+import com.example.backend.inventoryIn.dto.response.InventoryInExcelResponseDto;
 import com.example.backend.inventoryOut.dto.response.InventoryOutResponseDto;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.itemInstance.dto.response.ItemInstanceResponseDto;
 import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
+import com.example.backend.supplyReturn.dto.response.SupplyReturnResponseDto;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -15,21 +16,27 @@ import java.util.List;
 @Service
 public class ExcelExportService {
 
-    // 기존 exportItems, exportInstances 메서드 그대로…
-
-    public void exportInventoryIn(List<InventoryInResponseDto> ins, HttpServletResponse response) throws Exception {
+    public void exportInventoryIn(List<InventoryInExcelResponseDto> ins, HttpServletResponse response) throws Exception {
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("InventoryIn");
-            createHeader(sheet, new String[]{"ID","ItemId","Quantity","InboundType","CreatedAt"});
+            createHeader(sheet, new String[]{
+                    "ID","ItemId","ItemName","CategoryName",
+                    "Quantity","InboundType","CreatedAt","ModifiedAt"
+            });
+
             int r = 1;
             for (var dto : ins) {
                 Row row = sheet.createRow(r++);
                 row.createCell(0).setCellValue(dto.getId());
                 row.createCell(1).setCellValue(dto.getItemId());
-                row.createCell(2).setCellValue(dto.getQuantity());
-                row.createCell(3).setCellValue(dto.getInbound().ordinal());
-                row.createCell(4).setCellValue(dto.getCreatedAt().toString());
+                row.createCell(2).setCellValue(dto.getItemName());
+                row.createCell(3).setCellValue(dto.getCategoryName());
+                row.createCell(4).setCellValue(dto.getQuantity());
+                row.createCell(5).setCellValue(dto.getInbound().name());
+                row.createCell(6).setCellValue(dto.getCreatedAt().toString());
+                row.createCell(7).setCellValue(dto.getModifiedAt().toString());
             }
+
             writeToResponse(wb, response, "inventory_in.xlsx");
         }
     }
@@ -118,6 +125,38 @@ public class ExcelExportService {
                 row.createCell(6).setCellValue(dto.getCreatedAt().toString());
             }
             writeToResponse(wb, response, "instances.xlsx");
+        }
+    }
+
+    /**
+     * 반납 요청서 전체 엑셀 생성
+     */
+    public void exportSupplyReturns(List<SupplyReturnResponseDto> returns, HttpServletResponse response) throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("SupplyReturns");
+            createHeader(sheet, new String[]{
+                    "ID", "RequestId", "UserId", "ItemId", "ManagementId",
+                    "SerialNumber", "ProductName", "Quantity", "UseDate", "ReturnDate", "ApprovalStatus", "CreatedAt"
+            });
+
+            int rowIdx = 1;
+            for (var dto : returns) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(dto.getId());
+                row.createCell(1).setCellValue(dto.getRequestId());
+                row.createCell(2).setCellValue(dto.getUserId());
+                row.createCell(3).setCellValue(dto.getItemId());
+                row.createCell(4).setCellValue(dto.getManagementId());
+                row.createCell(5).setCellValue(dto.getSerialNumber() != null ? dto.getSerialNumber() : "");
+                row.createCell(6).setCellValue(dto.getProductName());
+                row.createCell(7).setCellValue(dto.getQuantity());
+                row.createCell(8).setCellValue(dto.getUseDate().toString());
+                row.createCell(9).setCellValue(dto.getReturnDate() != null ? dto.getReturnDate().toString() : "");
+                row.createCell(10).setCellValue(dto.getApprovalStatus().name());
+                row.createCell(11).setCellValue(dto.getCreatedAt().toString());
+            }
+
+            writeToResponse(wb, response, "supply_returns.xlsx");
         }
     }
 

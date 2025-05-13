@@ -1,6 +1,7 @@
 package com.example.backend.inventoryOut.service;
 
 import com.example.backend.analysis.service.InventoryAnalysisService;
+import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.enums.Outbound;
@@ -18,8 +19,10 @@ import com.example.backend.itemInstance.repository.ItemInstanceRepository;
 import com.example.backend.itemInstance.service.ItemInstanceService;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
+import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
+import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,14 +41,29 @@ public class InventoryOutService {
     private final ManagementDashboardRepository mgmtRepo;
     private final ItemInstanceService instanceService;
     private final ItemInstanceRepository instanceRepo;
+    private final UserRepository userRepo;
+    private final TokenService tokenService;
     private final InventoryAnalysisService inventoryAnalysisService;
 
 
     @Transactional
     public InventoryOutResponseDto removeOutbound(InventoryOutRequestDto dto) {
-        // 0) SupplyRequest, Category, ManagementDashboard 조회
+
+        //권한체크
+        Long currentUserId = tokenService.getIdFromToken();
         SupplyRequest req = supplyRequestRepo.findById(dto.getSupplyRequestId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
+
+        Long userMgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        if (!req.getManagementDashboard().getId().equals(userMgmtId)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
+        // 0) SupplyRequest, Category, ManagementDashboard 조회
+
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
@@ -110,7 +128,15 @@ public class InventoryOutService {
     /** 전체 출고내역 조회 (Excel 다운로드용) */
     @Transactional(readOnly = true)
     public List<InventoryOutResponseDto> getAllOutbound() {
-        return outRepo.findAll().stream()
+
+        // 권한체크 및 대시보드 id 조회
+        Long currentUserId = tokenService.getIdFromToken();
+        Long userMgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        // 해당 관리대시보드 출고내역만 조회
+        return outRepo.findAllByManagementDashboardId(userMgmtId).stream()
                 .map(out -> InventoryOutResponseDto.builder()
                         .id(out.getId())
                         .supplyRequestId(out.getSupplyRequest().getId())

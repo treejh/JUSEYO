@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -131,5 +133,15 @@ public class SupplyReturnService {
                 .createdAt(supplyReturn.getCreatedAt())
                 .build();
         return supplyReturnResponseDto;
+    }
+
+    /**
+     * 엑셀 다운로드용: 모든 반납 요청서 조회
+     */
+    public List<SupplyReturnResponseDto> getAllReturnsForExcel() {
+        // repository의 findAllSupplyReturn(Pageable) 대신, 직접 엔티티 전체를 DTO로 변환
+        return supplyReturnRepository.findAll().stream()
+                .map(this::toDto)
+                .toList();
     }
 }
