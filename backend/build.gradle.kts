@@ -61,8 +61,18 @@ dependencies {
     //Valid
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
+    //이메일 의존성 추가
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+
+
+    //redis 의존성
+    implementation ("org.springframework.boot:spring-boot-starter-data-redis")
+
+
+
     // excel
     implementation ("org.apache.poi:poi-ooxml:5.2.3")
+
 
 }
 
