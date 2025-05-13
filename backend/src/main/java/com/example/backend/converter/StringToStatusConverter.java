@@ -1,4 +1,4 @@
-package com.example.backend.config;
+package com.example.backend.converter;
 
 import com.example.backend.enums.Status;
 import org.springframework.core.convert.converter.Converter;

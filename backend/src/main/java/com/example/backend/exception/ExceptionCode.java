@@ -16,7 +16,8 @@ public enum ExceptionCode {
     ITEM_INSTANCE_NOT_FOUND(404, "존재하지 않는 개별 자산 입니다. "),
     INVENTORY_IN_NOT_FOUND(404, "입고내역을 찾을 수 없습니다."),
     INVENTORY_OUT_NOT_FOUND(404, "출고내역을 찾을 수 없습니다."),
-    SUPPLY_REQUEST_NOT_FOUND(404, "비품요청서를 찾을 수 없습니다."),
+    SUPPLY_REQUEST_NOT_FOUND(404, "비품 요청서를 찾을 수 없습니다."),
+    SUPPLY_RETURN_NOT_FOUND(404,"비품 반납서를 찾을 수 없습니다."),
     INSUFFICIENT_STOCK(400, "비품 보유 수량이 부족합니다."),
     CATEGORY_NOT_FOUND(404, "카테고리를 찾을 수 없습니다."),
     NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
@@ -28,6 +29,7 @@ public enum ExceptionCode {
     INVALID_APPROVAL_TARGET_ROLE(400, "승인 대상 유저는 매니저 권한을 가져야 합니다."),
     ROLE_NOT_FOUND(404,"존재하지 않는 역할입니다."),
     UNAUTHORIZED_ROLE(403, "접근 권한이 없는 역할입니다."),
+    EMAIL_VERIFICATION_FAILED(400, "이메일 인증을 실패하였습니다."),
 
     //회원가입 예외 처리
     ALREADY_HAS_EMAIL(409,"이미 존재하는 이메일입니다."),

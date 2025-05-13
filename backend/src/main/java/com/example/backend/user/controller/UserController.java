@@ -2,18 +2,19 @@ package com.example.backend.user.controller;
 
 
 
-import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.email.entity.EmailMessage;
 import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.dto.request.AdminSignupRequestDto;
+import com.example.backend.user.dto.request.EmailRequestDto;
+import com.example.backend.user.dto.request.EmailVerificationRequest;
 import com.example.backend.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.user.dto.request.ManagerSignupRequestDto;
 import com.example.backend.user.dto.request.UserLoginRequestDto;
 import com.example.backend.user.dto.request.UserPatchRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
-import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
 import com.example.backend.user.dto.response.UserProfileResponseDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
@@ -21,7 +22,6 @@ import com.example.backend.utils.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -359,18 +359,45 @@ public class UserController {
 
 
 
-    @PostMapping("/findPassword")
+    @PostMapping("/emails/findPassword")
     @Operation(
             summary = "비밀번호 찾기",
-            description = "비밀번호를 업데이트 한 후 결과를 반환"
+            description = "비밀번호를 업데이트 한 후 이메일로 결과를 반환"
     )
-    public ResponseEntity<ApiResponse<String>> findPassword(@RequestParam String email) {
+    public ResponseEntity<?> findPassword(@Valid @RequestBody EmailRequestDto emailRequestDto) {
         // 비밀번호 찾기 로직을 수행하고, 해당 결과를 response로 반환
-        String response = userService.findPassword(email);
+       userService.findPasswordByEmail(emailRequestDto.getEmail());
 
-        // 비밀번호 찾기 성공 메시지와 데이터를 포함하는 ApiResponse 생성
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "비밀번호 재설정 ", response),
+                ApiResponse.of(HttpStatus.OK.value(), "임시 비밀번호 이메일 전송 완료"),
+                HttpStatus.OK
+        );
+    }
+
+    //인증번호 발급
+    @PostMapping("/emails/certificationNumber")
+    @Operation(
+            summary = "이메일로 인증번호 전송",
+            description = "사용자가 제공한 이메일 주소로 인증번호를 전송합니다. 인증번호는 이메일 인증을 위한 코드로 사용됩니다."
+    )
+    public ResponseEntity sendCertificationNumberMail(@Valid @RequestBody EmailRequestDto emailRequestDto) {
+        userService.sendCertificationNumber(emailRequestDto.getEmail());
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "인증번호 이메일 전송 완료 "),
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/emails/verification")
+    @Operation(
+            summary = "이메일 인증 확인",
+            description = "사용자가 입력한 인증코드를 확인하여 이메일 인증을 진행합니다. 인증번호가 유효한 경우 인증이 완료됩니다."
+    )
+    public ResponseEntity sendCertificationNumberValid(@Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
+        userService.verifyEmailCode(emailVerificationRequest);
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "이메일 인증 성공 (인증 번호 인증 성공) "),
                 HttpStatus.OK
         );
     }

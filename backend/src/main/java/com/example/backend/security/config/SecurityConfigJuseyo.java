@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfigJuseyo {
 
     private final JwtTokenizer jwtTokenizer;
@@ -36,13 +38,11 @@ public class SecurityConfigJuseyo {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/api/v1/management/**" //테스트용 인증 열어두기
-
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
                         //회원
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/findPassword").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request","/api/v1/users/approve/**","/api/v1/users/reject/**")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
@@ -51,6 +51,7 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.GET, "/api/v1/departments/**").hasAnyRole("MANAGER", "USER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/**").hasRole("MANAGER")
+
 
                         .anyRequest().authenticated()
                 )

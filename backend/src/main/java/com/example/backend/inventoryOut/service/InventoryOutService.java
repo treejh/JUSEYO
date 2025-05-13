@@ -23,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class InventoryOutService {
@@ -90,5 +92,23 @@ public class InventoryOutService {
                 .createdAt(saved.getCreatedAt())
                 .modifiedAt(saved.getModifiedAt())
                 .build();
+    }
+
+    /** 전체 출고내역 조회 (Excel 다운로드용) */
+    @Transactional(readOnly = true)
+    public List<InventoryOutResponseDto> getAllOutbound() {
+        return outRepo.findAll().stream()
+                .map(out -> InventoryOutResponseDto.builder()
+                        .id(out.getId())
+                        .supplyRequestId(out.getSupplyRequest().getId())
+                        .itemId(out.getItem().getId())
+                        .categoryId(out.getCategory().getId())
+                        .managementId(out.getManagementDashboard().getId())
+                        .quantity(out.getQuantity())
+                        .outbound(out.getOutbound().name())
+                        .createdAt(out.getCreatedAt())
+                        .modifiedAt(out.getModifiedAt())
+                        .build())
+                .toList();
     }
 }
