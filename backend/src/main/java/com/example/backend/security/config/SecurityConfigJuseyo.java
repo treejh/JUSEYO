@@ -38,7 +38,6 @@ public class SecurityConfigJuseyo {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/swagger-ui/**",
-                                "/api/v1/recommend/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()

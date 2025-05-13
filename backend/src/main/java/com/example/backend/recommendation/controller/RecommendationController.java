@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +22,7 @@ public class RecommendationController {
     private final RecommendationService recommendationService;
 
     //협업 필터링 "나랑 비슷한 사람”이 자주 쓴 품목 추천"
+    @PreAuthorize("hasAnyRole('MANAGER','USER')")
     @Operation(summary = "사용자 비품 추천", description = "출고 이력을 기반으로 AI가 비슷한 사용자에게 자주 쓰이는 품목을 추천합니다.")
     @GetMapping
     public ResponseEntity<List<String>> getRecommendations(@RequestParam Long userId) {
@@ -29,6 +31,7 @@ public class RecommendationController {
     }
 
     //연관 규칙 기반 추천 "같이 자주 출고된 품목”을 분석해서 추천
+    @PreAuthorize("hasAnyRole('MANAGER','USER')")
     @Operation(summary = "연관 품목 추천", description = "특정 품목과 자주 같이 사용된 품목을 추천합니다.")
     @GetMapping("/association")
     public ResponseEntity<List<String>> getAssociatedItems(@RequestParam String itemName) {
