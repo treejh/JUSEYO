@@ -44,13 +44,14 @@ public class InventoryInService {
     // 입고 생성
     @Transactional
     public InventoryInResponseDto addInbound(InventoryInRequestDto dto) {
-        // 1) 아이템 처리: 수량 증가
         Item item;
         item = itemRepo.findById(dto.getItemId())
-                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
-        item.setTotalQuantity(item.getTotalQuantity() + dto.getQuantity());
-        item.setAvailableQuantity(item.getAvailableQuantity() + dto.getQuantity());
-
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+        if(dto.getInbound()!=Inbound.PURCHASE&&dto.getInbound()!=Inbound.RE_PURCHASE) {
+            // 1) 아이템 처리: 수량 증가
+            item.setTotalQuantity(item.getTotalQuantity() + dto.getQuantity());
+            item.setAvailableQuantity(item.getAvailableQuantity() + dto.getQuantity());
+        }
         SupplyReturn supplyReturn =null;
         if(dto.getInbound()==Inbound.RETURN){
             supplyReturn =returnRequestRepository.findById(dto.getReturnId()).orElse(null);
@@ -75,7 +76,7 @@ public class InventoryInService {
         InventoryIn savedInbound = inRepo.save(inbound);
 
         // 3) 개별자산단위 자동 생성/반납 처리
-        if (savedInbound.getInbound() == Inbound.PURCHASE) {
+        if (savedInbound.getInbound() == Inbound.PURCHASE||savedInbound.getInbound() == Inbound.RE_PURCHASE) {
             // 구매 입고: 수량만큼 신규 인스턴스 생성
             for(int i = 0; i < savedInbound.getQuantity(); i++) {
                 CreateItemInstanceRequestDto cri = new CreateItemInstanceRequestDto();
