@@ -29,6 +29,7 @@ import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
@@ -600,6 +601,26 @@ public class UserService {
         } else {
             return users.map(ApproveUserListForManagerResponseDto::new);
         }
+    }
+
+    public List<User> findAllByIds(List<Long> userIds) {
+        List<User> users = userRepository.findAllById(userIds);
+
+        if (users.size() != userIds.size()) {
+            List<Long> foundIds = users.stream()
+                    .map(User::getId)
+                    .toList();
+            List<Long> missingIds = userIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+
+            throw new BusinessLogicException(
+                    ExceptionCode.USER_NOT_FOUND,
+                    "존재하지 않는 사용자 ID: " + missingIds
+            );
+        }
+
+        return users;
     }
 
 
