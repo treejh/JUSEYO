@@ -66,6 +66,7 @@ public class SupplyReturnService {
                 .useDate(supplyRequest.getUseDate())
                 .returnDate(supplyReturnRequestDto.getReturnDate())
                 .approvalStatus(ApprovalStatus.RETURN_PENDING)
+                .outbound(supplyReturnRequestDto.getOutbound())
                 .build();
         supplyReturnRepository.save(supplyReturn);
         return toDto(supplyReturn);
