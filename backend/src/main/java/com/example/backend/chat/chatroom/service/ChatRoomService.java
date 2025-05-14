@@ -38,7 +38,7 @@ public class ChatRoomService {
             case GROUP:
                 return createGroupRoom(loginUser, dto);
             case SUPPORT:
-                return createSupportRoom(loginUser, dto);
+                return createSupportRoom(loginUser);
             default:
                 throw new IllegalArgumentException("지원하지 않는 채팅방 타입입니다.");
         }
@@ -82,8 +82,9 @@ public class ChatRoomService {
         return createRoomBase(allUsers, dto.getRoomName(), ChatRoomType.GROUP);
     }
 
-    private ChatRoom createSupportRoom(User client, ChatRoomRequestDto dto) {
-        User supportAgent = userService.findSupportAgent(); // 로직은 구현 필요
+
+    private ChatRoom createSupportRoom(User client) {
+        User supportAgent = userService.fi(); // 로직은 구현 필요
         return createRoomBase(List.of(client, supportAgent), dto.getRoomName(), ChatRoomType.SUPPORT);
     }
 
