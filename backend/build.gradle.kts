@@ -70,6 +70,9 @@ dependencies {
     // excel
     implementation ("org.apache.poi:poi-ooxml:5.2.3")
 
+    //S3 의존성
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+
 
 }
 
