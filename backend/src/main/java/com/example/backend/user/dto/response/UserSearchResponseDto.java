@@ -7,21 +7,19 @@ import lombok.Getter;
 @Getter
 @Builder
 public class UserSearchResponseDto {
-    private Long id;
     private String email;
     private String name;
-    private String phoneNumber;
     private String role;
-    private Long managementDashboardId;
+    private String department;
 
     public static UserSearchResponseDto fromEntity(User u) {
         return UserSearchResponseDto.builder()
-                .id(u.getId())
                 .email(u.getEmail())
                 .name(u.getName())
-                .phoneNumber(u.getPhoneNumber())
                 .role(u.getRole().getRole().name())
-                .managementDashboardId(u.getManagementDashboard().getId())
+                .department(u.getDepartment() != null
+                        ? u.getDepartment().getName()
+                        : null)
                 .build();
     }
 }
