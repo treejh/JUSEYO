@@ -13,6 +13,4 @@ import org.springframework.stereotype.Service;
 public class ChatUserService {
     private final ChatUserRepository chatUserRepository;
 
-
-
 }

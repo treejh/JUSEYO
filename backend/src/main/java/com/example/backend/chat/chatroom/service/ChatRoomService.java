@@ -8,11 +8,15 @@ import com.example.backend.chat.chatroom.entity.ChatRoom;
 import com.example.backend.chat.chatroom.repository.ChatRoomRepository;
 import com.example.backend.enums.ChatRoomType;
 import com.example.backend.enums.ChatStatus;
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
+import com.example.backend.utils.CreateRandomNumber;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,28 +44,11 @@ public class ChatRoomService {
             case SUPPORT:
                 return createSupportRoom(loginUser);
             default:
-                throw new IllegalArgumentException("지원하지 않는 채팅방 타입입니다.");
+                throw new BusinessLogicException(ExceptionCode.INVALID_CHAT_ROOM_TYPE, "지원하지 않는 채팅방 타입입니다.");
         }
+
     }
 
-
-
-    public ChatRoom createOneToOneRoom(ChatRoomRequestDto chatRoomRequestDto) {
-        User loginUser = userService.findById(tokenService.getIdFromToken());
-        User requestedUser = userService.findById(chatRoomRequestDto.getUserId()); //채팅 요청을 받은 사용자
-
-        Optional<ChatRoom> existingRoom = getExistingRoom(loginUser.getId(), requestedUser.getId());
-        if (existingRoom.isPresent()) return existingRoom.get();
-
-        ChatRoom chatRoom = ChatRoom.builder()
-                .roomName(StringUtils.hasText(chatRoomRequestDto.getRoomName()) ? chatRoomRequestDto.getRoomName() : null)
-                .roomType(ChatRoomType.ONE_TO_ONE)
-                .build();
-
-        chatRoomRepository.save(chatRoom);
-        createChatUsers(chatRoom, List.of(loginUser, requestedUser), ChatStatus.CREATE);
-        return chatRoom;
-    }
 
     private ChatRoom createOneToOneRoom(User loginUser, ChatRoomRequestDto dto) {
         User requestedUser = userService.findById(dto.getUserId());
@@ -69,6 +56,7 @@ public class ChatRoomService {
         Optional<ChatRoom> existingRoom = getExistingRoom(loginUser.getId(), requestedUser.getId());
         if (existingRoom.isPresent()) return existingRoom.get();
 
+        //생성자는 첫번째에 추가
         return createRoomBase(List.of(loginUser, requestedUser), dto.getRoomName(), ChatRoomType.ONE_TO_ONE);
     }
 
@@ -84,8 +72,22 @@ public class ChatRoomService {
 
 
     private ChatRoom createSupportRoom(User client) {
-        User supportAgent = userService.fi(); // 로직은 구현 필요
-        return createRoomBase(List.of(client, supportAgent), dto.getRoomName(), ChatRoomType.SUPPORT);
+        List<User> managerList = userService.findByManagerList(client.getManagementDashboard());
+
+        if (managerList.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.MANAGER_NOT_FOUND, "문의 가능한 매니저가 없습니다.");
+        }
+
+
+        // CreateRandomNumber의 randomFromList 메서드를 사용하여 랜덤 매니저 선택
+        User supportAgent = CreateRandomNumber.randomFromList(managerList);
+
+        Optional<ChatRoom> existingRoom = getExistingRoom(client.getId(), supportAgent.getId());
+        if (existingRoom.isPresent()) {
+            return existingRoom.get();  // 이미 존재하는 채팅방 반환
+        }
+
+        return createRoomBase(List.of(client, supportAgent), supportAgent.getName() + "_support_"+CreateRandomNumber.timeBasedRandomName(), ChatRoomType.SUPPORT);
     }
 
     @Transactional
@@ -111,14 +113,6 @@ public class ChatRoomService {
             chatUserRepository.save(chatUser);
         }
     }
-
-
-
-
-
-
-
-
 
 
 

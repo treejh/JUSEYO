@@ -26,4 +26,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 관리페이지 회원 전체 조회용
     List<User> findAllByManagementDashboardId(Long managementDashboardId);
+
+
+    //해당 관리페이지에 존재하는 승인된 매니저 조회
+    List<User> findByManagementDashboardAndApprovalStatusAndRole(ManagementDashboard managementDashboard, ApprovalStatus approvalStatus, Role role);
 }

@@ -160,8 +160,6 @@ public class UserService {
     }
 
 
-
-
     // 매니저가 관리페이지에 요청된 권한 리스트들을 조회하는 공통 로직
     private Page<User> getUserListByApprovalStatus(String managementDashboardName, ApprovalStatus approvalStatus, Pageable pageable) {
         ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
@@ -623,7 +621,13 @@ public class UserService {
         return users;
     }
 
+    public List<User> findByManagerList(ManagementDashboard managementDashboard){
 
+        Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
+        ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
+        return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
+                managementDashboard, approvalStatus, role);
+    }
 
 
 }
