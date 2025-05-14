@@ -40,4 +40,10 @@ public class ChatMessage {
     private ChatRoom chatRoom;
 
 
+    @Column(name = "message", nullable = false, length = 100)
+    private String message;
+
+
+
+
 }
