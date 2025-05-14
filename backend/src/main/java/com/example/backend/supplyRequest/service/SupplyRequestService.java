@@ -204,7 +204,7 @@ public class SupplyRequestService {
     @Transactional
     public SupplyRequestResponseDto updateMyRequest(Long requestId, SupplyRequestRequestDto dto) {
 
-        // 대여 하면returnDate 필수 검사
+        // 대여 하면 returnDate 필수 검사
         if (dto.isRental() && dto.getReturnDate() == null) {
             throw new BusinessLogicException(ExceptionCode.INVALID_RETURN_DATE);
         }
