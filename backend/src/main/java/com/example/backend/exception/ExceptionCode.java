@@ -21,6 +21,7 @@ public enum ExceptionCode {
     CATEGORY_NOT_FOUND(404, "카테고리를 찾을 수 없습니다."),
     ACCESS_DENIED(404,"권한이 없습니다. "),
     NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
+    INVALID_REQUEST_STATUS(400, "요청 상태가 유효하지 않아 수정할 수 없습니다."),
 
     //유저 예외 처리
     NOT_INITIAL_MANAGER(403, "해당 기능은 최초 생성 매니저만 사용할 수 있습니다."),
@@ -54,7 +55,9 @@ public enum ExceptionCode {
     DEPARTMENT_NOT_IN_DASHBOARD(403, "해당 관리 페이지에 속한 부서가 아닙니다."),
 
     //카테고리 예외 처리
-    CATEGORY_ALREADY_EXISTS(409, "이미 존재하는 카테고리입니다.")
+    CATEGORY_ALREADY_EXISTS(409, "이미 존재하는 카테고리입니다."),
+
+
     ;
 
     @Getter

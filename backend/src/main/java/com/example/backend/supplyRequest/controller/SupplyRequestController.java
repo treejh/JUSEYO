@@ -2,11 +2,13 @@ package com.example.backend.supplyRequest.controller;
 
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
 import com.example.backend.supplyRequest.service.SupplyRequestService;
 import com.example.backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +26,18 @@ public class SupplyRequestController {
     private final UserService userService;
 
     /**
-     * 🔹 대기 중인 비품 요청 리스트 조회 (매니저 전용)
+     * 비품 요청 생성
+     */
+    @PostMapping
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    public ResponseEntity<SupplyRequestResponseDto> createRequest(
+            @RequestBody SupplyRequestRequestDto dto) {
+        SupplyRequestResponseDto response = supplyRequestService.createRequest(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     *  대기 중인 비품 요청 리스트 조회 (매니저 전용)
      */
     @GetMapping("/pending")
     @PreAuthorize("hasRole('MANAGER')")
@@ -42,7 +55,7 @@ public class SupplyRequestController {
     }
 
     /**
-     * 🔹 비품 요청 승인 (매니저 전용)
+     *  비품 요청 승인 (매니저 전용)
      */
     @PostMapping("/{requestId}/approve")
     @PreAuthorize("hasRole('MANAGER')")
@@ -52,7 +65,7 @@ public class SupplyRequestController {
     }
 
     /**
-     * 🔹 비품 요청 거절 (매니저 전용)
+     *  비품 요청 거절 (매니저 전용)
      */
     @PostMapping("/{requestId}/reject")
     @PreAuthorize("hasRole('MANAGER')")
@@ -61,4 +74,27 @@ public class SupplyRequestController {
         return ResponseEntity.ok().build();
     }
 
+    /**  내 요청 리스트 */
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<SupplyRequestResponseDto>> getMyRequests() {
+        return ResponseEntity.ok(supplyRequestService.getMyRequests());
+    }
+
+    /**  내 요청 수정, 매니저도 가능 */
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    public ResponseEntity<SupplyRequestResponseDto> updateMyRequest(
+            @PathVariable Long id,
+            @RequestBody SupplyRequestRequestDto dto) {
+        SupplyRequestResponseDto updated = supplyRequestService.updateMyRequest(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**  매니저용 전체 요청 리스트 조회 */
+    @GetMapping
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<List<SupplyRequestResponseDto>> getAllRequests() {
+        return ResponseEntity.ok(supplyRequestService.getAllRequests());
+    }
 }

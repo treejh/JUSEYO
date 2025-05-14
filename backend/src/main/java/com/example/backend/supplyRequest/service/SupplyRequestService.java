@@ -184,6 +184,41 @@ public class SupplyRequestService {
                 .toList();
     }
 
+
+    /** 내 요청 리스트만 조회 */
+    @Transactional(readOnly = true)
+    public List<SupplyRequestResponseDto> getMyRequests() {
+        Long userId = tokenService.getIdFromToken();
+        return repo.findAllByUserId(userId).stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    /** 내 요청만, 상태 REQUESTED 일 때만 수정 */
+    @Transactional
+    public SupplyRequestResponseDto updateMyRequest(Long requestId, SupplyRequestRequestDto dto) {
+        Long userId = tokenService.getIdFromToken();
+        SupplyRequest req = repo.findById(requestId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
+
+        if (!req.getUser().getId().equals(userId)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+        if (req.getApprovalStatus() != ApprovalStatus.REQUESTED) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_REQUEST_STATUS);
+        }
+
+        // 수정 허용 필드만 갱신
+        req.setQuantity(dto.getQuantity());
+        req.setPurpose(dto.getPurpose());
+        req.setUseDate(dto.isRental() ? dto.getUseDate() : req.getUseDate());
+        req.setReturnDate(dto.isRental() ? dto.getReturnDate() : req.getReturnDate());
+        // 재요청 플래그 재계산
+        req.setReRequest(repo.existsByUserIdAndItemId(userId, req.getItem().getId()));
+
+        return mapToDto(req);
+    }
+
     /**
      * DTO 매핑
      */
