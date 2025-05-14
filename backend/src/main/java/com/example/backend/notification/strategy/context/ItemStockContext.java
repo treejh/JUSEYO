@@ -1,20 +1,15 @@
 package com.example.backend.notification.strategy.context;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
 public class ItemStockContext {
+    private final String serial_number;
     private final String itemName;
-    private final Long quantity;
+    private final Long availableQuantity;
+    private final Long minimumQuantity;
 
-    public ItemStockContext(String itemName, Long quantity) {
-        this.itemName = itemName;
-        this.quantity = quantity;
-    }
-
-    public String getItemName() {
-        return itemName;
-    }
-
-    public Long getQuantity() {
-        return quantity;
-    }
 }
 

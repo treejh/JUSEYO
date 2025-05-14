@@ -10,6 +10,7 @@ import com.example.backend.role.RoleService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
+import com.example.backend.supplyReturn.repository.SupplyReturnRepository;
 import com.example.backend.user.entity.User;
 
 import com.example.backend.user.service.UserService;
@@ -23,6 +24,7 @@ import java.util.List;
 public class ReturnDueDateMonitoringService {
 
     private final SupplyRequestRepository supplyRequestRepository;
+    private final SupplyReturnRepository supplyReturnRepository;
     private final NotificationService notificationService;
     private final com.example.backend.notification.strategy.NotificationStrategyFactory strategyFactory;
     private final RoleService roleService;
@@ -37,7 +39,8 @@ public class ReturnDueDateMonitoringService {
         List<User> managers = userService.findUsersByRole(managerRole);
 
         for (SupplyRequest request : requests) {
-            if (request.getApprovalStatus() != ApprovalStatus.APPROVED) continue;
+            if (request.getApprovalStatus() != ApprovalStatus.APPROVED) continue; // 대여 요청서 승인상태가 승인되지 않은 아이템은 skip
+            if (supplyReturnRepository.existsBySupplyRequest(request)) continue; // 반납 요청서가 존재하는 경우 skip
 
             ReturnDueDateContext context = new ReturnDueDateContext(
                     request.getProductName(),

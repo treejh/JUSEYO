@@ -4,7 +4,7 @@ import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.NotificationType;
 import com.example.backend.notification.strategy.NotificationStrategy;
-import com.example.backend.notification.strategy.context.ReturnDueSoonContext;
+import com.example.backend.notification.strategy.context.ReturnDueDateContext;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.entity.User;
@@ -28,8 +28,8 @@ public class ReturnDueSoonMonitoringService {
         for (SupplyRequest request : requests) {
             if (request.getApprovalStatus() != ApprovalStatus.APPROVED) continue;
 
-            ReturnDueSoonContext context = new ReturnDueSoonContext(
-                    request.getProductName(),
+            ReturnDueDateContext context = new ReturnDueDateContext(
+                    request.getItem().getName(),
                     request.getReturnDate()
             );
 

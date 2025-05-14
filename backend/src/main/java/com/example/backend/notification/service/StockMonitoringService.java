@@ -29,7 +29,7 @@ public class StockMonitoringService {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.STOCK_SHORTAGE);
 
         // ItemStockContext 생성
-        ItemStockContext context = new ItemStockContext(item.getName(), item.getAvailableQuantity());
+        ItemStockContext context = new ItemStockContext(item.getSerialNumber(), item.getName(), item.getAvailableQuantity(), item.getMinimumQuantity());
 
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 

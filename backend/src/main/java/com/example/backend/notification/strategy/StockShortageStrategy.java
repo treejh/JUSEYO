@@ -11,7 +11,7 @@ public class StockShortageStrategy implements NotificationStrategy {
         }
         ItemStockContext stockContext = (ItemStockContext) context;
         // context에서 아이템 이름과 재고 수량을 추출하여 메시지 생성
-        return "⚠️ " + stockContext.getItemName() + " 재고가 부족합니다. (" + stockContext.getQuantity() + "개 남음)";
+        return "⚠️ " + stockContext.getItemName() + " 재고가 부족합니다. (" + stockContext.getAvailableQuantity() + "개 남음)";
     }
 
     @Override
@@ -20,7 +20,7 @@ public class StockShortageStrategy implements NotificationStrategy {
             throw new IllegalArgumentException("Invalid context for StockShortageStrategy");
         }
         ItemStockContext stockContext = (ItemStockContext) context;
-        return stockContext.getQuantity() <= 5;
+        return stockContext.getAvailableQuantity() <= stockContext.getMinimumQuantity();
     }
 
 }
