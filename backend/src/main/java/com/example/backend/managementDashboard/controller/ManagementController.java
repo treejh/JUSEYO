@@ -62,7 +62,7 @@ public class ManagementController {
     }
 
     @Operation(summary = "관리 페이지 단건 조회", description = "ID를 기반으로 특정 관리 페이지를 조회합니다.")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
     @GetMapping("/{id}")
     public ResponseEntity<ManagementDashBoardResponseDto> getManagementDashboard(
             @Parameter(description = "관리 페이지 ID") @PathVariable(name = "id") Long id) {
