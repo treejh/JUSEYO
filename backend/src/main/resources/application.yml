@@ -30,6 +30,9 @@ spring:
   config:
     import: classpath:application-secret.yml
 
+recommend:
+  flask-url: http://localhost:5000/
+
 
 
 logging:

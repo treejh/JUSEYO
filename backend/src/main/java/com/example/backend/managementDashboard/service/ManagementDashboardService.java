@@ -10,6 +10,7 @@ import com.example.backend.managementDashboard.dto.ManagementDashboardUpdateRequ
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.dto.response.UserSearchResponseDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.user.service.UserService;
@@ -18,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -163,4 +166,17 @@ public class ManagementDashboardService {
         }
     }
 
+    // 같은 관리페이지에 속한 회원 전체 조회
+    public List<UserSearchResponseDto> findUsersByManagementDashboard(Long managementDashboardId) {
+        // 1) 관리페이지 존재 여부 체크
+        managementRepository.findById(managementDashboardId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        // 2) 회원 조회 및 DTO 변환
+        return userRepository
+                .findAllByManagementDashboardId(managementDashboardId)
+                .stream()
+                .map(UserSearchResponseDto::fromEntity)
+                .toList();
+    }
 }
