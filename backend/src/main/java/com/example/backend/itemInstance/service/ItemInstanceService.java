@@ -1,6 +1,7 @@
 package com.example.backend.itemInstance.service;
 
 import com.example.backend.enums.Outbound;
+import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.item.entity.Item;
@@ -82,7 +83,7 @@ public class ItemInstanceService {
         }
 
         // 권한 통과한 경우에만 인스턴스 반환
-        return instanceRepo.findAllByItemId(itemId).stream()
+        return instanceRepo.findAllByItemIdAndStatus(itemId, Status.ACTIVE).stream()
                 .map(this::map)
                 .collect(Collectors.toList());
     }
