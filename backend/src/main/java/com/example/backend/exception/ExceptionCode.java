@@ -21,6 +21,8 @@ public enum ExceptionCode {
     CATEGORY_NOT_FOUND(404, "카테고리를 찾을 수 없습니다."),
     ACCESS_DENIED(404,"권한이 없습니다. "),
     NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
+    REGISTER_ITEM_NOT_FOUND(404, "비품 구매서를 찾을 수 없습니다."),
+    INVALID_INBOUND_TYPE(404, "적합하지 않은 입고 유형입니다"),
 
     //유저 예외 처리
     NOT_INITIAL_MANAGER(403, "해당 기능은 최초 생성 매니저만 사용할 수 있습니다."),
