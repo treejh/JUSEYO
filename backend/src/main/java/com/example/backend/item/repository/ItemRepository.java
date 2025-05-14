@@ -21,6 +21,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     // 단일 조회 + 소속 확인
     Optional<Item> findByIdAndManagementDashboardId(Long id, Long managementDashboardId);
 
+    // 비품명으로 현재 등록된 건수 조회 (시리얼 순번 계산용)
+    long countByName(String name);
+
     @Query("SELECT new com.example.backend.item.dto.response.ItemResponseDto(" +
             "i.id, i.name, i.serialNumber, i.minimumQuantity, " +
             "i.totalQuantity, i.availableQuantity, i.purchaseSource, " +

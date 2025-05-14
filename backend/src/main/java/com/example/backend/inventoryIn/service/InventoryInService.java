@@ -1,9 +1,11 @@
 package com.example.backend.inventoryIn.service;
 
+import com.example.backend.enums.Inbound;
 import com.example.backend.enums.Outbound;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryIn.dto.request.InventoryInRequestDto;
+import com.example.backend.inventoryIn.dto.response.InventoryInExcelResponseDto;
 import com.example.backend.inventoryIn.dto.response.InventoryInResponseDto;
 import com.example.backend.inventoryIn.entity.InventoryIn;
 import com.example.backend.inventoryIn.repository.InventoryInRepository;
@@ -16,15 +18,14 @@ import com.example.backend.itemInstance.repository.ItemInstanceRepository;
 import com.example.backend.itemInstance.service.ItemInstanceService;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
-import com.example.backend.enums.Inbound;
 import com.example.backend.supplyReturn.entity.SupplyReturn;
 import com.example.backend.supplyReturn.repository.SupplyReturnRepository;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 
@@ -109,17 +110,22 @@ public class InventoryInService {
 
 
     /** 전체 입고내역 조회 (Excel용) */
-    public List<InventoryInResponseDto> getAllInbound() {
+    public List<InventoryInExcelResponseDto> getAllInboundForExcel() {
         return inRepo.findAll().stream()
-                .map(in -> InventoryInResponseDto.builder()
+                .map(in -> InventoryInExcelResponseDto.builder()
                         .id(in.getId())
                         .itemId(in.getItem().getId())
+                        .itemName(in.getItem().getName())
+                        .categoryName(in.getCategory().getName())
                         .quantity(in.getQuantity())
-                        .inbound(Inbound.valueOf(in.getInbound().name()))
+                        .inbound(in.getInbound())
                         .createdAt(in.getCreatedAt())
-                        .build())
+                        .modifiedAt(in.getModifiedAt())
+                        .build()
+                )
                 .toList();
     }
+
 
     //입고 내역 목록 조회
     public Page<InventoryInResponseDto> getInventoryIns(Pageable pageable,Inbound inbound) {

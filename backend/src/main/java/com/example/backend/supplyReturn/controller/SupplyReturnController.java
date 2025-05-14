@@ -1,8 +1,7 @@
 package com.example.backend.supplyReturn.controller;
 
 import com.example.backend.enums.ApprovalStatus;
-import com.example.backend.exception.BusinessLogicException;
-import com.example.backend.exception.ExceptionCode;
+import com.example.backend.export.service.ExcelExportService;
 import com.example.backend.supplyReturn.dto.request.SupplyReturnRequestDto;
 import com.example.backend.supplyReturn.dto.request.SupplyReturnStatusUpdateRequestDto;
 import com.example.backend.supplyReturn.dto.response.SupplyReturnResponseDto;
@@ -11,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 public class SupplyReturnController {
 
     private final SupplyReturnService supplyReturnService;
+    private final SupplyReturnService returnService;
+    private final ExcelExportService excelExportService;
 
     @Operation(summary = "비품 반납 요청 생성", description = "비품 반납서를 생성합니다.")
     @PostMapping
@@ -69,5 +71,12 @@ public class SupplyReturnController {
 
             @RequestBody @Valid SupplyReturnStatusUpdateRequestDto dto) {
         return supplyReturnService.updateSupplyReturn(id, dto.getApprovalStatus());
+    }
+
+    // 반납 요청서 엑셀 다운로드
+    @GetMapping("/supply-returns/excel")
+    public void downloadSupplyReturnsExcel(HttpServletResponse response) throws Exception {
+        var data = returnService.getAllReturnsForExcel();
+        excelExportService.exportSupplyReturns(data, response);
     }
 }

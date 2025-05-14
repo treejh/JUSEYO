@@ -1,6 +1,8 @@
 package com.example.backend.supplyRequest.service;
 
+import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Inbound;
+import com.example.backend.enums.Outbound;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryIn.dto.request.InventoryInRequestDto;
@@ -10,14 +12,13 @@ import com.example.backend.inventoryOut.service.InventoryOutService;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
-import com.example.backend.enums.ApprovalStatus;
-import com.example.backend.security.jwt.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,15 +85,32 @@ public class SupplyRequestService {
 
     @Transactional(readOnly = true)
     public List<SupplyRequestResponseDto> getAllRequests() {
-        return repo.findAll().stream()
+        Long currentUserId = tokenService.getIdFromToken();
+        Long userMgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        // 해당 관리대시보드 요청만 필터링
+        return repo.findAllByManagementDashboardId(userMgmtId).stream()
                 .map(this::mapToDto)
                 .toList();
     }
 
     @Transactional
     public SupplyRequestResponseDto updateRequestStatus(Long requestId, ApprovalStatus newStatus) {
+
+        Long currentUserId = tokenService.getIdFromToken();
+
         SupplyRequest req = repo.findById(requestId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
+
+        Long userMgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        if (!req.getManagementDashboard().getId().equals(userMgmtId)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
 
         if (newStatus == ApprovalStatus.APPROVED) {
             // 1. 출고 처리
@@ -102,7 +120,7 @@ public class SupplyRequestService {
             outDto.setCategoryId(req.getItem().getCategory().getId());
             outDto.setManagementId(req.getItem().getManagementDashboard().getId());
             outDto.setQuantity(req.getQuantity());
-            outDto.setOutbound("USAGE");
+            outDto.setOutbound(req.isRental() ? Outbound.LEND.name() : Outbound.ISSUE.name());
             outService.removeOutbound(outDto);
 
             // 2. 상태 전환
