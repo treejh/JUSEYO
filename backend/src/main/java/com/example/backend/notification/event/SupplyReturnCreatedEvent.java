@@ -7,9 +7,9 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class SupplyRequestCreatedEvent {
+public class SupplyReturnCreatedEvent {
     private final String itemName;
     private final Long requestQuantity;
-    private final String requesterName;
+    private final String returnerName;
 
 }

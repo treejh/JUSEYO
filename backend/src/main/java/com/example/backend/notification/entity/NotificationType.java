@@ -4,6 +4,7 @@ public enum NotificationType {
 
     // 매니저 알림
     SUPPLY_REQUEST("비품 요청"),                   // (회원->매니저) 비품 요청
+    SUPPLY_RETURN("비품 반납 알림"),
     SUPPLY_RETURN_ALERT("비품 반납 알림(고장/불량 비품 신고)"), // (회원->매니저) 비품 반납 알림
     STOCK_REACHED("재고 도달"),                    // 재고 도달
     STOCK_SHORTAGE("재고 부족"),                   // 재고 부족

@@ -1,5 +1,7 @@
 package com.example.backend.notification.strategy;
 
+import com.example.backend.notification.strategy.context.ReturnDueDateContext;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -7,11 +9,11 @@ public class ReturnDueSoonStrategy implements NotificationStrategy {
 
     @Override
     public boolean shouldTrigger(Object context) {
-        if (!(context instanceof ReturnDueSoonContext)) {
+        if (!(context instanceof ReturnDueDateContext)) {
             throw new IllegalArgumentException("Invalid context type");
         }
 
-        ReturnDueSoonContext ctx = (ReturnDueSoonContext) context;
+        ReturnDueDateContext ctx = (ReturnDueDateContext) context;
         if (ctx.getReturnDate() == null) return false;
 
         long daysLeft = ChronoUnit.DAYS.between(LocalDateTime.now(), ctx.getReturnDate());
@@ -20,7 +22,7 @@ public class ReturnDueSoonStrategy implements NotificationStrategy {
 
     @Override
     public String generateMessage(Object context) {
-        ReturnDueSoonContext ctx = (ReturnDueSoonContext) context;
-        return "⏰ [" + ctx.getProductName() + "]의 반납일이 하루 남았습니다. 제때 반납해주세요!";
+        ReturnDueDateContext ctx = (ReturnDueDateContext) context;
+        return "⏰ [" + ctx.getItemName() + "]의 반납일이 하루 남았습니다. 제때 반납해주세요!";
     }
 }

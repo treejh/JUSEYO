@@ -7,7 +7,9 @@ import com.example.backend.notification.strategy.NotificationStrategy;
 import com.example.backend.notification.strategy.context.ReturnDueDateContext;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
+import com.example.backend.supplyReturn.repository.SupplyReturnRepository;
 import com.example.backend.user.entity.User;
+import com.example.backend.notification.strategy.NotificationStrategyFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +21,16 @@ public class ReturnDueSoonMonitoringService {
 
     private final SupplyRequestRepository supplyRequestRepository;
     private final NotificationService notificationService;
-    private final com.example.backend.notification.strategy.NotificationStrategyFactory strategyFactory;
+    private final NotificationStrategyFactory strategyFactory;
+    private final SupplyReturnRepository supplyReturnRepository;
 
     public void checkAndNotifyUsersBeforeDueDate() {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.RETURN_DUE_SOON);
         List<SupplyRequest> requests = supplyRequestRepository.findAll();
 
         for (SupplyRequest request : requests) {
-            if (request.getApprovalStatus() != ApprovalStatus.APPROVED) continue;
+            if (request.getApprovalStatus() != ApprovalStatus.APPROVED) continue;   // 비품 사용 요청이 승인되지 않는 경우 skip
+            if (supplyReturnRepository.existsBySupplyRequest(request)) continue; // 반납 요청서가 존재하는 경우 skip
 
             ReturnDueDateContext context = new ReturnDueDateContext(
                     request.getItem().getName(),

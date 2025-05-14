@@ -5,7 +5,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class SupplyRequestApprovedContext {
-    private String itemName;
+public class SupplyRequestApprovalContext {
     private Long userId;
+    private String itemName;
+    private Long itemQuantity;
 }

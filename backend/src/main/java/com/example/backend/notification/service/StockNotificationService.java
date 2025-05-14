@@ -1,12 +1,11 @@
 package com.example.backend.notification.service;
 
 import com.example.backend.enums.RoleType;
-import com.example.backend.item.entity.Item;
 import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.NotificationType;
 import com.example.backend.notification.strategy.NotificationStrategyFactory;
 import com.example.backend.notification.strategy.NotificationStrategy;
-import com.example.backend.notification.strategy.context.SupplyRequestContext;
+import com.example.backend.notification.strategy.context.ItemStockContext;
 import com.example.backend.role.RoleService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.user.entity.User;
@@ -18,17 +17,19 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SupplyRequestMonitoringService {
-
+public class StockNotificationService {
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
     private final UserService userService;
     private final RoleService roleService;
 
-    public void notifySupplyRequest(Item item, User requester) {
-        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_REQUEST);
+    public void checkAndNotifyLowStock(String serialNumber, String itemName,
+    Long currentQuantity, Long minimumQuantity) {
+        // STOCK_SHORTAGE 전략을 가져오고
+        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.STOCK_SHORTAGE);
 
-        SupplyRequestContext context = new SupplyRequestContext(item.getName(), requester.getName());
+        // ItemStockContext 생성
+        ItemStockContext context = new ItemStockContext(serialNumber, itemName, currentQuantity, minimumQuantity);
 
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 

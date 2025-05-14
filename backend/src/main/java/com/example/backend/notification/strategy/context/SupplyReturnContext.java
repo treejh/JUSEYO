@@ -1,15 +1,12 @@
-package com.example.backend.notification.event;
+package com.example.backend.notification.strategy.context;
 
-import com.example.backend.item.entity.Item;
-import com.example.backend.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class SupplyRequestCreatedEvent {
+public class SupplyReturnContext {
     private final String itemName;
     private final Long requestQuantity;
     private final String requesterName;
-
 }

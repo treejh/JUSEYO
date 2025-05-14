@@ -7,5 +7,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class StockShortageEvent {
-    private final Item item;  // 재고가 부족한 아이템
+    private final String serialNumber;
+    private final String itemName;
+    private final Long currentQuantity;
+    private final Long minimumQuantity;
 }

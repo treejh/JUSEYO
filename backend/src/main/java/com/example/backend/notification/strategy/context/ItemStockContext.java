@@ -11,5 +11,6 @@ public class ItemStockContext {
     private final Long availableQuantity;
     private final Long minimumQuantity;
 
+
 }
 

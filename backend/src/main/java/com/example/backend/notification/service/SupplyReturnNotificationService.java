@@ -1,12 +1,11 @@
 package com.example.backend.notification.service;
 
 import com.example.backend.enums.RoleType;
-import com.example.backend.item.entity.Item;
 import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.NotificationType;
 import com.example.backend.notification.strategy.NotificationStrategyFactory;
 import com.example.backend.notification.strategy.NotificationStrategy;
-import com.example.backend.notification.strategy.context.ItemStockContext;
+import com.example.backend.notification.strategy.context.SupplyReturnContext;
 import com.example.backend.role.RoleService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.user.entity.User;
@@ -18,18 +17,17 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class StockMonitoringService {
+public class SupplyReturnNotificationService {
+
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
     private final UserService userService;
     private final RoleService roleService;
 
-    public void checkAndNotifyLowStock(Item item) {
-        // STOCK_SHORTAGE 전략을 가져오고
-        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.STOCK_SHORTAGE);
+    public void notifySupplyReturn(String itemName, Long itemQuantity, String returnerName) {
+        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_RETURN);
 
-        // ItemStockContext 생성
-        ItemStockContext context = new ItemStockContext(item.getSerialNumber(), item.getName(), item.getAvailableQuantity(), item.getMinimumQuantity());
+        SupplyReturnContext context = new SupplyReturnContext(itemName, itemQuantity, returnerName);
 
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 
@@ -44,7 +42,7 @@ public class StockMonitoringService {
 
                 // NotificationRequestDTO에 메시지 전달
                 notificationService.createNotification(new NotificationRequestDTO(
-                        NotificationType.STOCK_SHORTAGE,
+                        NotificationType.SUPPLY_RETURN,
                         msg,
                         manager.getId())
                 );
