@@ -42,6 +42,12 @@ public class SupplyRequestService {
      */
     @Transactional
     public SupplyRequestResponseDto createRequest(SupplyRequestRequestDto dto) {
+
+        //  대여 하면 returnDate 필수 검사
+        if (dto.isRental() && dto.getReturnDate() == null) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_RETURN_DATE);
+        }
+
         // 1) 아이템 조회
         Item item = itemRepo.findByName(dto.getProductName())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
@@ -197,6 +203,12 @@ public class SupplyRequestService {
     /** 내 요청만, 상태 REQUESTED 일 때만 수정 */
     @Transactional
     public SupplyRequestResponseDto updateMyRequest(Long requestId, SupplyRequestRequestDto dto) {
+
+        // 대여 하면returnDate 필수 검사
+        if (dto.isRental() && dto.getReturnDate() == null) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_RETURN_DATE);
+        }
+
         Long userId = tokenService.getIdFromToken();
         SupplyRequest req = repo.findById(requestId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));

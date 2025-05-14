@@ -22,6 +22,7 @@ public enum ExceptionCode {
     ACCESS_DENIED(404,"권한이 없습니다. "),
     NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
     INVALID_REQUEST_STATUS(400, "요청 상태가 유효하지 않아 수정할 수 없습니다."),
+    INVALID_RETURN_DATE(400, "대여 시 반납 날짜를 반드시 입력해야 합니다."),
 
     //유저 예외 처리
     NOT_INITIAL_MANAGER(403, "해당 기능은 최초 생성 매니저만 사용할 수 있습니다."),
