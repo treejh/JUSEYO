@@ -96,7 +96,7 @@ public class ManagementController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "관리 페이지 내 회원 조회",
+    @Operation(summary = "관리 페이지 내 일반회원 조회",
             description = "해당 관리페이지에 속한 모든 일반 회원을 반환합니다.")
     @PreAuthorize("hasAnyRole('USER','MANAGER')")
     @GetMapping("/{id}/users")
