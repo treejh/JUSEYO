@@ -1,6 +1,7 @@
 package com.example.backend.email.service;
 
 import com.example.backend.email.entity.EmailMessage;
+//import com.example.backend.redis.RedisService;
 import com.example.backend.redis.RedisService;
 import com.example.backend.utils.CreateRandomNumber;
 import jakarta.mail.MessagingException;

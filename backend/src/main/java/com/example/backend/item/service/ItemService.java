@@ -15,13 +15,14 @@ import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.security.SecureRandom;
 import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
@@ -35,31 +36,34 @@ public class ItemService {
     private final TokenService tokenService;
     private final InventoryAnalysisService analysisService;
 
-    private String generateSerial(int length) {
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            sb.append(ALPHANUM.charAt(RNG.nextInt(ALPHANUM.length())));
-        }
-        return sb.toString();
+    /**
+     * 랜덤 8자리 알파벳+숫자 생성
+     */
+    private String randomSuffix() {
+        return RandomStringUtils.randomAlphanumeric(8);
     }
 
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
-        // ① 시리얼 넘버 결정 (빈 값이면 15자리 랜덤 + 중복 체크)
+        // 1) 시리얼 결정: 빈 값이면 비품명-순번-랜덤8 로 생성
         String serial = dto.getSerialNumber();
         if (serial == null || serial.isBlank()) {
-            do {
-                serial = generateSerial(15);
-            } while (repo.existsBySerialNumber(serial));
+            String namePart = dto.getName().replaceAll("\\s+", "_");
+            long seq = repo.countByName(dto.getName()) + 1;
+            serial = String.format("%s-%d-%s", namePart, seq, randomSuffix());
+            // 중복 방지
+            while (repo.existsBySerialNumber(serial)) {
+                serial = String.format("%s-%d-%s", namePart, seq, randomSuffix());
+            }
         }
 
-        // ② 연관 엔티티 조회
+        // 2) 연관 엔티티 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                .orElseThrow(() -> new IllegalArgumentException("ManagementDashboard not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
 
-        // ③ 엔티티 생성
+        // 3) 엔티티 빌드 및 저장
         Item entity = Item.builder()
                 .name(dto.getName())
                 .serialNumber(serial)
@@ -73,9 +77,8 @@ public class ItemService {
                 .category(category)
                 .managementDashboard(mgmt)
                 .build();
-
-        // ④ 저장 & DTO 반환
         Item saved = repo.save(entity);
+
         analysisService.clearCategoryCache(); // 캐시 무효화
         return mapToDto(saved);
     }
@@ -108,14 +111,23 @@ public class ItemService {
     // 자신이 소속 관리페이지의 단일 아이템 조회 가능
     @Transactional(readOnly = true)
     public ItemResponseDto getItem(Long id) {
-        Long userId = tokenService.getIdFromToken();
-        User me = userRepo.findById(userId)
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        // 1) 현재 사용자 조회 & 관리대시보드 ID
+        Long currentUserId = tokenService.getIdFromToken();
+        ManagementDashboard userMgmt = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard();
 
-        Long mgmtId = me.getManagementDashboard().getId();
-        return repo.findByIdAndManagementDashboardId(id, mgmtId)
-                .map(this::mapToDto)
+        // 2) 실제 아이템 조회
+        Item entity = repo.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+
+        // 3) 권한 확인
+        if (!entity.getManagementDashboard().getId().equals(userMgmt.getId())) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
+        // 4) DTO 반환
+        return mapToDto(entity);
     }
 
     // 자신이 소속 관리페이지의 모든 아이템 조회 가능

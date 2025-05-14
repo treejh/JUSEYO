@@ -41,7 +41,7 @@ public class ManagementDashboardService {
     public ManagementDashBoardResponseDto createManagementDashBoard(ManagementDashBoardRequestDto requestDto){
         User loginUser = userService.findById(tokenService.getIdFromToken());
         //1. 이미 존재하는 관리 페이지 이름인지 확인
-        validateManagementDashBoardName(requestDto.getName());
+        validateManagementDashBoardName(requestDto.getPageName());
 
         //2. 관리 생성하려는 사용자가 매니저역할을 가지고 있는지 확인
         userService.validManager();
@@ -53,7 +53,7 @@ public class ManagementDashboardService {
         userService.validCreateInitialManager();
 
         ManagementDashboard managementDashboard= ManagementDashboard.builder()
-                .name(requestDto.getName())
+                .name(requestDto.getPageName())
                 .owner(requestDto.getOwner())
                 .companyName(requestDto.getCompanyName())
                 .businessRegistrationNumber(String.valueOf(System.currentTimeMillis()))

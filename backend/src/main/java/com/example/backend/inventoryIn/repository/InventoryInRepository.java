@@ -28,4 +28,5 @@ public interface InventoryInRepository extends JpaRepository<InventoryIn, Long> 
 
     List<InventoryIn> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
+
 }
