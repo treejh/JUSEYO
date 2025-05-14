@@ -97,25 +97,24 @@ public class ManagementController {
     }
 
     @Operation(summary = "관리 페이지 내 회원 조회",
-            description = "해당 관리페이지에 속한 모든 회원을 반환합니다.")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','USER')")
+            description = "해당 관리페이지에 속한 모든 일반 회원을 반환합니다.")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
     @GetMapping("/{id}/users")
     public ResponseEntity<List<UserSearchResponseDto>> getUsersByManagement(
-            @Parameter(description = "관리 페이지 ID") @PathVariable Long id) {
-
-        // 1) 토큰에서 유저 가져오기
+            @PathVariable Long id) {
+        // 소속 체크
         Long currentUserId = tokenService.getIdFromToken();
         User me = userService.findById(currentUserId);
-
-        // 2) 본인 대시보드 ID와 요청한 ID 비교
-        Long myMgmtId = me.getManagementDashboard().getId();
-        if (!myMgmtId.equals(id)) {
+        if (!me.getManagementDashboard().getId().equals(id)) {
             throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
         }
 
-        // 3) 같은 대시보드 사용자만 조회
-        List<UserSearchResponseDto> users =
-                managementDashboardService.findUsersByManagementDashboard(id);
+        // 2) 결과 필터링: 일반회원만 조회
+        List<UserSearchResponseDto> users = managementDashboardService
+                .findUsersByManagementDashboard(id)
+                .stream()
+                .filter(dto -> "USER".equals(dto.getRole()))
+                .toList();
 
         return ResponseEntity.ok(users);
     }

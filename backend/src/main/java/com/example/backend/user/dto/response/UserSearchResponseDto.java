@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class UserSearchResponseDto {
+    private Long id;
     private String email;
     private String name;
     private String role;
@@ -14,6 +15,7 @@ public class UserSearchResponseDto {
 
     public static UserSearchResponseDto fromEntity(User u) {
         return UserSearchResponseDto.builder()
+                .id(u.getId())
                 .email(u.getEmail())
                 .name(u.getName())
                 .role(u.getRole().getRole().name())
