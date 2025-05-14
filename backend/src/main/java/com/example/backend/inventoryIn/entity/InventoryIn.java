@@ -5,6 +5,7 @@ import com.example.backend.category.entity.Category;
 import com.example.backend.enums.Inbound;
 import com.example.backend.item.entity.Item;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
+import com.example.backend.registerItem.entity.RegisterItem;
 import com.example.backend.supplyReturn.entity.SupplyReturn;
 import jakarta.persistence.*;
 
@@ -52,5 +53,9 @@ public class InventoryIn extends Auditable {
 
     @Column(name = "quantity", nullable = false)
     private Long quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "register_item_id", nullable = true)
+    private RegisterItem registerItem;
 
 }
