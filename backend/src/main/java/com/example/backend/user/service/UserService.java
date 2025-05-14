@@ -629,5 +629,9 @@ public class UserService {
                 managementDashboard, approvalStatus, role);
     }
 
+    public User findUserByName(String name){
+        return userRepository.findByName(name).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    }
+
 
 }

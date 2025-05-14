@@ -1,5 +1,6 @@
 package com.example.backend.chat.config;
 
+import com.example.backend.chat.handler.StompHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -13,16 +14,15 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    //private final StompHandler stompHandler;
-    //private final StompExceptionHandler stompExceptionHandler;
+    private final StompHandler stompHandler;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // stomp 접속 url -> /ws-stomp
         registry
                 //.setErrorHandler(stompExceptionHandler)
-                .addEndpoint("/stomp/juseyo")
-                .setAllowedOrigins("*")
+                .addEndpoint("/ws-stomp")
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
         }
 
@@ -34,9 +34,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // 메시지를 발행하는 요청 url -> 메시지를 보낼 때
         registry.setApplicationDestinationPrefixes("/pub");
     }
+
+
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        //registration.interceptors(stompHandler);
+        registration.interceptors(stompHandler);
     }
 
 }

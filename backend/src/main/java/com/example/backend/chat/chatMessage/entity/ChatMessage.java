@@ -1,10 +1,15 @@
 package com.example.backend.chat.chatMessage.entity;
 
 
+import com.example.backend.auditable.Auditable;
 import com.example.backend.chat.chatroom.entity.ChatRoom;
+import com.example.backend.enums.ChatMessageStatus;
+import com.example.backend.enums.ChatStatus;
 import com.example.backend.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,7 +29,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class ChatMessage {
+public class ChatMessage extends Auditable {
 
     @Id
     @Column(name = "id")
@@ -38,6 +43,11 @@ public class ChatMessage {
     @ManyToOne
     @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "meesage_status",nullable = false)
+    private ChatMessageStatus messageStatus;
+
 
 
     @Column(name = "message", nullable = false, length = 100)

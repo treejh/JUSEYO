@@ -1,6 +1,7 @@
 package com.example.backend.chat.chatUser.entity;
 
 
+import com.example.backend.auditable.Auditable;
 import com.example.backend.chat.chatroom.entity.ChatRoom;
 import com.example.backend.department.entity.Department;
 import com.example.backend.enums.ApprovalStatus;
@@ -29,7 +30,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class ChatUser {
+public class ChatUser extends Auditable {
 
     @Id
     @Column(name = "id")

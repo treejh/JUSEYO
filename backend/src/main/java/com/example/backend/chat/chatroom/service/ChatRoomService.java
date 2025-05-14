@@ -33,14 +33,14 @@ public class ChatRoomService {
 
 
     @Transactional
-    public ChatRoom createChatRoom(ChatRoomRequestDto dto) {
+    public ChatRoom createChatRoom(ChatRoomRequestDto chatRoomRequestDto) {
         User loginUser = userService.findById(tokenService.getIdFromToken());
 
-        switch (dto.getRoomType()) {
+        switch (chatRoomRequestDto.getRoomType()) {
             case ONE_TO_ONE:
-                return createOneToOneRoom(loginUser, dto);
+                return createOneToOneRoom(loginUser, chatRoomRequestDto);
             case GROUP:
-                return createGroupRoom(loginUser, dto);
+                return createGroupRoom(loginUser, chatRoomRequestDto);
             case SUPPORT:
                 return createSupportRoom(loginUser);
             default:
@@ -119,6 +119,15 @@ public class ChatRoomService {
     //1:1 채팅방이 존재하는지 확인
     private Optional<ChatRoom> getExistingRoom(Long userId1, Long userId2) {
         return chatRoomRepository.findByUsers(userId1, userId2);
+    }
+
+    public ChatRoom findChatRoomById(Long id){
+        return chatRoomRepository.findById(id)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+    }
+
+    public void deleteChatRoomById(Long id){
+        chatRoomRepository.deleteById(id);
     }
 
 }
