@@ -118,4 +118,30 @@ public class ManagementController {
 
         return ResponseEntity.ok(users);
     }
+
+    @Operation(
+            summary = "관리 페이지 내 매니저 조회",
+            description = "해당 관리페이지에 속한 모든 매니저를 반환합니다."
+    )
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    @GetMapping("/{id}/managers")
+    public ResponseEntity<List<UserSearchResponseDto>> getManagersByManagement(
+            @PathVariable Long id) {
+
+        // 1) 소속 체크
+        Long currentUserId = tokenService.getIdFromToken();
+        User me = userService.findById(currentUserId);
+        if (!me.getManagementDashboard().getId().equals(id)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
+        // 2) 결과 필터링: 매니저만
+        List<UserSearchResponseDto> managers = managementDashboardService
+                .findUsersByManagementDashboard(id)
+                .stream()
+                .filter(dto -> "MANAGER".equals(dto.getRole()))
+                .toList();
+
+        return ResponseEntity.ok(managers);
+    }
 }
