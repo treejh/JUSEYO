@@ -62,6 +62,7 @@ public class ItemInstanceService {
                 .instanceCode(code)
                 .outbound(Outbound.AVAILABLE)
                 .image(dto.getImage())
+                .status(Status.ACTIVE)
                 .build();
 
         ItemInstance saved = instanceRepo.save(inst);
@@ -124,7 +125,7 @@ public class ItemInstanceService {
     }
 
     public void softDeleteInstances(Long itemId) {
-        List<ItemInstance> instances = instanceRepo.findAllByItemIdAndStatus(itemId,Status.ACTIVE);
+        List<ItemInstance> instances = instanceRepo.findAllByItemId(itemId);
 
         for (ItemInstance instance : instances) {
             instance.setStatus(Status.STOP);

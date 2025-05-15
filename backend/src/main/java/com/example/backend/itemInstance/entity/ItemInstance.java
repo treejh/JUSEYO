@@ -28,7 +28,7 @@ public class ItemInstance extends Auditable {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "outbound", nullable = false, length = 20)
     private Outbound outbound; // 현재상태
 
 
@@ -47,6 +47,6 @@ public class ItemInstance extends Auditable {
     private String instanceCode;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_item_exists")
+    @Column(name = "status")
     private Status status=Status.ACTIVE;
 }

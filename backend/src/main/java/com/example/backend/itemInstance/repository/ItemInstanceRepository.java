@@ -26,4 +26,6 @@ public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long
 
     List<ItemInstance> findAllByItemIdAndStatus(Long itemId, Status status);
 
+    List<ItemInstance> findAllByItemId(Long itemId);
+
 }
