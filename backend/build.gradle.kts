@@ -70,9 +70,21 @@ dependencies {
     // excel
     implementation ("org.apache.poi:poi-ooxml:5.2.3")
 
+    //웹소켓 의존성
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
+
+    // WebJars - STOMP & SockJS 스프링이 sockJs를 제공함
+    implementation("org.webjars:sockjs-client:1.5.1")
+    implementation("org.webjars:stomp-websocket:2.3.4") // 위와 중복되니 하나만 남기는 게 좋음
+
+//    // Gson
+//    implementation("com.google.code.gson:gson:2.9.0")
+//
+//    // WebJars Locator (for resolving /webjars/** paths)
+//    implementation("org.webjars:webjars-locator-core")
+
     //S3 의존성
     implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
-
 
 }
 

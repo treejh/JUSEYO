@@ -89,6 +89,7 @@ public class SecurityConfigJuseyo {
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000"
         ));
+
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);
@@ -96,6 +97,8 @@ public class SecurityConfigJuseyo {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
+
 
 
     @Bean

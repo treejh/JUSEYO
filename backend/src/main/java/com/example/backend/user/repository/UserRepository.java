@@ -19,6 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
     Optional<User> findByPhoneNumber(String phoneNumber);
+    Optional<User> findByName(String name);
 
     Page<User> findByRole(Role role, Pageable pageable);
     Page<User> findByManagementDashboardAndApprovalStatusAndRole(ManagementDashboard managementDashboard, ApprovalStatus approvalStatus, Pageable pageable, Role role);
@@ -26,4 +27,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 관리페이지 회원 전체 조회용
     List<User> findAllByManagementDashboardId(Long managementDashboardId);
+
+
+    //해당 관리페이지에 존재하는 승인된 매니저 조회
+    List<User> findByManagementDashboardAndApprovalStatusAndRole(ManagementDashboard managementDashboard, ApprovalStatus approvalStatus, Role role);
 }
