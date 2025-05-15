@@ -124,7 +124,7 @@ public class ItemInstanceService {
     }
 
     public void softDeleteInstances(Long itemId) {
-        List<ItemInstance> instances = instanceRepo.findAllByItemId(itemId);
+        List<ItemInstance> instances = instanceRepo.findAllByItemIdAndStatus(itemId,Status.ACTIVE);
 
         for (ItemInstance instance : instances) {
             instance.setStatus(Status.STOP);

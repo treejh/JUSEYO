@@ -2,6 +2,7 @@ package com.example.backend.inventoryIn.service;
 
 import com.example.backend.enums.Inbound;
 import com.example.backend.enums.Outbound;
+import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.image.service.ImageService;
@@ -91,7 +92,7 @@ public class InventoryInService {
             // 반납 입고: 수량만큼 가장 오래된 대여중 인스턴스를 AVAILABLE로
             for (int i = 0; i < savedInbound.getQuantity(); i++) {
                 ItemInstance inst = instanceRepo
-                        .findFirstByItemIdAndOutbound(item.getId(), Outbound.LEND)
+                        .findFirstByItemIdAndOutboundAndStatus(item.getId(), Outbound.LEND, Status.ACTIVE)
                         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
                 UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
                 upd.setOutbound(Outbound.AVAILABLE);

@@ -14,10 +14,10 @@ import java.util.Optional;
 
 @Repository
 public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long> {
-    List<ItemInstance> findAllByItemId(Long itemId);  // 특정 Item 소속 인스턴스 조회
     long countByItemId(Long itemId); // 시퀀스 번호 계산용
 
-    Optional<ItemInstance> findFirstByItemIdAndOutbound(Long itemId, Outbound outbound);
+    Optional<ItemInstance> findFirstByItemIdAndOutboundAndStatus(Long itemId, Outbound outbound, Status status);
+
 
     @Query("SELECT i FROM ItemInstance i " +
             "WHERE i.item.id = :itemId AND i.status = com.example.backend.enums.Status.ACTIVE " +
