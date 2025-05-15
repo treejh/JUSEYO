@@ -22,12 +22,29 @@ import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.repository.UserRepository;
+import jakarta.servlet.ServletOutputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+
+
 
 @Service
 @Slf4j
@@ -110,7 +127,7 @@ public class InventoryOutService {
         return mapToDto(saved);
     }
 
-    /** 전체 출고내역 조회 (매니저용), 엑셀 */
+    /** 전체 출고내역 조회 (매니저용) */
     @Transactional(readOnly = true)
     public List<InventoryOutResponseDto> getAllOutbound() {
         Long currentUserId = tokenService.getIdFromToken();
@@ -130,6 +147,85 @@ public class InventoryOutService {
         return outRepo.findAllBySupplyRequest_User_Id(userId).stream()
                 .map(this::mapToDto)
                 .toList();
+    }
+
+    /** 페이징·정렬·검색·날짜 필터된 페이지 조회 (매니저용) */
+    @Transactional(readOnly = true)
+    public Page<InventoryOutResponseDto> getOutbound(
+            String search,
+            LocalDate fromDate,
+            LocalDate toDate,
+            int page,
+            int size,
+            String sortField,
+            String sortDir
+    ) {
+        Long userMgmtId = tokenService.getIdFromToken();
+        Specification<InventoryOut> spec = Specification.where(
+                (root, query, cb) -> cb.equal(
+                        root.get("managementDashboard").get("id"), userMgmtId)
+        );
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(
+                    root.get("item").get("name"), "%" + search + "%"));
+        }
+        if (fromDate != null && toDate != null) {
+            LocalDateTime start = fromDate.atStartOfDay();
+            LocalDateTime end = toDate.atTime(LocalTime.MAX);
+            spec = spec.and((root, query, cb) -> cb.between(
+                    root.get("createdAt"), start, end));
+        }
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortField);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return outRepo.findAll(spec, pageable)
+                .map(this::mapToDto);
+    }
+
+    /** 필터된 전체 리스트 반환 (export용) */
+    @Transactional(readOnly = true)
+    public List<InventoryOutResponseDto> getOutboundList(
+            String search,
+            LocalDate fromDate,
+            LocalDate toDate
+    ) {
+        return getOutbound(search, fromDate, toDate, 0, Integer.MAX_VALUE, "createdAt", "desc")
+                .getContent();
+    }
+
+    /** CSV 내보내기 */
+    public void writeCsv(List<InventoryOutResponseDto> list, Writer writer) throws IOException {
+        writer.write("ID,ItemId,Quantity,Outbound,CreatedAt" + System.lineSeparator());
+        for (var dto : list) {
+            writer.write(String.join(",",
+                    dto.getId().toString(),
+                    dto.getItemId().toString(),
+                    dto.getQuantity().toString(),
+                    dto.getOutbound(),
+                    dto.getCreatedAt().toString()
+            ));
+            writer.write(System.lineSeparator());
+        }
+        writer.flush();
+    }
+
+    /** Excel 내보내기 */
+    public void writeExcel(List<InventoryOutResponseDto> list, ServletOutputStream os) throws IOException {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("InventoryOut");
+            Row header = sheet.createRow(0);
+            String[] cols = {"ID","ItemId","Quantity","Outbound","CreatedAt"};
+            for (int i = 0; i < cols.length; i++) header.createCell(i).setCellValue(cols[i]);
+            for (int r = 0; r < list.size(); r++) {
+                var dto = list.get(r);
+                Row row = sheet.createRow(r + 1);
+                row.createCell(0).setCellValue(dto.getId());
+                row.createCell(1).setCellValue(dto.getItemId());
+                row.createCell(2).setCellValue(dto.getQuantity());
+                row.createCell(3).setCellValue(dto.getOutbound());
+                row.createCell(4).setCellValue(dto.getCreatedAt().toString());
+            }
+            wb.write(os);
+        }
     }
 
     /** DTO 매핑 공통 메서드 */
