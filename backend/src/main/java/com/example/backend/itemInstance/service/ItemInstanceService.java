@@ -44,6 +44,13 @@ public class ItemInstanceService {
         Item item = itemRepo.findById(dto.getItemId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
+        // 비품 보유수량 초과 금지
+        long existingCount = instanceRepo.countByItemId(item.getId());
+
+        if (existingCount >= item.getTotalQuantity()) {
+            throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
+        }
+
         Long userMgmtId = userRepo.findById(currentUserId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
                 .getManagementDashboard().getId();

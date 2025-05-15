@@ -8,16 +8,12 @@ import com.example.backend.itemInstance.entity.ItemInstance;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "items")
@@ -44,7 +40,7 @@ public class Item extends Auditable {
     private Long minimumQuantity;
 
     @Column(name = "total_quantity", nullable = false)
-    private Long totalQuantity;
+    private Long totalQuantity; // 총보유수량
 
     @Column(name = "available_quantity", nullable = false)
     private Long availableQuantity; //현재 재고
