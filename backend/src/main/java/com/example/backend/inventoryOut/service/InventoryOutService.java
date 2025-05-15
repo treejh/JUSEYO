@@ -18,12 +18,14 @@ import com.example.backend.itemInstance.repository.ItemInstanceRepository;
 import com.example.backend.itemInstance.service.ItemInstanceService;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
+import com.example.backend.notification.event.StockShortageEvent;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,7 @@ public class InventoryOutService {
     private final UserRepository userRepo;
     private final TokenService tokenService;
     private final InventoryAnalysisService inventoryAnalysisService;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Transactional
@@ -148,5 +151,12 @@ public class InventoryOutService {
                         .modifiedAt(out.getModifiedAt())
                         .build())
                 .toList();
+    }
+
+    // 재고 부족 알림 테스트용 메서드
+    public void stockdown() {
+        Item pen = itemRepo.findByName("볼펜").get();
+        pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
+        eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
     }
 }

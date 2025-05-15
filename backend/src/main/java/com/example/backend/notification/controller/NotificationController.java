@@ -2,6 +2,7 @@ package com.example.backend.notification.controller;
 
 
 
+import com.example.backend.inventoryOut.service.InventoryOutService;
 import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.Notification;
 import com.example.backend.notification.entity.NotificationType;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -21,6 +23,7 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final InventoryOutService inventoryOutService; // 재고 알림 테스트용
 
     // 1. 알림 생성
     @PostMapping
@@ -43,7 +46,7 @@ public class NotificationController {
 
     // SSE를 통한 실시간 알림 전송
     @GetMapping(value = "/stream/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamNotifications(@PathVariable Long userId) {
+    public SseEmitter streamNotifications(@PathVariable Long userId) throws IOException {
         System.out.println("📡 SSE 요청 받음: userId = " + userId);
 
         return notificationService.streamNotifications(userId);
@@ -59,5 +62,11 @@ public class NotificationController {
         );
 
         return notificationService.createNotification(testRequest);
+    }
+
+    // 재고 알림 테스트용 알림
+    @PostMapping("/test/stockDown")
+    public void stockDownAlertTest() {
+        inventoryOutService.stockdown();
     }
 }

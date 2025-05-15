@@ -160,6 +160,8 @@ public class UserService {
     }
 
 
+
+
     // 매니저가 관리페이지에 요청된 권한 리스트들을 조회하는 공통 로직
     private Page<User> getUserListByApprovalStatus(String managementDashboardName, ApprovalStatus approvalStatus, Pageable pageable) {
         ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
@@ -601,6 +603,13 @@ public class UserService {
         }
     }
 
+    public List<User> findByManagerList(ManagementDashboard managementDashboard){
+
+        Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
+        ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
+        return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
+                managementDashboard, approvalStatus, role);
+    }
     public List<User> findAllByIds(List<Long> userIds) {
         List<User> users = userRepository.findAllById(userIds);
 
@@ -621,17 +630,18 @@ public class UserService {
         return users;
     }
 
-    public List<User> findByManagerList(ManagementDashboard managementDashboard){
+    public List<User> findUsersByRole(Role role) {
+        return userRepository.findAllByRole(role);
+    }
 
-        Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
-        ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
-        return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
-                managementDashboard, approvalStatus, role);
+    public User findUserByToken(){
+        //이메일 중복 회원가입 불가
+        return findById(tokenService.getIdFromToken());
+
     }
 
     public User findUserByName(String name){
         return userRepository.findByName(name).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }
-
 
 }
