@@ -12,18 +12,29 @@ const ChatPage = () => {
   const username = "jihyun1"; // 사용자 이름
 
   useEffect(() => {
-    function getCookie(name: string): string | null {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-      return null;
-    }
+    // 쿠키에서 accessToken 추출
+    const getAccessTokenFromCookie = () => {
+      const cookies = document.cookie.split(";").map((cookie) => cookie.trim());
+      const accessTokenCookie = cookies.find((cookie) =>
+        cookie.startsWith("accessToken=")
+      );
+      return accessTokenCookie ? accessTokenCookie.split("=")[1] : null;
+    };
+
+    const accessToken = getAccessTokenFromCookie();
+
+    // function getCookie(name: string): string | null {
+    //     const value = `; ${document.cookie}`;
+    //     const parts = value.split(`; ${name}=`);
+    //     if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    //     return null;
+    //   }
 
     const stompClient = new Client({
       webSocketFactory: () => new SockJS("http://localhost:8080/ws-stomp"),
       debug: (str) => console.log(str),
       connectHeaders: {
-        accessToken: getCookie("accessToken") || "",
+        Authorization: `Bearer ${accessToken}`, // 헤더에 accessToken 추가
       },
       onConnect: () => {
         console.log("WebSocket 연결 성공");
