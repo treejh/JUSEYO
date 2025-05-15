@@ -1,7 +1,6 @@
 package com.example.backend.inventoryOut.service;
 
 import com.example.backend.analysis.service.InventoryAnalysisService;
-import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.enums.Outbound;

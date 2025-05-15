@@ -13,9 +13,17 @@ import com.example.backend.itemInstance.repository.ItemInstanceRepository;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -106,6 +114,56 @@ public class ItemInstanceService {
         inst.setFinalImage(dto.getFinalImage());
         ItemInstance saved = instanceRepo.save(inst);
         return map(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ItemInstanceResponseDto> getByItemPage(
+            Long itemId,
+            String search,
+            LocalDate fromDate,
+            LocalDate toDate,
+            int page,
+            int size,
+            String sortField,
+            String sortDir
+    ) {
+        // 1) 권한 및 item 존재 체크
+        Long currntUserId = tokenService.getIdFromToken();
+        Long userMgmtId = userRepo.findById(currntUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        // 2) 기본 Specification: root.get("item").get("id") == itemId
+        Specification<ItemInstance> spec = Specification.where(
+                (root, query, cb) -> cb.equal(root.get("item").get("id"), itemId)
+        );
+
+        // 3) 검색어: instanceCode LIKE %search%
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("instanceCode"), "%" + search + "%")
+            );
+        }
+
+        // 4) 날짜범위: createdAt between fromDate.atStartOfDay() and toDate.atTime(MAX)
+        if (fromDate != null && toDate != null) {
+            LocalDateTime start = fromDate.atStartOfDay();
+            LocalDateTime end   = toDate.atTime(LocalTime.MAX);
+            spec = spec.and((root, query, cb) ->
+                    cb.between(root.get("createdAt"), start, end)
+            );
+        }
+
+        // 5) Pageable 생성: Sort.by(sortDir, sortField)
+        Sort sort = Sort.by(
+                sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortField
+        );
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // 6) 조회 & DTO 매핑
+        return instanceRepo.findAll(spec, pageable)
+                .map(this::map);
     }
 
     private ItemInstanceResponseDto map(ItemInstance e) {
