@@ -47,33 +47,35 @@ public class InventoryOutController {
         return ResponseEntity.ok(result);
     }
 
-    /** CSV/Excel 내보내기 (매니저) */
+    /** Excel 내보내기 (매니저) */
     @GetMapping("/export")
     @PreAuthorize("hasRole('MANAGER')")
     public void exportOutbound(
-            @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
             HttpServletResponse response
     ) throws IOException {
         List<InventoryOutResponseDto> list = service.getOutboundList(search, fromDate, toDate);
-        if ("csv".equalsIgnoreCase(format)) {
-            response.setContentType("text/csv");
-            response.setHeader("Content-Disposition", "attachment;filename=inventory-out.csv");
-            service.writeCsv(list, response.getWriter());
-        } else {
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment;filename=inventory-out.xlsx");
-            service.writeExcel(list, response.getOutputStream());
-        }
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment;filename=inventory-out.xlsx");
+        service.writeExcel(list, response.getOutputStream());
     }
 
     /** 내 출고내역 조회 (일반회원) */
     @GetMapping("/me")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<InventoryOutResponseDto>> getMyOuts() {
-        List<InventoryOutResponseDto> list = service.getMyOuts();
-        return ResponseEntity.ok(list);
-    }
+    public ResponseEntity<Page<InventoryOutResponseDto>> getMyOutbound(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
+    ) {
+                Page<InventoryOutResponseDto> result = service.getMyOutbound(
+                                search, fromDate, toDate, page, size, sortField, sortDir);
+                return ResponseEntity.ok(result);
+            }
 }

@@ -38,7 +38,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -140,14 +139,6 @@ public class InventoryOutService {
                 .toList();
     }
 
-    /** 내 출고내역 조회 (일반회원용) */
-    @Transactional(readOnly = true)
-    public List<InventoryOutResponseDto> getMyOuts() {
-        Long userId = tokenService.getIdFromToken();
-        return outRepo.findAllBySupplyRequest_User_Id(userId).stream()
-                .map(this::mapToDto)
-                .toList();
-    }
 
     /** 페이징·정렬·검색·날짜 필터된 페이지 조회 (매니저용) */
     @Transactional(readOnly = true)
@@ -192,20 +183,52 @@ public class InventoryOutService {
                 .getContent();
     }
 
-    /** CSV 내보내기 */
-    public void writeCsv(List<InventoryOutResponseDto> list, Writer writer) throws IOException {
-        writer.write("ID,ItemId,Quantity,Outbound,CreatedAt" + System.lineSeparator());
-        for (var dto : list) {
-            writer.write(String.join(",",
-                    dto.getId().toString(),
-                    dto.getItemId().toString(),
-                    dto.getQuantity().toString(),
-                    dto.getOutbound(),
-                    dto.getCreatedAt().toString()
-            ));
-            writer.write(System.lineSeparator());
+    // 조회
+    @Transactional(readOnly = true)
+    public Page<InventoryOutResponseDto> getMyOutbound(
+            String search,
+            LocalDate fromDate,
+            LocalDate toDate,
+            int page,
+            int size,
+            String sortField,
+            String sortDir
+    ) {
+        // 1) 나의 userId 추출
+        Long userId = tokenService.getIdFromToken();
+
+        // 2) 기본 Specification: 내 요청에 대한 출고만
+        Specification<InventoryOut> spec = Specification.where(
+                (root, query, cb) ->
+                        cb.equal(root.get("supplyRequest").get("user").get("id"), userId)
+        );
+
+        // 3) 검색어 필터 (item 이름에 포함된 경우)
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("item").get("name"), "%" + search + "%")
+            );
         }
-        writer.flush();
+
+        // 4) 날짜 범위 필터
+        if (fromDate != null && toDate != null) {
+            LocalDateTime start = fromDate.atStartOfDay();
+            LocalDateTime end   = toDate.atTime(LocalTime.MAX);
+            spec = spec.and((root, query, cb) ->
+                    cb.between(root.get("createdAt"), start, end)
+            );
+        }
+
+        // 5) 정렬·페이징 설정
+        Sort sort = Sort.by(
+                sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortField
+        );
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // 6) 쿼리 실행 & DTO 변환
+        return outRepo.findAll(spec, pageable)
+                .map(this::mapToDto);
     }
 
     /** Excel 내보내기 */
