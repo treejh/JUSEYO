@@ -139,7 +139,6 @@ public class InventoryOutService {
                 .toList();
     }
 
-
     /** 페이징·정렬·검색·날짜 필터된 페이지 조회 (매니저용) */
     @Transactional(readOnly = true)
     public Page<InventoryOutResponseDto> getOutbound(
