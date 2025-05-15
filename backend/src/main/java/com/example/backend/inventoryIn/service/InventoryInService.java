@@ -4,6 +4,7 @@ import com.example.backend.enums.Inbound;
 import com.example.backend.enums.Outbound;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
+import com.example.backend.image.service.ImageService;
 import com.example.backend.inventoryIn.dto.request.InventoryInRequestDto;
 import com.example.backend.inventoryIn.dto.response.InventoryInExcelResponseDto;
 import com.example.backend.inventoryIn.dto.response.InventoryInResponseDto;
@@ -38,6 +39,7 @@ public class InventoryInService {
     private final SupplyReturnRepository returnRequestRepository;
     private final ManagementDashboardRepository managementDashboardRepository;
     private final ItemInstanceService instanceService;
+    private final ImageService imageService;
     private final ItemInstanceRepository instanceRepo;
 
 
@@ -72,6 +74,7 @@ public class InventoryInService {
                 .category(item.getCategory())
                 .managementDashboard(managementDashboard)
                 .quantity(dto.getQuantity())
+                .image(imageService.saveImage(dto.getImage()))
                 .build();
         InventoryIn savedInbound = inRepo.save(inbound);
 
@@ -92,7 +95,7 @@ public class InventoryInService {
                         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
                 UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
                 upd.setStatus(Outbound.AVAILABLE);
-                upd.setFinalImage(null);
+                upd.setFinalImage(imageService.saveImage(dto.getImage()));
                 instanceService.updateStatus(inst.getId(), upd);
             }
         }
@@ -152,6 +155,7 @@ public class InventoryInService {
                 .quantity(inventoryIn.getQuantity())
                 .inbound(inventoryIn.getInbound())
                 .createdAt(inventoryIn.getCreatedAt())
+                .image(inventoryIn.getImage())
                 .build();
         return inventoryInResponseDto;
     }

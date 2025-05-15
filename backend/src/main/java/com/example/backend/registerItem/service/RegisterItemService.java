@@ -120,6 +120,7 @@ public class RegisterItemService {
                 .inbound(dto.getInbound())
                 .categoryId(dto.getCategoryId())
                 .managementId(dto.getManagementId())
+                .image(dto.getImage())
                 .build();
         inventoryInService.addInbound(inDto);
     }
