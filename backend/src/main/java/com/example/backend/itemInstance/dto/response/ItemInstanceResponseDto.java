@@ -12,7 +12,7 @@ public class ItemInstanceResponseDto {
     private Long id;
     private Long itemId;
     private String instanceCode;
-    private Outbound status;
+    private Outbound outbound;
     private String image;
     private String finalImage;
     private LocalDateTime createdAt;

@@ -30,4 +30,7 @@ public class InventoryInResponseDto {
 
     @Schema(description = "입고 등록 일시")
     private LocalDateTime createdAt;
+
+    @Schema(description = "비품 입고 이미지")
+    private String image;
 }
