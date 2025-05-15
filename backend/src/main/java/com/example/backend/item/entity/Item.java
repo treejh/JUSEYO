@@ -2,6 +2,7 @@ package com.example.backend.item.entity;
 
 import com.example.backend.auditable.Auditable;
 import com.example.backend.category.entity.Category;
+import com.example.backend.enums.Status;
 import com.example.backend.inventoryIn.entity.InventoryIn;
 import com.example.backend.inventoryOut.entity.InventoryOut;
 import com.example.backend.itemInstance.entity.ItemInstance;
@@ -30,7 +31,7 @@ public class Item extends Auditable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 
     @Column(name = "serial_number", nullable = false)
@@ -67,6 +68,9 @@ public class Item extends Auditable {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @Column(name = "status")
+    private Status status;
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.LAZY)
     List<ItemInstance> itemInstances = new ArrayList<>();

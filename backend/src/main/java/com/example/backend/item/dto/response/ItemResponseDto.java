@@ -1,5 +1,6 @@
 package com.example.backend.item.dto.response;
 
+import com.example.backend.enums.Status;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,4 +23,5 @@ public class ItemResponseDto {
     private Long managementId;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private Status status;
 }

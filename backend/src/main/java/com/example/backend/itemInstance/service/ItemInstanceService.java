@@ -1,6 +1,7 @@
 package com.example.backend.itemInstance.service;
 
 import com.example.backend.enums.Outbound;
+import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.item.entity.Item;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,8 +75,9 @@ public class ItemInstanceService {
         ItemInstance inst = ItemInstance.builder()
                 .item(item)
                 .instanceCode(code)
-                .status(Outbound.AVAILABLE)
+                .outbound(Outbound.AVAILABLE)
                 .image(dto.getImage())
+                .status(Status.ACTIVE)
                 .build();
 
         ItemInstance saved = instanceRepo.save(inst);
@@ -97,7 +100,7 @@ public class ItemInstanceService {
         }
 
         // 권한 통과한 경우에만 인스턴스 반환
-        return instanceRepo.findAllByItemId(itemId).stream()
+        return instanceRepo.findAllByItemIdAndStatus(itemId, Status.ACTIVE).stream()
                 .map(this::map)
                 .collect(Collectors.toList());
     }
@@ -117,7 +120,7 @@ public class ItemInstanceService {
             throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
         }
 
-        inst.setStatus(dto.getStatus());
+        inst.setOutbound(dto.getOutbound());
         inst.setFinalImage(dto.getFinalImage());
         ItemInstance saved = instanceRepo.save(inst);
         return map(saved);
@@ -173,12 +176,37 @@ public class ItemInstanceService {
                 .map(this::map);
     }
 
+    public void softDeleteHighestItemInstances(Long itemId, int count) {
+        List<ItemInstance> instances = instanceRepo
+                .findTopNActiveByItemId(itemId, PageRequest.of(0, count));
+
+        if (instances.size() < count) {
+            throw new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND);
+        }
+
+        for (ItemInstance instance : instances) {
+            instance.setStatus(Status.STOP);
+        }
+    }
+
+    public void softDeleteInstances(Long itemId) {
+        List<ItemInstance> instances = instanceRepo.findAllByItemId(itemId);
+
+        for (ItemInstance instance : instances) {
+            instance.setStatus(Status.STOP);
+        }
+    }
+
+    public Long countItemInstances(Long itemId) {
+        return instanceRepo.countByItemId(itemId);
+    }
+
     private ItemInstanceResponseDto map(ItemInstance e) {
         return ItemInstanceResponseDto.builder()
                 .id(e.getId())
                 .itemId(e.getItem().getId())
                 .instanceCode(e.getInstanceCode())
-                .status(e.getStatus())
+                .outbound(e.getOutbound())
                 .image(e.getImage())
                 .finalImage(e.getFinalImage())
                 .itemImage(e.getItem().getImage())

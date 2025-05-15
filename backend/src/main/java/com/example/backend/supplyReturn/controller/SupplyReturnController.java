@@ -31,6 +31,7 @@ public class SupplyReturnController {
 
     @Operation(summary = "비품 반납 요청 생성", description = "비품 반납서를 생성합니다.")
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
     public SupplyReturnResponseDto add(
             @Parameter(description = "반납 요청 DTO", required = true)
             @RequestBody @Valid SupplyReturnRequestDto supplyReturnRequestDto) {
@@ -39,6 +40,7 @@ public class SupplyReturnController {
 
     @Operation(summary = "비품 반납 목록 조회", description = "비품 반납서를 페이징 조회합니다. 상태 필터링 가능.")
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
     public Page<SupplyReturnResponseDto> getSupplyReturns(
             @Parameter(description = "페이지 번호 (1부터 시작)", example = "1")
             @RequestParam(defaultValue = "1") int page,
@@ -56,6 +58,7 @@ public class SupplyReturnController {
 
     @Operation(summary = "비품 반납 단건 조회", description = "ID로 단일 반납서를 조회합니다.")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
     public SupplyReturnResponseDto getSupplyReturn(
             @Parameter(description = "반납서 ID", example = "12")
             @PathVariable(name = "id") Long id) {
@@ -75,6 +78,7 @@ public class SupplyReturnController {
 
     // 반납 요청서 엑셀 다운로드
     @GetMapping("/supply-returns/excel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
     public void downloadSupplyReturnsExcel(HttpServletResponse response) throws Exception {
         var data = returnService.getAllReturnsForExcel();
         excelExportService.exportSupplyReturns(data, response);

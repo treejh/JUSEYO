@@ -1,6 +1,7 @@
 package com.example.backend.supplyReturn.dto.response;
 
 import com.example.backend.enums.ApprovalStatus;
+import com.example.backend.enums.Outbound;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -49,5 +50,8 @@ public class SupplyReturnResponseDto {
 
     @Schema(description = "생성일시", example = "2025-05-09T18:32:15")
     private LocalDateTime createdAt;
+
+    @Schema(description = "현재 상태", example = "AVAILABLE, DAMAGED")
+    private Outbound outbound; // 현재상태(사용가능,파손)
 
 }
