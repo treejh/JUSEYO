@@ -53,11 +53,11 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/**").hasRole("MANAGER")
                         // 알림(테스트 목적으로 permitAll)
-                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").permitAll()
+//                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").permitAll()
                         // 알림 관련 설정
-//                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").authenticated()
-//                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가
