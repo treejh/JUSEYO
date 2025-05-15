@@ -8,9 +8,9 @@ interface Props {
 }
 
 interface ChatResponseDto {
-  roomId: number;
-  sender: string;
-  message: string;
+  roomId: number; // 방 번호
+  sender: string; // 보낸 사람 닉네임
+  message: string; // 메시지 내용
   createDate: string; // ISO 형식의 날짜 문자열
   chatStatus: string; // ChatStatus (예: "ENTER", "TALK")
 }
@@ -19,13 +19,42 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
   const [messages, setMessages] = useState<ChatResponseDto[]>([]);
   const [inputMessage, setInputMessage] = useState<string>("");
 
+  // 채팅방 메시지 초기 로드
+  useEffect(() => {
+    const fetchChatMessages = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/${roomId}?page=1&size=20`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include", // 쿠키 포함
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("채팅 메시지를 가져오는 중 오류가 발생했습니다.");
+        }
+
+        const data = await response.json();
+        setMessages(data.data.content.reverse()); // 최신 메시지가 아래로 가도록 정렬
+      } catch (error) {
+        console.error("채팅 메시지 로드 실패:", error);
+      }
+    };
+
+    fetchChatMessages();
+  }, [roomId]);
+
+  // WebSocket 구독
   useEffect(() => {
     if (!client || !client.connected) {
       console.error("STOMP 연결이 활성화되지 않았습니다.");
       return;
     }
 
-    // WebSocket 구독 설정
     const subscription = client.subscribe(
       `/sub/chat/${roomId}`,
       (message: Message) => {
@@ -40,6 +69,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
     };
   }, [roomId, client]);
 
+  // 메시지 전송
   const sendMessage = () => {
     if (!client || !client.connected) {
       console.error("STOMP 연결이 활성화되지 않았습니다.");
@@ -49,7 +79,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
     if (inputMessage.trim()) {
       const messagePayload = {
         type: "TALK", // 메시지 타입
-        userId: loginUserId, // 테스트용 유저 ID (실제 로그인 유저 ID 사용)
+        userId: loginUserId, // 로그인 유저 ID
         roomId,
         message: inputMessage,
       };
