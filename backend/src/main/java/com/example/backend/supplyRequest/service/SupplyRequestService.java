@@ -30,6 +30,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class SupplyRequestService {
+
     private final SupplyRequestRepository repo;
     private final ItemRepository itemRepo;
     private final UserRepository userRepo;
@@ -37,18 +38,27 @@ public class SupplyRequestService {
     private final InventoryOutService outService;
     private final InventoryInService inService;
 
+    /**
+     * 비품 요청 생성
+     */
     @Transactional
     public SupplyRequestResponseDto createRequest(SupplyRequestRequestDto dto) {
-        // 1) 아이템 이름으로 조회
+
+        //  대여 하면 returnDate 필수 검사
+        if (dto.isRental() && dto.getReturnDate() == null) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_RETURN_DATE);
+        }
+
+        // 1) 아이템 조회
         Item item = itemRepo.findByNameAndStatus(dto.getProductName(), Status.ACTIVE)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
-        // 2) 요청자(로그인 유저) 조회
+        // 2) 요청자 조회
         Long userId = tokenService.getIdFromToken();
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
-        // 3) 관리페이지는 아이템이 속한 managementDashboard 사용
+        // 3) 관리대시보드
         ManagementDashboard mgmt = item.getManagementDashboard();
 
         // 4) 수량 체크
@@ -56,15 +66,15 @@ public class SupplyRequestService {
             throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
         }
 
-        // 5) 날짜 자동 처리
+        // 5) 날짜 처리
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime useDate    = dto.isRental() ? dto.getUseDate()    : now;
         LocalDateTime returnDate = dto.isRental() ? dto.getReturnDate() : null;
 
-        // 6) 재요청 여부 자동 계산
+        // 6) 재요청 여부
         boolean isReRequest = repo.existsByUserIdAndItemId(userId, item.getId());
 
-        // 7) 요청 엔티티 생성
+        // 7) 엔티티 생성 & 저장
         SupplyRequest req = SupplyRequest.builder()
                 .item(item)
                 .user(user)
@@ -84,24 +94,40 @@ public class SupplyRequestService {
         return mapToDto(saved);
     }
 
+    /**
+     * 같은 관리페이지 내, 특정 상태(PENDING 등)의 요청 리스트 조회
+     */
     @Transactional(readOnly = true)
-    public List<SupplyRequestResponseDto> getAllRequests() {
-        Long currentUserId = tokenService.getIdFromToken();
-        Long userMgmtId = userRepo.findById(currentUserId)
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
-                .getManagementDashboard().getId();
-
-        // 해당 관리대시보드 요청만 필터링
-        return repo.findAllByManagementDashboardId(userMgmtId).stream()
+    public List<SupplyRequestResponseDto> findRequestsByManagementAndStatus(
+            Long mgmtId, ApprovalStatus status
+    ) {
+        return repo.findAllByManagementDashboardIdAndApprovalStatus(mgmtId, status).stream()
                 .map(this::mapToDto)
                 .toList();
     }
 
+    /**
+     * 요청 승인 처리 (매니저 전용)
+     */
+    @Transactional
+    public void approveRequest(Long requestId) {
+        updateRequestStatus(requestId, ApprovalStatus.APPROVED);
+    }
+
+    /**
+     * 요청 거절 처리 (매니저 전용)
+     */
+    @Transactional
+    public void rejectRequest(Long requestId) {
+        updateRequestStatus(requestId, ApprovalStatus.REJECTED);
+    }
+
+    /**
+     * 내부: 상태 업데이트 및 재고 입출고 처리
+     */
     @Transactional
     public SupplyRequestResponseDto updateRequestStatus(Long requestId, ApprovalStatus newStatus) {
-
         Long currentUserId = tokenService.getIdFromToken();
-
         SupplyRequest req = repo.findById(requestId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
 
@@ -114,7 +140,7 @@ public class SupplyRequestService {
         }
 
         if (newStatus == ApprovalStatus.APPROVED) {
-            // 1. 출고 처리
+            // 출고 처리
             InventoryOutRequestDto outDto = new InventoryOutRequestDto();
             outDto.setSupplyRequestId(req.getId());
             outDto.setItemId(req.getItem().getId());
@@ -124,7 +150,7 @@ public class SupplyRequestService {
             outDto.setOutbound(req.isRental() ? Outbound.LEND.name() : Outbound.ISSUE.name());
             outService.removeOutbound(outDto);
 
-            // 2. 상태 전환
+            // 상태 전환
             if (req.isRental()) {
                 req.setApprovalStatus(ApprovalStatus.RETURN_PENDING);
             } else {
@@ -133,7 +159,7 @@ public class SupplyRequestService {
         }
 
         if (newStatus == ApprovalStatus.RETURNED && req.isRental()) {
-            // 3. 반납 입고 처리
+            // 반납 입고 처리
             InventoryInRequestDto inDto = new InventoryInRequestDto();
             inDto.setItemId(req.getItem().getId());
             inDto.setQuantity(req.getQuantity());
@@ -149,6 +175,66 @@ public class SupplyRequestService {
         return mapToDto(updated);
     }
 
+    /**
+     * ExcelExportController 등에서 사용하는, 같은 관리페이지 내
+     * **모든** 요청 리스트 조회 메서드
+     */
+    @Transactional(readOnly = true)
+    public List<SupplyRequestResponseDto> getAllRequests() {
+        Long currentUserId = tokenService.getIdFromToken();
+        Long mgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        return repo.findAllByManagementDashboardId(mgmtId).stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+
+    /** 내 요청 리스트만 조회 */
+    @Transactional(readOnly = true)
+    public List<SupplyRequestResponseDto> getMyRequests() {
+        Long userId = tokenService.getIdFromToken();
+        return repo.findAllByUserId(userId).stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    /** 내 요청만, 상태 REQUESTED 일 때만 수정 */
+    @Transactional
+    public SupplyRequestResponseDto updateMyRequest(Long requestId, SupplyRequestRequestDto dto) {
+
+        // 대여 하면 returnDate 필수 검사
+        if (dto.isRental() && dto.getReturnDate() == null) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_RETURN_DATE);
+        }
+
+        Long userId = tokenService.getIdFromToken();
+        SupplyRequest req = repo.findById(requestId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
+
+        if (!req.getUser().getId().equals(userId)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+        if (req.getApprovalStatus() != ApprovalStatus.REQUESTED) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_REQUEST_STATUS);
+        }
+
+        // 수정 허용 필드만 갱신
+        req.setQuantity(dto.getQuantity());
+        req.setPurpose(dto.getPurpose());
+        req.setUseDate(dto.isRental() ? dto.getUseDate() : req.getUseDate());
+        req.setReturnDate(dto.isRental() ? dto.getReturnDate() : req.getReturnDate());
+        // 재요청 플래그 재계산
+        req.setReRequest(repo.existsByUserIdAndItemId(userId, req.getItem().getId()));
+
+        return mapToDto(req);
+    }
+
+    /**
+     * DTO 매핑
+     */
     private SupplyRequestResponseDto mapToDto(SupplyRequest e) {
         return SupplyRequestResponseDto.builder()
                 .id(e.getId())

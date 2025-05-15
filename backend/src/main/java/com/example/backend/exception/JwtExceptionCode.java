@@ -11,6 +11,7 @@ public enum JwtExceptionCode {
     UNSUPPORTED_TOKEN("UNSUPPORTED_TOKEN", "지원하지 않는 토큰");
 
 
+
     private final String code;  //값이 변하지 않도록 final
     private final String message;
 

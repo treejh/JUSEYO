@@ -1,5 +1,6 @@
 package com.example.backend.supplyRequest.repository;
 
+import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,15 @@ public interface SupplyRequestRepository extends JpaRepository<SupplyRequest, Lo
     // 동일 사용자(userId)가 동일 아이템(itemId)을 이전에 요청했으면 true
     boolean existsByUserIdAndItemId(Long userId, Long itemId);
 
-    List<SupplyRequest> findAllByManagementDashboardId(Long mgmtId);
+    // 모든 상태의 요청을 관리페이지별로 조회하기 위한 메서드
+    List<SupplyRequest> findAllByManagementDashboardId(Long managementDashboardId);
+
+    List<SupplyRequest> findAllByManagementDashboardIdAndApprovalStatus(
+            Long managementDashboardId,
+            ApprovalStatus approvalStatus
+    );
+
+    // 사용자별 요청 조회
+    List<SupplyRequest> findAllByUserId(Long userId);
 
 }

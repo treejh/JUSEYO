@@ -29,6 +29,7 @@ import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
@@ -157,8 +158,6 @@ public class UserService {
         return userRepository.findByRole(role,pageable);
 
     }
-
-
 
 
     // 매니저가 관리페이지에 요청된 권한 리스트들을 조회하는 공통 로직
@@ -602,7 +601,37 @@ public class UserService {
         }
     }
 
+    public List<User> findAllByIds(List<Long> userIds) {
+        List<User> users = userRepository.findAllById(userIds);
 
+        if (users.size() != userIds.size()) {
+            List<Long> foundIds = users.stream()
+                    .map(User::getId)
+                    .toList();
+            List<Long> missingIds = userIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+
+            throw new BusinessLogicException(
+                    ExceptionCode.USER_NOT_FOUND,
+                    "존재하지 않는 사용자 ID: " + missingIds
+            );
+        }
+
+        return users;
+    }
+
+    public List<User> findByManagerList(ManagementDashboard managementDashboard){
+
+        Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
+        ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
+        return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
+                managementDashboard, approvalStatus, role);
+    }
+
+    public User findUserByName(String name){
+        return userRepository.findByName(name).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    }
 
 
 }
