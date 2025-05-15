@@ -15,6 +15,7 @@ public class ItemInstanceResponseDto {
     private Outbound status;
     private String image;
     private String finalImage;
+    private String itemImage;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }

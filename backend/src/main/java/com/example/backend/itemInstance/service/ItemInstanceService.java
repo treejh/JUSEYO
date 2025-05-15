@@ -181,6 +181,7 @@ public class ItemInstanceService {
                 .status(e.getStatus())
                 .image(e.getImage())
                 .finalImage(e.getFinalImage())
+                .itemImage(e.getItem().getImage())
                 .createdAt(e.getCreatedAt())
                 .modifiedAt(e.getModifiedAt())
                 .build();
