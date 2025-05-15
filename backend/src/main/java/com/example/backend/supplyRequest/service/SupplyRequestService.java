@@ -187,7 +187,7 @@ public class SupplyRequestService {
                         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
 
                 UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
-                upd.setStatus(Outbound.AVAILABLE);
+                upd.setOutbound(Outbound.AVAILABLE);
                 upd.setFinalImage(null);
                 instanceService.updateStatus(inst.getId(), upd);
             }
