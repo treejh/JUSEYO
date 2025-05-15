@@ -14,6 +14,7 @@ import com.example.backend.itemInstance.repository.ItemInstanceRepository;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,6 +108,31 @@ public class ItemInstanceService {
         inst.setFinalImage(dto.getFinalImage());
         ItemInstance saved = instanceRepo.save(inst);
         return map(saved);
+    }
+
+    public void softDeleteHighestItemInstances(Long itemId, int count) {
+        List<ItemInstance> instances = instanceRepo
+                .findTopNActiveByItemId(itemId, PageRequest.of(0, count));
+
+        if (instances.size() < count) {
+            throw new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND);
+        }
+
+        for (ItemInstance instance : instances) {
+            instance.setIsItemExists(Status.STOP);
+        }
+    }
+
+    public void softDeleteInstances(Long itemId) {
+        List<ItemInstance> instances = instanceRepo.findAllByItemId(itemId);
+
+        for (ItemInstance instance : instances) {
+            instance.setIsItemExists(Status.STOP);
+        }
+    }
+
+    public Long countItemInstances(Long itemId) {
+        return instanceRepo.countByItemId(itemId);
     }
 
     private ItemInstanceResponseDto map(ItemInstance e) {
