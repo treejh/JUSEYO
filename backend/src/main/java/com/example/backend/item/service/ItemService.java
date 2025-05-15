@@ -3,6 +3,7 @@ package com.example.backend.item.service;
 import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
+import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.image.service.ImageService;
@@ -78,6 +79,7 @@ public class ItemService {
                 .image(imageService.saveImage(dto.getImage()))
                 .category(category)
                 .managementDashboard(mgmt)
+                .status(Status.ACTIVE)
                 .build();
         Item saved = repo.save(entity);
 
@@ -140,18 +142,15 @@ public class ItemService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
         Long mgmtId = me.getManagementDashboard().getId();
-        return repo.findAllByManagementDashboardId(mgmtId).stream()
+        return repo.findAllByManagementDashboardIdAndStatus(mgmtId,Status.ACTIVE).stream()
                 .map(this::mapToDto)
                 .toList();
     }
 
     @Transactional
     public void deleteItem(Long id) {
-        if (!repo.existsById(id)) {
-            throw new IllegalArgumentException("Item not found");
-        }
-        repo.deleteById(id);
-        analysisService.clearCategoryCache(); // 캐시 무효화
+        Item item = repo.findById(id).orElseThrow(()->new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+        item.setStatus(Status.STOP);
     }
 
     public ItemResponseDto mapToDto(Item e) {
@@ -170,11 +169,12 @@ public class ItemService {
                 .managementId(e.getManagementDashboard().getId())
                 .createdAt(e.getCreatedAt())
                 .modifiedAt(e.getModifiedAt())
+                .status(e.getStatus())
                 .build();
     }
 
     public Page<ItemResponseDto> getItemsPagedSorted(Pageable pageable) {
-        return repo.findAllAsDto(pageable);
+        return repo.findAllAsDto(Status.ACTIVE, pageable);
     }
 
 }
