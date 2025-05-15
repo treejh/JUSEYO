@@ -24,6 +24,13 @@ public enum ExceptionCode {
     INVALID_REQUEST_STATUS(400, "요청 상태가 유효하지 않아 수정할 수 없습니다."),
     INVALID_RETURN_DATE(400, "대여 시 반납 날짜를 반드시 입력해야 합니다."),
 
+    //채팅 예외처리
+    INVALID_CHAT_ROOM_TYPE(403,"지원하지 않는 채팅방 타입입니다."),
+    CHAT_ROOM_FOUND(404,"존재하지 않는 채팅방입니다."),
+    NOT_ENTER_CHAT_ROOM(404,"참여중인 채팅방이 아닙니다."),
+    ALREADY_ENTER_CHAT_ROOM(403,"이미 채팅방에 입장했습니다."),
+    FILTER_ACCESS_DENIED(403, "접근이 거부되었습니다. 권한이 부족합니다."),
+
     //유저 예외 처리
     NOT_INITIAL_MANAGER(403, "해당 기능은 최초 생성 매니저만 사용할 수 있습니다."),
     NOT_ADMIN(403, "해당 기능은 최초 최고 관리자(Admin)만 사용할 수 있습니다."),
@@ -32,6 +39,7 @@ public enum ExceptionCode {
     ROLE_NOT_FOUND(404,"존재하지 않는 역할입니다."),
     UNAUTHORIZED_ROLE(403, "접근 권한이 없는 역할입니다."),
     EMAIL_VERIFICATION_FAILED(400, "이메일 인증을 실패하였습니다."),
+    MANAGER_NOT_FOUND(404,"매니저를 찾을 수 없습니다."),
 
     //회원가입 예외 처리
     ALREADY_HAS_EMAIL(409,"이미 존재하는 이메일입니다."),
