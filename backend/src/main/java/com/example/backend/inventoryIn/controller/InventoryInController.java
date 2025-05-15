@@ -30,7 +30,7 @@ public class InventoryInController {
     @Operation(summary = "입고 등록", description = "새로운 입고 내역을 등록합니다.")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping
-    public InventoryInResponseDto addInbound(@RequestBody @Valid InventoryInRequestDto dto) {
+    public InventoryInResponseDto addInbound(@ModelAttribute @Valid InventoryInRequestDto dto) {
         return service.addInbound(dto);
     }
 

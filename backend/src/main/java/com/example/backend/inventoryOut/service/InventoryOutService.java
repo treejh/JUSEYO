@@ -1,10 +1,10 @@
 package com.example.backend.inventoryOut.service;
 
 import com.example.backend.analysis.service.InventoryAnalysisService;
-import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.enums.Outbound;
+import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryOut.dto.request.InventoryOutRequestDto;
@@ -45,8 +45,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-
-
 
 @Service
 @Slf4j
@@ -119,10 +117,10 @@ public class InventoryOutService {
         // 5) 개별자산단위 상태 변경 (출고: AVAILABLE → LEND 또는 ISSUE)
         for (int i = 0; i < saved.getQuantity(); i++) {
             ItemInstance inst = instanceRepo
-                    .findFirstByItemIdAndStatus(item.getId(), Outbound.AVAILABLE)
+                    .findFirstByItemIdAndOutboundAndStatus(item.getId(), Outbound.AVAILABLE, Status.ACTIVE)
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
             UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
-            upd.setStatus(saved.getOutbound());
+            upd.setOutbound(saved.getOutbound());  // LEND 또는 ISSUE
             upd.setFinalImage(null);
             instanceService.updateStatus(inst.getId(), upd);
         }
@@ -147,10 +145,12 @@ public class InventoryOutService {
                 .toList();
     }
 
+    @Transactional
     // 재고 부족 알림 테스트용 메서드
     public void stockdown() {
         Item pen = itemRepo.findByName("볼펜").get();
         pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
+        itemRepo.save(pen);
         eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
     }
 
