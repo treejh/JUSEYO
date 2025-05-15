@@ -1,6 +1,8 @@
 package com.example.backend.user.entity;
 
 import com.example.backend.auditable.Auditable;
+import com.example.backend.chat.chatMessage.entity.ChatMessage;
+import com.example.backend.chat.chatUser.entity.ChatUser;
 import com.example.backend.department.entity.Department;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Status;
@@ -85,9 +87,15 @@ public class User extends Auditable { // Auditable 상속
     private Department department;
 
 
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.EAGER)
     List<Notification> notificationList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.EAGER)
+    List<ChatUser> chatUserList = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.EAGER)
+    List<ChatMessage> chatMessageList = new ArrayList<>();
 
 
 

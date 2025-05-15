@@ -1,12 +1,17 @@
 package com.example.backend.managementDashboard.controller;
 
 
-
 import com.example.backend.enums.Status;
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import com.example.backend.managementDashboard.dto.ManagementDashBoardRequestDto;
 import com.example.backend.managementDashboard.dto.ManagementDashBoardResponseDto;
 import com.example.backend.managementDashboard.dto.ManagementDashboardUpdateRequestDto;
 import com.example.backend.managementDashboard.service.ManagementDashboardService;
+import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.dto.response.UserSearchResponseDto;
+import com.example.backend.user.entity.User;
+import com.example.backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,6 +26,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/management")
 @Validated
@@ -29,6 +36,8 @@ import org.springframework.web.bind.annotation.*;
 public class ManagementController {
 
     private final ManagementDashboardService managementDashboardService;
+    private final TokenService tokenService;
+    private final UserService userService;
 
     @Operation(summary = "관리 페이지 등록", description = "새로운 관리 페이지를 등록합니다.")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -86,4 +95,54 @@ public class ManagementController {
         managementDashboardService.approvalManagementDashBoard(id);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "관리 페이지 내 일반회원 조회",
+            description = "해당 관리페이지에 속한 모든 일반 회원을 반환합니다.")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    @GetMapping("/{id}/users")
+    public ResponseEntity<List<UserSearchResponseDto>> getUsersByManagement(
+            @PathVariable Long id) {
+        // 소속 체크
+        Long currentUserId = tokenService.getIdFromToken();
+        User me = userService.findById(currentUserId);
+        if (!me.getManagementDashboard().getId().equals(id)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
+        // 2) 결과 필터링: 일반회원만 조회
+        List<UserSearchResponseDto> users = managementDashboardService
+                .findUsersByManagementDashboard(id)
+                .stream()
+                .filter(dto -> "USER".equals(dto.getRole()))
+                .toList();
+
+        return ResponseEntity.ok(users);
+    }
+
+    @Operation(
+            summary = "관리 페이지 내 매니저 조회",
+            description = "해당 관리페이지에 속한 모든 매니저를 반환합니다."
+    )
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    @GetMapping("/{id}/managers")
+    public ResponseEntity<List<UserSearchResponseDto>> getManagersByManagement(
+            @PathVariable Long id) {
+
+        // 1) 소속 체크
+        Long currentUserId = tokenService.getIdFromToken();
+        User me = userService.findById(currentUserId);
+        if (!me.getManagementDashboard().getId().equals(id)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
+        // 2) 결과 필터링: 매니저만
+        List<UserSearchResponseDto> managers = managementDashboardService
+                .findUsersByManagementDashboard(id)
+                .stream()
+                .filter(dto -> "MANAGER".equals(dto.getRole()))
+                .toList();
+
+        return ResponseEntity.ok(managers);
+    }
+
 }

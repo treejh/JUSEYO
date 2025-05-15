@@ -603,10 +603,6 @@ public class UserService {
         }
     }
 
-    @Transactional
-    public List<User> findUsersByRole(Role role) {
-        return userRepository.findUsersByRole(role);
-    }
 
 
 
