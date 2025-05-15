@@ -1,6 +1,7 @@
 package com.example.backend.supplyReturn.repository;
 
 import com.example.backend.enums.ApprovalStatus;
+import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyReturn.dto.response.SupplyReturnResponseDto;
 import com.example.backend.supplyReturn.entity.SupplyReturn;
 import org.springframework.data.domain.Page;
@@ -12,13 +13,16 @@ import org.springframework.data.repository.query.Param;
 public interface SupplyReturnRepository extends JpaRepository<SupplyReturn, Long> {
 
     @Query("SELECT new com.example.backend.supplyReturn.dto.response.SupplyReturnResponseDto "+
-            "( s.id,s.supplyRequest.id,s.user.id,s.managementDashboard.id,s.item.id,s.serialNumber,s.productName,s.quantity,s.useDate,s.returnDate,s.approvalStatus,s.createdAt) "+
+            "( s.id,s.supplyRequest.id,s.user.id,s.managementDashboard.id,s.item.id,s.serialNumber,s.productName,s.quantity,s.useDate,s.returnDate,s.approvalStatus,s.createdAt,s.outbound) "+
             "from SupplyReturn s ")
     Page<SupplyReturnResponseDto> findAllSupplyReturn(Pageable pageable);
 
     @Query("SELECT new com.example.backend.supplyReturn.dto.response.SupplyReturnResponseDto "+
-            "( s.id,s.supplyRequest.id,s.user.id,s.managementDashboard.id,s.item.id,s.serialNumber,s.productName,s.quantity,s.useDate,s.returnDate,s.approvalStatus,s.createdAt) "+
+            "( s.id,s.supplyRequest.id,s.user.id,s.managementDashboard.id,s.item.id,s.serialNumber,s.productName,s.quantity,s.useDate,s.returnDate,s.approvalStatus,s.createdAt,s.outbound) "+
             "from SupplyReturn s " +
             "where s.approvalStatus = :approvalStatus")
     Page<SupplyReturnResponseDto> findAllSupplyRequestByApprovalStatus(@Param("approvalStatus") ApprovalStatus approvalStatus, Pageable pageable);
+
+    boolean existsBySupplyRequest(SupplyRequest request);
+
 }

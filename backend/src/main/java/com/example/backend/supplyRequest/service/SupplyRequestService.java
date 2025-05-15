@@ -3,6 +3,7 @@ package com.example.backend.supplyRequest.service;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Inbound;
 import com.example.backend.enums.Outbound;
+import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryIn.dto.request.InventoryInRequestDto;
@@ -49,7 +50,7 @@ public class SupplyRequestService {
         }
 
         // 1) 아이템 조회
-        Item item = itemRepo.findByName(dto.getProductName())
+        Item item = itemRepo.findByNameAndStatus(dto.getProductName(), Status.ACTIVE)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
         // 2) 요청자 조회

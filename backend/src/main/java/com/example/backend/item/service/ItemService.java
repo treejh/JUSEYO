@@ -3,8 +3,10 @@ package com.example.backend.item.service;
 import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
+import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
+import com.example.backend.image.service.ImageService;
 import com.example.backend.item.dto.request.ItemRequestDto;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
@@ -35,6 +37,7 @@ public class ItemService {
     private final UserRepository userRepo;
     private final TokenService tokenService;
     private final InventoryAnalysisService analysisService;
+    private final ImageService imageService;
 
     /**
      * 랜덤 8자리 알파벳+숫자 생성
@@ -46,16 +49,16 @@ public class ItemService {
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
         // 1) 시리얼 결정: 빈 값이면 비품명-순번-랜덤8 로 생성
-        String serial = dto.getSerialNumber();
-        if (serial == null || serial.isBlank()) {
-            String namePart = dto.getName().replaceAll("\\s+", "_");
-            long seq = repo.countByName(dto.getName()) + 1;
+        String serial = null;
+
+        String namePart = dto.getName().replaceAll("\\s+", "_");
+        long seq = repo.countByName(dto.getName()) + 1;
+        serial = String.format("%s-%d-%s", namePart, seq, randomSuffix());
+        // 중복 방지
+        while (repo.existsBySerialNumber(serial)) {
             serial = String.format("%s-%d-%s", namePart, seq, randomSuffix());
-            // 중복 방지
-            while (repo.existsBySerialNumber(serial)) {
-                serial = String.format("%s-%d-%s", namePart, seq, randomSuffix());
-            }
         }
+
 
         // 2) 연관 엔티티 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
@@ -73,9 +76,10 @@ public class ItemService {
                 .purchaseSource(dto.getPurchaseSource())
                 .location(dto.getLocation())
                 .isReturnRequired(dto.getIsReturnRequired())
-                .image(dto.getImage())
+                .image(imageService.saveImage(dto.getImage()))
                 .category(category)
                 .managementDashboard(mgmt)
+                .status(Status.ACTIVE)
                 .build();
         Item saved = repo.save(entity);
 
@@ -138,21 +142,18 @@ public class ItemService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
         Long mgmtId = me.getManagementDashboard().getId();
-        return repo.findAllByManagementDashboardId(mgmtId).stream()
+        return repo.findAllByManagementDashboardIdAndStatus(mgmtId,Status.ACTIVE).stream()
                 .map(this::mapToDto)
                 .toList();
     }
 
     @Transactional
     public void deleteItem(Long id) {
-        if (!repo.existsById(id)) {
-            throw new IllegalArgumentException("Item not found");
-        }
-        repo.deleteById(id);
-        analysisService.clearCategoryCache(); // 캐시 무효화
+        Item item = repo.findById(id).orElseThrow(()->new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+        item.setStatus(Status.STOP);
     }
 
-    private ItemResponseDto mapToDto(Item e) {
+    public ItemResponseDto mapToDto(Item e) {
         return ItemResponseDto.builder()
                 .id(e.getId())
                 .name(e.getName())
@@ -168,11 +169,12 @@ public class ItemService {
                 .managementId(e.getManagementDashboard().getId())
                 .createdAt(e.getCreatedAt())
                 .modifiedAt(e.getModifiedAt())
+                .status(e.getStatus())
                 .build();
     }
 
     public Page<ItemResponseDto> getItemsPagedSorted(Pageable pageable) {
-        return repo.findAllAsDto(pageable);
+        return repo.findAllAsDto(Status.ACTIVE, pageable);
     }
 
 }

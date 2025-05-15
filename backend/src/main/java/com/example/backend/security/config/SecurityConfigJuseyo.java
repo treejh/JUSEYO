@@ -53,8 +53,23 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/**").hasRole("MANAGER")
                         // 알림(테스트 목적으로 permitAll)
+
+                        // 알림 관련 설정
+                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").authenticated()
+
                         .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").permitAll()
+
+                        //비품 등룩(구매)
+                        .requestMatchers("/api/v1/register-items/**").hasAnyRole("MANAGER", "ADMIN")
+                        //비품 반납
+                        .requestMatchers("/api/v1/supply-return/**").hasAnyRole("MANAGER", "ADMIN","USER")
+                        .requestMatchers(HttpMethod.POST,"/api/v1/supply-return/{id}").hasAnyRole("MANAGER", "ADMIN") //반납서 상태 변경
+                        //입고
+                        .requestMatchers("/api/v1/inventory-in/**").hasAnyRole("MANAGER", "ADMIN")
+
+
 
                         .anyRequest().authenticated()
                 )

@@ -119,7 +119,7 @@ public class ExcelExportService {
                 row.createCell(0).setCellValue(dto.getId());
                 row.createCell(1).setCellValue(dto.getItemId());
                 row.createCell(2).setCellValue(dto.getInstanceCode());
-                row.createCell(3).setCellValue(dto.getStatus().name());
+                row.createCell(3).setCellValue(dto.getOutbound().name());
                 row.createCell(4).setCellValue(dto.getImage());
                 row.createCell(5).setCellValue(dto.getFinalImage());
                 row.createCell(6).setCellValue(dto.getCreatedAt().toString());

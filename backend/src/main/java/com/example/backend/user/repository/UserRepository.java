@@ -1,10 +1,13 @@
 package com.example.backend.user.repository;
 
 
+import com.example.backend.base.entity.BoardEntity;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.role.entity.Role;
 import com.example.backend.user.entity.User;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,4 +34,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     //해당 관리페이지에 존재하는 승인된 매니저 조회
     List<User> findByManagementDashboardAndApprovalStatusAndRole(ManagementDashboard managementDashboard, ApprovalStatus approvalStatus, Role role);
+    List<User> findUsersByRole(Role role);
+
+    List<User> findAllByRole(Role role);
+
 }

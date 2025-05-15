@@ -1,6 +1,7 @@
 package com.example.backend.supplyReturn.dto.request;
 
 
+import com.example.backend.enums.Outbound;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -45,5 +46,8 @@ public class SupplyReturnRequestDto {
 
     @Schema(description = "반납 일자", example = "2025-05-10T15:30:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime returnDate;
+
+    @Schema(description = "현재 상태", example = "AVAILABLE, DAMAGED", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Outbound outbound; // 현재상태(사용가능,파손)
 }
 
