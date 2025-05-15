@@ -537,6 +537,25 @@ public class UserService {
         return findById(tokenService.getIdFromToken());
     }
 
+    public Page<User> getUserListForChat(String managementDashboardName, Pageable pageable) {
+        ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
+        Role role = roleService.findRoleByRoleType(RoleType.USER);
+        ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
+        User loginUser = findById(tokenService.getIdFromToken());
+
+
+        if (isAdmin()) {
+            return userRepository.findByManagementDashboardAndApprovalStatusAndRoleAndIdNot(
+                    managementDashboard, approvalStatus, pageable, role, loginUser.getId()
+            );
+        }
+
+        validateManagementDashboardUser(managementDashboard);
+
+        return userRepository.findByManagementDashboardAndApprovalStatusAndRoleAndIdNot(
+                managementDashboard, approvalStatus, pageable, role, loginUser.getId()
+        );
+    }
 
 
 

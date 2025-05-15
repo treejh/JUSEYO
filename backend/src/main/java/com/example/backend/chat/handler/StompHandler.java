@@ -29,6 +29,7 @@ public class StompHandler implements ChannelInterceptor {
         // WebSocket 연결 시점
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String token = (String) accessor.getSessionAttributes().get("accessToken");
+
             log.info("WebSocket CONNECT: 추출된 토큰: {}", token);
 
             if (token == null) {
@@ -38,6 +39,7 @@ public class StompHandler implements ChannelInterceptor {
             jwtTokenizer.validateToken(token);
             Claims claims = jwtTokenizer.parseAccessToken(token);
             String username = claims.getSubject();
+
             log.info("[WebSocket] 인증된 사용자: {}", username);
             accessor.setUser(new StompPrincipal(username)); // WebSocket에서 principal로 전달
         }

@@ -6,6 +6,7 @@ import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.dto.request.*;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
+import com.example.backend.user.dto.response.UserListResponseDto;
 import com.example.backend.user.dto.response.UserProfileResponseDto;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
@@ -178,6 +179,10 @@ public class UserController {
 
 
     @GetMapping("/approve")
+    @Operation(
+            summary = "관리 페이지 승인된 유저   ",
+            description = "승인된 유저 리스트를 조회할 수 있습니다. "
+    )
     public ResponseEntity<?> getApprovedUsers(@RequestParam String managementDashboardName,
                                               @RequestParam(defaultValue = "1") int page,
                                               @RequestParam(defaultValue = "10") int size) {
@@ -191,6 +196,10 @@ public class UserController {
     }
 
     @GetMapping("/request")
+    @Operation(
+            summary = "관리 페이지 승인 요청 유저   ",
+            description = "승인된 유저 리스트를 조회할 수 있습니다. "
+    )
     public ResponseEntity<?> getRequestedUsers(@RequestParam String managementDashboardName,
                                                @RequestParam(defaultValue = "1") int page,
                                                @RequestParam(defaultValue = "10") int size) {
@@ -204,6 +213,10 @@ public class UserController {
     }
 
     @GetMapping("/reject")
+    @Operation(
+            summary = "관리 페이지 승인이 거부된 유저   ",
+            description = "거부된 유저 리스트를 조회할 수 있습니다. "
+    )
     public ResponseEntity<?> getRejectedUsers(@RequestParam String managementDashboardName,
                                               @RequestParam(defaultValue = "1") int page,
                                               @RequestParam(defaultValue = "10") int size) {
@@ -213,7 +226,24 @@ public class UserController {
                 pageRequest,
                 name -> userService.getRejectList(name, pageRequest)
         );
+
         return ResponseEntity.ok(ApiResponse.of(200, "거절된 유저 리스트 조회 성공", responseList));
+    }
+
+
+    @GetMapping("/chat/list")
+    @Operation(
+            summary = "관리페이지에 속한 유저 리스트를 볼 수 있습니다. ",
+            description = "승인된 유저 리스트를 조회합니다."
+    )
+    public ResponseEntity<?> getChatUsers(@RequestParam String managementDashboardName,
+                                              @RequestParam(defaultValue = "1") int page,
+                                              @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<User> approveUser = userService.getUserListForChat(managementDashboardName,pageRequest)
+;
+        Page<UserListResponseDto> userListResponse = approveUser.map(UserListResponseDto::new);
+        return ResponseEntity.ok(ApiResponse.of(200, "승인된 유저 리스트 조회 성공", userListResponse));
     }
 
 

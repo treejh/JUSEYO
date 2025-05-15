@@ -137,6 +137,15 @@ public class ChatRoomService {
         return chatUsers.map(ChatUser::getChatRoom);
     }
 
+    public void leaveChatRoom(User user, ChatRoom chatRoom) {
+        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM));
+
+        chatUser.setChatStatus(ChatStatus.LEAVE);
+        chatUserRepository.save(chatUser);
+    }
+
+
 
 
     //1:1 채팅방이 존재하는지 확인
@@ -148,6 +157,9 @@ public class ChatRoomService {
         return chatRoomRepository.findById(id)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
     }
+
+
+
 
     public void deleteChatRoomById(Long id){
         chatRoomRepository.deleteById(id);

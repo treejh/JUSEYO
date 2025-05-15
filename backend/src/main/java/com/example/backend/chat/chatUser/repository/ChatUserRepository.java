@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 public interface ChatUserRepository extends JpaRepository<ChatUser, Long> {
 
     Optional<ChatUser> findByUserAndChatRoom(User user, ChatRoom chatRoom);
-    Optional<ChatUser> findByChatRoom(ChatRoom chatRoom);
+    List<ChatUser> findByChatRoom(ChatRoom chatRoom);
 
     // ChatStatus : ENTER, LEAVE, CREATE
     Page<ChatUser> findByUserAndChatRoomRoomTypeAndChatStatusIn(

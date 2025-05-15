@@ -31,7 +31,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .withSockJS();
         }
 
-
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // 메시지를 구독하는 요청 url -> 메시지를 받을 때

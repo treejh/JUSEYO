@@ -64,7 +64,7 @@ public class ChatRoomController {
                                              @RequestParam(name = "page", defaultValue = "1") int page,
                                              @RequestParam(name="size", defaultValue = "10") int size) {
         Page<ChatRoom> chatRoomList = chatRoomService.getChatRoomList(chatRoomType,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "modifiedAt")));
 
         Page<ChatRoomResponseDto> responseDto = chatRoomList.map(ChatRoomResponseDto::new);
 
