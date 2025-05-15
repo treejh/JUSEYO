@@ -2,9 +2,11 @@ package com.example.backend.chat.chatroom.controller;
 
 
 import com.example.backend.chat.chatroom.dto.request.ChatRoomRequestDto;
+import com.example.backend.chat.chatroom.dto.response.ChatRoomResponseDto;
 import com.example.backend.chat.chatroom.entity.ChatRoom;
 import com.example.backend.chat.chatroom.service.ChatRoomService;
 import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.utils.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/chatRooms")
+@RequestMapping("/api/v1/chats/chatRooms")
 @Validated
 @AllArgsConstructor
 @Tag(name = "채팅방 관련 컨트롤러")
@@ -28,9 +30,13 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     @PostMapping
-    public ResponseEntity<ChatRoom> createChatRoom(@Valid @RequestBody ChatRoomRequestDto chatRoomRequestDto) {
-            ChatRoom chatRoom = chatRoomService.createChatRoom(chatRoomRequestDto);
-            return new ResponseEntity<>(chatRoom, HttpStatus.CREATED);
+    public ResponseEntity<?> createChatRoom(@Valid @RequestBody ChatRoomRequestDto chatRoomRequestDto) {
+        ChatRoomResponseDto chatRoomResponseDto = new ChatRoomResponseDto(chatRoomService.createChatRoom(chatRoomRequestDto));
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.CREATED.value(), "채팅 생성 완료  ", chatRoomResponseDto),
+                HttpStatus.CREATED
+        );
 
     }
 

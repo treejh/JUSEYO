@@ -13,6 +13,7 @@ import com.example.backend.enums.ChatMessageStatus;
 import com.example.backend.enums.ChatStatus;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
+import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.user.service.UserService;
@@ -32,12 +33,13 @@ public class ChatMessageService {
 
     private final UserService userService;
     private final ChatRoomService chatRoomService;
+    private final TokenService tokenService;
 
 
     //채팅방 유저 리스트에 유저추가 -> 이거 유저 미드에 넣으면 되지 않을까 ?
     //유저 미드에서 채팅방 찾고 그 채팅방에서 유저 네임을 찾으면 될듯
     public ChatMessage sendMessage(ChatMessageRequestDto chatMessageRequestDto) {
-        User user = userService.findUserByName(chatMessageRequestDto.getUsername());
+        User user = userService.findById(tokenService.getIdFromToken());
         ChatRoom chatRoom = chatRoomService.findChatRoomById(chatMessageRequestDto.getRoomId());
 
         ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
@@ -73,7 +75,7 @@ public class ChatMessageService {
             }
             case LEAVE -> {
                 chatMessage = ChatMessage.builder()
-                        .message(chatMessageRequestDto.getUsername() + "님이 퇴장하셨습니다.")
+                        .message(user.getName() + "님이 퇴장하셨습니다.")
                         .chatRoom(chatRoom)
                         .user(user)
                         .messageStatus(ChatMessageStatus.LEAVE)

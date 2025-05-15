@@ -42,6 +42,7 @@ public class TokenService {
                 }
             }
         }
+
         return null;
 
     }
@@ -101,6 +102,7 @@ public class TokenService {
         Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setPath("/");
+        accessTokenCookie.setSecure(false); // HTTPS가 아닌 경우 false로 설정
         accessTokenCookie.setMaxAge(Math.toIntExact(maxAgeAccessInSeconds));  // 초 단위로 설정
 
         Cookie refreshTokenCookie = new Cookie("refreshToken",refreshToken);

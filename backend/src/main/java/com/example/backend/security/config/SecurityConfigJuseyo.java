@@ -38,8 +38,7 @@ public class SecurityConfigJuseyo {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/ws-stomp/**"
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
                         //회원
@@ -90,6 +89,7 @@ public class SecurityConfigJuseyo {
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000"
         ));
+
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);
@@ -97,6 +97,8 @@ public class SecurityConfigJuseyo {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
+
 
 
     @Bean

@@ -18,9 +18,7 @@ public class ChatMessageRequestDto {
     //메시지 타입 :  입장 채팅
     private ChatMessageStatus type; //메시지 타입
     private Long roomId;
-    private String username;
     private String message;// 메세지
-
 
 
 }

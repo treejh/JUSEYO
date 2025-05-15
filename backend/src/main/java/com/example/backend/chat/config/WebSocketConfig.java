@@ -1,6 +1,7 @@
 package com.example.backend.chat.config;
 
 import com.example.backend.chat.handler.StompHandler;
+import com.example.backend.exception.StompExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -15,14 +16,15 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompHandler stompHandler;
+    private final StompExceptionHandler stompExceptionHandler;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // stomp 접속 url -> /ws-stomp
         registry
-                //.setErrorHandler(stompExceptionHandler)
+                .setErrorHandler(stompExceptionHandler)
                 .addEndpoint("/ws-stomp")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOrigins("http://localhost:3000")
                 .withSockJS();
         }
 
