@@ -447,5 +447,18 @@ public class UserController {
         );
     }
 
+    @GetMapping("/token")
+    @Operation(
+            summary = "토큰으로 유저 조회하기 ",
+            description = "현재 로그인된 사용자의 정보를 조회 "
+    )
+    public ResponseEntity sendCertificationNumberValid() {
+        UserProfileResponseDto responseDto = new UserProfileResponseDto(userService.findUserByToken());
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "토큰으로 사용자 조회 성공 ",responseDto),
+                HttpStatus.OK
+        );
+    }
+
 
 }
