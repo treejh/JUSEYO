@@ -24,12 +24,26 @@ import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.user.repository.UserRepository;
+import jakarta.servlet.ServletOutputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -51,8 +65,7 @@ public class InventoryOutService {
 
     @Transactional
     public InventoryOutResponseDto removeOutbound(InventoryOutRequestDto dto) {
-
-        //권한체크
+        // 권한 체크
         Long currentUserId = tokenService.getIdFromToken();
         SupplyRequest req = supplyRequestRepo.findById(dto.getSupplyRequestId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
@@ -66,7 +79,6 @@ public class InventoryOutService {
         }
 
         // 0) SupplyRequest, Category, ManagementDashboard 조회
-
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
@@ -99,7 +111,6 @@ public class InventoryOutService {
             log.warn("Redis 사용 빈도 증가 실패: {}", e.getMessage());
         }
 
-
         // 4) 아이템 재고 차감
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());
 
@@ -115,20 +126,10 @@ public class InventoryOutService {
         }
 
         // 6) 응답 DTO 반환
-        return InventoryOutResponseDto.builder()
-                .id(saved.getId())
-                .supplyRequestId(saved.getSupplyRequest().getId())
-                .itemId(saved.getItem().getId())
-                .categoryId(saved.getCategory().getId())
-                .managementId(saved.getManagementDashboard().getId())
-                .quantity(saved.getQuantity())
-                .outbound(saved.getOutbound().name())
-                .createdAt(saved.getCreatedAt())
-                .modifiedAt(saved.getModifiedAt())
-                .build();
+        return mapToDto(saved);
     }
 
-    /** 전체 출고내역 조회 (Excel 다운로드용) */
+    /** 전체 출고내역 조회 (매니저용) */
     @Transactional(readOnly = true)
     public List<InventoryOutResponseDto> getAllOutbound() {
 
@@ -140,17 +141,7 @@ public class InventoryOutService {
 
         // 해당 관리대시보드 출고내역만 조회
         return outRepo.findAllByManagementDashboardId(userMgmtId).stream()
-                .map(out -> InventoryOutResponseDto.builder()
-                        .id(out.getId())
-                        .supplyRequestId(out.getSupplyRequest().getId())
-                        .itemId(out.getItem().getId())
-                        .categoryId(out.getCategory().getId())
-                        .managementId(out.getManagementDashboard().getId())
-                        .quantity(out.getQuantity())
-                        .outbound(out.getOutbound().name())
-                        .createdAt(out.getCreatedAt())
-                        .modifiedAt(out.getModifiedAt())
-                        .build())
+                .map(this::mapToDto)
                 .toList();
     }
 
@@ -161,5 +152,131 @@ public class InventoryOutService {
         pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
         itemRepo.save(pen);
         eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
+    }
+
+    /** 페이징·정렬·검색·날짜 필터된 페이지 조회 (매니저용) */
+    @Transactional(readOnly = true)
+    public Page<InventoryOutResponseDto> getOutbound(
+            String search,
+            LocalDate fromDate,
+            LocalDate toDate,
+            int page,
+            int size,
+            String sortField,
+            String sortDir
+    ) {
+        Long userMgmtId = tokenService.getIdFromToken();
+        Specification<InventoryOut> spec = Specification.where(
+                (root, query, cb) -> cb.equal(
+                        root.get("managementDashboard").get("id"), userMgmtId)
+        );
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(
+                    root.get("item").get("name"), "%" + search + "%"));
+        }
+        if (fromDate != null && toDate != null) {
+            LocalDateTime start = fromDate.atStartOfDay();
+            LocalDateTime end = toDate.atTime(LocalTime.MAX);
+            spec = spec.and((root, query, cb) -> cb.between(
+                    root.get("createdAt"), start, end));
+        }
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortField);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return outRepo.findAll(spec, pageable)
+                .map(this::mapToDto);
+    }
+
+    /** 필터된 전체 리스트 반환 (export용) */
+    @Transactional(readOnly = true)
+    public List<InventoryOutResponseDto> getOutboundList(
+            String search,
+            LocalDate fromDate,
+            LocalDate toDate
+    ) {
+        return getOutbound(search, fromDate, toDate, 0, Integer.MAX_VALUE, "createdAt", "desc")
+                .getContent();
+    }
+
+    // 조회
+    @Transactional(readOnly = true)
+    public Page<InventoryOutResponseDto> getMyOutbound(
+            String search,
+            LocalDate fromDate,
+            LocalDate toDate,
+            int page,
+            int size,
+            String sortField,
+            String sortDir
+    ) {
+        // 1) 나의 userId 추출
+        Long userId = tokenService.getIdFromToken();
+
+        // 2) 기본 Specification: 내 요청에 대한 출고만
+        Specification<InventoryOut> spec = Specification.where(
+                (root, query, cb) ->
+                        cb.equal(root.get("supplyRequest").get("user").get("id"), userId)
+        );
+
+        // 3) 검색어 필터 (item 이름에 포함된 경우)
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("item").get("name"), "%" + search + "%")
+            );
+        }
+
+        // 4) 날짜 범위 필터
+        if (fromDate != null && toDate != null) {
+            LocalDateTime start = fromDate.atStartOfDay();
+            LocalDateTime end   = toDate.atTime(LocalTime.MAX);
+            spec = spec.and((root, query, cb) ->
+                    cb.between(root.get("createdAt"), start, end)
+            );
+        }
+
+        // 5) 정렬·페이징 설정
+        Sort sort = Sort.by(
+                sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortField
+        );
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // 6) 쿼리 실행 & DTO 변환
+        return outRepo.findAll(spec, pageable)
+                .map(this::mapToDto);
+    }
+
+    /** Excel 내보내기 */
+    public void writeExcel(List<InventoryOutResponseDto> list, ServletOutputStream os) throws IOException {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("InventoryOut");
+            Row header = sheet.createRow(0);
+            String[] cols = {"ID","ItemId","Quantity","Outbound","CreatedAt"};
+            for (int i = 0; i < cols.length; i++) header.createCell(i).setCellValue(cols[i]);
+            for (int r = 0; r < list.size(); r++) {
+                var dto = list.get(r);
+                Row row = sheet.createRow(r + 1);
+                row.createCell(0).setCellValue(dto.getId());
+                row.createCell(1).setCellValue(dto.getItemId());
+                row.createCell(2).setCellValue(dto.getQuantity());
+                row.createCell(3).setCellValue(dto.getOutbound());
+                row.createCell(4).setCellValue(dto.getCreatedAt().toString());
+            }
+            wb.write(os);
+        }
+    }
+
+    /** DTO 매핑 공통 메서드 */
+    private InventoryOutResponseDto mapToDto(InventoryOut o) {
+        return InventoryOutResponseDto.builder()
+                .id(o.getId())
+                .supplyRequestId(o.getSupplyRequest().getId())
+                .itemId(o.getItem().getId())
+                .categoryId(o.getCategory().getId())
+                .managementId(o.getManagementDashboard().getId())
+                .quantity(o.getQuantity())
+                .outbound(o.getOutbound().name())
+                .createdAt(o.getCreatedAt())
+                .modifiedAt(o.getModifiedAt())
+                .build();
     }
 }

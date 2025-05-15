@@ -29,6 +29,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     // 이름 기준 비품 개수 조회 (시리얼 순번용)
     long countByName(String name);
 
+    Optional<Item> findByName(String name);
 
     //상태 별 아이템 목록 가졍
     @Query("SELECT new com.example.backend.item.dto.response.ItemResponseDto(" +
