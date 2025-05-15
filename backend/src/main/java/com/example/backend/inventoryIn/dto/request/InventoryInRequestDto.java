@@ -4,6 +4,7 @@ import com.example.backend.enums.Inbound;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Getter
@@ -35,4 +36,8 @@ public class InventoryInRequestDto {
     @NotNull
     @Schema(description = "관리 페이지 ID", example = "1", required = true)
     private Long managementId;
+
+    @NotNull
+    @Schema(description = "비품 입고 이미지 ")
+    private MultipartFile image;
 }

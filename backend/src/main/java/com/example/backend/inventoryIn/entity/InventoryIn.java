@@ -58,4 +58,7 @@ public class InventoryIn extends Auditable {
     @JoinColumn(name = "register_item_id", nullable = true)
     private RegisterItem registerItem;
 
+    @Column(name = "image")
+    private String image;
+
 }
