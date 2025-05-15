@@ -9,8 +9,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import java.util.List;
-
 @Repository
 public interface InventoryOutRepository extends JpaRepository<InventoryOut, Integer> {
     List<InventoryOut> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
@@ -25,8 +23,8 @@ public interface InventoryOutRepository extends JpaRepository<InventoryOut, Inte
     JOIN o.item i
     """)
     List<OutHistoryDto> findUserItemHistory();
-    // InventoryOutRepository.java
+
     List<InventoryOut> findAllByManagementDashboardId(Long managementDashboardId);
 
-
+    List<InventoryOut> findAllBySupplyRequest_User_Id(Long userId);
 }

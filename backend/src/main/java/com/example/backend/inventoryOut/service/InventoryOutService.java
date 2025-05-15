@@ -1,7 +1,6 @@
 package com.example.backend.inventoryOut.service;
 
 import com.example.backend.analysis.service.InventoryAnalysisService;
-import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.enums.Outbound;
@@ -45,11 +44,9 @@ public class InventoryOutService {
     private final TokenService tokenService;
     private final InventoryAnalysisService inventoryAnalysisService;
 
-
     @Transactional
     public InventoryOutResponseDto removeOutbound(InventoryOutRequestDto dto) {
-
-        //권한체크
+        // 권한 체크
         Long currentUserId = tokenService.getIdFromToken();
         SupplyRequest req = supplyRequestRepo.findById(dto.getSupplyRequestId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
@@ -63,7 +60,6 @@ public class InventoryOutService {
         }
 
         // 0) SupplyRequest, Category, ManagementDashboard 조회
-
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
@@ -96,7 +92,6 @@ public class InventoryOutService {
             log.warn("Redis 사용 빈도 증가 실패: {}", e.getMessage());
         }
 
-
         // 4) 아이템 재고 차감
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());
 
@@ -106,48 +101,49 @@ public class InventoryOutService {
                     .findFirstByItemIdAndStatus(item.getId(), Outbound.AVAILABLE)
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
             UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
-            upd.setStatus(saved.getOutbound());  // LEND 또는 ISSUE
+            upd.setStatus(saved.getOutbound());
             upd.setFinalImage(null);
             instanceService.updateStatus(inst.getId(), upd);
         }
 
         // 6) 응답 DTO 반환
-        return InventoryOutResponseDto.builder()
-                .id(saved.getId())
-                .supplyRequestId(saved.getSupplyRequest().getId())
-                .itemId(saved.getItem().getId())
-                .categoryId(saved.getCategory().getId())
-                .managementId(saved.getManagementDashboard().getId())
-                .quantity(saved.getQuantity())
-                .outbound(saved.getOutbound().name())
-                .createdAt(saved.getCreatedAt())
-                .modifiedAt(saved.getModifiedAt())
-                .build();
+        return mapToDto(saved);
     }
 
-    /** 전체 출고내역 조회 (Excel 다운로드용) */
+    /** 전체 출고내역 조회 (매니저용), 엑셀 */
     @Transactional(readOnly = true)
     public List<InventoryOutResponseDto> getAllOutbound() {
-
-        // 권한체크 및 대시보드 id 조회
         Long currentUserId = tokenService.getIdFromToken();
         Long userMgmtId = userRepo.findById(currentUserId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
                 .getManagementDashboard().getId();
 
-        // 해당 관리대시보드 출고내역만 조회
         return outRepo.findAllByManagementDashboardId(userMgmtId).stream()
-                .map(out -> InventoryOutResponseDto.builder()
-                        .id(out.getId())
-                        .supplyRequestId(out.getSupplyRequest().getId())
-                        .itemId(out.getItem().getId())
-                        .categoryId(out.getCategory().getId())
-                        .managementId(out.getManagementDashboard().getId())
-                        .quantity(out.getQuantity())
-                        .outbound(out.getOutbound().name())
-                        .createdAt(out.getCreatedAt())
-                        .modifiedAt(out.getModifiedAt())
-                        .build())
+                .map(this::mapToDto)
                 .toList();
+    }
+
+    /** 내 출고내역 조회 (일반회원용) */
+    @Transactional(readOnly = true)
+    public List<InventoryOutResponseDto> getMyOuts() {
+        Long userId = tokenService.getIdFromToken();
+        return outRepo.findAllBySupplyRequest_User_Id(userId).stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    /** DTO 매핑 공통 메서드 */
+    private InventoryOutResponseDto mapToDto(InventoryOut o) {
+        return InventoryOutResponseDto.builder()
+                .id(o.getId())
+                .supplyRequestId(o.getSupplyRequest().getId())
+                .itemId(o.getItem().getId())
+                .categoryId(o.getCategory().getId())
+                .managementId(o.getManagementDashboard().getId())
+                .quantity(o.getQuantity())
+                .outbound(o.getOutbound().name())
+                .createdAt(o.getCreatedAt())
+                .modifiedAt(o.getModifiedAt())
+                .build();
     }
 }
