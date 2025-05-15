@@ -9,7 +9,7 @@ import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.supplyReturn.repository.SupplyReturnRepository;
 import com.example.backend.user.entity.User;
-import com.example.backend.notification.strategy.NotificationStrategyFactory;
+import com.example.backend.notification.strategy.factory.NotificationStrategyFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

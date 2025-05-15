@@ -603,7 +603,41 @@ public class UserService {
         }
     }
 
+    public List<User> findByManagerList(ManagementDashboard managementDashboard){
 
+        Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
+        ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
+        return userRepository.findByManagementDashboardAndApprovalStatusAndRole(
+                managementDashboard, approvalStatus, role);
+    }
+    public List<User> findAllByIds(List<Long> userIds) {
+        List<User> users = userRepository.findAllById(userIds);
 
+        if (users.size() != userIds.size()) {
+            List<Long> foundIds = users.stream()
+                    .map(User::getId)
+                    .toList();
+            List<Long> missingIds = userIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+
+            throw new BusinessLogicException(
+                    ExceptionCode.USER_NOT_FOUND,
+                    "존재하지 않는 사용자 ID: " + missingIds
+            );
+        }
+
+        return users;
+    }
+
+    public List<User> findUsersByRole(Role role) {
+        return userRepository.findAllByRole(role);
+    }
+
+    public User findUserByToken(){
+        //이메일 중복 회원가입 불가
+        return findById(tokenService.getIdFromToken());
+
+    }
 
 }

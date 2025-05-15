@@ -6,7 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class ItemStockContext {
-    private final String serial_number;
+    private final String serialNumber;
     private final String itemName;
     private final Long availableQuantity;
     private final Long minimumQuantity;

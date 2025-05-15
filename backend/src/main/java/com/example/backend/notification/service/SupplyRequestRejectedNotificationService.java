@@ -4,7 +4,7 @@ import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.NotificationType;
 import com.example.backend.notification.strategy.NotificationStrategy;
-import com.example.backend.notification.strategy.NotificationStrategyFactory;
+import com.example.backend.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.notification.strategy.context.SupplyRequestApprovalContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

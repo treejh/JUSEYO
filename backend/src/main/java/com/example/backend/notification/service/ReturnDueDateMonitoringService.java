@@ -6,6 +6,7 @@ import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.NotificationType;
 import com.example.backend.notification.strategy.NotificationStrategy;
 import com.example.backend.notification.strategy.context.ReturnDueDateContext;
+import com.example.backend.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.role.RoleService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
@@ -26,7 +27,7 @@ public class ReturnDueDateMonitoringService {
     private final SupplyRequestRepository supplyRequestRepository;
     private final SupplyReturnRepository supplyReturnRepository;
     private final NotificationService notificationService;
-    private final com.example.backend.notification.strategy.NotificationStrategyFactory strategyFactory;
+    private final NotificationStrategyFactory strategyFactory;
     private final RoleService roleService;
     private final UserService userService;
 

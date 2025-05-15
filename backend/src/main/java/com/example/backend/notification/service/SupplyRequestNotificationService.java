@@ -3,7 +3,7 @@ package com.example.backend.notification.service;
 import com.example.backend.enums.RoleType;
 import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.NotificationType;
-import com.example.backend.notification.strategy.NotificationStrategyFactory;
+import com.example.backend.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.notification.strategy.NotificationStrategy;
 import com.example.backend.notification.strategy.context.SupplyRequestContext;
 import com.example.backend.role.RoleService;
