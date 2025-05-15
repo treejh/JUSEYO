@@ -21,14 +21,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
-      <body>
+    <html lang="ko" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+      <body className="h-full">
         <ClientLayout>
-          <main className="pt-[60px]">
-            {" "}
-            {/* Header 높이만큼 상단 패딩 추가 */}
-            {children}
-          </main>
+          {children}
         </ClientLayout>
       </body>
     </html>

@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
+import { Header } from "./components/Header";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  
   const {
     loginUser,
     setLoginUser,
@@ -50,7 +55,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   if (isLoginUserPending) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center h-screen w-screen bg-white text-black">
         <div>로딩중</div>
       </div>
     );
@@ -58,7 +63,12 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
-      <main className="bg-[#F4F4F4] min-h-screen">{children}</main>
+      <div className={`flex flex-col ${isAuthPage ? 'h-screen w-screen' : 'min-h-screen'} bg-white`}>
+        {!isAuthPage && <Header />}
+        <main className={`flex-1 ${!isAuthPage ? 'pt-[60px]' : ''}`}>
+          {children}
+        </main>
+      </div>
     </LoginUserContext.Provider>
   );
 }
