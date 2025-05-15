@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UpdateItemInstanceStatusRequestDto {
     @NotNull
-    private Outbound status;
+    private Outbound outbound;
 
     private String finalImage;
 }

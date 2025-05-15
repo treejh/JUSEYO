@@ -1,10 +1,10 @@
 package com.example.backend.inventoryOut.service;
 
 import com.example.backend.analysis.service.InventoryAnalysisService;
-import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.enums.Outbound;
+import com.example.backend.enums.Status;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryOut.dto.request.InventoryOutRequestDto;
@@ -106,10 +106,10 @@ public class InventoryOutService {
         // 5) 개별자산단위 상태 변경 (출고: AVAILABLE → LEND 또는 ISSUE)
         for (int i = 0; i < saved.getQuantity(); i++) {
             ItemInstance inst = instanceRepo
-                    .findFirstByItemIdAndStatus(item.getId(), Outbound.AVAILABLE)
+                    .findFirstByItemIdAndOutboundAndStatus(item.getId(), Outbound.AVAILABLE, Status.ACTIVE)
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
             UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
-            upd.setStatus(saved.getOutbound());  // LEND 또는 ISSUE
+            upd.setOutbound(saved.getOutbound());  // LEND 또는 ISSUE
             upd.setFinalImage(null);
             instanceService.updateStatus(inst.getId(), upd);
         }
