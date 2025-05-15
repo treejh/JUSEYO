@@ -1,5 +1,6 @@
 package com.example.backend.chat.config;
 
+import com.example.backend.chat.handler.JwtHandshakeInterceptor;
 import com.example.backend.chat.handler.StompHandler;
 import com.example.backend.exception.StompExceptionHandler;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompHandler stompHandler;
     private final StompExceptionHandler stompExceptionHandler;
+    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -25,6 +27,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setErrorHandler(stompExceptionHandler)
                 .addEndpoint("/ws-stomp")
                 .setAllowedOrigins("http://localhost:3000")
+                .addInterceptors(jwtHandshakeInterceptor)
                 .withSockJS();
         }
 

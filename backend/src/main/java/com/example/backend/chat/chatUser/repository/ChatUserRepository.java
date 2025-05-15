@@ -2,8 +2,13 @@ package com.example.backend.chat.chatUser.repository;
 
 import com.example.backend.chat.chatUser.entity.ChatUser;
 import com.example.backend.chat.chatroom.entity.ChatRoom;
+import com.example.backend.enums.ChatRoomType;
+import com.example.backend.enums.ChatStatus;
 import com.example.backend.user.entity.User;
+import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +18,13 @@ public interface ChatUserRepository extends JpaRepository<ChatUser, Long> {
 
     Optional<ChatUser> findByUserAndChatRoom(User user, ChatRoom chatRoom);
     Optional<ChatUser> findByChatRoom(ChatRoom chatRoom);
+
+    // ChatStatus : ENTER, LEAVE, CREATE
+    Page<ChatUser> findByUserAndChatRoomRoomTypeAndChatStatusIn(
+            User user,
+            ChatRoomType roomType,
+            List<ChatStatus> statuses,
+            Pageable pageable
+    );
+
 }

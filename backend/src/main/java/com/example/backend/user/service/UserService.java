@@ -533,6 +533,11 @@ public class UserService {
 
     }
 
+    public User findUserByToken(){
+        return findById(tokenService.getIdFromToken());
+    }
+
+
 
 
 

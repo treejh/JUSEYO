@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -36,6 +38,7 @@ public class ChatRoomService {
     public ChatRoom createChatRoom(ChatRoomRequestDto chatRoomRequestDto) {
         User loginUser = userService.findById(tokenService.getIdFromToken());
 
+        //ChatRoomType
         switch (chatRoomRequestDto.getRoomType()) {
             case ONE_TO_ONE:
                 return createOneToOneRoom(loginUser, chatRoomRequestDto);
@@ -102,16 +105,36 @@ public class ChatRoomService {
         return chatRoom;
     }
 
-    private void createChatUsers(ChatRoom chatRoom, List<User> users, ChatStatus status) {
+    private void createChatUsers(ChatRoom chatRoom, List<User> users, ChatStatus creatorStatus) {
         for (int i = 0; i < users.size(); i++) {
+            boolean isCreator = (i == 0);
+            ChatStatus status = isCreator ? creatorStatus : ChatStatus.INVITED;
+
             ChatUser chatUser = ChatUser.builder()
                     .user(users.get(i))
                     .chatRoom(chatRoom)
                     .chatStatus(status)
-                    .isCreator(i == 0) // 첫 유저를 방장으로 지정
+                    .isCreator(isCreator)
                     .build();
             chatUserRepository.save(chatUser);
         }
+    }
+
+
+    //유저의 채팅방 조회하기
+    //type에 따라서 다른 채팅방을 조회할 수 있도록.
+    public Page<ChatRoom> getChatRoomList(ChatRoomType chatRoomType, Pageable pageable) {
+        User user = userService.findUserByToken();
+
+        Page<ChatUser> chatUsers = chatUserRepository
+                .findByUserAndChatRoomRoomTypeAndChatStatusIn(
+                        user,
+                        chatRoomType,
+                        List.of(ChatStatus.ENTER, ChatStatus.CREATE),
+                        pageable
+                );
+
+        return chatUsers.map(ChatUser::getChatRoom);
     }
 
 
