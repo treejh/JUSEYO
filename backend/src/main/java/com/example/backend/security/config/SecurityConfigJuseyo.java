@@ -55,6 +55,7 @@ public class SecurityConfigJuseyo {
                         // 알림(테스트 목적으로 permitAll)
                         .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").permitAll()
+
                         //비품 등룩(구매)
                         .requestMatchers("/api/v1/register-items/**").hasAnyRole("MANAGER", "ADMIN")
                         //비품 반납
@@ -63,6 +64,11 @@ public class SecurityConfigJuseyo {
                         //입고
                         .requestMatchers("/api/v1/inventory-in/**").hasAnyRole("MANAGER", "ADMIN")
 
+
+
+                        // 알림 관련 설정
+                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").authenticated()
 
                         .anyRequest().authenticated()
                 )
