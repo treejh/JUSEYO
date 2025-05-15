@@ -17,11 +17,10 @@ public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long
     List<ItemInstance> findAllByItemId(Long itemId);  // 특정 Item 소속 인스턴스 조회
     long countByItemId(Long itemId); // 시퀀스 번호 계산용
 
-    Optional<ItemInstance> findFirstByItemIdAndStatus(Long itemId, Outbound status);
-    long countByItemIdAndStatus(Long itemId, Outbound status);
+    Optional<ItemInstance> findFirstByItemIdAndOutbound(Long itemId, Outbound outbound);
 
     @Query("SELECT i FROM ItemInstance i " +
-            "WHERE i.item.id = :itemId AND i.status = 'ACTIVE' " +
+            "WHERE i.item.id = :itemId AND i.status = com.example.backend.enums.Status.ACTIVE " +
             "ORDER BY i.id DESC")
     List<ItemInstance> findTopNActiveByItemId(@Param("itemId") Long itemId, Pageable pageable);
 

@@ -91,10 +91,10 @@ public class InventoryInService {
             // 반납 입고: 수량만큼 가장 오래된 대여중 인스턴스를 AVAILABLE로
             for (int i = 0; i < savedInbound.getQuantity(); i++) {
                 ItemInstance inst = instanceRepo
-                        .findFirstByItemIdAndStatus(item.getId(), Outbound.LEND)
+                        .findFirstByItemIdAndOutbound(item.getId(), Outbound.LEND)
                         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
                 UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
-                upd.setStatus(Outbound.AVAILABLE);
+                upd.setOutbound(Outbound.AVAILABLE);
                 upd.setFinalImage(imageService.saveImage(dto.getImage()));
                 instanceService.updateStatus(inst.getId(), upd);
             }

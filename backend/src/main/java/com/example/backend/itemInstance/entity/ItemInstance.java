@@ -29,7 +29,7 @@ public class ItemInstance extends Auditable {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private Outbound status; // 현재상태
+    private Outbound outbound; // 현재상태
 
 
     @Column(name = "image", nullable = false)
@@ -48,5 +48,5 @@ public class ItemInstance extends Auditable {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "is_item_exists")
-    private Status isItemExists=Status.ACTIVE;
+    private Status status=Status.ACTIVE;
 }

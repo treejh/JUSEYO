@@ -60,7 +60,7 @@ public class ItemInstanceService {
         ItemInstance inst = ItemInstance.builder()
                 .item(item)
                 .instanceCode(code)
-                .status(Outbound.AVAILABLE)
+                .outbound(Outbound.AVAILABLE)
                 .image(dto.getImage())
                 .build();
 
@@ -104,7 +104,7 @@ public class ItemInstanceService {
             throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
         }
 
-        inst.setStatus(dto.getStatus());
+        inst.setOutbound(dto.getOutbound());
         inst.setFinalImage(dto.getFinalImage());
         ItemInstance saved = instanceRepo.save(inst);
         return map(saved);
@@ -119,7 +119,7 @@ public class ItemInstanceService {
         }
 
         for (ItemInstance instance : instances) {
-            instance.setIsItemExists(Status.STOP);
+            instance.setStatus(Status.STOP);
         }
     }
 
@@ -127,7 +127,7 @@ public class ItemInstanceService {
         List<ItemInstance> instances = instanceRepo.findAllByItemId(itemId);
 
         for (ItemInstance instance : instances) {
-            instance.setIsItemExists(Status.STOP);
+            instance.setStatus(Status.STOP);
         }
     }
 
@@ -140,7 +140,7 @@ public class ItemInstanceService {
                 .id(e.getId())
                 .itemId(e.getItem().getId())
                 .instanceCode(e.getInstanceCode())
-                .status(e.getStatus())
+                .outbound(e.getOutbound())
                 .image(e.getImage())
                 .finalImage(e.getFinalImage())
                 .createdAt(e.getCreatedAt())
