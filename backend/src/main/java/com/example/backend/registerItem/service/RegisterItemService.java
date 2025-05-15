@@ -14,8 +14,7 @@ import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
 import com.example.backend.item.service.ItemService;
-import com.example.backend.itemInstance.entity.ItemInstance;
-import com.example.backend.itemInstance.repository.ItemInstanceRepository;
+import com.example.backend.itemInstance.service.ItemInstanceService;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.registerItem.dto.request.PurchaseRequestDto;
@@ -25,7 +24,6 @@ import com.example.backend.registerItem.entity.RegisterItem;
 import com.example.backend.registerItem.repository.RegisterItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +44,8 @@ public class RegisterItemService {
     private final ManagementDashboardRepository managementDashboardRepository;
     private final CategoryRepository categoryRepo;
     private final RegisterItemRepository registerItemRepository;
-    private final ItemInstanceRepository itemInstanceRepository;
+    private final ItemInstanceService itemInstanceService;
+
 
     // 제품 구매 등록
     @Transactional
@@ -181,7 +180,7 @@ public class RegisterItemService {
 
                     if (gap < 0) {
                         int softDeleteCount = (int) Math.abs(gap);
-                        softDeleteHighestItemInstances(linkedItem.getId(), softDeleteCount);
+                        itemInstanceService.softDeleteHighestItemInstances(linkedItem.getId(), softDeleteCount);
                     }
                 }
             }
@@ -212,18 +211,6 @@ public class RegisterItemService {
         registerItemRepository.save(item); // optional if persistence context auto-flushes
     }
 
-    private void softDeleteHighestItemInstances(Long itemId, int count) {
-        List<ItemInstance> instances = itemInstanceRepository
-                .findTopNActiveByItemId(itemId, PageRequest.of(0, count));
-
-        if (instances.size() < count) {
-            throw new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND);
-        }
-
-        for (ItemInstance instance : instances) {
-            instance.setIsItemExists(Status.STOP);
-        }
-    }
 
 
 
@@ -233,6 +220,15 @@ public class RegisterItemService {
         RegisterItem item = registerItemRepository.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.REGISTER_ITEM_NOT_FOUND));
         item.setStatus(Status.STOP);
+        if (item.getInbound() == Inbound.PURCHASE) { // 첫 구매-> 아이템 엔티티 삭제 , 아이템 인스턴스 삭제
+            itemService.deleteItem(item.getItem().getId());
+            itemInstanceService.softDeleteInstances(item.getItem().getId());
+        } else if (item.getInbound() == Inbound.RE_PURCHASE) { // 재 구매-> 아이템 엔티티 총 개수, 보유 개수 수정 , 아이템 인스턴스 삭제
+            item.getItem().setTotalQuantity(item.getItem().getTotalQuantity() - item.getQuantity());
+            item.getItem().setAvailableQuantity(item.getItem().getAvailableQuantity() - item.getQuantity());
+
+            itemInstanceService.softDeleteInstances(item.getItem().getId());
+        }
 
     }
 
