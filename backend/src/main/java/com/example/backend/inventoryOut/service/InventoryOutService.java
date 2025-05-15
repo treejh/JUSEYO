@@ -1,6 +1,7 @@
 package com.example.backend.inventoryOut.service;
 
 import com.example.backend.analysis.service.InventoryAnalysisService;
+import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.category.entity.Category;
 import com.example.backend.category.repository.CategoryRepository;
 import com.example.backend.enums.Outbound;
@@ -18,6 +19,7 @@ import com.example.backend.itemInstance.repository.ItemInstanceRepository;
 import com.example.backend.itemInstance.service.ItemInstanceService;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
+import com.example.backend.notification.event.StockShortageEvent;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
@@ -34,6 +36,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +62,8 @@ public class InventoryOutService {
     private final UserRepository userRepo;
     private final TokenService tokenService;
     private final InventoryAnalysisService inventoryAnalysisService;
+    private final ApplicationEventPublisher eventPublisher;
+
 
     @Transactional
     public InventoryOutResponseDto removeOutbound(InventoryOutRequestDto dto) {
@@ -129,14 +134,24 @@ public class InventoryOutService {
     /** 전체 출고내역 조회 (매니저용) */
     @Transactional(readOnly = true)
     public List<InventoryOutResponseDto> getAllOutbound() {
+
+        // 권한체크 및 대시보드 id 조회
         Long currentUserId = tokenService.getIdFromToken();
         Long userMgmtId = userRepo.findById(currentUserId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
                 .getManagementDashboard().getId();
 
+        // 해당 관리대시보드 출고내역만 조회
         return outRepo.findAllByManagementDashboardId(userMgmtId).stream()
                 .map(this::mapToDto)
                 .toList();
+    }
+
+    // 재고 부족 알림 테스트용 메서드
+    public void stockdown() {
+        Item pen = itemRepo.findByName("볼펜").get();
+        pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
+        eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
     }
 
     /** 페이징·정렬·검색·날짜 필터된 페이지 조회 (매니저용) */
