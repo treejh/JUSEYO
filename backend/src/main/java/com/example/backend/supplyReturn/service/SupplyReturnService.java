@@ -132,6 +132,7 @@ public class SupplyReturnService {
                 .returnDate(supplyReturn.getReturnDate())
                 .approvalStatus(supplyReturn.getApprovalStatus())
                 .createdAt(supplyReturn.getCreatedAt())
+                .outbound(supplyReturn.getOutbound())
                 .build();
         return supplyReturnResponseDto;
     }
