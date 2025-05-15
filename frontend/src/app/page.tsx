@@ -1,11 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  LoginUserContext,
-  useLoginUser,
-  useGlobalLoginUser,
-} from "@/stores/auth/loginMember";
+import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
 export default function Home() {
   const { loginUser, isLogin } = useGlobalLoginUser();
