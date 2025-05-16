@@ -67,6 +67,8 @@ public class SecurityConfigJuseyo {
                         //입고
                         .requestMatchers("/api/v1/inventory-in/**").hasAnyRole("MANAGER", "ADMIN")
 
+                        // 검색
+                        .requestMatchers(HttpMethod.GET, "/api/v1/search/items").hasAnyRole("MANAGER", "USER", "ADMIN")
 
 
                         .anyRequest().authenticated()

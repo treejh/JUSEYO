@@ -1,6 +1,7 @@
 package com.example.backend.item.repository;
 
 import com.example.backend.enums.Status;
+import com.example.backend.item.dto.response.ItemSearchProjection;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
 import org.springframework.data.domain.Page;
@@ -39,4 +40,16 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "i.category.id, i.managementDashboard.id, i.createdAt, i.modifiedAt, i.status) " +
             "FROM Item i WHERE i.status = :status")
     Page<ItemResponseDto> findAllAsDto(@Param("status") Status status, Pageable pageable);
+
+    //비품 검색
+    @Query("SELECT i.id AS id, i.name AS name, c.name AS categoryName, i.availableQuantity AS availableQuantity " +
+            "FROM Item i JOIN i.category c " +
+            "WHERE i.managementDashboard.id = :managementDashboardId " +
+            "  AND (i.name LIKE %:keyword% OR c.name LIKE %:keyword%)")
+    Page<ItemSearchProjection> searchItemsWithCategory(
+            @Param("managementDashboardId") Long managementDashboardId,
+            @Param("keyword")               String keyword,
+            Pageable                        pageable
+    );
 }
+
