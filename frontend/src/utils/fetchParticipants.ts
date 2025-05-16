@@ -8,7 +8,7 @@ export const fetchParticipants = async (
 ): Promise<Participant[]> => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/participants?chatRoomId=${chatRoomId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/participants?chatRoomId=${chatRoomId}`,
       {
         method: "GET",
         headers: {

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Client, Message } from "@stomp/stompjs";
 import { FaUser } from "react-icons/fa"; // 사람 아이콘 사용
-import { fetchParticipants, Participant } from "../utils/fetchParticipants"; // 참여 유저 목록 가져오기 함수 임포트
+import { fetchParticipants, Participant } from "../../utils/fetchParticipants"; // 참여 유저 목록 가져오기 함수 임포트
+import { leaveChatRoom } from "../../utils/leaveChatRoom"; // 나가기 로직 임포트
 
 interface Props {
   roomId: number; // 선택된 채팅방 ID
@@ -111,15 +112,23 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">채팅방</h2>
-        <button
-          className="text-gray-600 hover:text-gray-800"
-          onClick={() => {
-            setShowParticipants(!showParticipants);
-            if (!showParticipants) loadParticipants(); // 참여 유저 목록 가져오기
-          }}
-        >
-          <FaUser size={24} />
-        </button>
+        <div className="flex items-center">
+          <button
+            className="text-gray-600 hover:text-gray-800 mr-4"
+            onClick={() => {
+              setShowParticipants(!showParticipants);
+              if (!showParticipants) loadParticipants(); // 참여 유저 목록 가져오기
+            }}
+          >
+            <FaUser size={24} />
+          </button>
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded"
+            onClick={() => leaveChatRoom(client, roomId, loginUserId)} // 나가기 로직 호출
+          >
+            채팅방 나가기
+          </button>
+        </div>
       </div>
 
       {showParticipants && (
