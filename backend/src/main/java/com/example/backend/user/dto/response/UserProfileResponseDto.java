@@ -1,6 +1,8 @@
 package com.example.backend.user.dto.response;
 
 
+import com.example.backend.enums.RoleType;
+import com.example.backend.role.entity.Role;
 import com.example.backend.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +27,10 @@ public class UserProfileResponseDto {
 
     String departmentName;
 
+    RoleType role;
+
+
+
 
     public UserProfileResponseDto(User user){
         this.id = user.getId();
@@ -37,6 +43,7 @@ public class UserProfileResponseDto {
         this.departmentName = (user.getDepartment() != null)
                 ? user.getDepartment().getName()
                 : null;
+        this.role = user.getRole().getRole();
     }
 
 }
