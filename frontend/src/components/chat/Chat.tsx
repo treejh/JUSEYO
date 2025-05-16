@@ -75,6 +75,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
       (message: Message) => {
         const response = JSON.parse(message.body); // 서버에서 발행된 메시지 파싱
         const receivedMessage: ChatResponseDto = response.data; // ApiResponse의 data 필드 추출
+
         setMessages((prevMessages) => [...prevMessages, receivedMessage]); // 메시지 추가
       }
     );
