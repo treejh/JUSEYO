@@ -1,6 +1,8 @@
 package com.example.backend.chat.chatroom.service;
 
 
+import com.example.backend.chat.chatMessage.entity.ChatMessage;
+import com.example.backend.chat.chatMessage.repository.ChatMessageRepository;
 import com.example.backend.chat.chatUser.entity.ChatUser;
 import com.example.backend.chat.chatUser.repository.ChatUserRepository;
 import com.example.backend.chat.chatroom.dto.request.ChatRoomRequestDto;
@@ -33,6 +35,9 @@ import org.springframework.util.StringUtils;
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatUserRepository chatUserRepository;
+    private final ChatMessageRepository chatMessageRepository;
+
+
     private final TokenService tokenService;
     private final UserService userService;
 
@@ -140,12 +145,19 @@ public class ChatRoomService {
         return chatUsers.map(ChatUser::getChatRoom);
     }
 
-    public void leaveChatRoom(User user, ChatRoom chatRoom) {
-        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
+    public void leaveChatRoom( Long roomId) {
+        User user = userService.findById(tokenService.getIdFromToken());
+        ChatRoom chatRoom = findId(roomId);
+        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user,chatRoom)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM));
 
-        chatUser.setChatStatus(ChatStatus.LEAVE);
-        chatUserRepository.save(chatUser);
+        chatUserRepository.delete(chatUser);
+
+        if (chatUserRepository.findByChatRoom(chatRoom).isEmpty()) {
+            chatMessageRepository.deleteAllByChatRoom(chatRoom);
+            deleteChatRoomById(chatRoom.getId());
+        }
+
     }
 
     public Page<ChatRoom> validEnter(ChatRoomType chatRoomType, Pageable pageable) {
@@ -161,9 +173,6 @@ public class ChatRoomService {
 
         return chatUsers.map(ChatUser::getChatRoom);
     }
-
-
-
 
 
 
