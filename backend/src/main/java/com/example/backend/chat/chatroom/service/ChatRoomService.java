@@ -233,8 +233,9 @@ public class ChatRoomService {
     public List<User> getChatRoomParticipants(Long roomId) {
         ChatRoom chatRoom = findId(roomId); // chatRoomId로 엔티티 조회
 
-        // chatRoom에 속한 ChatUser 목록에서 User만 추출
+        // ENTER 상태의 사용자만 필터링
         return chatUserRepository.findByChatRoom(chatRoom).stream()
+                .filter(chatUser -> chatUser.getChatStatus() == ChatStatus.ENTER)
                 .map(ChatUser::getUser)
                 .toList();
     }
