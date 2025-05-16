@@ -5,6 +5,7 @@ import com.example.backend.enums.Status;
 import com.example.backend.itemInstance.entity.ItemInstance;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long> {
+public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long>, JpaSpecificationExecutor<ItemInstance> {
+    List<ItemInstance> findAllByItemId(Long itemId);  // 특정 Item 소속 인스턴스 조회
     long countByItemId(Long itemId); // 시퀀스 번호 계산용
 
     Optional<ItemInstance> findFirstByItemIdAndOutboundAndStatus(Long itemId, Outbound outbound, Status status);
@@ -26,6 +28,7 @@ public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long
 
     List<ItemInstance> findAllByItemIdAndStatus(Long itemId, Status status);
 
-    List<ItemInstance> findAllByItemId(Long itemId);
+    Optional<ItemInstance> findFirstByItemIdAndStatus(Long itemId, Outbound status);
 
+    long countByItemIdAndStatus(Long itemId, Outbound status);
 }

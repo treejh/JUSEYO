@@ -1,17 +1,25 @@
 package com.example.backend.export.controller;
 
+import com.example.backend.enums.Outbound;
+import com.example.backend.enums.Status;
 import com.example.backend.export.service.ExcelExportService;
 import com.example.backend.inventoryIn.service.InventoryInService;
 import com.example.backend.inventoryOut.service.InventoryOutService;
 import com.example.backend.item.service.ItemService;
+import com.example.backend.itemInstance.dto.response.ItemInstanceResponseDto;
 import com.example.backend.itemInstance.service.ItemInstanceService;
 import com.example.backend.supplyRequest.service.SupplyRequestService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,9 +44,18 @@ public class ExcelExportController {
     @GetMapping("/api/v1/export/instances/by-item/{itemId}")
     public void downloadInstances(
             @PathVariable Long itemId,
+            @RequestParam(defaultValue = "xlsx") String format,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Outbound outbound,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
             HttpServletResponse resp
     ) throws Exception {
-        var list = instanceService.getByItem(itemId);
+        List<ItemInstanceResponseDto> list = instanceService.getByItemList(
+                itemId, search, status, outbound, fromDate, toDate, "createdAt", "desc"
+        );
+
         excelService.exportInstances(list, resp);
     }
 
