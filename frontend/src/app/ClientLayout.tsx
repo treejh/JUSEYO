@@ -8,6 +8,7 @@ import { useNotificationStore } from "@/stores/notifications";
 import { NotificationBell } from "@/components/Notification/NotificationBell";
 import LoadingScreen from "./components/LoadingScreen";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
 
@@ -153,22 +154,26 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <div className="fixed top-4 right-4 z-50">
           <NotificationBell />
         </div>
-        <div className="flex">
-          {!shouldHideNav && (
-            <Navigation 
-              userRole={loginUser?.managementDashboardName ? 'manager' : 'user'} 
-              isSidebarCollapsed={sidebarCollapsed}
-              onToggleSidebar={toggleSidebar}
-            />
-          )}
-          <main 
-            className={`flex-1 ${!isAuthPage ? 'pt-[60px]' : ''} 
-            ${!shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''} 
-            bg-[#F4F4F4] transition-all duration-300`}
-          >
-            {children}
-          </main>
+        <div className="flex flex-col flex-1">
+          <div className="flex flex-1">
+            {!shouldHideNav && (
+              <Navigation 
+                userRole={loginUser?.role === 'MANAGER' ? 'manager' : 'user'} 
+                isSidebarCollapsed={sidebarCollapsed}
+                onToggleSidebar={toggleSidebar}
+              />
+            )}
+            <main 
+              className={`flex-1 ${!isAuthPage ? 'pt-[60px]' : ''} 
+              ${!shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''} 
+              bg-[#F4F4F4] transition-all duration-300`}
+            >
+              {children}
+            </main>
+          </div>
+          {!isAuthPage && <Footer />}
         </div>
       </div>
     </LoginUserContext.Provider>
-  );}
+  );
+}
