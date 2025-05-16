@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +42,7 @@ public class ChatRoomController {
             summary = "새로운 채팅방 생성  ",
             description = "채팅방을 생성할 수 있습니다.  "
     )
-    public ResponseEntity<?> createChatRoom(@Valid @RequestBody ChatRoomRequestDto chatRoomRequestDto) {
+    public ResponseEntity<ApiResponse<ChatRoomResponseDto>> createChatRoom(@Valid @RequestBody ChatRoomRequestDto chatRoomRequestDto) {
         ChatRoomResponseDto chatRoomResponseDto = new ChatRoomResponseDto(chatRoomService.createChatRoom(chatRoomRequestDto));
 
         //ChatRoomType에 따라 다름
@@ -60,7 +61,7 @@ public class ChatRoomController {
                     + "- SUPPORT: 고객센터 채팅방"
     )
 
-    public ResponseEntity<?> getUserChatRoom(@Valid @RequestParam ChatRoomType chatRoomType,
+    public ResponseEntity<ApiResponse<Page<ChatRoomResponseDto>>> getUserChatRoom(@Valid @RequestParam ChatRoomType chatRoomType,
                                              @RequestParam(name = "page", defaultValue = "1") int page,
                                              @RequestParam(name="size", defaultValue = "10") int size) {
         Page<ChatRoom> chatRoomList = chatRoomService.getChatRoomList(chatRoomType,
@@ -73,6 +74,25 @@ public class ChatRoomController {
                 HttpStatus.CREATED
         );
     }
+
+    @PostMapping("/enter/valid/{roomId}")
+    @Operation(
+            summary = "enter 검증 ",
+            description = "현재 채팅방에 사용자가 enter한적 있는지 확인 "
+    )
+    public ResponseEntity<ApiResponse<Boolean>> enterChatRoom(@PathVariable Long roomId) {
+        //true면 입장한거고, fasle면 입장한 사용자가 아님
+        boolean response = chatRoomService.chatRoomEnterValid(roomId);
+
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "채팅방 조회 완료  ", response), //사용자와 사용자 간의 1:1 채팅
+                HttpStatus.OK
+        );
+
+
+    }
+
+
 
 
 

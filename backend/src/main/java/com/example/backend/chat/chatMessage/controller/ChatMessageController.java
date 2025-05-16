@@ -79,8 +79,6 @@ public class ChatMessageController {
                 PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
 
         Page<ChatResponseDto> responseMessage = chatMessagePage.map(ChatResponseDto::new);
-
-
         return new ResponseEntity<>(
                 ApiResponse.of(
                         HttpStatus.OK.value(),
@@ -89,7 +87,6 @@ public class ChatMessageController {
                 ),
                 HttpStatus.OK
         );
-
     }
 
 

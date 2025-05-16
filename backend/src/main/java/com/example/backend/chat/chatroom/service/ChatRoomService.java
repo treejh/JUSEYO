@@ -145,6 +145,22 @@ public class ChatRoomService {
         chatUserRepository.save(chatUser);
     }
 
+    public Page<ChatRoom> validEnter(ChatRoomType chatRoomType, Pageable pageable) {
+        User user = userService.findUserByToken();
+
+        Page<ChatUser> chatUsers = chatUserRepository
+                .findByUserAndChatRoomRoomTypeAndChatStatusIn(
+                        user,
+                        chatRoomType,
+                        List.of(ChatStatus.ENTER, ChatStatus.CREATE),
+                        pageable
+                );
+
+        return chatUsers.map(ChatUser::getChatRoom);
+    }
+
+
+
 
 
 
@@ -156,6 +172,18 @@ public class ChatRoomService {
     public ChatRoom findChatRoomById(Long id){
         return chatRoomRepository.findById(id)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+    }
+
+
+
+    public boolean chatRoomEnterValid(Long roomId) {
+        User user = userService.findUserByToken();
+        ChatRoom chatRoom = findChatRoomById(roomId);
+
+        ChatUser chatUsers = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+
+        return ChatStatus.ENTER.equals(chatUsers.getChatStatus());
     }
 
 
