@@ -1,9 +1,12 @@
 package com.example.backend.itemInstance.controller;
 
+import com.example.backend.enums.Outbound;
+import com.example.backend.enums.Status;
 import com.example.backend.itemInstance.dto.request.CreateItemInstanceRequestDto;
 import com.example.backend.itemInstance.dto.request.UpdateItemInstanceStatusRequestDto;
 import com.example.backend.itemInstance.dto.response.ItemInstanceResponseDto;
 import com.example.backend.itemInstance.service.ItemInstanceService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,6 +36,7 @@ public class ItemInstanceController {
     }
 
     // (2) 특정 아이템 인스턴스 조회 - 로그인한 모든 유저
+    @Operation(summary = "아이템 인스턴스 조회", description = "페이징, 검색, 날짜, 상태(status), 출고유형(outbound) 필터 가능")
     @GetMapping("/by-item/{itemId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<ItemInstanceResponseDto>> listByItem(
@@ -42,11 +46,15 @@ public class ItemInstanceController {
             @RequestParam(defaultValue = "createdAt") String sortField,
             @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Outbound outbound,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
     ) {
         Page<ItemInstanceResponseDto> result =
-                service.getByItemPage(itemId, search, fromDate, toDate, page, size, sortField, sortDir);
+                service.getByItemPage(
+                        itemId, search, status, outbound, fromDate, toDate, page, size, sortField, sortDir
+                );
         return ResponseEntity.ok(result);
     }
 
@@ -58,5 +66,14 @@ public class ItemInstanceController {
             @RequestBody UpdateItemInstanceStatusRequestDto dto
     ) {
         return service.updateStatus(instanceId, dto);
+    }
+
+    // (4) 인스턴스 소프트 삭제 - 매니저만
+    @Operation(summary = "아이템 인스턴스 삭제(소프트)", description = "해당 인스턴스의 status=STOP 처리")
+    @PreAuthorize("hasRole('MANAGER')")
+    @DeleteMapping("/{instanceId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteInstance(@PathVariable Long instanceId) {
+        service.softDeleteInstance(instanceId);
     }
 }

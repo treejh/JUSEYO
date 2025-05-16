@@ -19,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -130,6 +129,8 @@ public class ItemInstanceService {
     public Page<ItemInstanceResponseDto> getByItemPage(
             Long itemId,
             String search,
+            Status statusParam,
+            Outbound outboundParam,
             LocalDate fromDate,
             LocalDate toDate,
             int page,
@@ -137,43 +138,78 @@ public class ItemInstanceService {
             String sortField,
             String sortDir
     ) {
-        // 1) 권한 및 item 존재 체크
         Long currntUserId = tokenService.getIdFromToken();
         Long userMgmtId = userRepo.findById(currntUserId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
                 .getManagementDashboard().getId();
 
-        // 2) 기본 Specification: root.get("item").get("id") == itemId
-        Specification<ItemInstance> spec = Specification.where(
-                (root, query, cb) -> cb.equal(root.get("item").get("id"), itemId)
-        );
+        Status baseStatus = (statusParam != null ? statusParam : Status.ACTIVE);
+        Specification<ItemInstance> spec = Specification.<ItemInstance>where(
+                (root, q, cb) -> cb.equal(root.get("status"), baseStatus)
+        ).and((root, q, cb) -> cb.equal(root.get("item").get("id"), itemId));
 
-        // 3) 검색어: instanceCode LIKE %search%
         if (search != null && !search.isBlank()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.like(root.get("instanceCode"), "%" + search + "%")
-            );
+            spec = spec.and((root, q, cb) ->
+                    cb.like(root.get("instanceCode"), "%" + search + "%"));
         }
-
-        // 4) 날짜범위: createdAt between fromDate.atStartOfDay() and toDate.atTime(MAX)
+        if (outboundParam != null) {
+            spec = spec.and((root, q, cb) ->
+                    cb.equal(root.get("outbound"), outboundParam));
+        }
         if (fromDate != null && toDate != null) {
             LocalDateTime start = fromDate.atStartOfDay();
             LocalDateTime end   = toDate.atTime(LocalTime.MAX);
-            spec = spec.and((root, query, cb) ->
-                    cb.between(root.get("createdAt"), start, end)
-            );
+            spec = spec.and((root, q, cb) ->
+                    cb.between(root.get("createdAt"), start, end));
         }
 
-        // 5) Pageable 생성: Sort.by(sortDir, sortField)
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortField
+        ));
+        return instanceRepo.findAll(spec, pageable).map(this::map);
+    }
+
+
+    /** 필터된 전체 리스트 반환 (export용) */
+    @Transactional(readOnly = true)
+    public List<ItemInstanceResponseDto> getByItemList(
+            Long itemId,
+            String search,
+            Status statusParam,
+            Outbound outboundParam,
+            LocalDate fromDate,
+            LocalDate toDate,
+            String sortField,
+            String sortDir
+    ) {
+        Status baseStatus = (statusParam != null ? statusParam : Status.ACTIVE);
+        Specification<ItemInstance> spec = Specification.<ItemInstance>where(
+                (root, q, cb) -> cb.equal(root.get("status"), baseStatus)
+        ).and((root, q, cb) -> cb.equal(root.get("item").get("id"), itemId));
+
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, q, cb) ->
+                    cb.like(root.get("instanceCode"), "%" + search + "%"));
+        }
+        if (outboundParam != null) {
+            spec = spec.and((root, q, cb) ->
+                    cb.equal(root.get("outbound"), outboundParam));
+        }
+        if (fromDate != null && toDate != null) {
+            LocalDateTime start = fromDate.atStartOfDay();
+            LocalDateTime end   = toDate.atTime(LocalTime.MAX);
+            spec = spec.and((root, q, cb) ->
+                    cb.between(root.get("createdAt"), start, end));
+        }
+
         Sort sort = Sort.by(
                 sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
                 sortField
         );
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        // 6) 조회 & DTO 매핑
-        return instanceRepo.findAll(spec, pageable)
-                .map(this::map);
+        return instanceRepo.findAll(spec, sort).stream()
+                .map(this::map)
+                .toList();
     }
 
     public void softDeleteHighestItemInstances(Long itemId, int count) {
@@ -197,6 +233,26 @@ public class ItemInstanceService {
         }
     }
 
+    /**  단일 인스턴스 소프트 삭제 */
+    @Transactional
+    public void softDeleteInstance(Long instanceId) {
+        ItemInstance inst = instanceRepo.findById(instanceId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+
+        // 권한 체크
+        Long currentUserId = tokenService.getIdFromToken();
+        Long userMgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        if (!inst.getItem().getManagementDashboard().getId().equals(userMgmtId)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
+        inst.setStatus(Status.STOP);
+        instanceRepo.save(inst);
+    }
+
     public Long countItemInstances(Long itemId) {
         return instanceRepo.countByItemId(itemId);
     }
@@ -206,6 +262,7 @@ public class ItemInstanceService {
                 .id(e.getId())
                 .itemId(e.getItem().getId())
                 .instanceCode(e.getInstanceCode())
+                .status(e.getStatus())
                 .outbound(e.getOutbound())
                 .image(e.getImage())
                 .finalImage(e.getFinalImage())
