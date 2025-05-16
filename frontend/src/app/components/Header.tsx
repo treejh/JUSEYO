@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import { NotificationBell } from "@/components/Notification/NotificationBell";
 
 export function Header() {
   const { loginUser, isLogin, logoutAndHome } = useGlobalLoginUser();
@@ -21,10 +22,13 @@ export function Header() {
             />
           </div>
         </Link>
-        
+
         <div className="flex items-center">
           {isLogin ? (
             <>
+              <div className="mr-3">
+                <NotificationBell />
+              </div>
               <Link href="/" className="text-gray-700 hover:text-blue-500 mx-3">
                 홈
               </Link>
@@ -55,4 +59,4 @@ export function Header() {
       </div>
     </header>
   );
-} 
+}

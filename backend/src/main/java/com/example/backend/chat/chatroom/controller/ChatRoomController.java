@@ -24,6 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -135,6 +136,22 @@ public class ChatRoomController {
                 "채팅방 참여 유저 조회 완료",
                 response
         ));
+    }
+
+    @DeleteMapping("/{roomId}/leave")
+    @Operation(
+            summary = "채팅방 나가기",
+            description = "현재 로그인한 유저가 해당 채팅방에서 나갑니다. 마지막 유저가 나가면 방과 메시지도 삭제됩니다."
+    )
+    public ResponseEntity<ApiResponse<Void>> leaveChatRoom(@PathVariable Long roomId) {
+        chatRoomService.leaveChatRoom(roomId);
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        HttpStatus.OK.value(),
+                        "채팅방 나가기 성공",
+                        null
+                )
+        );
     }
 
 

@@ -16,6 +16,7 @@ export default function Home() {
             </h1>
             <p className="text-gray-700">이메일: {loginUser.email}</p>
             <p className="text-gray-700">전화번호: {loginUser.phoneNumber}</p>
+            <p className="text-gray-700">역할: {loginUser.role}</p>
             <p className="text-gray-700">
               대시보드 이름: {loginUser.managementDashboardName || "없음"}
             </p>

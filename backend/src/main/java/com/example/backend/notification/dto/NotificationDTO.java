@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class NotificationDTO {
-    private String id;
+    private Long id;
     private String message;
     private NotificationType notificationType;
     private boolean readStatus;

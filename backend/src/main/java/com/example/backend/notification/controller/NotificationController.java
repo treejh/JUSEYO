@@ -7,10 +7,13 @@ import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.Notification;
 import com.example.backend.notification.entity.NotificationType;
 import com.example.backend.notification.service.NotificationService;
+import com.example.backend.security.dto.CustomUserDetails;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
+import com.example.backend.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final InventoryOutService inventoryOutService; // 재고 알림 테스트용
     private final TokenService tokenService;
+    private final UserService userService;
 
     // 1. 알림 생성
     @PostMapping
@@ -46,6 +50,15 @@ public class NotificationController {
     public Notification markAsRead(@PathVariable String notificationId) {
         return notificationService.markAsRead(notificationId);
     }
+
+    // 4. 전체 알림 읽음 처리
+    @PutMapping("/readAll")
+    public ResponseEntity<Void> markAllAsReadForCurrentUser() {
+        Long userId = tokenService.getIdFromToken();
+        notificationService.markAsReadAllByUser(userId);
+        return ResponseEntity.ok().build();
+    }
+
 
     // SSE를 통한 실시간 알림 전송
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

@@ -3,7 +3,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ClientLayout } from "./ClientLayout"; // 👈 Header 컴포넌트 불러오기
+import { ClientLayout } from "../app/ClientLayout"; // 👈 Header 컴포넌트 불러오기
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,11 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+    <html
+      lang="ko"
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
+    >
       <body className="h-full">
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
