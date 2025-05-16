@@ -34,6 +34,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     //해당 관리페이지에 존재하는 승인된 매니저 조회
     List<User> findByManagementDashboardAndApprovalStatusAndRole(ManagementDashboard managementDashboard, ApprovalStatus approvalStatus, Role role);
+
+
+    Page<User> findByManagementDashboardAndApprovalStatusAndRoleAndIdNot(
+            ManagementDashboard managementDashboard,
+            ApprovalStatus approvalStatus,
+            Pageable pageable,
+            Role role,
+            Long excludeUserId
+    );
     List<User> findUsersByRole(Role role);
 
     List<User> findAllByRole(Role role);

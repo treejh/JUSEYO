@@ -10,6 +10,7 @@ import LoadingScreen from "./components/LoadingScreen";
 import { Navigation } from "@/components/Navigation";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
+
   const pathname = usePathname();
   // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
   const isAuthPage = pathname === "/login" || pathname === "/signup";
@@ -18,6 +19,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
+
   const {
     loginUser,
     setLoginUser,
@@ -53,19 +55,20 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         const userData = data.data;
         console.log("사용자 데이터:", userData);
 
-        if (!userData || !userData.userId) {
+        if (!userData || !userData.id) {
           console.error("사용자 ID가 없습니다:", userData);
           setNoLoginUser();
           return;
         }
 
         setLoginUser({
-          id: userData.userId,
+          id: userData.id,
           email: userData.email,
           phoneNumber: userData.phoneNumber,
           username: userData.name,
           managementDashboardName: userData.managementDashboardName ?? "",
           departmentName: userData.departmentName ?? "",
+          role: userData.role,
         });
 
         // SSE 연결
@@ -168,5 +171,4 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
       </div>
     </LoginUserContext.Provider>
-  );
-}
+  );}

@@ -41,6 +41,8 @@ public class SecurityConfigJuseyo {
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
+                        //채팅
+                        .requestMatchers( "/api/v1/users/chat/list/**","/api/v1/users/chat/**").hasAnyRole("MANAGER", "USER","ADMIN")
                         //회원
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request","/api/v1/users/approve/**","/api/v1/users/reject/**")
@@ -52,14 +54,10 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.GET, "/api/v1/departments/**").hasAnyRole("MANAGER", "USER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/**").hasRole("MANAGER")
-                        // 알림(테스트 목적으로 permitAll)
 
                         // 알림 관련 설정
                         .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").authenticated()
-
-                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/stream/**").permitAll()
 
                         //비품 등룩(구매)
                         .requestMatchers("/api/v1/register-items/**").hasAnyRole("MANAGER", "ADMIN")

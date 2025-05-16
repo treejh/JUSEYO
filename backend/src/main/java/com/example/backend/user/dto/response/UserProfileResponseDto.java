@@ -1,6 +1,8 @@
 package com.example.backend.user.dto.response;
 
 
+import com.example.backend.enums.RoleType;
+import com.example.backend.role.entity.Role;
 import com.example.backend.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserProfileResponseDto {
 
-    Long userId;
+    Long id;
 
     String name;
 
@@ -25,17 +27,23 @@ public class UserProfileResponseDto {
 
     String departmentName;
 
+    RoleType role;
+
+
+
+
     public UserProfileResponseDto(User user){
-        this.userId = user.getId();
+        this.id = user.getId();
         this.name = user.getName();
         this.email = user.getEmail();
         this.phoneNumber = user.getPhoneNumber();
         this.managementDashboardName = (user.getManagementDashboard() != null)
                 ? user.getManagementDashboard().getName()
                 : null;
-        this.departmentName = (user.getManagementDashboard() != null)
+        this.departmentName = (user.getDepartment() != null)
                 ? user.getDepartment().getName()
                 : null;
-
+        this.role = user.getRole().getRole();
     }
+
 }

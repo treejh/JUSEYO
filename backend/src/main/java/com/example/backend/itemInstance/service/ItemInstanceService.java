@@ -14,10 +14,17 @@ import com.example.backend.itemInstance.repository.ItemInstanceRepository;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -37,6 +44,13 @@ public class ItemInstanceService {
         Long currentUserId = tokenService.getIdFromToken();
         Item item = itemRepo.findById(dto.getItemId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
+
+        // 비품 보유수량 초과 금지
+        long existingCount = instanceRepo.countByItemId(item.getId());
+
+        if (existingCount >= item.getTotalQuantity()) {
+            throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
+        }
 
         Long userMgmtId = userRepo.findById(currentUserId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
@@ -111,6 +125,93 @@ public class ItemInstanceService {
         return map(saved);
     }
 
+    @Transactional(readOnly = true)
+    public Page<ItemInstanceResponseDto> getByItemPage(
+            Long itemId,
+            String search,
+            Status statusParam,
+            Outbound outboundParam,
+            LocalDate fromDate,
+            LocalDate toDate,
+            int page,
+            int size,
+            String sortField,
+            String sortDir
+    ) {
+        Long currntUserId = tokenService.getIdFromToken();
+        Long userMgmtId = userRepo.findById(currntUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        Status baseStatus = (statusParam != null ? statusParam : Status.ACTIVE);
+        Specification<ItemInstance> spec = Specification.<ItemInstance>where(
+                (root, q, cb) -> cb.equal(root.get("status"), baseStatus)
+        ).and((root, q, cb) -> cb.equal(root.get("item").get("id"), itemId));
+
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, q, cb) ->
+                    cb.like(root.get("instanceCode"), "%" + search + "%"));
+        }
+        if (outboundParam != null) {
+            spec = spec.and((root, q, cb) ->
+                    cb.equal(root.get("outbound"), outboundParam));
+        }
+        if (fromDate != null && toDate != null) {
+            LocalDateTime start = fromDate.atStartOfDay();
+            LocalDateTime end   = toDate.atTime(LocalTime.MAX);
+            spec = spec.and((root, q, cb) ->
+                    cb.between(root.get("createdAt"), start, end));
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortField
+        ));
+        return instanceRepo.findAll(spec, pageable).map(this::map);
+    }
+
+
+    /** 필터된 전체 리스트 반환 (export용) */
+    @Transactional(readOnly = true)
+    public List<ItemInstanceResponseDto> getByItemList(
+            Long itemId,
+            String search,
+            Status statusParam,
+            Outbound outboundParam,
+            LocalDate fromDate,
+            LocalDate toDate,
+            String sortField,
+            String sortDir
+    ) {
+        Status baseStatus = (statusParam != null ? statusParam : Status.ACTIVE);
+        Specification<ItemInstance> spec = Specification.<ItemInstance>where(
+                (root, q, cb) -> cb.equal(root.get("status"), baseStatus)
+        ).and((root, q, cb) -> cb.equal(root.get("item").get("id"), itemId));
+
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, q, cb) ->
+                    cb.like(root.get("instanceCode"), "%" + search + "%"));
+        }
+        if (outboundParam != null) {
+            spec = spec.and((root, q, cb) ->
+                    cb.equal(root.get("outbound"), outboundParam));
+        }
+        if (fromDate != null && toDate != null) {
+            LocalDateTime start = fromDate.atStartOfDay();
+            LocalDateTime end   = toDate.atTime(LocalTime.MAX);
+            spec = spec.and((root, q, cb) ->
+                    cb.between(root.get("createdAt"), start, end));
+        }
+
+        Sort sort = Sort.by(
+                sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortField
+        );
+        return instanceRepo.findAll(spec, sort).stream()
+                .map(this::map)
+                .toList();
+    }
+
     public void softDeleteHighestItemInstances(Long itemId, int count) {
         List<ItemInstance> instances = instanceRepo
                 .findTopNActiveByItemId(itemId, PageRequest.of(0, count));
@@ -132,6 +233,26 @@ public class ItemInstanceService {
         }
     }
 
+    /**  단일 인스턴스 소프트 삭제 */
+    @Transactional
+    public void softDeleteInstance(Long instanceId) {
+        ItemInstance inst = instanceRepo.findById(instanceId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+
+        // 권한 체크
+        Long currentUserId = tokenService.getIdFromToken();
+        Long userMgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        if (!inst.getItem().getManagementDashboard().getId().equals(userMgmtId)) {
+            throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+        }
+
+        inst.setStatus(Status.STOP);
+        instanceRepo.save(inst);
+    }
+
     public Long countItemInstances(Long itemId) {
         return instanceRepo.countByItemId(itemId);
     }
@@ -141,9 +262,11 @@ public class ItemInstanceService {
                 .id(e.getId())
                 .itemId(e.getItem().getId())
                 .instanceCode(e.getInstanceCode())
+                .status(e.getStatus())
                 .outbound(e.getOutbound())
                 .image(e.getImage())
                 .finalImage(e.getFinalImage())
+                .itemImage(e.getItem().getImage())
                 .createdAt(e.getCreatedAt())
                 .modifiedAt(e.getModifiedAt())
                 .build();

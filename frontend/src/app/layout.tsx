@@ -6,6 +6,7 @@ import "./globals.css";
 import ClientLayout from './ClientLayout';
 import { ToastProvider } from "@/components/Toast/ToastContext";
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -32,7 +33,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+    <html
+      lang="ko"
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
+    >
       <body className="h-full">
         <div id="toast-portal" />
         <ToastProvider>
@@ -40,6 +44,7 @@ export default function RootLayout({
             {children}
           </ClientLayout>
         </ToastProvider>
+
       </body>
     </html>
   );

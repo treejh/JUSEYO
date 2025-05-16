@@ -7,7 +7,7 @@ import com.example.backend.auditable.Auditable;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "notification")
+@Table(name = "notifications")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,8 +17,8 @@ public class Notification extends Auditable {
 
     @Id
     @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
 
     @Enumerated(EnumType.STRING)
