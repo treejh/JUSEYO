@@ -13,11 +13,11 @@ import lombok.Setter;
 public class ParticipantsResponseDto {
 
     Long id;
-    String userName;
+    String name;
 
     public ParticipantsResponseDto(User user){
         this.id = user.getId();
-        this.userName = user.getName();
+        this.name = user.getName();
     }
 
 }

@@ -53,6 +53,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           username: userData.name,
           managementDashboardName: userData.managementDashboardName ?? "",
           departmentName: userData.departmentName ?? "",
+          role: userData.role,
         });
 
         // SSE 연결
