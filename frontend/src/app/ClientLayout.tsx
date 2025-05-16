@@ -1,14 +1,25 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
+import { NotificationBell } from "@/components/Notification/NotificationBell";
+import LoadingScreen from "./components/LoadingScreen";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
-export function ClientLayout({ children }: { children: React.ReactNode }) {
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
+
   const pathname = usePathname();
+  // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
   const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const isRootPage = pathname === "/";
+  const shouldHideNav = isAuthPage || isRootPage;
+  
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
 
   const {
     loginUser,
@@ -19,6 +30,11 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     logout,
     logoutAndHome,
   } = useLoginUser();
+  
+  // 사이드바 접기/펼치기 토글 함수
+  const toggleSidebar = () => {
+    setSidebarCollapsed(prev => !prev);
+  };
 
   const LoginUserContextValue = {
     loginUser,
@@ -125,29 +141,37 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         console.error("사용자 정보 조회 실패:", error);
         setNoLoginUser();
       });
-  }, []);
+  }, [setLoginUser, setNoLoginUser]);
 
   if (isLoginUserPending) {
-    return (
-      <div className="flex items-center justify-center h-screen w-screen bg-white text-black">
-        <div>로딩중</div>
-      </div>
-    );
+    return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
   }
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
-      <div
-        className={`flex flex-col ${
-          isAuthPage ? "h-screen w-screen" : "min-h-screen"
-        } bg-white`}
-      >
-        {!isAuthPage && <Header />}
-        <main
-          className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
-        >
-          {children}
-        </main>
+      <div className={`flex flex-col ${isAuthPage ? 'h-screen w-screen' : 'min-h-screen'} bg-white ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        {!isAuthPage && <Header onToggleSidebar={toggleSidebar} />}
+        <div className="fixed top-4 right-4 z-50">
+          <NotificationBell />
+        </div>
+        <div className="flex flex-col flex-1">
+          <div className="flex flex-1">
+            {!shouldHideNav && (
+              <Navigation 
+                userRole={loginUser?.role === 'MANAGER' || loginUser?.role === 'ADMIN' ? 'manager' : 'user'} 
+                isSidebarCollapsed={sidebarCollapsed}
+                onToggleSidebar={toggleSidebar}
+              />
+            )}
+            <main 
+              className={`flex-1 ${!isAuthPage ? 'pt-[60px]' : ''} 
+              ${!shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''} 
+              bg-[#F4F4F4] transition-all duration-300`}
+            >
+              {children}
+            </main>
+          </div>
+        </div>
       </div>
     </LoginUserContext.Provider>
   );
