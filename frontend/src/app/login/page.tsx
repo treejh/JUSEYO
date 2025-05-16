@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLoginUser } from "@/stores/auth/loginMember";
-import Cookies from 'js-cookie';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -98,21 +97,21 @@ export default function LoginPage() {
       
       const userData = await userInfoResponse.json();
       
-      // 로그인 유형 확인
+      // 로그인 유형 확인 (경고만 표시하고 계속 진행)
       const isManagerRole = userData.role === "MANAGER" || userData.role === "ADMIN";
       const isUserRole = userData.role === "USER";
       
       if ((loginType === "manager" && !isManagerRole) || 
           (loginType === "regular" && !isUserRole)) {
-        setError("선택한 로그인 유형이 계정 권한과 일치하지 않습니다.");
-        return;
+        console.warn("선택한 로그인 유형이 계정 권한과 일치하지 않습니다.");
+        // 경고 표시만 하고 계속 진행 (return 제거)
       }
       
       // 로그인 성공 처리
       setLoginUser(userData);
       
-      // 로그인 성공 화면으로 이동
-      setStep("success");
+      // 로그인 성공 시 대시보드 페이지로 바로 이동
+      router.push("/dashboard");
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);

@@ -12,6 +12,7 @@
     "@stomp/stompjs": "^7.1.1",
     "@types/uuid": "^10.0.0",
     "axios": "^1.9.0",
+    "framer-motion": "^12.11.4",
     "js-cookie": "^3.0.5",
     "next": "15.3.2",
     "react": "^19.0.0",

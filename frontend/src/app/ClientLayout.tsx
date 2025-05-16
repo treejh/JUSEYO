@@ -158,7 +158,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <div className="flex flex-1">
             {!shouldHideNav && (
               <Navigation 
-                userRole={loginUser?.role === 'MANAGER' ? 'manager' : 'user'} 
+                userRole={loginUser?.role === 'MANAGER' || loginUser?.role === 'ADMIN' ? 'manager' : 'user'} 
                 isSidebarCollapsed={sidebarCollapsed}
                 onToggleSidebar={toggleSidebar}
               />
@@ -171,7 +171,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               {children}
             </main>
           </div>
-          {!isAuthPage && <Footer />}
         </div>
       </div>
     </LoginUserContext.Provider>

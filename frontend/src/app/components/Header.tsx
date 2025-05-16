@@ -13,7 +13,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   const { loginUser, isLogin, logoutAndHome } = useGlobalLoginUser();
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-10">
+    <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
       <div className="flex items-center justify-between px-4 h-[60px]">
         <div className="flex items-center">
           <Link href="/" className="flex items-center">
