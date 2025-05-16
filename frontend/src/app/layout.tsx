@@ -15,6 +15,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// ✅ 아이콘 및 메타 설정
+export const metadata: Metadata = {
+  title: "JUSEYO",
+  description: "재고 관리 플랫폼 JUSEYO",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+    },
+};
+
 export default function RootLayout({
   children,
 }: {
