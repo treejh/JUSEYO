@@ -1,9 +1,19 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Client, Message } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
+import UserList from "@/components/UserList";
+import ChatRoomList from "@/components/ChatRoomList";
+import Chat from "@/components/Chat";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
+<<<<<<< HEAD
+const ChatPage = () => {
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [client, setClient] = useState<Client | null>(null); // WebSocket 클라이언트 상태
+  const { loginUser } = useGlobalLoginUser(); // 현재 로그인한 유저 정보
+  const managementDashboardName = loginUser.managementDashboardName; // 관리 페이지 이름
+=======
 const ChatPage: React.FC = () => {
   const [client, setClient] = useState<Client | null>(null);
   const [messages, setMessages] = useState<ChatResponseDto[]>([]);
@@ -19,20 +29,16 @@ const ChatPage: React.FC = () => {
     createDate: string; // ISO 형식의 날짜 문자열
     chatStatus: string; // ChatStatus (예: "ENTER", "TALK")
   }
+>>>>>>> da2b63d22901159e630a4e89819912d4d69b6657
 
+  // WebSocket 클라이언트 초기화
   useEffect(() => {
-    // 쿠키에서 accessToken 추출
-    const getAccessTokenFromCookie = () => {
-      const cookies = document.cookie.split(";").map((cookie) => cookie.trim());
-      const accessTokenCookie = cookies.find((cookie) =>
-        cookie.startsWith("accessToken=")
-      );
-      return accessTokenCookie ? accessTokenCookie.split("=")[1] : null;
-    };
-
-    const accessToken = getAccessTokenFromCookie();
-
     const stompClient = new Client({
+<<<<<<< HEAD
+      webSocketFactory: () =>
+        new SockJS(`${process.env.NEXT_PUBLIC_API_BASE_URL}/ws-stomp`),
+      debug: (str) => console.log(str),
+=======
       webSocketFactory: () => new SockJS("http://localhost:8080/ws-stomp"),
       debug: (str: string) => console.log(str),
       connectHeaders: {
@@ -51,6 +57,7 @@ const ChatPage: React.FC = () => {
       onDisconnect: () => {
         console.log("WebSocket 연결 끊김");
       },
+>>>>>>> da2b63d22901159e630a4e89819912d4d69b6657
     });
 
     stompClient.activate();
@@ -61,51 +68,35 @@ const ChatPage: React.FC = () => {
     };
   }, []);
 
-  const enterRoom = () => {
-    if (!client || !client.connected) {
-      console.error("STOMP 연결이 활성화되지 않았습니다.");
-      return;
-    }
-
-    const enterMessagePayload = {
-      type: "ENTER",
-      userId: loginUser.id,
-      roomId,
-      message: "enter",
-    };
-
-    client.publish({
-      destination: `/pub/chat/${roomId}`,
-      body: JSON.stringify(enterMessagePayload),
-    });
-
-    console.log("ENTER 메시지 발행");
-  };
-
-  const sendMessage = () => {
-    if (!client || !client.connected) {
-      console.error("STOMP 연결이 활성화되지 않았습니다.");
-      return;
-    }
-
-    if (inputMessage.trim()) {
-      const messagePayload = {
-        type: "TALK",
-        userId: loginUser.id,
-        roomId,
-        message: inputMessage,
-      };
-
-      client.publish({
-        destination: `/pub/chat/${roomId}`,
-        body: JSON.stringify(messagePayload),
-      });
-
-      setInputMessage(""); // 입력 필드 초기화
-    }
-  };
-
   return (
+<<<<<<< HEAD
+    <div className="p-4">
+      <h1 className="text-3xl font-bold mb-6">채팅 시스템</h1>
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <UserList
+            onSelectUser={(userId) => console.log(`유저 ${userId} 선택됨`)}
+            managementDashboardName={managementDashboardName || ""}
+          />
+        </div>
+        <div>
+          <ChatRoomList
+            onSelectRoom={(roomId) => setSelectedRoomId(roomId)} // 선택된 채팅방 ID 설정
+            client={client} // WebSocket 클라이언트 전달
+            loginUserId={loginUser.id} // 로그인 유저 ID 전달
+          />
+        </div>
+        <div>
+          {selectedRoomId ? (
+            <Chat
+              roomId={selectedRoomId}
+              client={client}
+              loginUserId={loginUser.id}
+            /> // WebSocket 클라이언트 전달
+          ) : (
+            <p>채팅방을 선택하세요.</p>
+          )}
+=======
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white text-black">
       <h1 className="text-3xl font-bold mb-4 text-black">채팅 테스트</h1>
       <div className="w-full max-w-md border border-gray-300 p-4 rounded shadow bg-white">
@@ -139,6 +130,7 @@ const ChatPage: React.FC = () => {
               전송 (TALK)
             </button>
           </div>
+>>>>>>> da2b63d22901159e630a4e89819912d4d69b6657
         </div>
       </div>
     </div>

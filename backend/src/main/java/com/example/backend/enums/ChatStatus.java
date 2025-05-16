@@ -5,5 +5,5 @@ public enum ChatStatus {
     //enter, leave, create만 쓰임 
     
     //채팅 에서는
-    ENTER, LEAVE, CREATE
+    ENTER, LEAVE, CREATE, INVITED
 }
