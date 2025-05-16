@@ -1,11 +1,10 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { Client, Message } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
-const ChatPage = () => {
+const ChatPage: React.FC = () => {
   const [client, setClient] = useState<Client | null>(null);
   const [messages, setMessages] = useState<ChatResponseDto[]>([]);
   const [inputMessage, setInputMessage] = useState<string>("");
@@ -35,7 +34,7 @@ const ChatPage = () => {
 
     const stompClient = new Client({
       webSocketFactory: () => new SockJS("http://localhost:8080/ws-stomp"),
-      debug: (str) => console.log(str),
+      debug: (str: string) => console.log(str),
       connectHeaders: {
         Authorization: `Bearer ${accessToken}`, // 헤더에 accessToken 추가
       },
@@ -107,14 +106,14 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold mb-4">채팅 테스트</h1>
-      <div className="w-full max-w-md border p-4 rounded shadow">
-        <div className="h-64 overflow-y-auto border-b mb-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white text-black">
+      <h1 className="text-3xl font-bold mb-4 text-black">채팅 테스트</h1>
+      <div className="w-full max-w-md border border-gray-300 p-4 rounded shadow bg-white">
+        <div className="h-64 overflow-y-auto border-b border-gray-300 mb-4">
           {messages.map((msg, index) => (
-            <div key={index} className="p-2 border-b">
-              <strong>{msg.sender}</strong>: {msg.message} <br />
-              <small>{new Date(msg.createDate).toLocaleString()}</small>
+            <div key={index} className="p-2 border-b border-gray-200 text-black">
+              <strong className="text-black">{msg.sender}</strong>: {msg.message} <br />
+              <small className="text-gray-600">{new Date(msg.createDate).toLocaleString()}</small>
             </div>
           ))}
         </div>
@@ -128,7 +127,7 @@ const ChatPage = () => {
           <div className="flex">
             <input
               type="text"
-              className="flex-1 border p-2 rounded-l"
+              className="flex-1 border border-gray-300 p-2 rounded-l text-black"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="메시지를 입력하세요..."
