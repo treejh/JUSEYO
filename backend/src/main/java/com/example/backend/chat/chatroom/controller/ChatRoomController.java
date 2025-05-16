@@ -2,15 +2,20 @@ package com.example.backend.chat.chatroom.controller;
 
 
 import com.example.backend.chat.chatroom.dto.request.ChatRoomRequestDto;
+import com.example.backend.chat.chatroom.dto.request.ChatRoomValidRequestDto;
 import com.example.backend.chat.chatroom.dto.response.ChatRoomResponseDto;
+import com.example.backend.chat.chatroom.dto.response.ParticipantsResponseDto;
 import com.example.backend.chat.chatroom.entity.ChatRoom;
 import com.example.backend.chat.chatroom.service.ChatRoomService;
 import com.example.backend.enums.ChatRoomType;
 import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.user.entity.User;
 import com.example.backend.utils.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -75,6 +81,10 @@ public class ChatRoomController {
         );
     }
 
+
+
+
+
     @PostMapping("/enter/valid/{roomId}")
     @Operation(
             summary = "enter 검증 ",
@@ -88,9 +98,45 @@ public class ChatRoomController {
                 ApiResponse.of(HttpStatus.OK.value(), "채팅방 조회 완료  ", response), //사용자와 사용자 간의 1:1 채팅
                 HttpStatus.OK
         );
-
-
     }
+
+    @GetMapping ("/exists")
+    @Operation(
+            summary = "1:1 채팅방 존재 여부 확인",
+            description = "두 사용자 간 1:1 채팅방이 이미 존재하는지 확인합니다."
+    )
+    public ResponseEntity<ApiResponse<Boolean>> checkOneToOneRoomExistence(
+            @RequestParam Long userId, @RequestParam ChatRoomType chatRoomType
+            ) {
+        boolean exists = chatRoomService.validExistChatRoom(userId,chatRoomType);
+
+        return ResponseEntity.ok(ApiResponse.of(
+                HttpStatus.OK.value(),
+                "1:1 채팅방 존재 여부 확인 완료",exists
+        ));
+    }
+
+    @GetMapping("/participants")
+    @Operation(
+            summary = "채팅방 참여 유저 조회",
+            description = "특정 채팅방에 현재 참여 중인 유저 목록을 조회합니다."
+    )
+    public ResponseEntity<ApiResponse<List<ParticipantsResponseDto>>> getChatRoomParticipants(
+            @RequestParam Long chatRoomId
+    ) {
+        List<User> participants = chatRoomService.getChatRoomParticipants(chatRoomId);
+
+        List<ParticipantsResponseDto> response = participants.stream()
+                .map(ParticipantsResponseDto::new)
+                .toList();
+
+        return ResponseEntity.ok(ApiResponse.of(
+                HttpStatus.OK.value(),
+                "채팅방 참여 유저 조회 완료",
+                response
+        ));
+    }
+
 
 
 
