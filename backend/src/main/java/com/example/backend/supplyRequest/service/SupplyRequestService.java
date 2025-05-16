@@ -12,6 +12,10 @@ import com.example.backend.inventoryOut.dto.request.InventoryOutRequestDto;
 import com.example.backend.inventoryOut.service.InventoryOutService;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
+import com.example.backend.itemInstance.dto.request.UpdateItemInstanceStatusRequestDto;
+import com.example.backend.itemInstance.entity.ItemInstance;
+import com.example.backend.itemInstance.repository.ItemInstanceRepository;
+import com.example.backend.itemInstance.service.ItemInstanceService;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
@@ -37,6 +41,8 @@ public class SupplyRequestService {
     private final TokenService tokenService;
     private final InventoryOutService outService;
     private final InventoryInService inService;
+    private final ItemInstanceRepository instanceRepo;
+    private final ItemInstanceService instanceService;
 
     /**
      * 비품 요청 생성
@@ -127,10 +133,14 @@ public class SupplyRequestService {
      */
     @Transactional
     public SupplyRequestResponseDto updateRequestStatus(Long requestId, ApprovalStatus newStatus) {
+        // 1) 인증된 유저 ID 가져오기
         Long currentUserId = tokenService.getIdFromToken();
+
+        // 2) 요청서 조회
         SupplyRequest req = repo.findById(requestId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
 
+        // 3) 권한 체크: 같은 관리대시보드 소속인지
         Long userMgmtId = userRepo.findById(currentUserId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
                 .getManagementDashboard().getId();
@@ -139,8 +149,9 @@ public class SupplyRequestService {
             throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
         }
 
+        // 4) 승인 처리
         if (newStatus == ApprovalStatus.APPROVED) {
-            // 출고 처리
+            // (A) 출고 처리
             InventoryOutRequestDto outDto = new InventoryOutRequestDto();
             outDto.setSupplyRequestId(req.getId());
             outDto.setItemId(req.getItem().getId());
@@ -150,7 +161,7 @@ public class SupplyRequestService {
             outDto.setOutbound(req.isRental() ? Outbound.LEND.name() : Outbound.ISSUE.name());
             outService.removeOutbound(outDto);
 
-            // 상태 전환
+            // (B) 요청 상태 전환
             if (req.isRental()) {
                 req.setApprovalStatus(ApprovalStatus.RETURN_PENDING);
             } else {
@@ -158,8 +169,9 @@ public class SupplyRequestService {
             }
         }
 
+        // 5) 반납 처리
         if (newStatus == ApprovalStatus.RETURNED && req.isRental()) {
-            // 반납 입고 처리
+            // (A) 반납 입고 처리
             InventoryInRequestDto inDto = new InventoryInRequestDto();
             inDto.setItemId(req.getItem().getId());
             inDto.setQuantity(req.getQuantity());
@@ -168,9 +180,23 @@ public class SupplyRequestService {
             inDto.setManagementId(req.getItem().getManagementDashboard().getId());
             inService.addInbound(inDto);
 
+            // (B) 개별자산 인스턴스 상태 복구 (LEND → AVAILABLE)
+            for (int i = 0; i < req.getQuantity(); i++) {
+                ItemInstance inst = instanceRepo
+                        .findFirstByItemIdAndStatus(req.getItem().getId(), Outbound.LEND)
+                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+
+                UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
+                upd.setOutbound(Outbound.AVAILABLE);
+                upd.setFinalImage(null);
+                instanceService.updateStatus(inst.getId(), upd);
+            }
+
+            // (C) 요청 상태 최종 설정
             req.setApprovalStatus(ApprovalStatus.RETURNED);
         }
 
+        // 6) 저장 및 DTO로 변환
         SupplyRequest updated = repo.save(req);
         return mapToDto(updated);
     }
