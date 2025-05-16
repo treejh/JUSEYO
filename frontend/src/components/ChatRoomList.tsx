@@ -50,7 +50,7 @@ const ChatRoomList: React.FC<Props> = ({
     };
 
     fetchChatRooms();
-  }, [client]);
+  }, []);
 
   useEffect(() => {
     const subscriptions: { [key: number]: boolean } = {};
@@ -66,6 +66,40 @@ const ChatRoomList: React.FC<Props> = ({
       });
     }
   }, [client, chatRooms]);
+
+  const validateAndEnterRoom = async (roomId: number) => {
+    try {
+      // 입장 검증 API 호출
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/enter/valid/${roomId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("입장 검증 중 오류가 발생했습니다.");
+      }
+
+      const data = await response.json();
+
+      if (data.data) {
+        // 이미 입장한 경우
+        console.log(`이미 입장한 채팅방: ${roomId}`);
+        onSelectRoom(roomId); // 채팅방만 보이게 설정
+      } else {
+        // 입장하지 않은 경우
+        console.log(`입장하지 않은 채팅방: ${roomId}`);
+        enterRoom(roomId); // 입장 처리
+      }
+    } catch (error) {
+      console.error("입장 검증 실패:", error);
+    }
+  };
 
   const enterRoom = (roomId: number) => {
     if (!client || !client.connected) {
@@ -106,7 +140,7 @@ const ChatRoomList: React.FC<Props> = ({
             <span>{room.roomName}</span>
             <button
               className="bg-green-500 text-white px-4 py-2 rounded"
-              onClick={() => enterRoom(room.id)} // 채팅방 입장 처리
+              onClick={() => validateAndEnterRoom(room.id)} // 입장 검증 및 처리
             >
               채팅방 입장
             </button>
