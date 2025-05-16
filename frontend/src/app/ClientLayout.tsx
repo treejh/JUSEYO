@@ -7,11 +7,10 @@ import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
 import { NotificationBell } from "@/components/Notification/NotificationBell";
 
-
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/signup";
-  
+
   const {
     loginUser,
     setLoginUser,
@@ -42,14 +41,14 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         const userData = data.data;
         console.log("사용자 데이터:", userData);
 
-        if (!userData || !userData.userId) {
+        if (!userData || !userData.id) {
           console.error("사용자 ID가 없습니다:", userData);
           setNoLoginUser();
           return;
         }
 
         setLoginUser({
-          id: userData.userId,
+          id: userData.id,
           email: userData.email,
           phoneNumber: userData.phoneNumber,
           username: userData.name,
@@ -136,17 +135,23 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-return (
-  <LoginUserContext.Provider value={LoginUserContextValue}>
-    <div className={`flex flex-col ${isAuthPage ? 'h-screen w-screen' : 'min-h-screen'} bg-white`}>
-      {!isAuthPage && <Header />}
-      <div className="fixed top-4 right-4 z-50">
-        <NotificationBell />
+  return (
+    <LoginUserContext.Provider value={LoginUserContextValue}>
+      <div
+        className={`flex flex-col ${
+          isAuthPage ? "h-screen w-screen" : "min-h-screen"
+        } bg-white`}
+      >
+        {!isAuthPage && <Header />}
+        <div className="fixed top-4 right-4 z-50">
+          <NotificationBell />
+        </div>
+        <main
+          className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
+        >
+          {children}
+        </main>
       </div>
-      <main className={`flex-1 ${!isAuthPage ? 'pt-[60px]' : ''} bg-[#F4F4F4]`}>
-        {children}
-      </main>
-    </div>
-  </LoginUserContext.Provider>
- );
+    </LoginUserContext.Provider>
+  );
 }
