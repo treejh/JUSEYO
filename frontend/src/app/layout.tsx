@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from './ClientLayout';
+import { ToastProvider } from "@/components/Toast/ToastContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,9 +34,12 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <body className="h-full">
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <div id="toast-portal" />
+        <ToastProvider>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </ToastProvider>
       </body>
     </html>
   );
