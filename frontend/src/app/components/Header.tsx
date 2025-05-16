@@ -45,7 +45,7 @@ export function Header() {
               </Link>
               <Link
                 href="/signup"
-                className="bg-blue-700 text-white px-4 py-1.5 rounded-md text-sm"
+                className="bg-[#0047AB] text-white px-4 py-1.5 rounded-md text-sm"
               >
                 회원가입
               </Link>
