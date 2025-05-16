@@ -1,0 +1,33 @@
+package com.example.backend.chaseItem.controller;
+
+import com.example.backend.chaseItem.dto.request.ChaseItemRequestDto;
+import com.example.backend.chaseItem.dto.response.ChaseItemResponseDto;
+import com.example.backend.chaseItem.service.ChaseItemService;
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/chase-items")
+@RequiredArgsConstructor
+public class ChaseItemController {
+    private final ChaseItemService service;
+
+    @Operation(summary = "비품 추적 기록 생성")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ChaseItemResponseDto create(@RequestBody ChaseItemRequestDto dto) {
+        return service.addChaseItem(dto);
+    }
+
+    @Operation(summary = "특정 요청의 비품 추적 목록 조회")
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/by-request/{requestId}")
+    public List<ChaseItemResponseDto> listByRequest(@PathVariable Long requestId) {
+        return service.getByRequest(requestId);
+    }
+}
