@@ -6,9 +6,9 @@ import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
 import { NotificationBell } from "@/components/Notification/NotificationBell";
+import LoadingScreen from "./components/LoadingScreen";
 
-
-export function ClientLayout({ children }: { children: React.ReactNode }) {
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   
@@ -126,27 +126,23 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         console.error("사용자 정보 조회 실패:", error);
         setNoLoginUser();
       });
-  }, []);
+  }, [setLoginUser, setNoLoginUser]);
 
   if (isLoginUserPending) {
-    return (
-      <div className="flex items-center justify-center h-screen w-screen bg-white text-black">
-        <div>로딩중</div>
-      </div>
-    );
+    return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
   }
 
-return (
-  <LoginUserContext.Provider value={LoginUserContextValue}>
-    <div className={`flex flex-col ${isAuthPage ? 'h-screen w-screen' : 'min-h-screen'} bg-white`}>
-      {!isAuthPage && <Header />}
-      <div className="fixed top-4 right-4 z-50">
-        <NotificationBell />
+  return (
+    <LoginUserContext.Provider value={LoginUserContextValue}>
+      <div className={`flex flex-col ${isAuthPage ? 'h-screen w-screen' : 'min-h-screen'} bg-white`}>
+        {!isAuthPage && <Header />}
+        <div className="fixed top-4 right-4 z-50">
+          <NotificationBell />
+        </div>
+        <main className={`flex-1 ${!isAuthPage ? 'pt-[60px]' : ''} bg-[#F4F4F4]`}>
+          {children}
+        </main>
       </div>
-      <main className={`flex-1 ${!isAuthPage ? 'pt-[60px]' : ''} bg-[#F4F4F4]`}>
-        {children}
-      </main>
-    </div>
-  </LoginUserContext.Provider>
- );
+    </LoginUserContext.Provider>
+  );
 }
