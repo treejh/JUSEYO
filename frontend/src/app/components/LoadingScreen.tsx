@@ -10,7 +10,7 @@ export default function LoadingScreen({ message = "로딩 중입니다..." }: Lo
       <img
         src="/spinner.gif"
         alt="로딩 중"
-        className="w-16 h-16"
+        className="w-59 h-59"
       />
       <div className="text-sm text-gray-600">{message}</div>
     </div>
