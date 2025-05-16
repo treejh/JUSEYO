@@ -71,7 +71,7 @@ const ChatRoomList: React.FC<Props> = ({
     try {
       // 입장 검증 API 호출
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/enter/valid/${roomId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/enter/valid/${roomId}`,
         {
           method: "POST",
           headers: {
