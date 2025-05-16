@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import UserList from "@/components/UserList";
-import ChatRoomList from "@/components/ChatRoomList";
-import Chat from "@/components/Chat";
+import UserList from "@/components/chat/UserList";
+import ChatRoomList from "@/components/chat/ChatRoomList";
+import Chat from "@/components/chat/Chat";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";

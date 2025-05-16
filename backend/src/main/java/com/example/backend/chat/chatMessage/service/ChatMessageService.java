@@ -121,11 +121,9 @@ public class ChatMessageService {
                         .build();
                 chatUser.setChatStatus(ChatStatus.LEAVE);
                 chatUserRepository.save(chatUser);
+                chatRoomService.leaveChatRoom(chatRoom.getId());
 
-                if (chatUserRepository.findByChatRoom(chatRoom).isEmpty()) {
-                    chatMessageRepository.deleteAllByChatRoom(chatRoom);
-                    chatRoomService.deleteChatRoomById(chatRoom.getId());
-                }
+
             }
             default -> throw new BusinessLogicException(ExceptionCode.INVALID_CHAT_ROOM_TYPE);
         }

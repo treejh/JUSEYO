@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Client } from "@stomp/stompjs";
+import { leaveChatRoom } from "../../utils/leaveChatRoom"; // 나가기 로직 임포트
 
 interface ChatRoom {
   id: number;
@@ -71,7 +72,7 @@ const ChatRoomList: React.FC<Props> = ({
     try {
       // 입장 검증 API 호출
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/enter/valid/${roomId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/enter/valid/${roomId}`,
         {
           method: "POST",
           headers: {
@@ -138,12 +139,20 @@ const ChatRoomList: React.FC<Props> = ({
             className="flex justify-between items-center border p-2 rounded"
           >
             <span>{room.roomName}</span>
-            <button
-              className="bg-green-500 text-white px-4 py-2 rounded"
-              onClick={() => validateAndEnterRoom(room.id)} // 입장 검증 및 처리
-            >
-              채팅방 입장
-            </button>
+            <div className="flex gap-2">
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded"
+                onClick={() => validateAndEnterRoom(room.id)} // 입장 검증 및 처리
+              >
+                채팅방 입장
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={() => leaveChatRoom(client, room.id, loginUserId)} // 나가기 로직 호출
+              >
+                나가기
+              </button>
+            </div>
           </li>
         ))}
       </ul>

@@ -46,4 +46,6 @@ public class UserProfileResponseDto {
         this.role = user.getRole().getRole();
     }
 
+
+
 }

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Client, Message } from "@stomp/stompjs";
+import { FaUser } from "react-icons/fa"; // 사람 아이콘 사용
+import { fetchParticipants, Participant } from "../../utils/fetchParticipants"; // 참여 유저 목록 가져오기 함수 임포트
+import { leaveChatRoom } from "../../utils/leaveChatRoom"; // 나가기 로직 임포트
 
 interface Props {
   roomId: number; // 선택된 채팅방 ID
@@ -18,6 +21,18 @@ interface ChatResponseDto {
 const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
   const [messages, setMessages] = useState<ChatResponseDto[]>([]);
   const [inputMessage, setInputMessage] = useState<string>("");
+  const [participants, setParticipants] = useState<Participant[]>([]); // 참여 유저 목록 상태
+  const [showParticipants, setShowParticipants] = useState<boolean>(false); // 참여 유저 목록 표시 여부
+
+  // 참여 유저 목록 가져오기
+  const loadParticipants = async () => {
+    try {
+      const participantList = await fetchParticipants(roomId);
+      setParticipants(participantList);
+    } catch (error) {
+      console.error("참여 유저 목록 로드 실패:", error);
+    }
+  };
 
   // 채팅방 메시지 초기 로드
   useEffect(() => {
@@ -95,7 +110,46 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">채팅방</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">채팅방</h2>
+        <div className="flex items-center">
+          <button
+            className="text-gray-600 hover:text-gray-800 mr-4"
+            onClick={() => {
+              setShowParticipants(!showParticipants);
+              if (!showParticipants) loadParticipants(); // 참여 유저 목록 가져오기
+            }}
+          >
+            <FaUser size={24} />
+          </button>
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded"
+            onClick={() => leaveChatRoom(client, roomId, loginUserId)} // 나가기 로직 호출
+          >
+            채팅방 나가기
+          </button>
+        </div>
+      </div>
+
+      {showParticipants && (
+        <div className="absolute top-16 right-4 bg-white border rounded shadow-lg p-4 w-64 z-50">
+          <h3 className="text-lg font-bold mb-2">참여 유저</h3>
+          <ul className="space-y-2">
+            {participants.map((participant) => (
+              <li key={participant.id} className="text-gray-700">
+                {participant.name}
+              </li>
+            ))}
+          </ul>
+          <button
+            className="mt-4 bg-gray-500 text-white px-4 py-2 rounded w-full"
+            onClick={() => setShowParticipants(false)} // 닫기
+          >
+            닫기
+          </button>
+        </div>
+      )}
+
       <div className="h-64 overflow-y-auto border p-4 mb-4">
         {messages.map((msg, index) => (
           <div key={index} className="p-2 border-b">
