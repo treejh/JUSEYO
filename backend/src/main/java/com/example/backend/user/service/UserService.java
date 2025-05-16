@@ -459,7 +459,7 @@ public class UserService {
             throw  new BusinessLogicException(ExceptionCode.NOT_INITIAL_MANAGER);
         }
     }
-    
+
 
 
     @Transactional
@@ -538,6 +538,7 @@ public class UserService {
     public User findUserByToken(){
         return findById(tokenService.getIdFromToken());
     }
+
 
     public Page<User> getUserListForChat(String managementDashboardName, Pageable pageable) {
         ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
@@ -658,11 +659,7 @@ public class UserService {
         return userRepository.findAllByRole(role);
     }
 
-    public User findUserByToken(){
-        //이메일 중복 회원가입 불가
-        return findById(tokenService.getIdFromToken());
 
-    }
 
     public User findUserByName(String name){
         return userRepository.findByName(name).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
