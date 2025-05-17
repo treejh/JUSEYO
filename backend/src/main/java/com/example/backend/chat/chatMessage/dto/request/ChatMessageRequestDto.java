@@ -21,4 +21,5 @@ public class ChatMessageRequestDto {
     private Long userId;
     private Long roomId;
     private String message;// 메세지
+
 }
