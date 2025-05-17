@@ -160,7 +160,11 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
               <strong>{msg.sender}</strong>: {msg.message} <br />
               {msg.chatStatus !== "ENTER" && (
                 <small className="text-gray-500 ml-2">
-                  {new Date(msg.createDate).toLocaleString()}
+                  {new Date(msg.createDate).toLocaleDateString()}{" "}
+                  {new Date(msg.createDate).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </small>
               )}
             </div>
