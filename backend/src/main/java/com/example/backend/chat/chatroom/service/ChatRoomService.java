@@ -72,7 +72,14 @@ public class ChatRoomService {
         User requestedUser = userService.findById(dto.getUserId());
 
         Optional<ChatRoom> existingRoom = getExistingRoomByChatUserRepository(loginUser.getId(), requestedUser.getId(),dto.getRoomType());
-        if (existingRoom.isPresent()) return existingRoom.get();
+        if (existingRoom.isPresent()) {
+            ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(loginUser,existingRoom.get())
+                    .orElseThrow(()-> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+
+            chatUser.setChatStatus(ChatStatus.CREATE);
+            chatUserRepository.save(chatUser);
+            return existingRoom.get();
+        }
 
         //생성자는 첫번째에 추가
         return createRoomBase(List.of(loginUser, requestedUser), dto.getRoomName(), ChatRoomType.ONE_TO_ONE);
@@ -237,11 +244,34 @@ public class ChatRoomService {
         return ChatStatus.ENTER.equals(chatUsers.getChatStatus());
     }
 
-    public boolean validExistChatRoom(Long targetId,ChatRoomType chatRoomType){
-        Optional<ChatRoom> existingRoom = getExistingRoomByChatUserRepository(tokenService.getIdFromToken(),
-                targetId
-                ,chatRoomType);
-       return existingRoom.isPresent();
+    public boolean validExistChatRoom(Long targetId, ChatRoomType chatRoomType) {
+        Long currentUserId = tokenService.getIdFromToken();
+
+        Optional<ChatRoom> existingRoom = getExistingRoomByChatUserRepository(currentUserId, targetId, chatRoomType);
+
+        if (existingRoom.isEmpty()) {
+            return false; // 채팅방 없음
+        }
+
+        List<ChatUser> chatUsers = chatUserRepository.findByChatRoom(existingRoom.get());
+
+        // 본인의 ChatUser 객체 찾기
+        Optional<ChatUser> currentUserChatUser = chatUsers.stream()
+                .filter(cu -> cu.getUser().getId().equals(currentUserId))
+                .findFirst();
+
+        if (currentUserChatUser.isPresent()) {
+            // 상태가 INVITED면 채팅방 존재하지 않는 것으로 처리
+            if (currentUserChatUser.get().getChatStatus() ==ChatStatus.INVITED) {
+                return false;
+            }
+        } else {
+            // 본인의 ChatUser 객체가 없으면 채팅방 존재하지 않는 것으로 간주 가능
+            return false;
+        }
+
+        // 위 조건에 해당하지 않으면 채팅방 존재함
+        return true;
     }
 
 
