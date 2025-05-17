@@ -56,7 +56,7 @@ const UserList: React.FC<Props> = ({
   const checkChatRoomExistence = async (userId: number): Promise<boolean> => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/exists?userId=${userId}&chatRoomType=ONE_TO_ONE`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/exists/users?userId=${userId}&chatRoomType=ONE_TO_ONE`,
         {
           method: "GET",
           headers: {

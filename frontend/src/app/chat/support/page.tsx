@@ -28,9 +28,43 @@ const SupportChatPage = () => {
     };
   }, []);
 
+  // 고객센터 채팅방 존재 여부 확인
+  const checkSupportChatRoomExistence = async (): Promise<boolean> => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/exist/support`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "고객센터 채팅방 존재 여부 확인 중 오류가 발생했습니다."
+        );
+      }
+
+      const data = await response.json();
+      return data.data; // true 또는 false 반환
+    } catch (error) {
+      console.error("고객센터 채팅방 존재 여부 확인 실패:", error);
+      return false; // 오류 발생 시 기본값으로 false 반환
+    }
+  };
+
   // 고객센터 채팅방 생성
   const createSupportChatRoom = async () => {
     try {
+      const exists = await checkSupportChatRoomExistence(); // 채팅방 존재 여부 확인
+      if (exists) {
+        alert("이미 고객센터 채팅방이 존재합니다.");
+        return;
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms`,
         {
