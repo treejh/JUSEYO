@@ -1,0 +1,100 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import ChatRoomList from "@/components/chat/ChatRoomList";
+import Chat from "@/components/chat/Chat";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
+import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+
+const SupportChatPage = () => {
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [client, setClient] = useState<Client | null>(null); // WebSocket 클라이언트 상태
+  const { loginUser } = useGlobalLoginUser(); // 현재 로그인한 유저 정보
+
+  // WebSocket 클라이언트 초기화
+  useEffect(() => {
+    const stompClient = new Client({
+      webSocketFactory: () =>
+        new SockJS(`${process.env.NEXT_PUBLIC_API_BASE_URL}/ws-stomp`),
+      debug: (str) => console.log(str),
+    });
+
+    stompClient.activate();
+    setClient(stompClient);
+
+    return () => {
+      stompClient.deactivate();
+    };
+  }, []);
+
+  // 고객센터 채팅방 생성
+  const createSupportChatRoom = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            roomType: "SUPPORT", // 고객센터 채팅방 유형
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("고객센터 채팅방 생성 중 오류가 발생했습니다.");
+      }
+
+      const data = await response.json();
+      alert("고객센터 채팅방이 생성되었습니다.");
+      console.log("생성된 채팅방:", data.data);
+    } catch (error) {
+      console.error("고객센터 채팅방 생성 실패:", error);
+      alert("고객센터 채팅방 생성에 실패했습니다.");
+    }
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">고객센터 채팅</h1>
+      <div className="flex justify-between items-center mb-4">
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={createSupportChatRoom}
+        >
+          고객센터 채팅 생성
+        </button>
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        {/* 채팅방 리스트 */}
+        <div className="col-span-1">
+          <ChatRoomList
+            onSelectRoom={(roomId) => setSelectedRoomId(roomId)} // 선택된 채팅방 ID 설정
+            client={client}
+            loginUserId={loginUser.id} // 현재 로그인한 유저 ID 전달
+            roomType="SUPPORT" // SUPPORT 타입 채팅방 조회
+          />
+        </div>
+
+        {/* 채팅창 */}
+        <div className="col-span-2">
+          {selectedRoomId ? (
+            <Chat
+              roomId={selectedRoomId}
+              client={client}
+              loginUserId={loginUser.id}
+            />
+          ) : (
+            <p className="text-gray-500">채팅방을 선택하세요.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SupportChatPage;

@@ -12,12 +12,14 @@ interface Props {
   onSelectRoom: (roomId: number) => void; // 선택된 채팅방 ID를 부모 컴포넌트로 전달
   client: Client | null; // WebSocket 클라이언트
   loginUserId: number; // 현재 로그인한 유저 ID
+  roomType: string; // 채팅방 타입 (ONE_TO_ONE, SUPPORT 등)
 }
 
 const ChatRoomList: React.FC<Props> = ({
   onSelectRoom,
   client,
   loginUserId,
+  roomType,
 }) => {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -30,7 +32,7 @@ const ChatRoomList: React.FC<Props> = ({
     const fetchChatRooms = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms?chatRoomType=ONE_TO_ONE&page=1&size=10`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms?chatRoomType=${roomType}&page=1&size=10`,
           {
             method: "GET",
             headers: {
@@ -54,7 +56,7 @@ const ChatRoomList: React.FC<Props> = ({
     };
 
     fetchChatRooms();
-  }, []);
+  }, [roomType]); // roomType이 변경될 때마다 호출
 
   // 특정 채팅방의 상대방 이름 가져오기
   const fetchOpponentName = async (roomId: number) => {
