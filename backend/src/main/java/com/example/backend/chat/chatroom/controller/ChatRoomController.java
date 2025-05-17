@@ -157,6 +157,8 @@ public class ChatRoomController {
     )
     public ResponseEntity<ApiResponse<Void>> leaveChatRoom(@PathVariable Long roomId) {
         chatRoomService.leaveChatRoom(roomId);
+
+
         return ResponseEntity.ok(
                 ApiResponse.of(
                         HttpStatus.OK.value(),

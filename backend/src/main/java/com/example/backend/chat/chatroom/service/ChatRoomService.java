@@ -17,12 +17,15 @@ import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import com.example.backend.utils.CreateRandomNumber;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ import org.springframework.util.StringUtils;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatUserRepository chatUserRepository;
@@ -40,6 +44,9 @@ public class ChatRoomService {
 
     private final TokenService tokenService;
     private final UserService userService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
     @Transactional
@@ -113,8 +120,11 @@ public class ChatRoomService {
         return chatRoom;
     }
 
+
+
     private void createChatUsers(ChatRoom chatRoom, List<User> users, ChatStatus creatorStatus) {
         for (int i = 0; i < users.size(); i++) {
+            //변수 i가 0일 때 isCreator를 true로, 그렇지 않으면 false (채팅방 생성 누가 했는지 확인하려고)
             boolean isCreator = (i == 0);
             ChatStatus status = isCreator ? creatorStatus : ChatStatus.INVITED;
 
@@ -145,20 +155,27 @@ public class ChatRoomService {
         return chatUsers.map(ChatUser::getChatRoom);
     }
 
+    @Transactional
     public void leaveChatRoom(Long roomId) {
         User user = userService.findById(tokenService.getIdFromToken());
         ChatRoom chatRoom = findId(roomId);
         ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user,chatRoom)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM));
 
-        chatUserRepository.delete(chatUser);
+
+        log.info("영속성 확인 !!!!!!" + entityManager.contains(chatUser)); // true?
+
+        chatUserRepository.deleteById(chatUser.getId());
 
         if (chatUserRepository.findByChatRoom(chatRoom).isEmpty()) {
-            chatMessageRepository.deleteAllByChatRoom(chatRoom);
-            deleteChatRoomById(chatRoom.getId());
+//            chatMessageRepository.deleteAllByChatRoom(chatRoom);
+//            log.info("영속성 확인 !!!!!! room !! " + entityManager.contains(chatRoom));
+            chatRoomRepository.delete(chatRoom);
+            log.info("영속성 확인 !!!!!!chatroom !! " + entityManager.contains(chatRoom));
         }
 
     }
+
 
     public Page<ChatRoom> validEnter(ChatRoomType chatRoomType, Pageable pageable) {
         User user = userService.findUserByToken();
@@ -225,7 +242,7 @@ public class ChatRoomService {
     }
 
 
-
+    @Transactional
     public void deleteChatRoomById(Long id){
         chatRoomRepository.deleteById(id);
     }
