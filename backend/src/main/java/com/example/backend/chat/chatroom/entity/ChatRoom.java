@@ -52,6 +52,8 @@ public class ChatRoom extends Auditable { // Auditable 상속
 
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.EAGER)
-    List<ChatMessage> chatMessageListi = new ArrayList<>();
+    List<ChatMessage> chatMessageList = new ArrayList<>();
+
+
 
 }

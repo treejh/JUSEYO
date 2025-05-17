@@ -241,6 +241,29 @@ public class ChatRoomService {
     }
 
 
+
+    //현재 채팅하고 있는 상대방 조회 ( 1:1, 고객 채팅에서만 사용 )
+    public String findOpponentName(Long roomId){
+
+        //1:1, 고객센터 채팅에만 사용
+        User loginUser = userService.findById(tokenService.getIdFromToken());
+        ChatRoom room = findId(roomId);
+
+        List<ChatUser> chatUserList = chatUserRepository.findByChatRoom(room);
+
+        if(chatUserList.isEmpty()) {
+            return null;
+        }
+
+        return chatUserList.stream()
+                .map(ChatUser::getUser)
+                .filter(user -> !user.getId().equals(loginUser.getId())) // 현재 유저 제외
+                .map(User::getName) // 상대방의 이름 (닉네임 등)
+                .findFirst()
+                .orElse(null); // 상대방이 없을 경우 null
+    }
+
+
     public ChatRoom findId(Long roomId){
         return chatRoomRepository.findById(roomId)
                 .orElseThrow(()->new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));

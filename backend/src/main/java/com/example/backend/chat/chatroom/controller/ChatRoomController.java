@@ -101,6 +101,18 @@ public class ChatRoomController {
         );
     }
 
+    @GetMapping("/{roomId}/opponent")
+    @Operation(
+            summary = "채팅 상대방 이름 조회",
+            description = "채팅방 ID를 기반으로 현재 로그인한 유저를 제외한 상대방의 이름을 반환합니다."
+    )
+    public ResponseEntity<ApiResponse<String>> getOpponentName(@PathVariable Long roomId) {
+        String opponentName = chatRoomService.findOpponentName(roomId);
+        return ResponseEntity.ok(ApiResponse.of(200, "상대방 이름 조회 완료", opponentName));
+    }
+
+
+
     @GetMapping ("/exists")
     @Operation(
             summary = "1:1 채팅방 존재 여부 확인",

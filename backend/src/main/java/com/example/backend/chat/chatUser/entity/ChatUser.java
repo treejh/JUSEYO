@@ -48,7 +48,6 @@ public class ChatUser extends Auditable {
     @Column(name = "is_creator", nullable = false)
     private boolean isCreator; //true일 경우 최초 생성자
 
-
     @ManyToOne
     @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
