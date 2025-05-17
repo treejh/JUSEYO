@@ -97,6 +97,7 @@ public class ChatRoomService {
         }
 
 
+
         // CreateRandomNumber의 randomFromList 메서드를 사용하여 랜덤 매니저 선택
         User supportAgent = CreateRandomNumber.randomFromList(managerList);
 
@@ -104,6 +105,8 @@ public class ChatRoomService {
         if (existingRoom.isPresent()) {
             return existingRoom.get();  // 이미 존재하는 채팅방 반환
         }
+
+
 
         return createRoomBase(List.of(client, supportAgent), supportAgent.getName() + "_support_"+CreateRandomNumber.timeBasedRandomName(), ChatRoomType.SUPPORT);
     }
@@ -281,6 +284,29 @@ public class ChatRoomService {
                 .orElse(null); // 상대방이 없을 경우 null
     }
 
+    public boolean existsSupportChatRoomForCurrentUser() {
+        User loginUser = userService.findById(tokenService.getIdFromToken());
+        List<ChatUser> chatUser = chatUserRepository.findByUser(loginUser);
+
+        if (chatUser.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
+        }
+
+        List<ChatRoom> supportChatRooms = chatUser.stream()
+                .map(ChatUser::getChatRoom)                  // ChatUser -> ChatRoom
+                .filter(chatRoom -> chatRoom.getRoomType().equals(ChatRoomType.SUPPORT))  // SUPPORT 타입만 필터링
+                .toList();
+
+        for (ChatRoom chatRoom : supportChatRooms) {
+            // 해당 채팅방에 참여한 유저들 중 현재 유저를 제외한 사람이 있으면 true 반환
+            boolean hasOtherUser = chatUserRepository.findByChatRoom(chatRoom).stream()
+                    .anyMatch(cu -> !cu.getUser().equals(loginUser));
+            if (hasOtherUser) {
+                return true;
+            }
+        }
+        return false;  // 모든 SUPPORT 채팅방에 상대방이 없다면 false
+    }
 
 
     public ChatRoom findId(Long roomId){

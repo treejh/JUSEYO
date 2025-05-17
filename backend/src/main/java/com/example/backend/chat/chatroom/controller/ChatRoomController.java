@@ -113,7 +113,7 @@ public class ChatRoomController {
 
 
 
-    @GetMapping ("/exists")
+    @GetMapping ("/exists/users")
     @Operation(
             summary = "1:1 채팅방 존재 여부 확인",
             description = "두 사용자 간 1:1 채팅방이 이미 존재하는지 확인합니다."
@@ -167,6 +167,26 @@ public class ChatRoomController {
                 )
         );
     }
+
+    @GetMapping("/exist/support")
+    @Operation(
+            summary = "고객센터 채팅방 존재 여부 확인",
+            description = "현재 로그인한 사용자가 고객센터(SUPPORT) 채팅방을 보유하고 있는지 확인합니다. " +
+                    "존재하면 true, 없으면 false를 반환합니다."
+    )
+    public ResponseEntity<ApiResponse<Boolean>> checkSupportChatRoomExistence() {
+        boolean exists = chatRoomService.existsSupportChatRoomForCurrentUser();
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        HttpStatus.OK.value(),
+                        "고객센터 채팅방 존재 여부 조회 성공",
+                        exists
+                )
+        );
+    }
+
+
 
 
 
