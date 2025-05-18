@@ -54,6 +54,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
         }
 
         const data = await response.json();
+        console.log("로드된 메시지:", data.data.content);
         setMessages(data.data.content.reverse()); // 최신 메시지가 아래로 가도록 정렬
       } catch (error) {
         console.error("채팅 메시지 로드 실패:", error);
@@ -75,6 +76,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
       (message: Message) => {
         const response = JSON.parse(message.body); // 서버에서 발행된 메시지 파싱
         const receivedMessage: ChatResponseDto = response.data; // ApiResponse의 data 필드 추출
+
         setMessages((prevMessages) => [...prevMessages, receivedMessage]); // 메시지 추가
       }
     );
@@ -151,12 +153,23 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
       )}
 
       <div className="h-64 overflow-y-auto border p-4 mb-4">
-        {messages.map((msg, index) => (
-          <div key={index} className="p-2 border-b">
-            <strong>{msg.sender}</strong>: {msg.message} <br />
-            <small>{new Date(msg.createDate).toLocaleString()}</small>
-          </div>
-        ))}
+        {messages.map((msg, index) => {
+          console.log("메시지 상태:", msg.chatStatus); // 디버깅용 로그
+          return (
+            <div key={index} className="p-2 border-b">
+              <strong>{msg.sender}</strong>: {msg.message} <br />
+              {msg.chatStatus !== "ENTER" && (
+                <small className="text-gray-500 ml-2">
+                  {new Date(msg.createDate).toLocaleDateString()}{" "}
+                  {new Date(msg.createDate).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </small>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className="flex">
         <input
