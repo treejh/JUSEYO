@@ -13,21 +13,25 @@ import com.example.backend.enums.ChatRoomType;
 import com.example.backend.enums.ChatStatus;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
+import com.example.backend.redis.RedisService;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import com.example.backend.utils.CreateRandomNumber;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -40,6 +44,7 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatUserRepository chatUserRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final RedisService redisService;
 
 
     private final TokenService tokenService;
@@ -165,21 +170,19 @@ public class ChatRoomService {
     public void leaveChatRoom(Long roomId) {
         User user = userService.findById(tokenService.getIdFromToken());
         ChatRoom chatRoom = findId(roomId);
-        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user,chatRoom)
+        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM));
-
-
-        log.info("영속성 확인 !!!!!!" + entityManager.contains(chatUser)); // true?
 
         chatUserRepository.deleteById(chatUser.getId());
 
+        // 사용자가 모두 나갔으면 삭제 예약
         if (chatUserRepository.findByChatRoom(chatRoom).isEmpty()) {
-//            chatMessageRepository.deleteAllByChatRoom(chatRoom);
-//            log.info("영속성 확인 !!!!!! room !! " + entityManager.contains(chatRoom));
-            chatRoomRepository.delete(chatRoom);
-            log.info("영속성 확인 !!!!!!chatroom !! " + entityManager.contains(chatRoom));
-        }
+            String key = "chatroom:deletion:" + chatRoom.getId();
+            redisService.saveData(key, "timestamp", Duration.ofMinutes(1));
+            redisService.addRoomIdToDeletionList(chatRoom.getId());
+            log.info("🕒 채팅방 {} 삭제 예약됨 (1분 뒤)", chatRoom.getId());
 
+        }
     }
 
 

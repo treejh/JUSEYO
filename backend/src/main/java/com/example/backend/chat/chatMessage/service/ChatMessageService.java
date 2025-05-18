@@ -120,8 +120,7 @@ public class ChatMessageService {
                         .messageStatus(ChatMessageStatus.LEAVE)
                         .build();
                 log.info("message확인 1 + " + chatMessage.getMessage());
-                chatUser.setChatStatus(ChatStatus.LEAVE);
-                chatUserRepository.save(chatUser);
+
             }
             default -> throw new BusinessLogicException(ExceptionCode.INVALID_CHAT_ROOM_TYPE);
         }
