@@ -103,8 +103,6 @@ public class ChatRoomService {
             throw new BusinessLogicException(ExceptionCode.MANAGER_NOT_FOUND, "문의 가능한 매니저가 없습니다.");
         }
 
-
-
         // CreateRandomNumber의 randomFromList 메서드를 사용하여 랜덤 매니저 선택
         User supportAgent = CreateRandomNumber.randomFromList(managerList);
 
@@ -112,8 +110,6 @@ public class ChatRoomService {
         if (existingRoom.isPresent()) {
             return existingRoom.get();  // 이미 존재하는 채팅방 반환
         }
-
-
 
         return createRoomBase(List.of(client, supportAgent), supportAgent.getName() + "_support_"+CreateRandomNumber.timeBasedRandomName(), ChatRoomType.SUPPORT);
     }
