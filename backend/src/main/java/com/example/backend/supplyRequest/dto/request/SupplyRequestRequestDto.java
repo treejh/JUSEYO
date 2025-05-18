@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class SupplyRequestRequestDto {
     @NotBlank
-    private String productName;    // 입력한 “품목명”으로 아이템 조회
+    private Long itemId;
 
     @NotNull
     private Long quantity;

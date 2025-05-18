@@ -6,6 +6,7 @@ import com.example.backend.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.supplyRequest.dto.response.SupplyRequestResponseDto;
 import com.example.backend.supplyRequest.service.SupplyRequestService;
 import com.example.backend.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ public class SupplyRequestController {
     /**
      * 비품 요청 생성
      */
+    @Operation(summary = "비품 요청 생성", description = "신규 비품 요청을 생성합니다.")
     @PostMapping
     @PreAuthorize("hasAnyRole('USER','MANAGER')")
     public ResponseEntity<SupplyRequestResponseDto> createRequest(
@@ -39,6 +41,7 @@ public class SupplyRequestController {
     /**
      *  대기 중인 비품 요청 리스트 조회 (매니저 전용)
      */
+    @Operation(summary = "대기 중인 요청 조회", description = "매니저 권한으로 현재 대시보드에 대기중인 요청 리스트를 조회합니다.")
     @GetMapping("/pending")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<List<SupplyRequestResponseDto>> getPendingRequests() {
@@ -57,6 +60,7 @@ public class SupplyRequestController {
     /**
      *  비품 요청 승인 (매니저 전용)
      */
+    @Operation(summary = "비품 요청 승인", description = "매니저 권한으로 특정 요청을 승인합니다.")
     @PostMapping("/{requestId}/approve")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> approveRequest(@PathVariable Long requestId) {
@@ -67,6 +71,7 @@ public class SupplyRequestController {
     /**
      *  비품 요청 거절 (매니저 전용)
      */
+    @Operation(summary = "비품 요청 거절", description = "매니저 권한으로 특정 요청을 거절합니다.")
     @PostMapping("/{requestId}/reject")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> rejectRequest(@PathVariable Long requestId) {
@@ -75,6 +80,7 @@ public class SupplyRequestController {
     }
 
     /**  내 요청 리스트 */
+    @Operation(summary = "내 요청 조회", description = "사용자 권한으로 본인이 요청한 비품 리스트를 조회합니다.")
     @GetMapping("/me")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<SupplyRequestResponseDto>> getMyRequests() {
@@ -82,6 +88,7 @@ public class SupplyRequestController {
     }
 
     /**  내 요청 수정, 매니저도 가능 */
+    @Operation(summary = "내 요청 수정", description = "REQUESTED 상태인 본인의 요청을 수정합니다.")
     @PatchMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','MANAGER')")
     public ResponseEntity<SupplyRequestResponseDto> updateMyRequest(
@@ -92,6 +99,7 @@ public class SupplyRequestController {
     }
 
     /**  매니저용 전체 요청 리스트 조회 */
+    @Operation(summary = "전체 요청 조회", description = "매니저 권한으로 본 대시보드의 모든 요청 리스트를 조회합니다.")
     @GetMapping
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<List<SupplyRequestResponseDto>> getAllRequests() {

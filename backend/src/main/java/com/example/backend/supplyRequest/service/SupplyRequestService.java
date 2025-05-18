@@ -56,7 +56,7 @@ public class SupplyRequestService {
         }
 
         // 1) 아이템 조회
-        Item item = itemRepo.findByNameAndStatus(dto.getProductName(), Status.ACTIVE)
+        Item item = itemRepo.findByIdAndStatus(dto.getItemId(), Status.ACTIVE)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
         // 2) 요청자 조회
@@ -77,7 +77,7 @@ public class SupplyRequestService {
         LocalDateTime useDate    = dto.isRental() ? dto.getUseDate()    : now;
         LocalDateTime returnDate = dto.isRental() ? dto.getReturnDate() : null;
 
-        // 6) 재요청 여부
+        // 6)   재요청 여부
         boolean isReRequest = repo.existsByUserIdAndItemId(userId, item.getId());
 
         // 7) 엔티티 생성 & 저장

@@ -39,4 +39,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "i.category.id, i.managementDashboard.id, i.createdAt, i.modifiedAt, i.status) " +
             "FROM Item i WHERE i.status = :status")
     Page<ItemResponseDto> findAllAsDto(@Param("status") Status status, Pageable pageable);
+
+    // ID + 상태 기반 조회
+    Optional<Item> findByIdAndStatus(Long id, Status status);
 }
