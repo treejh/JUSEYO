@@ -93,7 +93,7 @@ public class UserService {
 
         User manager =User.builder()
                 .email(initialManagerSignupRequestDto.getEmail())
-                .name(initialManagerSignupRequestDto.getName())
+                .name(initialManagerSignupRequestDto.getName()+" 매니저")
                 .password(passwordEncoder.encode(initialManagerSignupRequestDto.getPassword()))
                 .phoneNumber(initialManagerSignupRequestDto.getPhoneNumber())
                 .initialManager(true)
@@ -114,7 +114,7 @@ public class UserService {
 
         User manager =User.builder()
                 .email(managerSignupRequestDto.getEmail())
-                .name(managerSignupRequestDto.getName())
+                .name(managerSignupRequestDto.getName() +" 매니저")
                 .password(passwordEncoder.encode(managerSignupRequestDto.getPassword()))
                 .phoneNumber(managerSignupRequestDto.getPhoneNumber())
                 .managementDashboard(managementDashboard)
