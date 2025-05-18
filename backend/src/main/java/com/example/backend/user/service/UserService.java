@@ -25,6 +25,7 @@ import com.example.backend.user.dto.request.UserPatchRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
+import com.example.backend.user.dto.response.UserSearchProjection;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
@@ -659,10 +660,14 @@ public class UserService {
         return userRepository.findAllByRole(role);
     }
 
-
-
     public User findUserByName(String name){
         return userRepository.findByName(name).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    }
+
+    //회원 검색
+    @Transactional(readOnly = true)
+    public List<UserSearchProjection> findUsersByKeyword(String keyword) {
+        return userRepository.searchUsersByName(keyword);
     }
 
 }

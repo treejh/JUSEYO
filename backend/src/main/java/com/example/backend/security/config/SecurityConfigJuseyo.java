@@ -69,7 +69,7 @@ public class SecurityConfigJuseyo {
 
                         // 검색
                         .requestMatchers(HttpMethod.GET, "/api/v1/search/items").hasAnyRole("MANAGER", "USER", "ADMIN")
-
+                        .requestMatchers(HttpMethod.GET, "/api/v1/search/users").hasAnyRole("MANAGER", "USER", "ADMIN")
 
                         .anyRequest().authenticated()
                 )
