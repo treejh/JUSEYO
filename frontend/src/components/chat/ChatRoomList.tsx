@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Client } from "@stomp/stompjs";
+import { Client, Message } from "@stomp/stompjs";
 import { leaveChatRoom } from "../../utils/leaveChatRoom"; // 나가기 로직 임포트
 
 interface ChatRoom {
@@ -92,6 +92,21 @@ const ChatRoomList: React.FC<Props> = ({
       fetchOpponentName(room.id);
     });
   }, [chatRooms]);
+
+  useEffect(() => {
+    const subscriptions: { [key: number]: boolean } = {};
+
+    if (client && client.connected) {
+      chatRooms.forEach((room) => {
+        if (!subscriptions[room.id]) {
+          client.subscribe(`/sub/chat/${room.id}`, (message) => {
+            console.log(`채팅방 ${room.id}에서 메시지 수신:`, message.body);
+          });
+          subscriptions[room.id] = true; // 구독 상태 저장
+        }
+      });
+    }
+  }, [client, chatRooms]);
 
   const validateAndEnterRoom = async (roomId: number) => {
     try {

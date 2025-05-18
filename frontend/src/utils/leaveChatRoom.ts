@@ -15,7 +15,7 @@ export const leaveChatRoom = async (
     type: "LEAVE",
     userId: userId,
     roomId: roomId,
-    message: "퇴장", // 퇴장 메시지
+    message: "퇴장", // 메시지 내용은 null
   };
 
   client.publish({
@@ -43,7 +43,6 @@ export const leaveChatRoom = async (
     }
 
     console.log("채팅방 나가기 성공");
-
     alert("채팅방을 나갔습니다.");
     window.location.reload(); // 새로고침
   } catch (error) {
