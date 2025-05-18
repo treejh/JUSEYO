@@ -52,18 +52,24 @@ public class SearchController {
     }
 
     //회원 검색
-    @Operation(
-            summary     = "회원 검색",
-            description = "사용자명(한글·영문)으로 검색하며, 부서와 역할(RoleType)을 함께 반환",
-            security    = @SecurityRequirement(name = "bearerAuth")  // OpenAPI 에도 JWT 요구 명시
-    )
+    @Operation(summary = "회원 검색", description = "관리 페이지 안의 회원을 키워드로 검색합니다.")
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<UserSearchProjection>>> searchUsers(
-            @Parameter(description = "검색 키워드", example = "홍길동")
-            @RequestParam("keyword") String keyword    // ← 여기
+    public ResponseEntity<ApiResponse<Page<UserSearchProjection>>> searchUsers(
+            @RequestParam(name = "managementDashboardId", required = true)
+            Long managementDashboardId,
+
+            @RequestParam(name = "keyword", required = true)
+            String keyword,
+
+            @ParameterObject
+            Pageable pageable
     ) {
-        List<UserSearchProjection> users = userService.findUsersByKeyword(keyword);
-        return ResponseEntity.ok(ApiResponse.of(200, "검색 성공", users));
+        Page<UserSearchProjection> page =
+                userService.searchUsers(managementDashboardId, keyword, pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "검색 성공", page)
+        );
     }
 
 }

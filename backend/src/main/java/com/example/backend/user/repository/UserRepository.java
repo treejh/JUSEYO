@@ -53,16 +53,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     //회원 검색
     @Query("""
-    SELECT
-      u.id              AS id,
-      u.name            AS name,
-      d.name            AS departmentName,
-      r.role            AS roleName
+  SELECT u.id                AS id,
+         u.name              AS name,
+         u.email             AS email,
+         u.department.name   AS departmentName,
+         r.role              AS role
     FROM User u
-    JOIN u.department d
-    JOIN u.role r
-    WHERE LOWER(u.name) LIKE LOWER(CONCAT('%', :kw, '%'))
-  """)
-    List<UserSearchProjection> searchUsersByName(@Param("kw") String keyword);
-
+   JOIN u.department d
+   JOIN u.role r
+   WHERE u.managementDashboard.id = :mdId
+     AND (u.name  LIKE CONCAT('%', :keyword, '%')
+       OR u.email LIKE CONCAT('%', :keyword, '%'))
+""")
+    Page<UserSearchProjection> searchUsers(
+            @Param("mdId")     Long managementDashboardId,
+            @Param("keyword")  String keyword,
+            Pageable pageable
+    );
 }
