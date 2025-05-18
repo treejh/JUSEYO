@@ -4,7 +4,6 @@ import com.example.backend.category.dto.request.CategoryCreateRequestDTO;
 import com.example.backend.category.dto.request.CategoryUpdateRequestDTO;
 import com.example.backend.category.dto.response.CategoryResponseDTO;
 import com.example.backend.category.service.CategoryService;
-import com.example.backend.enums.RoleType;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
@@ -123,7 +122,6 @@ public class CategoryController {
         categoryService.deleteCategory(id, dashboard);
 
         return ResponseEntity.noContent().build();
-
     }
 
     // 매니저 권한 체크 메서드
@@ -135,11 +133,9 @@ public class CategoryController {
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
 
-        if (!RoleType.MANAGER.equals(user.getRole().getRole())) {
-            log.error("매니저 권한이 아닌 사용자가 접근 시도: {}", user.getRole().getRole());
+        if (!"MANAGER".equals(user.getRole())) {
             throw new BusinessLogicException(ExceptionCode.NOT_MANAGER);
         }
-
         return user;
     }
 

@@ -23,9 +23,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final ManagementDashboardRepository managementDashboardRepository;
 
-    /**
-     * 🔹 카테고리 생성
-     */
+    // 카테고리 생성
     @Transactional
     public CategoryResponseDTO createCategory(CategoryCreateRequestDTO dto, ManagementDashboard dashboard) {
         if (categoryRepository.existsByNameAndManagementDashboardId(dto.getName(), dashboard.getId())) {
@@ -41,9 +39,7 @@ public class CategoryService {
         return CategoryResponseDTO.fromEntity(category);
     }
 
-    /**
-     * 🔹 카테고리 수정
-     */
+    // 카테고리 수정
     @Transactional
     public CategoryResponseDTO updateCategory(Long id, CategoryUpdateRequestDTO dto, ManagementDashboard dashboard) {
         Category category = categoryRepository.findById(id)
@@ -59,9 +55,7 @@ public class CategoryService {
         return CategoryResponseDTO.fromEntity(category);
     }
 
-    /**
-     * 🔹 카테고리 삭제
-     */
+    // 카테고리 삭제
     @Transactional
     public void deleteCategory(Long id, ManagementDashboard dashboard) {
         Category category = categoryRepository.findById(id)
@@ -74,9 +68,7 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    /**
-     * 🔹 전체 카테고리 조회
-     */
+    // 전체 카테고리 조회
     public List<CategoryResponseDTO> findAllCategoriesByDashboard(Long dashboardId) {
         List<Category> categories = categoryRepository.findByManagementDashboardId(dashboardId);
         return categories.stream()
@@ -84,9 +76,7 @@ public class CategoryService {
                 .toList();
     }
 
-    /**
-     * 🔹 특정 카테고리 조회
-     */
+    // 특정 카테고리 조회
     public CategoryResponseDTO findCategoryById(Long id, ManagementDashboard dashboard) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
