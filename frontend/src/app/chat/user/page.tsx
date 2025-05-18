@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import UserList from "@/components/UserList";
-import ChatRoomList from "@/components/ChatRoomList";
-import Chat from "@/components/Chat";
+import UserList from "@/components/chat/UserList";
+import ChatRoomList from "@/components/chat/ChatRoomList";
+import Chat from "@/components/chat/Chat";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
@@ -45,6 +45,7 @@ const ChatPage = () => {
             onSelectRoom={(roomId) => setSelectedRoomId(roomId)} // 선택된 채팅방 ID 설정
             client={client} // WebSocket 클라이언트 전달
             loginUserId={loginUser.id} // 로그인 유저 ID 전달
+            roomType="ONE_TO_ONE" // SUPPORT 타입 채팅방 조회
           />
         </div>
         <div>

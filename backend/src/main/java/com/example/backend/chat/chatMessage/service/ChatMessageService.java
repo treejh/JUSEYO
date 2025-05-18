@@ -121,11 +121,6 @@ public class ChatMessageService {
                         .build();
                 chatUser.setChatStatus(ChatStatus.LEAVE);
                 chatUserRepository.save(chatUser);
-
-                if (chatUserRepository.findByChatRoom(chatRoom).isEmpty()) {
-                    chatMessageRepository.deleteAllByChatRoom(chatRoom);
-                    chatRoomService.deleteChatRoomById(chatRoom.getId());
-                }
             }
             default -> throw new BusinessLogicException(ExceptionCode.INVALID_CHAT_ROOM_TYPE);
         }
@@ -136,7 +131,6 @@ public class ChatMessageService {
     public Page<ChatMessage> getChatMessage(Long roomId, Pageable pageable){
         User user = userService.findById(tokenService.getIdFromToken());
         ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
-
 
         //참여중인 채팅방 아니면 메시지 조회 못함
         if(chatUserRepository.findByUserAndChatRoom(user,chatRoom).isEmpty()){

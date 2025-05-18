@@ -1,6 +1,8 @@
 package com.example.backend.chat.chatroom.service;
 
 
+import com.example.backend.chat.chatMessage.entity.ChatMessage;
+import com.example.backend.chat.chatMessage.repository.ChatMessageRepository;
 import com.example.backend.chat.chatUser.entity.ChatUser;
 import com.example.backend.chat.chatUser.repository.ChatUserRepository;
 import com.example.backend.chat.chatroom.dto.request.ChatRoomRequestDto;
@@ -15,12 +17,15 @@ import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import com.example.backend.utils.CreateRandomNumber;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,11 +35,18 @@ import org.springframework.util.StringUtils;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatUserRepository chatUserRepository;
+    private final ChatMessageRepository chatMessageRepository;
+
+
     private final TokenService tokenService;
     private final UserService userService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
     @Transactional
@@ -60,7 +72,14 @@ public class ChatRoomService {
         User requestedUser = userService.findById(dto.getUserId());
 
         Optional<ChatRoom> existingRoom = getExistingRoomByChatUserRepository(loginUser.getId(), requestedUser.getId(),dto.getRoomType());
-        if (existingRoom.isPresent()) return existingRoom.get();
+        if (existingRoom.isPresent()) {
+            ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(loginUser,existingRoom.get())
+                    .orElseThrow(()-> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+
+            chatUser.setChatStatus(ChatStatus.CREATE);
+            chatUserRepository.save(chatUser);
+            return existingRoom.get();
+        }
 
         //생성자는 첫번째에 추가
         return createRoomBase(List.of(loginUser, requestedUser), dto.getRoomName(), ChatRoomType.ONE_TO_ONE);
@@ -85,6 +104,7 @@ public class ChatRoomService {
         }
 
 
+
         // CreateRandomNumber의 randomFromList 메서드를 사용하여 랜덤 매니저 선택
         User supportAgent = CreateRandomNumber.randomFromList(managerList);
 
@@ -92,6 +112,8 @@ public class ChatRoomService {
         if (existingRoom.isPresent()) {
             return existingRoom.get();  // 이미 존재하는 채팅방 반환
         }
+
+
 
         return createRoomBase(List.of(client, supportAgent), supportAgent.getName() + "_support_"+CreateRandomNumber.timeBasedRandomName(), ChatRoomType.SUPPORT);
     }
@@ -108,8 +130,11 @@ public class ChatRoomService {
         return chatRoom;
     }
 
+
+
     private void createChatUsers(ChatRoom chatRoom, List<User> users, ChatStatus creatorStatus) {
         for (int i = 0; i < users.size(); i++) {
+            //변수 i가 0일 때 isCreator를 true로, 그렇지 않으면 false (채팅방 생성 누가 했는지 확인하려고)
             boolean isCreator = (i == 0);
             ChatStatus status = isCreator ? creatorStatus : ChatStatus.INVITED;
 
@@ -140,13 +165,27 @@ public class ChatRoomService {
         return chatUsers.map(ChatUser::getChatRoom);
     }
 
-    public void leaveChatRoom(User user, ChatRoom chatRoom) {
-        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
+    @Transactional
+    public void leaveChatRoom(Long roomId) {
+        User user = userService.findById(tokenService.getIdFromToken());
+        ChatRoom chatRoom = findId(roomId);
+        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user,chatRoom)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM));
 
-        chatUser.setChatStatus(ChatStatus.LEAVE);
-        chatUserRepository.save(chatUser);
+
+        log.info("영속성 확인 !!!!!!" + entityManager.contains(chatUser)); // true?
+
+        chatUserRepository.deleteById(chatUser.getId());
+
+        if (chatUserRepository.findByChatRoom(chatRoom).isEmpty()) {
+//            chatMessageRepository.deleteAllByChatRoom(chatRoom);
+//            log.info("영속성 확인 !!!!!! room !! " + entityManager.contains(chatRoom));
+            chatRoomRepository.delete(chatRoom);
+            log.info("영속성 확인 !!!!!!chatroom !! " + entityManager.contains(chatRoom));
+        }
+
     }
+
 
     public Page<ChatRoom> validEnter(ChatRoomType chatRoomType, Pageable pageable) {
         User user = userService.findUserByToken();
@@ -161,9 +200,6 @@ public class ChatRoomService {
 
         return chatUsers.map(ChatUser::getChatRoom);
     }
-
-
-
 
 
 
@@ -208,15 +244,38 @@ public class ChatRoomService {
         return ChatStatus.ENTER.equals(chatUsers.getChatStatus());
     }
 
-    public boolean validExistChatRoom(Long targetId,ChatRoomType chatRoomType){
-        Optional<ChatRoom> existingRoom = getExistingRoomByChatUserRepository(tokenService.getIdFromToken(),
-                targetId
-                ,chatRoomType);
-       return existingRoom.isPresent();
+    public boolean validExistChatRoom(Long targetId, ChatRoomType chatRoomType) {
+        Long currentUserId = tokenService.getIdFromToken();
+
+        Optional<ChatRoom> existingRoom = getExistingRoomByChatUserRepository(currentUserId, targetId, chatRoomType);
+
+        if (existingRoom.isEmpty()) {
+            return false; // 채팅방 없음
+        }
+
+        List<ChatUser> chatUsers = chatUserRepository.findByChatRoom(existingRoom.get());
+
+        // 본인의 ChatUser 객체 찾기
+        Optional<ChatUser> currentUserChatUser = chatUsers.stream()
+                .filter(cu -> cu.getUser().getId().equals(currentUserId))
+                .findFirst();
+
+        if (currentUserChatUser.isPresent()) {
+            // 상태가 INVITED면 채팅방 존재하지 않는 것으로 처리
+            if (currentUserChatUser.get().getChatStatus() ==ChatStatus.INVITED) {
+                return false;
+            }
+        } else {
+            // 본인의 ChatUser 객체가 없으면 채팅방 존재하지 않는 것으로 간주 가능
+            return false;
+        }
+
+        // 위 조건에 해당하지 않으면 채팅방 존재함
+        return true;
     }
 
 
-
+    @Transactional
     public void deleteChatRoomById(Long id){
         chatRoomRepository.deleteById(id);
     }
@@ -224,10 +283,59 @@ public class ChatRoomService {
     public List<User> getChatRoomParticipants(Long roomId) {
         ChatRoom chatRoom = findId(roomId); // chatRoomId로 엔티티 조회
 
-        // chatRoom에 속한 ChatUser 목록에서 User만 추출
+        // ENTER 상태의 사용자만 필터링
         return chatUserRepository.findByChatRoom(chatRoom).stream()
+                .filter(chatUser -> chatUser.getChatStatus() == ChatStatus.ENTER)
                 .map(ChatUser::getUser)
                 .toList();
+    }
+
+
+
+    // 현재 채팅하고 있는 상대방 조회 (1:1, 고객센터 채팅에서만 사용)
+    public String findOpponentName(Long roomId) {
+
+        User loginUser = userService.findById(tokenService.getIdFromToken());
+        ChatRoom room = findId(roomId);
+
+        List<ChatUser> chatUserList = chatUserRepository.findByChatRoom(room);
+
+        if (chatUserList.isEmpty()) {
+            return null;
+        }
+
+        return chatUserList.stream()
+                .filter(chatUser ->
+                        !chatUser.getUser().getId().equals(loginUser.getId()) && // 현재 사용자 제외
+                                chatUser.getChatStatus() != ChatStatus.LEAVE             // 나간 사용자 제외
+                )
+                .map(chatUser -> chatUser.getUser().getName()) // 상대방 이름 반환
+                .findFirst()
+                .orElse(null); // 상대방이 없을 경우 null
+    }
+
+    public boolean existsSupportChatRoomForCurrentUser() {
+        User loginUser = userService.findById(tokenService.getIdFromToken());
+        List<ChatUser> chatUser = chatUserRepository.findByUser(loginUser);
+
+        if (chatUser.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
+        }
+
+        List<ChatRoom> supportChatRooms = chatUser.stream()
+                .map(ChatUser::getChatRoom)                  // ChatUser -> ChatRoom
+                .filter(chatRoom -> chatRoom.getRoomType().equals(ChatRoomType.SUPPORT))  // SUPPORT 타입만 필터링
+                .toList();
+
+        for (ChatRoom chatRoom : supportChatRooms) {
+            // 해당 채팅방에 참여한 유저들 중 현재 유저를 제외한 사람이 있으면 true 반환
+            boolean hasOtherUser = chatUserRepository.findByChatRoom(chatRoom).stream()
+                    .anyMatch(cu -> !cu.getUser().equals(loginUser));
+            if (hasOtherUser) {
+                return true;
+            }
+        }
+        return false;  // 모든 SUPPORT 채팅방에 상대방이 없다면 false
     }
 
 

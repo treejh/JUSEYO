@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
+import { NotificationBell } from "@/components/Notification/NotificationBell";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -53,7 +54,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           username: userData.name,
           managementDashboardName: userData.managementDashboardName ?? "",
           departmentName: userData.departmentName ?? "",
-          role: userData.role,
+          role: userData.role ?? "user", // Provide a default role if not present
         });
 
         // SSE 연결
@@ -143,6 +144,9 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         } bg-white`}
       >
         {!isAuthPage && <Header />}
+        <div className="fixed top-4 right-4 z-50">
+          <NotificationBell />
+        </div>
         <main
           className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
         >
