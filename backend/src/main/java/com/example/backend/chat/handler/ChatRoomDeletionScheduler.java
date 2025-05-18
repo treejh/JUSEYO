@@ -19,7 +19,7 @@ public class ChatRoomDeletionScheduler {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatUserRepository chatUserRepository;
 
-    @Scheduled(fixedRate = 60000) // 1분마다
+    @Scheduled(fixedRate = 600000) // 1분마다
     public void deleteExpiredChatRooms() {
         Set<String> roomIds = redisService.getDeletionRoomIds();
 

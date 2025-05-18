@@ -21,6 +21,7 @@ import com.example.backend.utils.CreateRandomNumber;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -92,7 +93,7 @@ public class ChatRoomService {
 
     private ChatRoom createGroupRoom(User creator, ChatRoomRequestDto dto) {
         List<User> members = userService.findAllByIds(dto.getUserIds());
-        List<User> allUsers = List.copyOf(members);
+        List<User> allUsers = new ArrayList<>(members);
 
         // 방장은 생성자 기준으로 첫 번째에 추가
         allUsers.add(0, creator);

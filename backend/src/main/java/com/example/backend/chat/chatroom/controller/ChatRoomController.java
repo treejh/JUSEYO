@@ -50,6 +50,7 @@ public class ChatRoomController {
             description = "채팅방을 생성할 수 있습니다.  "
     )
     public ResponseEntity<ApiResponse<ChatRoomResponseDto>> createChatRoom(@Valid @RequestBody ChatRoomRequestDto chatRoomRequestDto) {
+        log.info("roomName !! "+chatRoomRequestDto.getRoomName());
         ChatRoomResponseDto chatRoomResponseDto = new ChatRoomResponseDto(chatRoomService.createChatRoom(chatRoomRequestDto));
 
         //ChatRoomType에 따라 다름
