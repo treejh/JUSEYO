@@ -8,6 +8,7 @@ import com.example.backend.supplyRequest.service.SupplyRequestService;
 import com.example.backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +34,7 @@ public class SupplyRequestController {
     @PostMapping
     @PreAuthorize("hasAnyRole('USER','MANAGER')")
     public ResponseEntity<SupplyRequestResponseDto> createRequest(
-            @RequestBody SupplyRequestRequestDto dto) {
+            @Valid @RequestBody SupplyRequestRequestDto dto) {
         SupplyRequestResponseDto response = supplyRequestService.createRequest(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -74,15 +75,15 @@ public class SupplyRequestController {
     @Operation(summary = "비품 요청 거절", description = "매니저 권한으로 특정 요청을 거절합니다.")
     @PostMapping("/{requestId}/reject")
     @PreAuthorize("hasRole('MANAGER')")
-    public ResponseEntity<Void> rejectRequest(@PathVariable Long requestId) {
-        supplyRequestService.rejectRequest(requestId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<SupplyRequestResponseDto> rejectRequest(@PathVariable Long requestId) {
+        SupplyRequestResponseDto response = supplyRequestService.rejectRequest(requestId);
+        return ResponseEntity.ok(response);
     }
 
     /**  내 요청 리스트 */
     @Operation(summary = "내 요청 조회", description = "사용자 권한으로 본인이 요청한 비품 리스트를 조회합니다.")
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
     public ResponseEntity<List<SupplyRequestResponseDto>> getMyRequests() {
         return ResponseEntity.ok(supplyRequestService.getMyRequests());
     }

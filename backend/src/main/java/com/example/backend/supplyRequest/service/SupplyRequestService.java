@@ -124,8 +124,8 @@ public class SupplyRequestService {
      * 요청 거절 처리 (매니저 전용)
      */
     @Transactional
-    public void rejectRequest(Long requestId) {
-        updateRequestStatus(requestId, ApprovalStatus.REJECTED);
+    public SupplyRequestResponseDto rejectRequest(Long requestId) {
+        return updateRequestStatus(requestId, ApprovalStatus.REJECTED);
     }
 
     /**
@@ -149,7 +149,7 @@ public class SupplyRequestService {
             throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
         }
 
-        // 4) 승인 처리
+        // 4) 상태별 처리
         if (newStatus == ApprovalStatus.APPROVED) {
             // (A) 출고 처리
             InventoryOutRequestDto outDto = new InventoryOutRequestDto();
@@ -167,10 +167,12 @@ public class SupplyRequestService {
             } else {
                 req.setApprovalStatus(ApprovalStatus.APPROVED);
             }
-        }
 
-        // 5) 반납 처리
-        if (newStatus == ApprovalStatus.RETURNED && req.isRental()) {
+        } else if (newStatus == ApprovalStatus.REJECTED) {
+            // 거절 처리: 단순히 상태만 REJECTED로 변경
+            req.setApprovalStatus(ApprovalStatus.REJECTED);
+
+        } else if (newStatus == ApprovalStatus.RETURNED && req.isRental()) {
             // (A) 반납 입고 처리
             InventoryInRequestDto inDto = new InventoryInRequestDto();
             inDto.setItemId(req.getItem().getId());
@@ -196,7 +198,7 @@ public class SupplyRequestService {
             req.setApprovalStatus(ApprovalStatus.RETURNED);
         }
 
-        // 6) 저장 및 DTO로 변환
+        // 5) 저장 및 DTO로 변환
         SupplyRequest updated = repo.save(req);
         return mapToDto(updated);
     }
