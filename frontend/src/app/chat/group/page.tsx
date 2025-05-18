@@ -141,14 +141,17 @@ const ChatPage = () => {
           <h2 className="text-xl font-bold mb-4">유저 리스트</h2>
           <ul className="space-y-2">
             {users.map((user) => (
-              <li key={user.id} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={selectedUserIds.includes(user.id)}
-                  onChange={() => toggleUserSelection(user.id)}
-                  className="mr-2"
-                />
-                <span>{user.name}</span>
+              <li key={user.id} className="flex flex-col border p-2 rounded">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedUserIds.includes(user.id)}
+                    onChange={() => toggleUserSelection(user.id)}
+                    className="mr-2"
+                  />
+                  <span className="font-medium">{user.name}</span>
+                </div>
+                <span className="text-sm text-gray-500">{user.department}</span>
               </li>
             ))}
           </ul>
