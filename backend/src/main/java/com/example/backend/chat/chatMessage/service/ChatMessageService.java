@@ -77,7 +77,6 @@ public class ChatMessageService {
                         .build();
             }
             case TALK -> {
-
                 // 메시지 저장
                 chatMessage = ChatMessage.builder()
                         .message(chatMessageRequestDto.getMessage())
@@ -103,6 +102,7 @@ public class ChatMessageService {
                         chatMessageRepository.save(enterMessage);
                         //가장 최근에 글이 입력된 채팅방 가져오기 위해서
                         userList.setModifiedAt(LocalDateTime.now());
+                        userList.setLastEnterTime(LocalDateTime.now());
                         simpMessagingTemplate.convertAndSend(
                                 "/sub/chat/" + chatRoom.getId(),
                                 ApiResponse.of(200, "입장 메시지", new ChatResponseDto(enterMessage))

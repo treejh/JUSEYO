@@ -349,17 +349,39 @@ public class ChatRoomService {
         User user = userService.findUserByToken();
         ChatRoom chatRoom = findChatRoomById(chatRoomId);
 
+
         ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+        if (chatUser.getChatStatus() == ChatStatus.CREATE || chatUser.getChatStatus() == ChatStatus.INVITED) {
+            return false;
+        }
 
         //유저가 마지막으로 접속한 시간
         LocalDateTime lastEnterTime = chatUser.getLastEnterTime();
+
+        if (lastEnterTime == null) {
+            // 입장 시간이 없으면 새 메시지가 있다고 간주하거나 없다고 처리
+            return false; // 또는 true 로 로직에 맞게 선택
+        }
 
         LocalDateTime lastMessageTime = chatMessageRepository.findTopByChatRoomOrderByCreatedAtDesc(chatRoom)
                 .map(ChatMessage::getCreatedAt)
                 .orElse(LocalDateTime.MIN); // 메시지가 없을 경우 기본값
 
         return lastMessageTime.isAfter(lastEnterTime);
+    }
+
+    @Transactional
+    public void updateLastEnterTime(Long chatRoomId){
+        User user = userService.findUserByToken();
+        ChatRoom chatRoom = findChatRoomById(chatRoomId);
+
+
+        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+       chatUser.setLastEnterTime(LocalDateTime.now());
+
+       chatUserRepository.save(chatUser);
     }
 
 

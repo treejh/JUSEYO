@@ -27,6 +27,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -205,6 +206,28 @@ public class ChatRoomController {
                 )
         );
     }
+
+    @PatchMapping("/{chatRoomId}/enter")
+    @Operation(
+            summary = "채팅방 입장 시간 업데이트",
+            description = "현재 로그인한 사용자가 해당 채팅방에 입장했을 때, 마지막 입장 시간을 현재 시각으로 갱신합니다."
+    )
+    public ResponseEntity<ApiResponse<Void>> updateEnterTime(
+            @PathVariable Long chatRoomId
+    ) {
+        chatRoomService.updateLastEnterTime(chatRoomId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        HttpStatus.OK.value(),
+                        "채팅방 입장 시간 업데이트 성공",
+                        null
+                )
+        );
+    }
+
+
+
 
 
 
