@@ -1,6 +1,5 @@
 package com.example.backend.security.jwt.util;
 
-import com.example.backend.enums.RoleType;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import io.jsonwebtoken.Claims;
@@ -11,8 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -115,7 +112,7 @@ public class JwtTokenizer {
         }
 
 
-        Claims claims = parseToken(token, accessSecret);
+        Claims claims = parseTokenWithUnknownType(token);
 
         if(claims == null){
             throw new IllegalArgumentException("유효하지 않은 형식입니다.");
@@ -138,7 +135,7 @@ public class JwtTokenizer {
         }
 
 
-        Claims claims = parseToken(token, accessSecret);
+        Claims claims = parseTokenWithUnknownType(token);
 
         if(claims == null){
             throw new IllegalArgumentException("유효하지 않은 형식입니다.");
@@ -161,7 +158,7 @@ public class JwtTokenizer {
             throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_FOUND);
         }
 
-        Claims claims = parseToken(token, accessSecret);
+        Claims claims = parseTokenWithUnknownType(token);
 
         if(claims == null){
             throw new IllegalArgumentException("유효하지 않은 형식입니다.");
@@ -175,7 +172,7 @@ public class JwtTokenizer {
 
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateAccessToken(String token) {
         try {
             Jwts.parser().setSigningKey(accessSecret).parseClaimsJws(token); // 유효한 JWT인지 확인
             return true;
@@ -183,6 +180,29 @@ public class JwtTokenizer {
             return false; // 예외 발생 시 토큰이 유효하지 않음
         }
     }
+
+    public boolean validateRefreshToken(String token) {
+        try {
+            Jwts.parser().setSigningKey(refreshSecret).parseClaimsJws(token); // 유효한 JWT인지 확인
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false; // 예외 발생 시 토큰이 유효하지 않음
+        }
+    }
+
+    public Claims parseTokenWithUnknownType(String token) {
+        try {
+            return parseToken(token, accessSecret); // 시도 1
+        } catch (JwtException e1) {
+            try {
+                return parseToken(token, refreshSecret); // 시도 2
+            } catch (JwtException e2) {
+                throw new IllegalArgumentException("Access/Refresh 둘 다 아님: 유효하지 않은 토큰입니다.");
+            }
+        }
+    }
+
+
 
 
 
