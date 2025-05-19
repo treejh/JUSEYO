@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Client } from "@stomp/stompjs";
-import { leaveChatRoom } from "../../utils/leaveChatRoom"; // 나가기 로직 임포트
+import { leaveChatRoom } from "../../utils/leaveChatRoom";
 
 interface ChatRoom {
   id: number;
@@ -12,7 +12,7 @@ interface Props {
   onSelectRoom: (roomId: number) => void; // 선택된 채팅방 ID를 부모 컴포넌트로 전달
   client: Client | null; // WebSocket 클라이언트
   loginUserId: number; // 현재 로그인한 유저 ID
-  roomType: string; // 채팅방 타입 (ONE_TO_ONE, SUPPORT 등)
+  roomType: string; // 채팅방 타입 (GROUP, ONE_TO_ONE 등)
 }
 
 const ChatRoomList: React.FC<Props> = ({
@@ -88,10 +88,27 @@ const ChatRoomList: React.FC<Props> = ({
 
   useEffect(() => {
     // 모든 채팅방의 상대방 이름 가져오기
-    chatRooms.forEach((room) => {
-      fetchOpponentName(room.id);
-    });
-  }, [chatRooms]);
+    if (roomType !== "GROUP") {
+      chatRooms.forEach((room) => {
+        fetchOpponentName(room.id);
+      });
+    }
+  }, [chatRooms, roomType]);
+
+  useEffect(() => {
+    const subscriptions: { [key: number]: boolean } = {};
+
+    if (client && client.connected) {
+      chatRooms.forEach((room) => {
+        if (!subscriptions[room.id]) {
+          client.subscribe(`/sub/chat/${room.id}`, (message) => {
+            console.log(`채팅방 ${room.id}에서 메시지 수신:`, message.body);
+          });
+          subscriptions[room.id] = true; // 구독 상태 저장
+        }
+      });
+    }
+  }, [client, chatRooms]);
 
   const validateAndEnterRoom = async (roomId: number) => {
     try {
@@ -159,14 +176,17 @@ const ChatRoomList: React.FC<Props> = ({
       <h2 className="text-xl font-bold mb-4">채팅방 리스트</h2>
       <ul className="space-y-2">
         {chatRooms.map((room) => {
-          const opponentName = opponentNames[room.id] || "로딩중.."; // 상대방 이름 또는 로딩 중 표시
+          const displayName =
+            roomType === "GROUP"
+              ? room.roomName // GROUP 타입일 경우 채팅방 이름
+              : opponentNames[room.id] || "로딩중.."; // 다른 타입일 경우 상대방 이름
 
           return (
             <li
               key={room.id}
               className="flex justify-between items-center border p-2 rounded"
             >
-              <span>{opponentName}</span>
+              <span>{displayName}</span>
               <div className="flex gap-2">
                 <button
                   className="bg-green-500 text-white px-4 py-2 rounded"
