@@ -212,9 +212,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 쿠키로 재전송
         Cookie newRefreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
-        newAccessTokenCookie.setHttpOnly(true);
-        newAccessTokenCookie.setPath("/");
-        newAccessTokenCookie.setMaxAge(Math.toIntExact(maxAgeRefreshInSeconds)); // 30분
+        newRefreshTokenCookie.setHttpOnly(true);
+        newRefreshTokenCookie.setPath("/");
+        newRefreshTokenCookie.setMaxAge(Math.toIntExact(maxAgeRefreshInSeconds)); // 30분
         response.addCookie(newRefreshTokenCookie);
 
         redisService.saveRefreshToken(userId,newRefreshToken);
