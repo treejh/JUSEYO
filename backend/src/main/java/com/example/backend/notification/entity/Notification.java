@@ -22,7 +22,7 @@ public class Notification extends Auditable {
 
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "notification_type", nullable = false)
+    @Column(name = "notification_type", nullable = false, length = 30)
     private NotificationType notificationType; // 승인 상태
 
 

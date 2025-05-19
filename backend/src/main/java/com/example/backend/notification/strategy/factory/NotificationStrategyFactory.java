@@ -23,7 +23,7 @@ public class NotificationStrategyFactory {
         strategyMap.put(NotificationType.SUPPLY_REQUEST_APPROVED, new SupplyRequestApprovedStrategy());
         strategyMap.put(NotificationType.SUPPLY_REQUEST_REJECTED, new SupplyRequestRejectedStrategy());
         strategyMap.put(NotificationType.SUPPLY_RETURN, new SupplyReturnStrategy());
-        strategyMap.put(NotificationType.NEW_CHAT, new NewChatToUserStrategy());
+        strategyMap.put(NotificationType.NEW_CHAT, new NewChatStrategy());
 
         // ⚠️ 여기에 나머지 전략 등록
     }

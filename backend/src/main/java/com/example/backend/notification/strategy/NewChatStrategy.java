@@ -5,7 +5,7 @@ import com.example.backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class NewChatToUserStrategy implements NotificationStrategy {
+public class NewChatStrategy implements NotificationStrategy {
     UserService userService;
 
     @Override
@@ -19,15 +19,6 @@ public class NewChatToUserStrategy implements NotificationStrategy {
 
     @Override
     public boolean shouldTrigger(Object context) {
-        if (!(context instanceof NewChatContext)) {
-            throw new IllegalArgumentException("Invalid context for NewChat Strategy");
-        }
-        NewChatContext ctx = (NewChatContext) context;
-
-        String currentPage = userService.getCurrentPage(ctx.getTargetId());
-        String expectedChatPage = "/chat/" + ctx.getRoomId();
-
-        // 현재 채팅방을 보고 있지 않으면 알림 발송
-        return !expectedChatPage.equals(currentPage);
+        return true;
     }
 }

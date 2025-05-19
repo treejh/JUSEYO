@@ -682,16 +682,4 @@ public class UserService {
         return userRepository.searchUsers(mdId, keyword, pageable);
     }
 
-    public void updateCurrentPage(Long userId, String pageUrl) {
-        userCurrentPageMap.put(userId, pageUrl);
-    }
-
-    public String getCurrentPage(Long userId) {
-        return userCurrentPageMap.getOrDefault(userId, "");
-    }
-
-    public void removeCurrentPage(Long userId) {
-        userCurrentPageMap.remove(userId);
-    }
-
 }
