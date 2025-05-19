@@ -188,7 +188,7 @@ const ChatPage = () => {
         </div>
 
         {/* 중앙: 채팅방 리스트 */}
-        <div className="w-1/6 bg-white p-4 rounded-lg shadow-md overflow-hidden">
+        <div className="w-1/5">
           <ChatRoomList
             onSelectRoom={(roomId) => setSelectedRoomId(roomId)} // 선택된 채팅방 ID 설정
             client={client} // WebSocket 클라이언트 전달
