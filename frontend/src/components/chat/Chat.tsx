@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Client, Message } from "@stomp/stompjs";
-import { FaUser } from "react-icons/fa"; // 사람 아이콘 사용
+import { FaUser } from "react-icons/fa";
 import { fetchParticipants, Participant } from "../../utils/fetchParticipants"; // 참여 유저 목록 가져오기 함수 임포트
 import { leaveChatRoom } from "../../utils/leaveChatRoom"; // 나가기 로직 임포트
 
@@ -8,6 +8,7 @@ interface Props {
   roomId: number; // 선택된 채팅방 ID
   client: Client | null; // WebSocket 클라이언트
   loginUserId: number; // 현재 로그인한 유저 ID
+  onClose: () => void; // 채팅창 닫기 콜백
 }
 
 interface ChatResponseDto {
@@ -18,7 +19,7 @@ interface ChatResponseDto {
   chatStatus: string; // ChatStatus (예: "ENTER", "TALK")
 }
 
-const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
+const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
   const [messages, setMessages] = useState<ChatResponseDto[]>([]);
   const [inputMessage, setInputMessage] = useState<string>("");
   const [participants, setParticipants] = useState<Participant[]>([]); // 참여 유저 목록 상태
@@ -124,6 +125,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">채팅방</h2>
         <div className="flex items-center">
+          {/* 참여 유저 목록 버튼 */}
           <button
             className="text-gray-600 hover:text-gray-800 mr-4"
             onClick={() => {
@@ -133,6 +135,14 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
           >
             <FaUser size={24} />
           </button>
+          {/* 닫기 버튼 */}
+          <button
+            className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+            onClick={onClose} // 닫기 버튼 클릭 시 부모 컴포넌트로 콜백 호출
+          >
+            닫기
+          </button>
+          {/* 나가기 버튼 */}
           <button
             className="bg-red-500 text-white px-4 py-2 rounded"
             onClick={handleLeaveChatRoom}

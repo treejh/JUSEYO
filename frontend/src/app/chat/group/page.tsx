@@ -189,6 +189,7 @@ const ChatPage = () => {
               roomId={selectedRoomId}
               client={client}
               loginUserId={loginUser.id}
+              onClose={() => setSelectedRoomId(null)} // 닫기 버튼 클릭 시 채팅창 닫기
             />
           ) : (
             <p>채팅방을 선택하세요.</p>

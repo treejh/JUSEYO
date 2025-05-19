@@ -54,6 +54,7 @@ const ChatPage = () => {
               roomId={selectedRoomId}
               client={client}
               loginUserId={loginUser.id}
+              onClose={() => setSelectedRoomId(null)}
             /> // WebSocket 클라이언트 전달
           ) : (
             <p>채팅방을 선택하세요.</p>
