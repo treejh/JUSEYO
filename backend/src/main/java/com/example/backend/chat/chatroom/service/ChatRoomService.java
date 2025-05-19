@@ -352,9 +352,12 @@ public class ChatRoomService {
 
         ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+
+        //생성, 초대된 상태에서는 new 표시 안떠도 됨
         if (chatUser.getChatStatus() == ChatStatus.CREATE || chatUser.getChatStatus() == ChatStatus.INVITED) {
             return false;
         }
+
 
         //유저가 마지막으로 접속한 시간
         LocalDateTime lastEnterTime = chatUser.getLastEnterTime();
@@ -364,9 +367,20 @@ public class ChatRoomService {
             return false; // 또는 true 로 로직에 맞게 선택
         }
 
-        LocalDateTime lastMessageTime = chatMessageRepository.findTopByChatRoomOrderByCreatedAtDesc(chatRoom)
+        Optional<ChatMessage> optionalMessage = chatMessageRepository.findTopByChatRoomOrderByCreatedAtDesc(chatRoom);
+
+        LocalDateTime lastMessageTime = optionalMessage
                 .map(ChatMessage::getCreatedAt)
-                .orElse(LocalDateTime.MIN); // 메시지가 없을 경우 기본값
+                .orElse(LocalDateTime.MIN);
+
+        User sender = optionalMessage
+                .map(ChatMessage::getUser)
+                .orElse(null); // 또는 예외처리 가능
+
+        //본인이 보낸 메시지면 false이도록 -> 본인 메시지면 new 뜰 필요가 없음
+        if(user.equals(sender)){
+            return false;
+        }
 
         return lastMessageTime.isAfter(lastEnterTime);
     }
