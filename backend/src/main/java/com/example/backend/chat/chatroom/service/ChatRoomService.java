@@ -52,9 +52,6 @@ public class ChatRoomService {
     private final TokenService tokenService;
     private final UserService userService;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
 
     @Transactional
     public ChatRoom createChatRoom(ChatRoomRequestDto chatRoomRequestDto) {
@@ -152,23 +149,34 @@ public class ChatRoomService {
     }
 
 
-//    유저의 채팅방 조회하기
-//    type에 따라서 다른 채팅방을 조회할 수 있도록.
+////    유저의 채팅방 조회하기
+////    type에 따라서 다른 채팅방을 조회할 수 있도록.
+//    public Page<ChatRoom> getChatRoomList(ChatRoomType chatRoomType, Pageable pageable) {
+//        User user = userService.findUserByToken();
+//
+//        Page<ChatUser> chatUsers = chatUserRepository
+//                .findByUserAndChatRoomRoomTypeAndChatStatusIn(
+//                        user,
+//                        chatRoomType,
+//                        List.of(ChatStatus.ENTER, ChatStatus.CREATE),
+//                        pageable
+//                );
+//
+//        Page<ChatRoom> chatRooms = chatUsers.map(ChatUser::getChatRoom);
+//
+//
+//        return chatUsers.map(ChatUser::getChatRoom);
+//    }
+
     public Page<ChatRoom> getChatRoomList(ChatRoomType chatRoomType, Pageable pageable) {
         User user = userService.findUserByToken();
 
-        Page<ChatUser> chatUsers = chatUserRepository
-                .findByUserAndChatRoomRoomTypeAndChatStatusIn(
-                        user,
-                        chatRoomType,
-                        List.of(ChatStatus.ENTER, ChatStatus.CREATE),
-                        pageable
-                );
-
-        Page<ChatRoom> chatRooms = chatUsers.map(ChatUser::getChatRoom);
-
-
-        return chatUsers.map(ChatUser::getChatRoom);
+        return chatRoomRepository.findRoomsByUserAndRoomTypeOrderByLatestMessage(
+                user,
+                chatRoomType,
+                List.of(ChatStatus.ENTER, ChatStatus.CREATE),
+                pageable
+        );
     }
 
 
