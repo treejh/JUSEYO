@@ -66,6 +66,7 @@ public class ChatMessageService {
                 //create가 맞는 경우는 enter로 변경
                 chatUser.setChatStatus(ChatStatus.ENTER);
                 chatUser.setModifiedAt(LocalDateTime.now());
+                chatUser.setLastEnterTime(LocalDateTime.now());
                 chatUserRepository.save(chatUser);
 
                 chatMessage = ChatMessage.builder()

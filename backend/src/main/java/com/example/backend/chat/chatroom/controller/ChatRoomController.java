@@ -187,6 +187,28 @@ public class ChatRoomController {
         );
     }
 
+    @GetMapping("/{chatRoomId}/has-new-message")
+    @Operation(
+            summary = "채팅방 새 메시지 존재 여부 확인",
+            description = "해당 채팅방에 대해 현재 로그인한 사용자가 마지막으로 입장한 시간 이후에 새 메시지가 존재하는지 여부를 반환합니다."
+    )
+    public ResponseEntity<ApiResponse<Boolean>> hasNewMessage(
+            @PathVariable Long chatRoomId
+    ) {
+        boolean hasNewMessage = chatRoomService.hasNewMessageForCurrentUser(chatRoomId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        HttpStatus.OK.value(),
+                        "새 메시지 존재 여부 조회 성공",
+                        hasNewMessage
+                )
+        );
+    }
+
+
+
+
 
 
 

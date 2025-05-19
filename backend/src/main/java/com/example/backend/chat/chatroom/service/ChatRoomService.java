@@ -21,6 +21,7 @@ import com.example.backend.utils.CreateRandomNumber;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -343,5 +344,23 @@ public class ChatRoomService {
         return chatRoomRepository.findById(roomId)
                 .orElseThrow(()->new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
     }
+
+    public boolean hasNewMessageForCurrentUser(Long chatRoomId) {
+        User user = userService.findUserByToken();
+        ChatRoom chatRoom = findChatRoomById(chatRoomId);
+
+        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+
+        //유저가 마지막으로 접속한 시간
+        LocalDateTime lastEnterTime = chatUser.getLastEnterTime();
+
+        LocalDateTime lastMessageTime = chatMessageRepository.findTopByChatRoomOrderByCreatedAtDesc(chatRoom)
+                .map(ChatMessage::getCreatedAt)
+                .orElse(LocalDateTime.MIN); // 메시지가 없을 경우 기본값
+
+        return lastMessageTime.isAfter(lastEnterTime);
+    }
+
 
 }
