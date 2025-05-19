@@ -45,7 +45,7 @@ const ChatPage = () => {
             onSelectRoom={(roomId) => setSelectedRoomId(roomId)} // 선택된 채팅방 ID 설정
             client={client} // WebSocket 클라이언트 전달
             loginUserId={loginUser.id} // 로그인 유저 ID 전달
-            roomType="SUPPORT" // SUPPORT 타입 채팅방 조회
+            roomType="ONE_TO_ONE" // SUPPORT 타입 채팅방 조회
           />
         </div>
         <div>

@@ -21,6 +21,7 @@ import com.example.backend.utils.CreateRandomNumber;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -151,8 +152,8 @@ public class ChatRoomService {
     }
 
 
-    //유저의 채팅방 조회하기
-    //type에 따라서 다른 채팅방을 조회할 수 있도록.
+//    유저의 채팅방 조회하기
+//    type에 따라서 다른 채팅방을 조회할 수 있도록.
     public Page<ChatRoom> getChatRoomList(ChatRoomType chatRoomType, Pageable pageable) {
         User user = userService.findUserByToken();
 
@@ -164,8 +165,13 @@ public class ChatRoomService {
                         pageable
                 );
 
+        Page<ChatRoom> chatRooms = chatUsers.map(ChatUser::getChatRoom);
+
+
         return chatUsers.map(ChatUser::getChatRoom);
     }
+
+
 
     @Transactional
     public void leaveChatRoom(Long roomId) {
@@ -343,5 +349,59 @@ public class ChatRoomService {
         return chatRoomRepository.findById(roomId)
                 .orElseThrow(()->new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
     }
+
+    public boolean hasNewMessageForCurrentUser(Long chatRoomId) {
+        User user = userService.findUserByToken();
+        ChatRoom chatRoom = findChatRoomById(chatRoomId);
+
+
+        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+
+        //생성, 초대된 상태에서는 new 표시 안떠도 됨
+        if (chatUser.getChatStatus() == ChatStatus.CREATE || chatUser.getChatStatus() == ChatStatus.INVITED) {
+            return false;
+        }
+
+
+        //유저가 마지막으로 접속한 시간
+        LocalDateTime lastEnterTime = chatUser.getLastEnterTime();
+
+        if (lastEnterTime == null) {
+            // 입장 시간이 없으면 새 메시지가 있다고 간주하거나 없다고 처리
+            return false; // 또는 true 로 로직에 맞게 선택
+        }
+
+        Optional<ChatMessage> optionalMessage = chatMessageRepository.findTopByChatRoomOrderByCreatedAtDesc(chatRoom);
+
+        LocalDateTime lastMessageTime = optionalMessage
+                .map(ChatMessage::getCreatedAt)
+                .orElse(LocalDateTime.MIN);
+
+        User sender = optionalMessage
+                .map(ChatMessage::getUser)
+                .orElse(null); // 또는 예외처리 가능
+
+        //본인이 보낸 메시지면 false이도록 -> 본인 메시지면 new 뜰 필요가 없음
+        if(user.equals(sender)){
+            return false;
+        }
+
+        return lastMessageTime.isAfter(lastEnterTime);
+    }
+
+    @Transactional
+    public void updateLastEnterTime(Long chatRoomId){
+        User user = userService.findUserByToken();
+        ChatRoom chatRoom = findChatRoomById(chatRoomId);
+
+
+        ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHAT_ROOM_FOUND));
+       chatUser.setLastEnterTime(LocalDateTime.now());
+
+       chatUserRepository.save(chatUser);
+    }
+
 
 }
