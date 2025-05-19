@@ -11,6 +11,7 @@ public enum NotificationType {
     SUPPLY_REQUEST_MODIFIED("비품 요청 수정"),     // 비품 요청 수정
     RETURN_DUE_DATE_EXCEEDED("지정 반납일 초과"),  // 지정 반납일 초과
     LONG_TERM_UNRETURNED_SUPPLIES("장기 미반납 비품 목록 알림"), // 장기 미반납 비품 목록 알림
+    USER_SENT_MESSAGE_TO_MANAGER("채팅 알림"),
 
     // 회원 알림
     SUPPLY_REQUEST_APPROVED("비품 요청 승인"),      // 비품 요청 승인
