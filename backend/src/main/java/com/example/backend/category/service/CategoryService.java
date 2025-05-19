@@ -9,7 +9,10 @@ import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.managementDashboard.repository.ManagementDashboardRepository;
+import com.example.backend.user.entity.User;
+import com.example.backend.enums.RoleType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,17 +21,38 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final ManagementDashboardRepository managementDashboardRepository;
 
-    /**
-     * 🔹 카테고리 생성
-     */
+    private Long getDashboardId(User user) {
+        // 우선적으로 User의 ManagementDashboard가 있으면 그것을 사용
+        if (user.getManagementDashboard() != null) {
+            log.info("User 직접 참조하는 ManagementDashboard ID: {}", user.getManagementDashboard().getId());
+            return user.getManagementDashboard().getId();
+        }
+
+        // 없으면 Department를 통한 ManagementDashboard 조회
+        else if (user.getDepartment() != null && user.getDepartment().getManagementDashboard() != null) {
+            log.info("Department를 통한 ManagementDashboard ID: {}", user.getDepartment().getManagementDashboard().getId());
+            return user.getDepartment().getManagementDashboard().getId();
+        }
+
+        // 둘 다 없으면 에러 처리
+        else {
+            throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
+        }
+    }
+
     @Transactional
-    public CategoryResponseDTO createCategory(CategoryCreateRequestDTO dto, ManagementDashboard dashboard) {
-        if (categoryRepository.existsByNameAndManagementDashboardId(dto.getName(), dashboard.getId())) {
+    public CategoryResponseDTO createCategory(CategoryCreateRequestDTO dto, User user) {
+        Long dashboardId = getDashboardId(user);
+        ManagementDashboard dashboard = managementDashboardRepository.findById(dashboardId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        if (categoryRepository.existsByNameAndManagementDashboardId(dto.getName(), dashboardId)) {
             throw new BusinessLogicException(ExceptionCode.CATEGORY_ALREADY_EXISTS);
         }
 
@@ -41,15 +65,14 @@ public class CategoryService {
         return CategoryResponseDTO.fromEntity(category);
     }
 
-    /**
-     * 🔹 카테고리 수정
-     */
     @Transactional
-    public CategoryResponseDTO updateCategory(Long id, CategoryUpdateRequestDTO dto, ManagementDashboard dashboard) {
+    public CategoryResponseDTO updateCategory(Long id, CategoryUpdateRequestDTO dto, User user) {
+        Long dashboardId = getDashboardId(user);
+
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
 
-        if (!category.getManagementDashboard().getId().equals(dashboard.getId())) {
+        if (!category.getManagementDashboard().getId().equals(dashboardId)) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
         }
 
@@ -59,39 +82,35 @@ public class CategoryService {
         return CategoryResponseDTO.fromEntity(category);
     }
 
-    /**
-     * 🔹 카테고리 삭제
-     */
     @Transactional
-    public void deleteCategory(Long id, ManagementDashboard dashboard) {
+    public void deleteCategory(Long id, User user) {
+        Long dashboardId = getDashboardId(user);
+
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
 
-        if (!category.getManagementDashboard().getId().equals(dashboard.getId())) {
+        if (!category.getManagementDashboard().getId().equals(dashboardId)) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
         }
 
         categoryRepository.delete(category);
     }
 
-    /**
-     * 🔹 전체 카테고리 조회
-     */
-    public List<CategoryResponseDTO> findAllCategoriesByDashboard(Long dashboardId) {
+    public List<CategoryResponseDTO> findAllCategories(User user) {
+        Long dashboardId = getDashboardId(user);
         List<Category> categories = categoryRepository.findByManagementDashboardId(dashboardId);
         return categories.stream()
                 .map(CategoryResponseDTO::fromEntity)
                 .toList();
     }
 
-    /**
-     * 🔹 특정 카테고리 조회
-     */
-    public CategoryResponseDTO findCategoryById(Long id, ManagementDashboard dashboard) {
+    public CategoryResponseDTO findCategoryById(Long id, User user) {
+        Long dashboardId = getDashboardId(user);
+
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
 
-        if (!category.getManagementDashboard().getId().equals(dashboard.getId())) {
+        if (!category.getManagementDashboard().getId().equals(dashboardId)) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
         }
 
