@@ -25,6 +25,7 @@ import com.example.backend.user.dto.request.UserPatchRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
+import com.example.backend.user.dto.response.UserSearchProjection;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
@@ -659,10 +660,21 @@ public class UserService {
         return userRepository.findAllByRole(role);
     }
 
-
-
     public User findUserByName(String name){
         return userRepository.findByName(name).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    }
+
+    //회원 검색
+    public Page<UserSearchProjection> searchUsers(Long mdId, String keyword, Pageable pageable) {
+        // 1) 대시보드 엔티티 가져오고
+        ManagementDashboard md = managementDashboardRepository.findById(mdId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        // 2) 로그인 유저가 그 대시보드에 속한지 검증
+        validateManagementDashboardUser(md);
+
+        // 3) 실제 검색 실행
+        return userRepository.searchUsers(mdId, keyword, pageable);
     }
 
 }

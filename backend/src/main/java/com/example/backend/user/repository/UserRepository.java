@@ -5,12 +5,16 @@ import com.example.backend.base.entity.BoardEntity;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.role.entity.Role;
+import com.example.backend.user.dto.response.UserSearchProjection;
+import com.example.backend.user.dto.response.UserSearchResponseDto;
 import com.example.backend.user.entity.User;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -47,4 +51,23 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByRole(Role role);
 
+    //회원 검색
+    @Query("""
+  SELECT u.id                AS id,
+         u.name              AS name,
+         u.email             AS email,
+         u.department.name   AS departmentName,
+         r.role              AS role
+    FROM User u
+   JOIN u.department d
+   JOIN u.role r
+   WHERE u.managementDashboard.id = :mdId
+     AND (u.name  LIKE CONCAT('%', :keyword, '%')
+       OR u.email LIKE CONCAT('%', :keyword, '%'))
+""")
+    Page<UserSearchProjection> searchUsers(
+            @Param("mdId")     Long managementDashboardId,
+            @Param("keyword")  String keyword,
+            Pageable pageable
+    );
 }
