@@ -115,7 +115,7 @@ public class TokenService {
         httpServletResponse.addCookie(refreshTokenCookie);
     }
 
-    public void setCookie(String name, String value) {
+    public void setAccessCookie(String name, String value) {
         long maxAgeInSeconds = jwtTokenizer.accessTokenExpirationMinutes / 1000;
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")

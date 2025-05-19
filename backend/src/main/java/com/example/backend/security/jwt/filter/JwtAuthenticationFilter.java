@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -39,74 +40,116 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String accessToken = getAccessToken(request);
-        if(StringUtils.hasText(accessToken)){
-            try{
+        if (StringUtils.hasText(accessToken)) {
+            try {
                 Authentication authentication = getAuthentication(accessToken);
 
                 //만들어진 authentication를 SecurityContextHolder의 SecurityContext 로 넘긴다.
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            }catch (ExpiredJwtException e){
+
+            } catch (ExpiredJwtException e) {
                 request.setAttribute("exception", JwtExceptionCode.EXPIRED_TOKEN.getCode());
-                log.error("Expired Token : {}",accessToken,e);
-                SecurityContextHolder.clearContext();
-                throw new BadCredentialsException("Expired token exception", e);
-            }catch (UnsupportedJwtException e){
-                request.setAttribute("exception", JwtExceptionCode.UNSUPPORTED_TOKEN.getCode());
-                log.error("Unsupported Token: {}", accessToken, e);
-                SecurityContextHolder.clearContext();
-                throw new BadCredentialsException("Unsupported token exception", e);
-            } catch (MalformedJwtException e) {
-                request.setAttribute("exception", JwtExceptionCode.INVALID_TOKEN.getCode());
-                log.error("Invalid Token: {}", accessToken, e);
 
-                SecurityContextHolder.clearContext();
+                String refreshToken = getRefreshToken(request);
 
-                throw new BadCredentialsException("Invalid token exception", e);
-            } catch (IllegalArgumentException e) {
-                request.setAttribute("exception", JwtExceptionCode.NOT_FOUND_TOKEN.getCode());
-                log.error("Token not found: {}", accessToken, e);
+                if (!StringUtils.hasText(refreshToken)) {
+                    log.warn("No refresh token found");
 
-                SecurityContextHolder.clearContext();
+                    SecurityContextHolder.clearContext();
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "refreshToken이 없습니다 재로그인 해주세요.");
+                    return;
+                }
 
-                throw new BadCredentialsException("Token not found exception", e);
+                if (StringUtils.hasText(refreshToken) && jwtTokenizer.validateToken(refreshToken)) {
+                    try {
+                        Claims claims = jwtTokenizer.parseRefreshToken(refreshToken);
+
+                        String email = claims.getSubject();
+                        Long userId = claims.get("userId", Long.class);
+                        String name = claims.get("username", String.class);
+                        List<String> roles = claims.get("roles", List.class);
+
+                        log.info("역할 이름 확인!!!!" + roles.get(0));
+
+                        String newAccessToken = jwtTokenizer.createAccessToken(userId, email, name, roles.get(0));
+
+                        // 쿠키로 재전송
+                        Cookie newAccessTokenCookie = new Cookie("accessToken", newAccessToken);
+                        newAccessTokenCookie.setHttpOnly(true);
+                        newAccessTokenCookie.setPath("/");
+                        newAccessTokenCookie.setMaxAge(60 * 30); // 30분
+                        response.addCookie(newAccessTokenCookie);
+
+                        // SecurityContext 갱신
+                        Authentication authentication = getAuthentication(newAccessToken);
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                        filterChain.doFilter(request, response);
+                        return;
+
+                    } catch (Exception ex) {
+                        log.error("Failed to reissue access token", ex);
+                        request.setAttribute("exception", JwtExceptionCode.EXPIRED_TOKEN.getCode());
+                        SecurityContextHolder.clearContext();
+                        throw new BadCredentialsException("Invalid refresh token", ex);
+                    }
+                }
+                }catch(UnsupportedJwtException e){
+                    request.setAttribute("exception", JwtExceptionCode.UNSUPPORTED_TOKEN.getCode());
+                    log.error("Unsupported Token: {}", accessToken, e);
+                    SecurityContextHolder.clearContext();
+                    throw new BadCredentialsException("Unsupported token exception", e);
+                } catch(MalformedJwtException e){
+                    request.setAttribute("exception", JwtExceptionCode.INVALID_TOKEN.getCode());
+                    log.error("Invalid Token: {}", accessToken, e);
+
+                    SecurityContextHolder.clearContext();
+
+                    throw new BadCredentialsException("Invalid token exception", e);
+                } catch(IllegalArgumentException e){
+                    request.setAttribute("exception", JwtExceptionCode.NOT_FOUND_TOKEN.getCode());
+                    log.error("Token not found: {}", accessToken, e);
+
+                    SecurityContextHolder.clearContext();
+
+                    throw new BadCredentialsException("Token not found exception", e);
+                }
             }
+
+            filterChain.doFilter(request, response);
+
         }
 
+        private Authentication getAuthentication (String token){
+            Claims claims = jwtTokenizer.parseAccessToken(token);
 
-        filterChain.doFilter(request,response);
+            //토큰에서 가져온 데이터
+            String email = claims.getSubject();
+            Long userId = claims.get("userId", Long.class);
+            List<GrantedAuthority> grantedAuthorities = getGrantedAuthority(claims);
 
-    }
+            //userDetails
+            CustomUserDetails customUserDetails = new CustomUserDetails("", email, userId, grantedAuthorities);
 
-    private Authentication getAuthentication(String token){
-        Claims claims = jwtTokenizer.parseAccessToken(token);
+            return new JwtAuthenticationToken(grantedAuthorities, customUserDetails, null);
 
-        //토큰에서 가져온 데이터
-        String email = claims.getSubject();
-        Long userId = claims.get("userId", Long.class);
-        List<GrantedAuthority> grantedAuthorities = getGrantedAuthority(claims);
+        }
 
-        //userDetails
-        CustomUserDetails customUserDetails = new CustomUserDetails("",email,userId,grantedAuthorities);
+        private List<GrantedAuthority> getGrantedAuthority (Claims claims){
+            List<String> roles = (List<String>) claims.get("roles");
 
-        return new JwtAuthenticationToken(grantedAuthorities,customUserDetails,null);
-
-    }
-
-    private List<GrantedAuthority> getGrantedAuthority(Claims claims) {
-        List<String> roles = (List<String>) claims.get("roles");
-
-        return roles.stream()
-                .map(role -> {
-                    // "ROLE_" 접두사가 없으면 붙여주고, 있으면 그대로 사용
-                    if (role.startsWith("ROLE_")) {
-                        return new SimpleGrantedAuthority(role);
-                    } else {
-                        return new SimpleGrantedAuthority("ROLE_" + role);
-                    }
-                })
-                .collect(Collectors.toList());
-    }
+            return roles.stream()
+                    .map(role -> {
+                        // "ROLE_" 접두사가 없으면 붙여주고, 있으면 그대로 사용
+                        if (role.startsWith("ROLE_")) {
+                            return new SimpleGrantedAuthority(role);
+                        } else {
+                            return new SimpleGrantedAuthority("ROLE_" + role);
+                        }
+                    })
+                    .collect(Collectors.toList());
+        }
 
 
 
@@ -135,5 +178,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         return null;
     }
+
+
 
 }
