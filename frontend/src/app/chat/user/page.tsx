@@ -52,7 +52,7 @@ const ChatPage = () => {
         </div>
 
         {/* 채팅창 */}
-        <div>
+        <div className="col-span-2 flex-1 bg-white p-4 rounded-lg shadow-md overflow-hidden">
           {selectedRoomId ? (
             <Chat
               roomId={selectedRoomId}
