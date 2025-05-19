@@ -4,6 +4,7 @@ package com.example.backend.chat.chatroom.controller;
 import com.example.backend.chat.chatroom.dto.request.ChatRoomRequestDto;
 import com.example.backend.chat.chatroom.dto.request.ChatRoomValidRequestDto;
 import com.example.backend.chat.chatroom.dto.response.ChatRoomResponseDto;
+import com.example.backend.chat.chatroom.dto.response.OpponentResponseDto;
 import com.example.backend.chat.chatroom.dto.response.ParticipantsResponseDto;
 import com.example.backend.chat.chatroom.entity.ChatRoom;
 import com.example.backend.chat.chatroom.service.ChatRoomService;
@@ -84,6 +85,22 @@ public class ChatRoomController {
         );
     }
 
+    @GetMapping("/{roomId}")
+    @Operation(
+            summary = "특정 채팅방 조회",
+            description = "roomId를 기반으로 해당 채팅방의 정보를 조회합니다."
+    )
+
+    public ResponseEntity<ApiResponse<ChatRoomResponseDto>> getChatRoomById(@PathVariable Long roomId) {
+        ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId); // 존재하지 않으면 예외 발생
+        ChatRoomResponseDto responseDto = new ChatRoomResponseDto(chatRoom);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(HttpStatus.OK.value(), "채팅방 상세 조회 완료", responseDto)
+        );
+    }
+
+
 
 
 
@@ -105,12 +122,12 @@ public class ChatRoomController {
 
     @GetMapping("/{roomId}/opponent")
     @Operation(
-            summary = "채팅 상대방 이름 조회",
-            description = "채팅방 ID를 기반으로 현재 로그인한 유저를 제외한 상대방의 이름을 반환합니다."
+            summary = "채팅 상대방 정보 조회",
+            description = "채팅방 ID를 기반으로 현재 로그인한 유저를 제외한 상대방의 이름과 부서를 반환합니다."
     )
-    public ResponseEntity<ApiResponse<String>> getOpponentName(@PathVariable Long roomId) {
-        String opponentName = chatRoomService.findOpponentName(roomId);
-        return ResponseEntity.ok(ApiResponse.of(200, "상대방 이름 조회 완료", opponentName));
+    public ResponseEntity<ApiResponse<OpponentResponseDto>> getOpponentInfo(@PathVariable Long roomId) {
+        OpponentResponseDto opponentInfo = chatRoomService.findOpponentInfo(roomId);
+        return ResponseEntity.ok(ApiResponse.of(200, "상대방 정보 조회 완료", opponentInfo));
     }
 
 

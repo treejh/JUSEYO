@@ -132,20 +132,23 @@ const UserList: React.FC<Props> = ({
   if (error) return <p>{error}</p>;
 
   return (
-    <div>
+    <div className="h-full overflow-y-auto bg-white rounded-lg shadow-md p-4">
       <h2 className="text-xl font-bold mb-4">유저 리스트</h2>
-      <ul className="space-y-2">
+      <ul className="divide-y divide-gray-200">
         {users.map((user) => (
           <li
             key={user.id}
-            className="flex justify-between items-center border p-2 rounded"
+            className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
           >
-            <div>
-              <p className="font-bold">{user.name}</p>
-              <p className="text-sm text-gray-600">부서: {user.department}</p>
+            {/* 유저 정보 */}
+            <div className="flex flex-col">
+              <span className="font-medium text-gray-800">{user.name}</span>
+              <span className="text-sm text-gray-500">{user.department}</span>
             </div>
+
+            {/* 채팅방 생성 버튼 */}
             <button
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+              className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
               onClick={() => handleChatRoomCheck(user.id, user.name)} // 채팅방 존재 여부 확인
             >
               채팅방 생성
@@ -154,6 +157,7 @@ const UserList: React.FC<Props> = ({
         ))}
       </ul>
 
+      {/* 채팅방 생성 UI */}
       {showCreateUI && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
@@ -172,8 +176,11 @@ const UserList: React.FC<Props> = ({
                 취소
               </button>
               <button
-                className="bg-green-500 text-white px-4 py-2 rounded"
-                onClick={createChatRoom} // 채팅방 생성 요청
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+                onClick={async () => {
+                  await createChatRoom(); // 채팅방 생성
+                  window.location.reload(); // 새로고침
+                }}
               >
                 생성
               </button>
