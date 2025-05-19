@@ -76,8 +76,8 @@ public class SupplyRequestController {
     @PostMapping("/{requestId}/reject")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<SupplyRequestResponseDto> rejectRequest(@PathVariable Long requestId) {
-        SupplyRequestResponseDto response = supplyRequestService.rejectRequest(requestId);
-        return ResponseEntity.ok(response);
+        SupplyRequestResponseDto dto = supplyRequestService.rejectRequest(requestId);
+        return ResponseEntity.ok(dto);
     }
 
     /**  내 요청 리스트 */

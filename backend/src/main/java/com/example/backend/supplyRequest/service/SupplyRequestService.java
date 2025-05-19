@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -133,43 +134,53 @@ public class SupplyRequestService {
      */
     @Transactional
     public SupplyRequestResponseDto updateRequestStatus(Long requestId, ApprovalStatus newStatus) {
-        // 1) 인증된 유저 ID 가져오기
+        // 1) 인증된 유저 ID
         Long currentUserId = tokenService.getIdFromToken();
 
         // 2) 요청서 조회
         SupplyRequest req = repo.findById(requestId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
 
-        // 3) 권한 체크: 같은 관리대시보드 소속인지
+        // 3) 권한 체크
         Long userMgmtId = userRepo.findById(currentUserId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
                 .getManagementDashboard().getId();
-
         if (!req.getManagementDashboard().getId().equals(userMgmtId)) {
             throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
         }
 
         // 4) 상태별 처리
         if (newStatus == ApprovalStatus.APPROVED) {
-            // (A) 출고 처리
+            // (A) ISSUE로 재고 출고 기록
             InventoryOutRequestDto outDto = new InventoryOutRequestDto();
             outDto.setSupplyRequestId(req.getId());
             outDto.setItemId(req.getItem().getId());
             outDto.setCategoryId(req.getItem().getCategory().getId());
             outDto.setManagementId(req.getItem().getManagementDashboard().getId());
             outDto.setQuantity(req.getQuantity());
-            outDto.setOutbound(req.isRental() ? Outbound.LEND.name() : Outbound.ISSUE.name());
+            outDto.setOutbound(Outbound.ISSUE.name());
             outService.removeOutbound(outDto);
 
-            // (B) 요청 상태 전환
             if (req.isRental()) {
+                // (B) 요청 수량만큼 새 LEND 인스턴스 생성
+                for (int i = 0; i < req.getQuantity(); i++) {
+                    ItemInstance newInst = ItemInstance.builder()
+                            .item(req.getItem())
+                            .instanceCode(generateInstanceCode(req.getItem()))
+                            .outbound(Outbound.LEND)
+                            .status(Status.ACTIVE)
+                            .image(req.getItem().getImage())
+                            .finalImage(req.getItem().getImage())
+                            .build();
+                    instanceRepo.save(newInst);
+                }
+                // (C) 반납 대기 상태로 전환
                 req.setApprovalStatus(ApprovalStatus.RETURN_PENDING);
             } else {
                 req.setApprovalStatus(ApprovalStatus.APPROVED);
             }
 
         } else if (newStatus == ApprovalStatus.REJECTED) {
-            // 거절 처리: 단순히 상태만 REJECTED로 변경
             req.setApprovalStatus(ApprovalStatus.REJECTED);
 
         } else if (newStatus == ApprovalStatus.RETURNED && req.isRental()) {
@@ -182,26 +193,37 @@ public class SupplyRequestService {
             inDto.setManagementId(req.getItem().getManagementDashboard().getId());
             inService.addInbound(inDto);
 
-            // (B) 개별자산 인스턴스 상태 복구 (LEND → AVAILABLE)
+            // (B) LEND → AVAILABLE 복귀
             for (int i = 0; i < req.getQuantity(); i++) {
-                ItemInstance inst = instanceRepo
-                        .findFirstByItemIdAndStatus(req.getItem().getId(), Outbound.LEND)
-                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+                ItemInstance inst = instanceRepo.findFirstByItemIdAndOutboundAndStatus(
+                        req.getItem().getId(),
+                        Outbound.LEND,
+                        Status.ACTIVE
+                ).orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
 
                 UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
                 upd.setOutbound(Outbound.AVAILABLE);
                 upd.setFinalImage(null);
                 instanceService.updateStatus(inst.getId(), upd);
             }
-
-            // (C) 요청 상태 최종 설정
             req.setApprovalStatus(ApprovalStatus.RETURNED);
         }
 
-        // 5) 저장 및 DTO로 변환
+        // 5) 저장 및 DTO 반환
         SupplyRequest updated = repo.save(req);
         return mapToDto(updated);
     }
+
+    /**
+     * 개별 자산 인스턴스 코드 생성
+     */
+    private String generateInstanceCode(Item item) {
+        return item.getSerialNumber()
+                + "-"
+                + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+
 
     /**
      * ExcelExportController 등에서 사용하는, 같은 관리페이지 내
