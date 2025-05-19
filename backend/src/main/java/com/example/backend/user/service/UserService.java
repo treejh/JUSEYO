@@ -667,20 +667,19 @@ public class UserService {
     // 회원 검색
     public Page<UserSearchProjection> searchUsers(Long mdId, String keyword, Pageable pageable) {
 
-        // 대시보드 엔티티 가져오고
+        // 대시보드가 실제로 존재하는지 확인
         ManagementDashboard md = managementDashboardRepository.findById(mdId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
 
-        // 로그인 유저가 그 대시보드에 속한지 검증
+        // 로그인한 사용자가 그 대시보드에 속해있는지 검증
         validateManagementDashboardUser(md);
 
         // 실제 검색 실행
         return userRepository.searchUsers(mdId, keyword, pageable);
     }
 
-    // 회원 검색 - 일반 회원만 검색
+    // 회원 검색 - 일반 회원만 검색 (승인 된 일반 회원만)
     public Page<UserSearchProjection> searchBasicUsers(Long managementDashboardId, String keyword, Pageable pageable) {
-
         // 대시보드가 실제로 존재하는지 확인
         ManagementDashboard md = managementDashboardRepository.findById(managementDashboardId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
@@ -691,8 +690,8 @@ public class UserService {
         // 검색 키워드 처리
         String searchKeyword = (keyword != null && !keyword.isEmpty()) ? keyword : "";
 
-        // 실제 검색 실행
-        return userRepository.searchBasicUsers(managementDashboardId, searchKeyword, RoleType.USER, pageable);
+        // 실제 검색 실행 (승인된 사용자만 조회)
+        return userRepository.searchBasicUsers(managementDashboardId, searchKeyword, RoleType.USER, ApprovalStatus.APPROVED, pageable);
     }
 
 }

@@ -79,23 +79,25 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 회원 검색 - 일반 회원만 - 기본 조회 (키워드 없이)
     @Query("""
-              SELECT u.id                AS id,
-                     u.name              AS name,
-                     u.email             AS email,
-                     u.department.name   AS departmentName,
-                     r.role              AS role
-                FROM User u
-               JOIN u.department d
-               JOIN u.role r
-               WHERE u.managementDashboard.id = :mdId
-                 AND r.role = :roleType
-                 AND (u.name  LIKE CONCAT('%', :keyword, '%')
-                   OR u.email LIKE CONCAT('%', :keyword, '%'))
-            """)
+      SELECT u.id                AS id,
+             u.name              AS name,
+             u.email             AS email,
+             u.department.name   AS departmentName,
+             r.role              AS role
+        FROM User u
+       JOIN u.department d
+       JOIN u.role r
+       WHERE u.managementDashboard.id = :mdId
+         AND r.role = :roleType
+         AND u.approvalStatus = :approvalStatus
+         AND (u.name  LIKE CONCAT('%', :keyword, '%')
+           OR u.email LIKE CONCAT('%', :keyword, '%'))
+    """)
     Page<UserSearchProjection> searchBasicUsers(
             @Param("mdId") Long managementDashboardId,
             @Param("keyword") String keyword,
             @Param("roleType") RoleType roleType,
+            @Param("approvalStatus") ApprovalStatus approvalStatus,
             Pageable pageable
     );
 
