@@ -26,11 +26,12 @@ public class ChaseItemController {
         return service.addChaseItem(dto);
     }
 
-    @Operation(summary = "특정 아이템 인스턴스의 추적 기록 조회")
-    @GetMapping
+    @Operation(summary = "특정 요청의 추적 기록 조회")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public List<ChaseItemResponseDto> getByItemInstance(
-            @RequestParam Long itemInstanceId ) {
-        return service.getChaseItemsByInstance(itemInstanceId);
+    @GetMapping("/by-request")
+    public List<ChaseItemResponseDto> getByRequest(
+            @RequestParam Long requestId
+    ) {
+        return service.getByRequest(requestId);
     }
 }

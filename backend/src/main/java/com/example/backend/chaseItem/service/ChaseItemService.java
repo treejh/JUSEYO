@@ -40,9 +40,8 @@ public class ChaseItemService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChaseItemResponseDto> getChaseItemsByInstance(Long itemInstanceId) {
-        return repo.findAllByItemInstanceId(itemInstanceId)
-                .stream()
+    public List<ChaseItemResponseDto> getByRequest(Long requestId) {
+        return repo.findAllBySupplyRequestId(requestId).stream()
                 .map(this::map)
                 .collect(Collectors.toList());
     }
