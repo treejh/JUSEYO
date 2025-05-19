@@ -3,6 +3,7 @@ package com.example.backend.user.repository;
 
 import com.example.backend.base.entity.BoardEntity;
 import com.example.backend.enums.ApprovalStatus;
+import com.example.backend.enums.RoleType;
 import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.role.entity.Role;
 import com.example.backend.user.dto.response.UserSearchProjection;
@@ -25,11 +26,15 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
+
     Optional<User> findByPhoneNumber(String phoneNumber);
+
     Optional<User> findByName(String name);
 
     Page<User> findByRole(Role role, Pageable pageable);
+
     Page<User> findByManagementDashboardAndApprovalStatusAndRole(ManagementDashboard managementDashboard, ApprovalStatus approvalStatus, Pageable pageable, Role role);
+
     Optional<User> findByIdAndManagementDashboard(Long userId, ManagementDashboard managementDashboard);
 
     // 관리페이지 회원 전체 조회용
@@ -47,27 +52,51 @@ public interface UserRepository extends JpaRepository<User, Long> {
             Role role,
             Long excludeUserId
     );
+
     List<User> findUsersByRole(Role role);
 
     List<User> findAllByRole(Role role);
 
     //회원 검색
     @Query("""
-  SELECT u.id                AS id,
-         u.name              AS name,
-         u.email             AS email,
-         u.department.name   AS departmentName,
-         r.role              AS role
-    FROM User u
-   JOIN u.department d
-   JOIN u.role r
-   WHERE u.managementDashboard.id = :mdId
-     AND (u.name  LIKE CONCAT('%', :keyword, '%')
-       OR u.email LIKE CONCAT('%', :keyword, '%'))
-""")
+              SELECT u.id                AS id,
+                     u.name              AS name,
+                     u.email             AS email,
+                     u.department.name   AS departmentName,
+                     r.role              AS role
+                FROM User u
+               JOIN u.department d
+               JOIN u.role r
+               WHERE u.managementDashboard.id = :mdId
+                 AND (u.name  LIKE CONCAT('%', :keyword, '%')
+                   OR u.email LIKE CONCAT('%', :keyword, '%'))
+            """)
     Page<UserSearchProjection> searchUsers(
-            @Param("mdId")     Long managementDashboardId,
-            @Param("keyword")  String keyword,
+            @Param("mdId") Long managementDashboardId,
+            @Param("keyword") String keyword,
             Pageable pageable
     );
+
+    // 회원 검색 - 일반 회원만 - 기본 조회 (키워드 없이)
+    @Query("""
+              SELECT u.id                AS id,
+                     u.name              AS name,
+                     u.email             AS email,
+                     u.department.name   AS departmentName,
+                     r.role              AS role
+                FROM User u
+               JOIN u.department d
+               JOIN u.role r
+               WHERE u.managementDashboard.id = :mdId
+                 AND r.role = :roleType
+                 AND (u.name  LIKE CONCAT('%', :keyword, '%')
+                   OR u.email LIKE CONCAT('%', :keyword, '%'))
+            """)
+    Page<UserSearchProjection> searchBasicUsers(
+            @Param("mdId") Long managementDashboardId,
+            @Param("keyword") String keyword,
+            @Param("roleType") RoleType roleType,
+            Pageable pageable
+    );
+
 }
