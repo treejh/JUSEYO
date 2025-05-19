@@ -31,7 +31,9 @@ import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +61,9 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+
+    // 알림용 - 현재 페이지 저장: userId -> pageUrl
+    private final Map<Long, String> userCurrentPageMap = new ConcurrentHashMap<>();
 
     @Transactional
     public User createUser(UserSignRequestDto userSignRequestDto) {
@@ -675,6 +680,18 @@ public class UserService {
 
         // 3) 실제 검색 실행
         return userRepository.searchUsers(mdId, keyword, pageable);
+    }
+
+    public void updateCurrentPage(Long userId, String pageUrl) {
+        userCurrentPageMap.put(userId, pageUrl);
+    }
+
+    public String getCurrentPage(Long userId) {
+        return userCurrentPageMap.getOrDefault(userId, "");
+    }
+
+    public void removeCurrentPage(Long userId) {
+        userCurrentPageMap.remove(userId);
     }
 
 }

@@ -490,6 +490,15 @@ public class UserController {
         );
     }
 
-
+    // 알림용
+    @Operation(
+            summary = "현재 보고 있는 페이지 url 확인  ",
+            description = "현재 유저가 보고 있는 페이지의 url을 확인할 수 있습니다.  "
+    )
+    @PostMapping("/current-page")
+    public ResponseEntity<Void> updateCurrentPage(@RequestBody CurrentPageRequest request) {
+        userService.updateCurrentPage(request.getUserId(), request.getPage());
+        return ResponseEntity.ok().build();
+    }
 
 }

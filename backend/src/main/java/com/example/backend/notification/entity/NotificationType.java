@@ -22,7 +22,8 @@ public enum NotificationType {
     // 기타 알림
     SYSTEM_MAINTENANCE("시스템 점검 알림"),        // 시스템 점검 알림
     ADMIN_APPROVAL_ALERT("관리 페이지 승인 알림"), // 관리 페이지 승인 알림 (어드민 -> 이니셜 매니저)
-    MANAGER_APPROVAL_ALERT("매니저 승인 알림");     // 매니저 승인 알림 (이니셜 매니저 -> 새 매니저)
+    MANAGER_APPROVAL_ALERT("매니저 승인 알림"),     // 매니저 승인 알림 (이니셜 매니저 -> 새 매니저)
+    NEW_CHAT("새로운 채팅 알림");   // 새로운 채팅 알림(회원 -> 회원 / 회원 -> 매니저)
 
     private final String description;
 
