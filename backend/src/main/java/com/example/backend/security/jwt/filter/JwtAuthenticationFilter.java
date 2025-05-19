@@ -228,7 +228,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Claims claims = jwtTokenizer.parseRefreshToken(refreshToken);
 
         Long userId = claims.get("userId", Long.class);
+
         String savedRefreshToken = redisService.getRefreshToken(userId);
+        log.info("userId" + userId);
+        log.info("확인 111 + " + savedRefreshToken);
+        log.info("확인 22 " + refreshToken);
 
         if (savedRefreshToken == null || !refreshToken.equals(savedRefreshToken)) {
             throw new BusinessLogicException(ExceptionCode.INVALID_REFRESH_TOKEN);
