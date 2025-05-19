@@ -76,7 +76,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
       (message: Message) => {
         const response = JSON.parse(message.body); // 서버에서 발행된 메시지 파싱
         const receivedMessage: ChatResponseDto = response.data; // ApiResponse의 data 필드 추출
-
+        console.log("수신된 메시지:", response); // 디버깅용 로그
         setMessages((prevMessages) => [...prevMessages, receivedMessage]); // 메시지 추가
       }
     );
@@ -85,6 +85,15 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
       subscription.unsubscribe(); // 컴포넌트 언마운트 시 구독 해제
     };
   }, [roomId, client]);
+
+  //채팅방 나가기
+  const handleLeaveChatRoom = async () => {
+    try {
+      await leaveChatRoom(client, roomId, loginUserId);
+    } catch (error) {
+      console.error("채팅방 나가기 실패:", error);
+    }
+  };
 
   // 메시지 전송
   const sendMessage = () => {
@@ -126,7 +135,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
           </button>
           <button
             className="bg-red-500 text-white px-4 py-2 rounded"
-            onClick={() => leaveChatRoom(client, roomId, loginUserId)} // 나가기 로직 호출
+            onClick={handleLeaveChatRoom}
           >
             채팅방 나가기
           </button>

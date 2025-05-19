@@ -119,12 +119,12 @@ public class ChatMessageService {
                         .user(user)
                         .messageStatus(ChatMessageStatus.LEAVE)
                         .build();
-                chatUser.setChatStatus(ChatStatus.LEAVE);
-                chatUserRepository.save(chatUser);
+                log.info("message확인 1 + " + chatMessage.getMessage());
+
             }
             default -> throw new BusinessLogicException(ExceptionCode.INVALID_CHAT_ROOM_TYPE);
         }
-
+        log.info("message확인 2 + " + chatMessage.getMessage());
         return chatMessageRepository.save(chatMessage);
     }
 

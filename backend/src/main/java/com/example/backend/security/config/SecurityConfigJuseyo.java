@@ -67,12 +67,15 @@ public class SecurityConfigJuseyo {
                         //입고
                         .requestMatchers("/api/v1/inventory-in/**").hasAnyRole("MANAGER", "ADMIN")
 
-
+                        // 검색
+                        .requestMatchers(HttpMethod.GET, "/api/v1/search/items").hasAnyRole("MANAGER", "USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/search/users").hasAnyRole("MANAGER", "USER", "ADMIN")
 
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class) //jwt 인증필터 <-> 사용자 상태 체크 필터 순서 변경
                 .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
+
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
