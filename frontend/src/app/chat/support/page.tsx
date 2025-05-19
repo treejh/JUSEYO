@@ -95,7 +95,8 @@ const SupportChatPage = () => {
 
   return (
     <div className="p-4 h-screen flex flex-col">
-      <div className="flex justify-between items-center mb-4">
+      {/* 버튼 영역 */}
+      <div className="mb-4">
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={createSupportChatRoom}
@@ -103,7 +104,9 @@ const SupportChatPage = () => {
           고객센터 채팅 생성
         </button>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+
+      {/* 채팅방 리스트와 채팅창 */}
+      <div className="grid grid-cols-3 gap-4 flex-1">
         {/* 채팅방 리스트 */}
         <div className="col-span-1">
           <ChatRoomList
