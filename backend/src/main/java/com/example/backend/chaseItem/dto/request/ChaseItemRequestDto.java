@@ -4,12 +4,18 @@ import jakarta.validation.constraints.NotNull;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Schema(description = "비품 추적 요청 DTO")
 public class ChaseItemRequestDto {
+
+    @NotNull
+    private Long id;
+
     @NotNull
     @Schema(description = "SupplyRequest ID", example = "1001")
     private Long requestId;
@@ -24,4 +30,8 @@ public class ChaseItemRequestDto {
 
     @Schema(description = "이슈(분실, 파손 등)", example = "파손")
     private String issue;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime modifiedAt;
 }

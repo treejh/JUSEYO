@@ -6,11 +6,13 @@ import com.example.backend.chaseItem.entity.ChaseItem;
 import com.example.backend.chaseItem.repository.ChaseItemRepository;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
+import com.example.backend.itemInstance.repository.ItemInstanceRepository;
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class ChaseItemService {
     private final ChaseItemRepository repo;
     private final SupplyRequestRepository requestRepo;
+    private final ItemInstanceRepository itemInstanceRepo;
 
     @Transactional
     public ChaseItemResponseDto addChaseItem(ChaseItemRequestDto dto) {
@@ -31,13 +34,15 @@ public class ChaseItemService {
                 .quantity(dto.getQuantity())
                 .issue(dto.getIssue())
                 .build();
+
         ChaseItem saved = repo.save(ent);
         return map(saved);
     }
 
     @Transactional(readOnly = true)
-    public List<ChaseItemResponseDto> getByRequest(Long requestId) {
-        return repo.findAllBySupplyRequestId(requestId).stream()
+    public List<ChaseItemResponseDto> getChaseItemsByInstance(Long itemInstanceId) {
+        return repo.findAllByItemInstanceId(itemInstanceId)
+                .stream()
                 .map(this::map)
                 .collect(Collectors.toList());
     }

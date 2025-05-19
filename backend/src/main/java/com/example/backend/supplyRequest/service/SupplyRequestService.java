@@ -1,5 +1,7 @@
 package com.example.backend.supplyRequest.service;
 
+import com.example.backend.chaseItem.dto.request.ChaseItemRequestDto;
+import com.example.backend.chaseItem.service.ChaseItemService;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Inbound;
 import com.example.backend.enums.Outbound;
@@ -28,9 +30,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +46,7 @@ public class SupplyRequestService {
     private final InventoryInService inService;
     private final ItemInstanceRepository instanceRepo;
     private final ItemInstanceService instanceService;
+    private final ChaseItemService chaseService;
 
     /**
      * 비품 요청 생성
@@ -173,11 +176,24 @@ public class SupplyRequestService {
                             .finalImage(req.getItem().getImage())
                             .build();
                     instanceRepo.save(newInst);
+
+                    // → 승인(LEND) 추적 기록 남기기
+                    ChaseItemRequestDto chaseDto = new ChaseItemRequestDto();
+                    chaseDto.setItemInstanceId(newInst.getId());
+                    chaseDto.setAction(Outbound.LEND.name());
+                    chaseDto.setDescription("Rental approved");
+                    chaseService.addChaseItem(chaseDto);
                 }
                 // (C) 반납 대기 상태로 전환
                 req.setApprovalStatus(ApprovalStatus.RETURN_PENDING);
             } else {
                 req.setApprovalStatus(ApprovalStatus.APPROVED);
+                // → 승인(ISSUE) 기록
+                ChaseItemRequestDto chaseDto = new ChaseItemRequestDto();
+                chaseDto.setItemInstanceId(null); // 비대여라 인스턴스 없다면 null
+                chaseDto.setAction(Outbound.ISSUE.name());
+                chaseDto.setDescription("Supply request approved (non-rental)");
+                chaseService.addChaseItem(chaseDto);
             }
 
         } else if (newStatus == ApprovalStatus.REJECTED) {
@@ -203,8 +219,15 @@ public class SupplyRequestService {
 
                 UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
                 upd.setOutbound(Outbound.AVAILABLE);
-                upd.setFinalImage(null);
+                upd.setFinalImage(inst.getImage()); // 반납 시 final_image 를 기존 image 로 세팅
                 instanceService.updateStatus(inst.getId(), upd);
+
+                // → 반납(Return) 추적 기록
+                ChaseItemRequestDto chaseDto = new ChaseItemRequestDto();
+                chaseDto.setItemInstanceId(inst.getId());
+                chaseDto.setAction(Outbound.AVAILABLE.name());
+                chaseDto.setDescription("Item returned");
+                chaseService.addChaseItem(chaseDto);
             }
             req.setApprovalStatus(ApprovalStatus.RETURNED);
         }

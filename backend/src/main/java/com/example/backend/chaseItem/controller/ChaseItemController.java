@@ -4,10 +4,12 @@ import com.example.backend.chaseItem.dto.request.ChaseItemRequestDto;
 import com.example.backend.chaseItem.dto.response.ChaseItemResponseDto;
 import com.example.backend.chaseItem.service.ChaseItemService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -18,16 +20,17 @@ public class ChaseItemController {
 
     @Operation(summary = "비품 추적 기록 생성")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    @PostMapping
+    @PostMapping("/chase-items")
     @ResponseStatus(HttpStatus.CREATED)
-    public ChaseItemResponseDto create(@RequestBody ChaseItemRequestDto dto) {
+    public ChaseItemResponseDto create(@RequestBody @Valid ChaseItemRequestDto dto) {
         return service.addChaseItem(dto);
     }
 
-    @Operation(summary = "특정 요청의 비품 추적 목록 조회")
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/by-request/{requestId}")
-    public List<ChaseItemResponseDto> listByRequest(@PathVariable Long requestId) {
-        return service.getByRequest(requestId);
+    @Operation(summary = "특정 아이템 인스턴스의 추적 기록 조회")
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public List<ChaseItemResponseDto> getByItemInstance(
+            @RequestParam Long itemInstanceId ) {
+        return service.getChaseItemsByInstance(itemInstanceId);
     }
 }

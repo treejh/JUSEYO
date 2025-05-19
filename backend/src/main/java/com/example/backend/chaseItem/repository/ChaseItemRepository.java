@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface ChaseItemRepository extends JpaRepository<ChaseItem, Long> {
     List<ChaseItem> findAllBySupplyRequestId(Long requestId);
+    List<ChaseItem> findAllByItemInstanceId(Long itemInstanceId);
 }
