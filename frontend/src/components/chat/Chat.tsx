@@ -15,6 +15,7 @@ interface ChatResponseDto {
   roomId: number; // 방 번호
   sender: string; // 보낸 사람 닉네임
   message: string; // 메시지 내용
+  userId: number; // 보낸 사람 ID
   createDate: string; // ISO 형식의 날짜 문자열
   chatStatus: string; // ChatStatus (예: "ENTER", "TALK")
 }
@@ -120,6 +121,21 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
     }
   };
 
+  const handleClose = () => {
+    onClose(); // 부모 컴포넌트로 콜백 호출
+    window.location.reload(); // 화면 새로 고침
+  };
+
+  // 메시지를 날짜별로 그룹화
+  const groupedMessages = messages.reduce((acc, message) => {
+    const date = new Date(message.createDate).toLocaleDateString(); // 메시지 날짜
+    if (!acc[date]) {
+      acc[date] = []; // 날짜별로 배열 초기화
+    }
+    acc[date].push(message); // 메시지 추가
+    return acc;
+  }, {} as Record<string, ChatResponseDto[]>);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -138,7 +154,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
           {/* 닫기 버튼 */}
           <button
             className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
-            onClick={onClose} // 닫기 버튼 클릭 시 부모 컴포넌트로 콜백 호출
+            onClick={handleClose} // 닫기 버튼 클릭 시 화면 새로 고침
           >
             닫기
           </button>
@@ -172,23 +188,48 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
       )}
 
       <div className="h-64 overflow-y-auto border p-4 mb-4">
-        {messages.map((msg, index) => {
-          console.log("메시지 상태:", msg.chatStatus); // 디버깅용 로그
-          return (
-            <div key={index} className="p-2 border-b">
-              <strong>{msg.sender}</strong>: {msg.message} <br />
-              {msg.chatStatus !== "ENTER" && (
-                <small className="text-gray-500 ml-2">
-                  {new Date(msg.createDate).toLocaleDateString()}{" "}
-                  {new Date(msg.createDate).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </small>
-              )}
+        {Object.keys(groupedMessages).map((date) => (
+          <div key={date}>
+            {/* 날짜 표시 */}
+            <div className="flex justify-center my-4">
+              <span className="bg-gray-200 text-gray-600 px-4 py-1 rounded-full text-sm">
+                {date}
+              </span>
             </div>
-          );
-        })}
+
+            {/* 메시지 목록 */}
+            {groupedMessages[date].map((msg, index) => {
+              const isMyMessage = msg.userId === loginUserId; // 본인이 보낸 메시지인지 확인
+              return (
+                <div
+                  key={index}
+                  className={`flex ${
+                    isMyMessage ? "justify-end" : "justify-start"
+                  } mb-2`}
+                >
+                  <div
+                    className={`p-2 rounded-lg max-w-xs ${
+                      isMyMessage
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-black"
+                    }`}
+                  >
+                    <p>{msg.message}</p>
+                    {/* 상태가 "ENTER"가 아닌 경우에만 시간 표시 */}
+                    {msg.chatStatus !== "ENTER" && (
+                      <small className="text-xs text-gray-500 block mt-1">
+                        {new Date(msg.createDate).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </small>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
       <div className="flex">
         <input
