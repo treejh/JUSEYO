@@ -218,7 +218,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
   }, [roomId, roomInfo]);
 
   return (
-    <div className="flex flex-col h-[80vh] border border-gray-300 rounded-lg shadow-md">
+    <div className="flex flex-col h-[90vh] border border-gray-300 rounded-lg shadow-md">
       {/* 채팅방 헤더 */}
       <div className="flex justify-between items-center p-4 border-b border-gray-300">
         <div>
