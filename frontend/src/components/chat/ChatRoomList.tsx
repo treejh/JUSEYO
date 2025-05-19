@@ -41,6 +41,9 @@ const ChatRoomList: React.FC<Props> = ({
     [key: number]: OpponentInfo;
   }>({});
 
+  const [searchQuery, setSearchQuery] = useState<string>(""); // 검색어 상태
+  const [filteredChatRooms, setFilteredChatRooms] = useState<ChatRoom[]>([]); // 필터링된 채팅방 리스트
+
   useEffect(() => {
     const fetchChatRooms = async () => {
       try {
@@ -299,20 +302,49 @@ const ChatRoomList: React.FC<Props> = ({
     }));
   };
 
+  useEffect(() => {
+    // 검색어 변경 시 필터링
+    const filtered = chatRooms.filter((room) => {
+      const displayName =
+        roomType === "GROUP"
+          ? room.roomName
+          : opponentInfo[room.id]?.name || "";
+      return displayName.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+    setFilteredChatRooms(filtered);
+  }, [searchQuery, chatRooms, roomType, opponentInfo]);
+
   if (loading) return <p>로딩 중...</p>;
   if (error) return <p>{error}</p>;
 
   return (
     <div className="h-full overflow-y-auto bg-white rounded-lg shadow-md p-4">
       <h2 className="text-lg font-bold mb-4">채팅방 리스트</h2>
+
+      {/* 검색 입력 필드 */}
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={
+            roomType === "GROUP"
+              ? "채팅방 이름으로 검색"
+              : "상대방 이름으로 검색"
+          }
+          className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       <ul className="divide-y divide-gray-200">
-        {chatRooms.map((room) => {
-          const opponent = opponentInfo[room.id];
+        {filteredChatRooms.map((room) => {
           const displayName =
-            roomType === "GROUP" ? room.roomName : opponent?.name || "로딩중..";
+            roomType === "GROUP"
+              ? room.roomName
+              : opponentInfo[room.id]?.name || "로딩중..";
           const department =
-            roomType !== "GROUP" && opponent?.department
-              ? opponent.department
+            roomType !== "GROUP" && opponentInfo[room.id]?.department
+              ? opponentInfo[room.id].department
               : null;
 
           return (
