@@ -71,15 +71,15 @@ public class NotificationController {
         return notificationService.streamNotifications(userId);
     }
 
-    // 채팅 전용 알림
-    @PostMapping("/chat")
-    public ResponseEntity<Void> createChatNotification(@RequestBody NewChatNotificationDTO request) {
-        User user = userService.findById(request.getSenderId());
-        String senderName = user.getName();
-        RoleType senderRole = user.getRole().getRole();
-        newChatNotificationService.notifyNewChat(request.getTargetUserId(), request.getRoomId(), senderRole, senderName);
-        return ResponseEntity.ok().build();
-    }
+//    // 채팅 전용 알림
+//    @PostMapping("/chat")
+//    public ResponseEntity<Void> createChatNotification(@RequestBody NewChatNotificationDTO request) {
+//        User user = userService.findById(request.getSenderId());
+//        String senderName = user.getName();
+//        RoleType senderRole = user.getRole().getRole();
+//        newChatNotificationService.notifyNewChat(request.getTargetUserId(), request.getRoomId(), senderRole, senderName);
+//        return ResponseEntity.ok().build();
+//    }
 
 
 

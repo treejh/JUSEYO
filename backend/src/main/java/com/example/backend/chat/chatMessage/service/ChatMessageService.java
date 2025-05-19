@@ -16,6 +16,7 @@ import com.example.backend.enums.ChatMessageStatus;
 import com.example.backend.enums.ChatStatus;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
+import com.example.backend.notification.event.NewChatEvent;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -43,6 +45,9 @@ public class ChatMessageService {
     private final ChatRoomService chatRoomService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final TokenService tokenService;
+
+    // for 알림
+    private final ApplicationEventPublisher eventPublisher;
 
 
     //채팅방 유저 리스트에 유저추가 -> 이거 유저 미드에 넣으면 되지 않을까 ?
@@ -100,6 +105,17 @@ public class ChatMessageService {
                                 .build();
 
                         chatMessageRepository.save(enterMessage);
+
+                        if (!userList.getUser().getId().equals(user.getId())) {
+                            eventPublisher.publishEvent(new NewChatEvent(
+                                    userList.getUser().getId(),
+                                    chatRoom.getId(),
+                                    user.getRole().getRole(),
+                                    user.getName()
+                            ));
+                            System.out.println("================newChatEvent 실행 ================");
+                        }
+
                         //가장 최근에 글이 입력된 채팅방 가져오기 위해서
                         userList.setModifiedAt(LocalDateTime.now());
                         simpMessagingTemplate.convertAndSend(

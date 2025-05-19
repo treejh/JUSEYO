@@ -58,10 +58,11 @@ public class NotificationEventListener {
 
     }
 
-//    // 새로운 채팅
-//    public void handleNewChat(NewChatEvent event) {
-//        newChatNotificationService.notifyNewChat(event.getTargetId(), event.getRoomId(), event.getSenderRole(), event.getSenderName());
-//    }
+    // 새로운 채팅
+    @EventListener
+    public void handleNewChat(NewChatEvent event) {
+        newChatNotificationService.notifyNewChat(event.getTargetId(), event.getRoomId(), event.getSenderRole(), event.getSenderName());
+    }
 
     // 추가 이벤트도 여기에 계속 추가하면 됨
 }
