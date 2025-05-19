@@ -33,9 +33,7 @@ public class CategoryController {
     private final TokenService tokenService;
     private final UserService userService;
 
-    /**
-     * 🔹 카테고리 생성 (매니저만 가능)
-     */
+    // 카테고리 생성 (매니저만 가능)
     @PostMapping
     @Operation(
             summary = "카테고리 생성",
@@ -45,16 +43,14 @@ public class CategoryController {
         User user = getAuthorizedManager();
         ManagementDashboard dashboard = user.getManagementDashboard();
 
-        // ✅ Service 호출 - 생성 후 DTO 반환
+        // Service 호출 - 생성 후 DTO 반환
         CategoryResponseDTO responseDTO = categoryService.createCategory(dto, dashboard);
 
-        // ✅ 생성된 카테고리 반환
+        // 생성된 카테고리 반환
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
-    /**
-     * 🔹 전체 카테고리 조회 (로그인한 유저 + 자신의 관리 페이지에 속한 것만 조회)
-     */
+    // 전체 카테고리 조회 (로그인한 유저 + 자신의 관리 페이지에 속한 것만 조회)
     @GetMapping
     @Operation(
             summary = "전체 카테고리 조회",
@@ -68,15 +64,13 @@ public class CategoryController {
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
 
-        // ✅ Service 호출 - 전체 조회 후 DTO로 반환
+        // Service 호출 - 전체 조회 후 DTO로 반환
         List<CategoryResponseDTO> response = categoryService.findAllCategoriesByDashboard(dashboard.getId());
 
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 🔹 특정 카테고리 조회 (로그인한 유저 + 자신의 관리 페이지에 속할 때만 조회 가능)
-     */
+    // 특정 카테고리 조회 (로그인한 유저 + 자신의 관리 페이지에 속할 때만 조회 가능)
     @GetMapping("/{id}")
     @Operation(
             summary = "특정 카테고리 조회",
@@ -90,15 +84,13 @@ public class CategoryController {
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
 
-        // ✅ Service 호출 - 권한 체크 포함된 단일 조회
+        // Service 호출 - 권한 체크 포함된 단일 조회
         CategoryResponseDTO response = categoryService.findCategoryById(id, dashboard);
 
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 🔹 카테고리 수정 (매니저만 가능)
-     */
+    // 카테고리 수정 (매니저만 가능)
     @PutMapping("/{id}")
     @Operation(
             summary = "카테고리 수정",
@@ -111,15 +103,13 @@ public class CategoryController {
         User user = getAuthorizedManager();
         ManagementDashboard dashboard = user.getManagementDashboard();
 
-        // ✅ Service 호출 - 업데이트 처리
+        // Service 호출 - 업데이트 처리
         CategoryResponseDTO responseDTO = categoryService.updateCategory(id, dto, dashboard);
 
         return ResponseEntity.ok(responseDTO);
     }
 
-    /**
-     * 🔹 카테고리 삭제 (매니저만 가능)
-     */
+    // 카테고리 삭제 (매니저만 가능)
     @DeleteMapping("/{id}")
     @Operation(
             summary = "카테고리 삭제",
@@ -129,16 +119,14 @@ public class CategoryController {
         User user = getAuthorizedManager();
         ManagementDashboard dashboard = user.getManagementDashboard();
 
-        // ✅ Service 호출 - 삭제 처리
+        // Service 호출 - 삭제 처리
         categoryService.deleteCategory(id, dashboard);
 
         return ResponseEntity.noContent().build();
 
     }
 
-    /**
-     * 🔹 매니저 권한 체크 메서드
-     */
+    // 매니저 권한 체크 메서드
     private User getAuthorizedManager() {
         Long userId = tokenService.getIdFromToken();
         User user = userService.findById(userId);
@@ -155,9 +143,7 @@ public class CategoryController {
         return user;
     }
 
-    /**
-     * 🔹 사용자 권한 체크 메서드 (매니저가 아니어도 조회 가능하도록)
-     */
+    // 사용자 권한 체크 메서드 (매니저가 아니어도 조회 가능하도록)
     private User getAuthorizedUser() {
         Long userId = tokenService.getIdFromToken();
         User user = userService.findById(userId);
