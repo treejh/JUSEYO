@@ -26,6 +26,7 @@ const ChatPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]); // 선택된 유저 정보
+  const [searchQuery, setSearchQuery] = useState<string>(""); // 검색 쿼리
 
   // WebSocket 클라이언트 초기화
   useEffect(() => {
@@ -145,6 +146,11 @@ const ChatPage = () => {
     }
   };
 
+  // 검색 쿼리에 따른 필터링된 유저 리스트
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) return <p>로딩 중...</p>;
   if (error) return <p>{error}</p>;
 
@@ -155,7 +161,7 @@ const ChatPage = () => {
         <div className="w-1/6 bg-white p-4 rounded-lg shadow-md overflow-hidden">
           <h2 className="text-xl font-bold mb-4 text-gray-700">유저 리스트</h2>
           {/* 채팅방 생성 버튼 */}
-          <div className="mb-6">
+          <div className="mb-4">
             <button
               onClick={openModal}
               className="bg-blue-500 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-600 transition"
@@ -163,9 +169,19 @@ const ChatPage = () => {
               채팅방 생성
             </button>
           </div>
+          {/* 이름 검색 입력 필드 */}
+          <div className="mb-4">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="이름으로 검색"
+              className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           {/* 유저 리스트 */}
           <ul className="space-y-4">
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <li
                 key={user.id}
                 className="flex items-center justify-between bg-white shadow-sm p-4 rounded-lg"

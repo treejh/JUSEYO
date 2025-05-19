@@ -16,6 +16,8 @@ const UserList: React.FC<Props> = ({
   managementDashboardName,
 }) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]); // 검색된 유저 리스트
+  const [searchQuery, setSearchQuery] = useState<string>(""); // 검색어
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +45,7 @@ const UserList: React.FC<Props> = ({
 
         const data = await response.json();
         setUsers(data.data.content); // 유저 리스트 데이터
+        setFilteredUsers(data.data.content); // 초기 필터링된 리스트 설정
         setLoading(false);
       } catch (err) {
         setError("유저 리스트를 가져오는 중 오류가 발생했습니다.");
@@ -52,6 +55,18 @@ const UserList: React.FC<Props> = ({
 
     fetchUsers();
   }, [managementDashboardName]);
+
+  // 검색어 변경 시 필터링
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredUsers(users); // 검색어가 없으면 전체 리스트 표시
+    } else {
+      const filtered = users.filter((user) =>
+        user.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    }
+  }, [searchQuery, users]);
 
   const checkChatRoomExistence = async (userId: number): Promise<boolean> => {
     try {
@@ -134,8 +149,20 @@ const UserList: React.FC<Props> = ({
   return (
     <div className="h-full overflow-y-auto bg-white rounded-lg shadow-md p-4">
       <h2 className="text-xl font-bold mb-4">유저 리스트</h2>
+
+      {/* 검색 입력 필드 */}
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="이름으로 검색"
+          className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       <ul className="divide-y divide-gray-200">
-        {users.map((user) => (
+        {filteredUsers.map((user) => (
           <li
             key={user.id}
             className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
