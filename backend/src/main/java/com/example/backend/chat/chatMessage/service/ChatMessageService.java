@@ -66,6 +66,7 @@ public class ChatMessageService {
                 //create가 맞는 경우는 enter로 변경
                 chatUser.setChatStatus(ChatStatus.ENTER);
                 chatUser.setModifiedAt(LocalDateTime.now());
+                chatUser.setLastEnterTime(LocalDateTime.now());
                 chatUserRepository.save(chatUser);
 
                 chatMessage = ChatMessage.builder()
@@ -76,7 +77,6 @@ public class ChatMessageService {
                         .build();
             }
             case TALK -> {
-
                 // 메시지 저장
                 chatMessage = ChatMessage.builder()
                         .message(chatMessageRequestDto.getMessage())
@@ -102,6 +102,7 @@ public class ChatMessageService {
                         chatMessageRepository.save(enterMessage);
                         //가장 최근에 글이 입력된 채팅방 가져오기 위해서
                         userList.setModifiedAt(LocalDateTime.now());
+                        userList.setLastEnterTime(LocalDateTime.now());
                         simpMessagingTemplate.convertAndSend(
                                 "/sub/chat/" + chatRoom.getId(),
                                 ApiResponse.of(200, "입장 메시지", new ChatResponseDto(enterMessage))
@@ -119,12 +120,12 @@ public class ChatMessageService {
                         .user(user)
                         .messageStatus(ChatMessageStatus.LEAVE)
                         .build();
-                chatUser.setChatStatus(ChatStatus.LEAVE);
-                chatUserRepository.save(chatUser);
+                log.info("message확인 1 + " + chatMessage.getMessage());
+
             }
             default -> throw new BusinessLogicException(ExceptionCode.INVALID_CHAT_ROOM_TYPE);
         }
-
+        log.info("message확인 2 + " + chatMessage.getMessage());
         return chatMessageRepository.save(chatMessage);
     }
 

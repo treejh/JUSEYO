@@ -24,4 +24,6 @@ public class ChatRoomResponseDto {
         this.roomName= chatRoom.getRoomName();
         this.roomType=chatRoom.getRoomType();
     }
+
+
 }

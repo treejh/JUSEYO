@@ -1,12 +1,16 @@
 package com.example.backend.redis;
 
 import java.time.Duration;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisService {
 
     private final StringRedisTemplate redisTemplate;
@@ -32,9 +36,51 @@ public class RedisService {
         redisTemplate.delete(key);
     }
 
+    // 삭제 예약 리스트에 추가
+    public void addRoomIdToDeletionList(Long roomId) {
+        redisTemplate.opsForSet().add("chatroom:deletion:list", String.valueOf(roomId));
+    }
+
+    // 삭제 예약 리스트 가져오기
+    public Set<String> getDeletionRoomIds() {
+        return redisTemplate.opsForSet().members("chatroom:deletion:list");
+    }
+
+    // 삭제 예약 리스트에서 제거
+    public void removeRoomIdFromDeletionList(Long roomId) {
+        redisTemplate.opsForSet().remove("chatroom:deletion:list", String.valueOf(roomId));
+    }
+
+    // TTL 조회 (초 단위)
+    public Long getExpireSeconds(String key) {
+        return redisTemplate.getExpire(key, TimeUnit.SECONDS);
+    }
+
+    // 특정 패턴의 키 모두 조회
+    public Set<String> getKeys(String pattern) {
+        return redisTemplate.keys(pattern);
+    }
+
+
     //redis에 키가 존재하는지 확인
     public boolean checkExistsKey(String key) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
+
+    // refreshToken 저장 (7일 TTL)
+    public void saveRefreshToken(Long userId, String refreshToken) {
+        saveData("refresh:" + userId, refreshToken, Duration.ofDays(7));
+    }
+
+    // refreshToken 조회
+    public String getRefreshToken(Long userId) {
+        return getData("refresh:" + userId);
+    }
+
+    // refreshToken 삭제
+    public void deleteRefreshToken(Long userId) {
+        deleteData("refresh:" + userId);
+    }
+
 
 }

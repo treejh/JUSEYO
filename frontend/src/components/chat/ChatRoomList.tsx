@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Client } from "@stomp/stompjs";
-import { leaveChatRoom } from "../../utils/leaveChatRoom"; // 나가기 로직 임포트
+import { leaveChatRoom } from "../../utils/leaveChatRoom";
 
 interface ChatRoom {
   id: number;
@@ -12,7 +12,7 @@ interface Props {
   onSelectRoom: (roomId: number) => void; // 선택된 채팅방 ID를 부모 컴포넌트로 전달
   client: Client | null; // WebSocket 클라이언트
   loginUserId: number; // 현재 로그인한 유저 ID
-  roomType: string; // 채팅방 타입 (ONE_TO_ONE, SUPPORT 등)
+  roomType: string; // 채팅방 타입 (GROUP, ONE_TO_ONE 등)
 }
 
 const ChatRoomList: React.FC<Props> = ({
@@ -27,6 +27,10 @@ const ChatRoomList: React.FC<Props> = ({
   const [opponentNames, setOpponentNames] = useState<{ [key: number]: string }>(
     {}
   ); // 채팅방별 상대방 이름
+  const [newMessages, setNewMessages] = useState<{ [key: number]: boolean }>(
+    {}
+  ); // 채팅방별 새 메시지 여부
+  const [currentRoomId, setCurrentRoomId] = useState<number | null>(null); // 현재 열려 있는 채팅방 ID
 
   useEffect(() => {
     const fetchChatRooms = async () => {
@@ -88,10 +92,68 @@ const ChatRoomList: React.FC<Props> = ({
 
   useEffect(() => {
     // 모든 채팅방의 상대방 이름 가져오기
+    if (roomType !== "GROUP") {
+      chatRooms.forEach((room) => {
+        fetchOpponentName(room.id);
+      });
+    }
+  }, [chatRooms, roomType]);
+
+  // 특정 채팅방의 새 메시지 여부 확인
+  const fetchNewMessageStatus = async (roomId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/${roomId}/has-new-message`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("새 메시지 여부를 가져오는 중 오류가 발생했습니다.");
+      }
+
+      const data = await response.json();
+
+      setNewMessages((prev) => ({
+        ...prev,
+        [roomId]: data.data, // true 또는 false
+      }));
+    } catch (err) {
+      console.error(`새 메시지 여부 로드 실패 (채팅방 ID: ${roomId}):`, err);
+    }
+  };
+
+  useEffect(() => {
+    // 모든 채팅방의 새 메시지 여부 확인
     chatRooms.forEach((room) => {
-      fetchOpponentName(room.id);
+      fetchNewMessageStatus(room.id);
     });
   }, [chatRooms]);
+
+  useEffect(() => {
+    const subscriptions: { [key: number]: boolean } = {};
+
+    if (client && client.connected) {
+      chatRooms.forEach((room) => {
+        if (!subscriptions[room.id]) {
+          client.subscribe(`/sub/chat/${room.id}`, (message) => {
+            console.log(`채팅방 ${room.id}에서 메시지 수신:`, message.body);
+            // 새 메시지가 수신되면 상태를 업데이트
+            setNewMessages((prev) => ({
+              ...prev,
+              [room.id]: true,
+            }));
+          });
+          subscriptions[room.id] = true; // 구독 상태 저장
+        }
+      });
+    }
+  }, [client, chatRooms]);
 
   const validateAndEnterRoom = async (roomId: number) => {
     try {
@@ -116,14 +178,40 @@ const ChatRoomList: React.FC<Props> = ({
       if (data.data) {
         // 이미 입장한 경우
         console.log(`이미 입장한 채팅방: ${roomId}`);
+        setCurrentRoomId(roomId); // 현재 열려 있는 채팅방 ID 설정
         onSelectRoom(roomId); // 채팅방만 보이게 설정
       } else {
         // 입장하지 않은 경우
         console.log(`입장하지 않은 채팅방: ${roomId}`);
+        await updateEnterTime(roomId); // 입장 시간 업데이트
         enterRoom(roomId); // 입장 처리
       }
     } catch (error) {
       console.error("입장 검증 실패:", error);
+    }
+  };
+
+  // 채팅방 입장 시간 업데이트
+  const updateEnterTime = async (roomId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/${roomId}/enter`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("채팅방 입장 시간 업데이트 중 오류가 발생했습니다.");
+      }
+
+      console.log(`채팅방 ${roomId} 입장 시간 업데이트 성공`);
+    } catch (error) {
+      console.error(`채팅방 ${roomId} 입장 시간 업데이트 실패:`, error);
     }
   };
 
@@ -148,7 +236,14 @@ const ChatRoomList: React.FC<Props> = ({
     console.log("ENTER 메시지 발행:", enterMessagePayload);
 
     // 선택된 채팅방 ID를 부모 컴포넌트로 전달
+    setCurrentRoomId(roomId); // 현재 열려 있는 채팅방 ID 설정
     onSelectRoom(roomId);
+
+    // 새 메시지 상태 초기화
+    setNewMessages((prev) => ({
+      ...prev,
+      [roomId]: false,
+    }));
   };
 
   if (loading) return <p>로딩 중...</p>;
@@ -159,14 +254,22 @@ const ChatRoomList: React.FC<Props> = ({
       <h2 className="text-xl font-bold mb-4">채팅방 리스트</h2>
       <ul className="space-y-2">
         {chatRooms.map((room) => {
-          const opponentName = opponentNames[room.id] || "로딩중.."; // 상대방 이름 또는 로딩 중 표시
+          const displayName =
+            roomType === "GROUP"
+              ? room.roomName // GROUP 타입일 경우 채팅방 이름
+              : opponentNames[room.id] || "로딩중.."; // 다른 타입일 경우 상대방 이름
 
           return (
             <li
               key={room.id}
               className="flex justify-between items-center border p-2 rounded"
             >
-              <span>{opponentName}</span>
+              <span>
+                {displayName}{" "}
+                {newMessages[room.id] && currentRoomId !== room.id && (
+                  <span className="text-red-500 font-bold ml-2">NEW</span>
+                )}
+              </span>
               <div className="flex gap-2">
                 <button
                   className="bg-green-500 text-white px-4 py-2 rounded"

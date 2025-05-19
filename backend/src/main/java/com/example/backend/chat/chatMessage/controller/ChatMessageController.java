@@ -49,7 +49,7 @@ public class ChatMessageController {
                 "메시지 확인",
                 responseMessage
         );
-
+        log.info("브로드캐스트 메시지: " + response);
         template.convertAndSend("/sub/chat/" + roomId, response);
     }
 
