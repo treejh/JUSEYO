@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,8 +39,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String accessToken = getAccessToken(request);
+        String refreshToken = getRefreshToken(request);
+
+        if (accessToken == null && refreshToken == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (accessToken == null && refreshToken != null) {
+            log.info("refreshToken 33 " + refreshToken);
+            if (StringUtils.hasText(refreshToken) && jwtTokenizer.validateRefreshToken(refreshToken)) {
+                try {
+                    log.info("refreshToken 44 " + refreshToken);
+                    setCookies(refreshToken, response);
+                    filterChain.doFilter(request, response);
+                    return;
+                } catch (Exception ex) {
+                    log.error("Failed to reissue access token", ex);
+                    request.setAttribute("exception", JwtExceptionCode.EXPIRED_TOKEN.getCode());
+                    SecurityContextHolder.clearContext();
+                    throw new BadCredentialsException("Invalid refresh token", ex);
+                }
+            }
+        }
+
         if (StringUtils.hasText(accessToken)) {
             try {
+                jwtTokenizer.validateAccessToken(accessToken);
                 Authentication authentication = getAuthentication(accessToken);
 
                 //만들어진 authentication를 SecurityContextHolder의 SecurityContext 로 넘긴다.
@@ -50,9 +74,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             } catch (ExpiredJwtException e) {
                 request.setAttribute("exception", JwtExceptionCode.EXPIRED_TOKEN.getCode());
-
-                String refreshToken = getRefreshToken(request);
-
                 if (!StringUtils.hasText(refreshToken)) {
                     log.warn("No refresh token found");
 
@@ -60,34 +81,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "refreshToken이 없습니다 재로그인 해주세요.");
                     return;
                 }
-
-                if (StringUtils.hasText(refreshToken) && jwtTokenizer.validateToken(refreshToken)) {
+                if (StringUtils.hasText(refreshToken) && jwtTokenizer.validateRefreshToken(refreshToken)) {
                     try {
-                        Claims claims = jwtTokenizer.parseRefreshToken(refreshToken);
-
-                        String email = claims.getSubject();
-                        Long userId = claims.get("userId", Long.class);
-                        String name = claims.get("username", String.class);
-                        List<String> roles = claims.get("roles", List.class);
-
-                        log.info("역할 이름 확인!!!!" + roles.get(0));
-
-                        String newAccessToken = jwtTokenizer.createAccessToken(userId, email, name, roles.get(0));
-
-                        // 쿠키로 재전송
-                        Cookie newAccessTokenCookie = new Cookie("accessToken", newAccessToken);
-                        newAccessTokenCookie.setHttpOnly(true);
-                        newAccessTokenCookie.setPath("/");
-                        newAccessTokenCookie.setMaxAge(60 * 30); // 30분
-                        response.addCookie(newAccessTokenCookie);
-
-                        // SecurityContext 갱신
-                        Authentication authentication = getAuthentication(newAccessToken);
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-
+                        setCookies(refreshToken,response);
                         filterChain.doFilter(request, response);
                         return;
-
                     } catch (Exception ex) {
                         log.error("Failed to reissue access token", ex);
                         request.setAttribute("exception", JwtExceptionCode.EXPIRED_TOKEN.getCode());
@@ -117,7 +115,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response);
 
         }
 
@@ -177,6 +175,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         return null;
+    }
+
+    private void setCookies(String token, HttpServletResponse response){
+        Claims claims = jwtTokenizer.parseRefreshToken(token);
+
+        String email = claims.getSubject();
+        Long userId = claims.get("userId", Long.class);
+        String name = claims.get("username", String.class);
+        List<String> roles = claims.get("roles", List.class);
+
+        log.info("역할 이름 확인!!!!" + roles.get(0));
+
+        String newAccessToken = jwtTokenizer.createAccessToken(userId, email, name, roles.get(0));
+
+        // 쿠키로 재전송
+        Cookie newAccessTokenCookie = new Cookie("accessToken", newAccessToken);
+        newAccessTokenCookie.setHttpOnly(true);
+        newAccessTokenCookie.setPath("/");
+        newAccessTokenCookie.setMaxAge(60 * 30); // 30분
+        response.addCookie(newAccessTokenCookie);
+
+        // SecurityContext 갱신
+        Authentication authentication = getAuthentication(newAccessToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
     }
 
 

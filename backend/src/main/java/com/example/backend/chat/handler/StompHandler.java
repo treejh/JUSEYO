@@ -13,7 +13,6 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
-import java.util.Arrays;
 
 @Slf4j
 @Component
@@ -36,7 +35,7 @@ public class StompHandler implements ChannelInterceptor {
                 throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_FOUND);
             }
 
-            jwtTokenizer.validateToken(token);
+            jwtTokenizer.validateAccessToken(token);
             Claims claims = jwtTokenizer.parseAccessToken(token);
             String username = claims.getSubject();
 

@@ -10,15 +10,12 @@ import com.example.backend.role.repository.RoleRepository;
 import com.example.backend.security.jwt.util.JwtTokenizer;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +35,8 @@ public class TokenService {
         if(cookies!=null){
             for(Cookie cookie : cookies){
                 if("accessToken".equals(cookie.getName())){
+                    return cookie.getValue();
+                }else if("refreshToken".equals(cookie.getName())){
                     return cookie.getValue();
                 }
             }
@@ -115,10 +114,9 @@ public class TokenService {
         httpServletResponse.addCookie(refreshTokenCookie);
     }
 
-    public void setAccessCookie(String name, String value) {
+    public void generateAccessToken(String name, String value) {
         long maxAgeInSeconds = jwtTokenizer.accessTokenExpirationMinutes / 1000;
         ResponseCookie cookie = ResponseCookie.from(name, value)
-                .path("/")
                 .sameSite("Strict")
                 .secure(true)
                 .httpOnly(true)
@@ -159,7 +157,7 @@ public class TokenService {
     }
 
     public boolean validateToken(String token) {
-        return jwtTokenizer.validateToken(token);
+        return jwtTokenizer.validateAccessToken(token);
     }
 
 
