@@ -47,6 +47,6 @@ public class ItemInstance extends Auditable {
     private String instanceCode;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     private Status status=Status.ACTIVE;
 }

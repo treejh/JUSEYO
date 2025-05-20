@@ -5,6 +5,7 @@ package com.example.backend.security.jwt.service;
 import com.example.backend.enums.RoleType;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
+import com.example.backend.redis.RedisService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.role.repository.RoleRepository;
 import com.example.backend.security.jwt.util.JwtTokenizer;
@@ -26,6 +27,7 @@ public class TokenService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final JwtTokenizer jwtTokenizer;
+    private final RedisService redisService;
 
 
     public String getTokenFromRequest() {
@@ -108,6 +110,8 @@ public class TokenService {
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(Math.toIntExact(maxAgeRefreshInSeconds));
+
+        redisService.saveRefreshToken(user.getId(),refreshToken);
 
 
         httpServletResponse.addCookie(accessTokenCookie);

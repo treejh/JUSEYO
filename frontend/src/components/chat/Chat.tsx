@@ -1,28 +1,46 @@
-import React, { useEffect, useState } from "react";
-import { Client, Message } from "@stomp/stompjs";
-import { FaUser } from "react-icons/fa"; // 사람 아이콘 사용
-import { fetchParticipants, Participant } from "../../utils/fetchParticipants"; // 참여 유저 목록 가져오기 함수 임포트
-import { leaveChatRoom } from "../../utils/leaveChatRoom"; // 나가기 로직 임포트
+import React, { useEffect, useRef, useState } from "react";
+import { Client } from "@stomp/stompjs";
+import { FaUser, FaTimes, FaDoorOpen } from "react-icons/fa"; // 아이콘 추가
+import { fetchParticipants, Participant } from "../../utils/fetchParticipants";
+import { leaveChatRoom } from "../../utils/leaveChatRoom";
 
 interface Props {
-  roomId: number; // 선택된 채팅방 ID
-  client: Client | null; // WebSocket 클라이언트
-  loginUserId: number; // 현재 로그인한 유저 ID
+  roomId: number;
+  client: Client | null;
+  loginUserId: number;
+  onClose: () => void;
 }
 
 interface ChatResponseDto {
-  roomId: number; // 방 번호
-  sender: string; // 보낸 사람 닉네임
-  message: string; // 메시지 내용
-  createDate: string; // ISO 형식의 날짜 문자열
-  chatStatus: string; // ChatStatus (예: "ENTER", "TALK")
+  roomId: number;
+  sender: string;
+  message: string;
+  userId: number;
+  createDate: string;
+  chatStatus: string;
 }
 
-const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
+interface ChatRoomResponseDto {
+  id: number;
+  roomName: string;
+  roomType: string;
+}
+
+interface OpponentResponseDto {
+  name: string;
+  department: string | null;
+}
+
+const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
+  const [roomInfo, setRoomInfo] = useState<ChatRoomResponseDto | null>(null);
+  const [opponentInfo, setOpponentInfo] = useState<OpponentResponseDto | null>(
+    null
+  );
   const [messages, setMessages] = useState<ChatResponseDto[]>([]);
   const [inputMessage, setInputMessage] = useState<string>("");
   const [participants, setParticipants] = useState<Participant[]>([]); // 참여 유저 목록 상태
   const [showParticipants, setShowParticipants] = useState<boolean>(false); // 참여 유저 목록 표시 여부
+  const messagesEndRef = useRef<HTMLDivElement | null>(null); // 스크롤 이동을 위한 ref
 
   // 참여 유저 목록 가져오기
   const loadParticipants = async () => {
@@ -32,6 +50,11 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
     } catch (error) {
       console.error("참여 유저 목록 로드 실패:", error);
     }
+  };
+
+  // 스크롤을 가장 아래로 이동
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   // 채팅방 메시지 초기 로드
@@ -56,6 +79,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
         const data = await response.json();
         console.log("로드된 메시지:", data.data.content);
         setMessages(data.data.content.reverse()); // 최신 메시지가 아래로 가도록 정렬
+        scrollToBottom(); // 스크롤을 가장 아래로 이동
       } catch (error) {
         console.error("채팅 메시지 로드 실패:", error);
       }
@@ -71,15 +95,13 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
       return;
     }
 
-    const subscription = client.subscribe(
-      `/sub/chat/${roomId}`,
-      (message: Message) => {
-        const response = JSON.parse(message.body); // 서버에서 발행된 메시지 파싱
-        const receivedMessage: ChatResponseDto = response.data; // ApiResponse의 data 필드 추출
-        console.log("수신된 메시지:", response); // 디버깅용 로그
-        setMessages((prevMessages) => [...prevMessages, receivedMessage]); // 메시지 추가
-      }
-    );
+    const subscription = client.subscribe(`/sub/chat/${roomId}`, (message) => {
+      const response = JSON.parse(message.body); // 서버에서 발행된 메시지 파싱
+      const receivedMessage: ChatResponseDto = response.data; // ApiResponse의 data 필드 추출
+      console.log("수신된 메시지:", response); // 디버깅용 로그
+      setMessages((prevMessages) => [...prevMessages, receivedMessage]); // 메시지 추가
+      scrollToBottom(); // 새 메시지 수신 시 스크롤 이동
+    });
 
     return () => {
       subscription.unsubscribe(); // 컴포넌트 언마운트 시 구독 해제
@@ -116,14 +138,102 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
       });
 
       setInputMessage(""); // 입력 필드 초기화
+      scrollToBottom(); // 메시지 전송 후 스크롤을 맨 아래로 이동
     }
   };
 
+  const handleClose = () => {
+    onClose(); // 부모 컴포넌트로 콜백 호출
+    window.location.reload(); // 화면 새로 고침
+  };
+
+  // 메시지를 날짜별로 그룹화
+  const groupedMessages = messages.reduce((acc, message) => {
+    const date = new Date(message.createDate).toLocaleDateString(); // 메시지 날짜
+    if (!acc[date]) {
+      acc[date] = []; // 날짜별로 배열 초기화
+    }
+    acc[date].push(message); // 메시지 추가
+    return acc;
+  }, {} as Record<string, ChatResponseDto[]>);
+
+  // 채팅방 정보 가져오기
+  useEffect(() => {
+    const fetchRoomInfo = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/${roomId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("채팅방 정보를 가져오는 중 오류가 발생했습니다.");
+        }
+
+        const data = await response.json();
+        setRoomInfo(data.data);
+      } catch (error) {
+        console.error("채팅방 정보 로드 실패:", error);
+      }
+    };
+
+    fetchRoomInfo();
+  }, [roomId]);
+
+  // 상대방 정보 가져오기 (1:1 채팅방일 경우)
+  useEffect(() => {
+    if (roomInfo?.roomType !== "GROUP") {
+      const fetchOpponentInfo = async () => {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/${roomId}/opponent`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include",
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("상대방 정보를 가져오는 중 오류가 발생했습니다.");
+          }
+
+          const data = await response.json();
+          setOpponentInfo(data.data);
+        } catch (error) {
+          console.error("상대방 정보 로드 실패:", error);
+        }
+      };
+
+      fetchOpponentInfo();
+    }
+  }, [roomId, roomInfo]);
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">채팅방</h2>
+    <div className="flex flex-col h-[90vh] border border-gray-300 rounded-lg shadow-md">
+      {/* 채팅방 헤더 */}
+      <div className="flex justify-between items-center p-4 border-b border-gray-300">
+        <div>
+          <h2 className="text-xl font-bold">
+            {roomInfo?.roomType === "GROUP"
+              ? roomInfo.roomName
+              : `${opponentInfo?.name || "알 수 없음"} 채팅방`}
+          </h2>
+          {roomInfo?.roomType !== "GROUP" && opponentInfo?.department && (
+            <p className="text-sm text-gray-500">{opponentInfo.department}</p>
+          )}
+        </div>
+        {/* 닫기 및 나가기 버튼 */}
         <div className="flex items-center">
+          {/* 참여 유저 목록 버튼 */}
           <button
             className="text-gray-600 hover:text-gray-800 mr-4"
             onClick={() => {
@@ -133,17 +243,26 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
           >
             <FaUser size={24} />
           </button>
+          {/* 닫기 버튼 */}
           <button
-            className="bg-red-500 text-white px-4 py-2 rounded"
-            onClick={handleLeaveChatRoom}
+            className="text-gray-600 hover:text-gray-800 mr-4"
+            onClick={handleClose} // 닫기 버튼 클릭 시 화면 새로 고침
           >
-            채팅방 나가기
+            <FaTimes size={24} /> {/* x 아이콘 */}
+          </button>
+          {/* 나가기 버튼 */}
+          <button
+            className="text-gray-600 hover:text-gray-800"
+            onClick={() => leaveChatRoom(client, roomId, loginUserId)}
+          >
+            <FaDoorOpen size={24} /> {/* 문 아이콘 */}
           </button>
         </div>
       </div>
 
+      {/* 참여 유저 목록 */}
       {showParticipants && (
-        <div className="absolute top-16 right-4 bg-white border rounded shadow-lg p-4 w-64 z-50">
+        <div className="absolute top-16 right-4 bg-white border border-gray-300 rounded shadow-lg p-4 w-64 z-50">
           <h3 className="text-lg font-bold mb-2">참여 유저</h3>
           <ul className="space-y-2">
             {participants.map((participant) => (
@@ -161,29 +280,58 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId }) => {
         </div>
       )}
 
-      <div className="h-64 overflow-y-auto border p-4 mb-4">
-        {messages.map((msg, index) => {
-          console.log("메시지 상태:", msg.chatStatus); // 디버깅용 로그
-          return (
-            <div key={index} className="p-2 border-b">
-              <strong>{msg.sender}</strong>: {msg.message} <br />
-              {msg.chatStatus !== "ENTER" && (
-                <small className="text-gray-500 ml-2">
-                  {new Date(msg.createDate).toLocaleDateString()}{" "}
-                  {new Date(msg.createDate).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </small>
-              )}
+      {/* 채팅 메시지 영역 */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {Object.keys(groupedMessages).map((date) => (
+          <div key={date}>
+            {/* 날짜 표시 */}
+            <div className="flex justify-center my-4">
+              <span className="bg-gray-200 text-gray-600 px-4 py-1 rounded-full text-sm">
+                {date}
+              </span>
             </div>
-          );
-        })}
+
+            {/* 메시지 목록 */}
+            {groupedMessages[date].map((msg, index) => {
+              const isMyMessage = msg.userId === loginUserId; // 본인이 보낸 메시지인지 확인
+              return (
+                <div
+                  key={index}
+                  className={`flex flex-col ${
+                    isMyMessage ? "items-end" : "items-start"
+                  } mb-2`}
+                >
+                  <div
+                    className={`p-2 rounded-lg max-w-xs ${
+                      isMyMessage
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-black"
+                    }`}
+                  >
+                    <p>{msg.message}</p>
+                  </div>
+                  {/* 시간 표시 */}
+                  {msg.chatStatus !== "ENTER" && (
+                    <small className="text-xs text-gray-500 mt-1">
+                      {new Date(msg.createDate).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </small>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        <div ref={messagesEndRef} /> {/* 스크롤 이동을 위한 빈 div */}
       </div>
-      <div className="flex">
+
+      {/* 메시지 입력 영역 */}
+      <div className="flex items-center p-4 border-t border-gray-300">
         <input
           type="text"
-          className="flex-1 border p-2 rounded-l"
+          className="flex-1 border border-gray-300 p-2 rounded-l"
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           placeholder="메시지를 입력하세요..."

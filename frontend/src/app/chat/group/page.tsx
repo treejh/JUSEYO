@@ -24,6 +24,9 @@ const ChatPage = () => {
   const [chatName, setChatName] = useState<string>(""); // 채팅방 이름
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]); // 선택된 유저 정보
+  const [searchQuery, setSearchQuery] = useState<string>(""); // 검색 쿼리
 
   // WebSocket 클라이언트 초기화
   useEffect(() => {
@@ -82,6 +85,19 @@ const ChatPage = () => {
     );
   };
 
+  // 모달 열기
+  const openModal = () => {
+    const selected = users.filter((user) => selectedUserIds.includes(user.id));
+    setSelectedUsers(selected); // 선택된 유저 정보 설정
+    setIsModalOpen(true);
+  };
+
+  // 모달 닫기
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setChatName(""); // 채팅방 이름 초기화
+  };
+
   // 채팅방 생성
   const createChatRoom = async () => {
     if (!chatName.trim()) {
@@ -123,57 +139,72 @@ const ChatPage = () => {
       alert("채팅방이 생성되었습니다.");
       setChatName(""); // 채팅방 이름 초기화
       setSelectedUserIds([]); // 선택된 유저 초기화
+      closeModal(); // 모달 닫기
     } catch (error) {
       console.error("채팅방 생성 실패:", error);
       alert("채팅방 생성에 실패했습니다.");
     }
   };
 
+  // 검색 쿼리에 따른 필터링된 유저 리스트
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) return <p>로딩 중...</p>;
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold mb-6">채팅 시스템</h1>
-      <div className="grid grid-cols-3 gap-4">
+    <div className="h-screen flex flex-col p-4">
+      <div className="flex flex-1 gap-4">
         {/* 왼쪽: 유저 리스트 */}
-        <div className="border-r p-4">
-          <h2 className="text-xl font-bold mb-4">유저 리스트</h2>
-          <ul className="space-y-2">
-            {users.map((user) => (
-              <li key={user.id} className="flex flex-col border p-2 rounded">
+        <div className="w-1/6 bg-white p-4 rounded-lg shadow-md overflow-hidden">
+          <h2 className="text-xl font-bold mb-4 text-gray-700">유저 리스트</h2>
+          {/* 채팅방 생성 버튼 */}
+          <div className="mb-4">
+            <button
+              onClick={openModal}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-600 transition"
+            >
+              채팅방 생성
+            </button>
+          </div>
+          {/* 이름 검색 입력 필드 */}
+          <div className="mb-4">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="이름으로 검색"
+              className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          {/* 유저 리스트 */}
+          <ul className="space-y-4">
+            {filteredUsers.map((user) => (
+              <li
+                key={user.id}
+                className="flex items-center justify-between bg-white shadow-sm p-4 rounded-lg"
+              >
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     checked={selectedUserIds.includes(user.id)}
                     onChange={() => toggleUserSelection(user.id)}
-                    className="mr-2"
+                    className="mr-3 accent-blue-500"
                   />
-                  <span className="font-medium">{user.name}</span>
+                  <div>
+                    <p className="font-medium text-gray-800">{user.name}</p>
+                    <p className="text-sm text-gray-500">{user.department}</p>
+                  </div>
                 </div>
-                <span className="text-sm text-gray-500">{user.department}</span>
               </li>
             ))}
           </ul>
-          <div className="mt-4">
-            <input
-              type="text"
-              value={chatName}
-              onChange={(e) => setChatName(e.target.value)}
-              placeholder="채팅방 이름 입력"
-              className="border p-2 w-full mb-2"
-            />
-            <button
-              onClick={createChatRoom}
-              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
-            >
-              채팅방 생성
-            </button>
-          </div>
         </div>
 
         {/* 중앙: 채팅방 리스트 */}
-        <div>
+        <div className="w-1/5">
           <ChatRoomList
             onSelectRoom={(roomId) => setSelectedRoomId(roomId)} // 선택된 채팅방 ID 설정
             client={client} // WebSocket 클라이언트 전달
@@ -183,18 +214,65 @@ const ChatPage = () => {
         </div>
 
         {/* 오른쪽: 채팅 화면 */}
-        <div>
+        <div className="flex-1 bg-white p-4 rounded-lg shadow-md overflow-hidden">
           {selectedRoomId ? (
             <Chat
               roomId={selectedRoomId}
               client={client}
               loginUserId={loginUser.id}
+              onClose={() => setSelectedRoomId(null)} // 닫기 버튼 클릭 시 채팅창 닫기
             />
           ) : (
             <p>채팅방을 선택하세요.</p>
           )}
         </div>
       </div>
+
+      {/* 모달 */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+            <h2 className="text-xl font-bold mb-4 text-gray-700">
+              채팅방 생성
+            </h2>
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-600">
+                선택된 유저
+              </h3>
+              <ul className="mt-2 space-y-2">
+                {selectedUsers.map((user) => (
+                  <li key={user.id} className="text-gray-800">
+                    {user.name} ({user.department})
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="mb-4">
+              <input
+                type="text"
+                value={chatName}
+                onChange={(e) => setChatName(e.target.value)}
+                placeholder="채팅방 이름 입력"
+                className="border border-gray-300 p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={closeModal}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+              >
+                취소
+              </button>
+              <button
+                onClick={createChatRoom}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+              >
+                생성
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

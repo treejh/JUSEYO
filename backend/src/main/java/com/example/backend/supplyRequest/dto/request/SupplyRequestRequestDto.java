@@ -1,5 +1,6 @@
 package com.example.backend.supplyRequest.dto.request;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -12,13 +13,15 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 public class SupplyRequestRequestDto {
-    @NotBlank
-    private String productName;    // 입력한 “품목명”으로 아이템 조회
+
+    @NotNull(message = "itemId는 필수 값입니다.")
+    private Long itemId;
 
     @NotNull
+    @Min(value = 1, message = "quantity는 1 이상이어야 합니다.")
     private Long quantity;
 
-    @NotBlank
+    @NotBlank(message = "purpose는 필수 값입니다.")
     private String purpose;
 
     @NotNull

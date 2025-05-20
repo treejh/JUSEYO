@@ -85,6 +85,7 @@ const SupportChatPage = () => {
 
       const data = await response.json();
       alert("고객센터 채팅방이 생성되었습니다.");
+      window.location.reload(); // 페이지 새로고침
       console.log("생성된 채팅방:", data.data);
     } catch (error) {
       console.error("고객센터 채팅방 생성 실패:", error);
@@ -93,9 +94,9 @@ const SupportChatPage = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">고객센터 채팅</h1>
-      <div className="flex justify-between items-center mb-4">
+    <div className="p-4 h-screen flex flex-col">
+      {/* 버튼 영역 */}
+      <div className="mb-4">
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={createSupportChatRoom}
@@ -103,7 +104,9 @@ const SupportChatPage = () => {
           고객센터 채팅 생성
         </button>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+
+      {/* 채팅방 리스트와 채팅창 */}
+      <div className="grid grid-cols-3 gap-4 flex-1">
         {/* 채팅방 리스트 */}
         <div className="col-span-1">
           <ChatRoomList
@@ -115,12 +118,13 @@ const SupportChatPage = () => {
         </div>
 
         {/* 채팅창 */}
-        <div className="col-span-2">
+        <div className="col-span-2 flex-1 bg-white p-4 rounded-lg shadow-md overflow-hidden">
           {selectedRoomId ? (
             <Chat
               roomId={selectedRoomId}
               client={client}
               loginUserId={loginUser.id}
+              onClose={() => setSelectedRoomId(null)}
             />
           ) : (
             <p className="text-gray-500">채팅방을 선택하세요.</p>
