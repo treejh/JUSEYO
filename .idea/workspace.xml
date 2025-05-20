@@ -4,9 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="27e471b3-3d08-4bff-979d-b5fa21020799" name="변경" comment="[ front / style ] 163 : 개별자산구현 비품명 띄우기">
+    <list default="true" id="27e471b3-3d08-4bff-979d-b5fa21020799" name="변경" comment="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/settings/categories/add/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/settings/categories/add/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/settings/categories/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/settings/categories/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/supplyrequest/page.tsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,12 +85,29 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "git-widget-placeholder": "front/style-163-개별자산구현",
-    "node.js.selected.package.tslint": "(autodetect)"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.backend 빌드.executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.BackendApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;front/style-168-비품구현&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/hsle/Desktop/likelion/JUSEYO-main/backend/settings.gradle.kts&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="BackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
@@ -117,6 +137,55 @@
       <workItem from="1746720770497" duration="116400000" />
       <workItem from="1747267673103" duration="80368000" />
       <workItem from="1747672475274" duration="252000" />
+      <workItem from="1747673193096" duration="9026000" />
+    </task>
+    <task id="LOCAL-00014" summary="[ back/refact ] 32 : 비품, 비품요청서, 출고내역 erd 수정에 의한 엔티티수정">
+      <option name="closed" value="true" />
+      <created>1746808327679</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1746808327679</updated>
+    </task>
+    <task id="LOCAL-00015" summary="[ back/refact ] 32 : 비품 수정은 관리자만 가능">
+      <option name="closed" value="true" />
+      <created>1746810113621</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1746810113621</updated>
+    </task>
+    <task id="LOCAL-00016" summary="[ back/refact ] 32 : 비품요청서 수정">
+      <option name="closed" value="true" />
+      <created>1746967205583</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1746967205583</updated>
+    </task>
+    <task id="LOCAL-00017" summary="[ back/refact ] 32 : 자신의 관리페이지만 비품조회가능">
+      <option name="closed" value="true" />
+      <created>1746967820672</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1746967820672</updated>
+    </task>
+    <task id="LOCAL-00018" summary="[ back/refact ] 32 : 비품요청서 재요청하면 true로 수정">
+      <option name="closed" value="true" />
+      <created>1746969605935</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1746969605935</updated>
+    </task>
+    <task id="LOCAL-00019" summary="[ back/feat ] 41 : 개별자산단위 중간 구현">
+      <option name="closed" value="true" />
+      <created>1747012045012</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1747012045013</updated>
     </task>
     <task id="LOCAL-00020" summary="[ back/feat ] 41 : 개별자산단위 구현">
       <option name="closed" value="true" />
@@ -462,15 +531,7 @@
       <option name="project" value="LOCAL" />
       <updated>1747707709940</updated>
     </task>
-    <task id="LOCAL-00001" summary="[ front / style ] 163 : 개별자산구현 비품명 띄우기">
-      <option name="closed" value="true" />
-      <created>1747746362946</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1747746362946</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
+    <option name="localTasksCounter" value="63" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -498,6 +559,8 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="[ back / feat ] 73 : 같은 관리페이지 내 일반회원 조회" />
+    <MESSAGE value="[ back / feat ] 88 : 같은 관리페이지 내 매니저 조회" />
     <MESSAGE value="[ back / refact ] 90 : 매니저만 비품요청서 승인거절 가능" />
     <MESSAGE value="[ back / refact ] 90 : 비품요청서 자신의 요청서 수정" />
     <MESSAGE value="[ back / refact ] 90 : 비품요청서 대여하면 반납날짜 기입" />
@@ -521,9 +584,7 @@
     <MESSAGE value="[ back / feat ] 102 : 비품추적 요청할때 자동을 추적" />
     <MESSAGE value="[ back / feat ] 102 : 풀 받은 이후 커밋" />
     <MESSAGE value="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름" />
-    <MESSAGE value="[ front / style ] 163 : 개별자산 구현 완성" />
-    <MESSAGE value="[ front / style ] 163 : 개별자산구현 비품명 띄우기" />
-    <option name="LAST_COMMIT_MESSAGE" value="[ front / style ] 163 : 개별자산구현 비품명 띄우기" />
+    <option name="LAST_COMMIT_MESSAGE" value="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름" />
     <option name="GROUP_MULTIFILE_MERGE_BY_DIRECTORY" value="true" />
   </component>
 </project>
