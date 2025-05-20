@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ADMIN 대시보드</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h2 {
+            margin-bottom: 40px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        a button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        a button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<h2>ADMIN 대시보드</h2>
+
+<div class="button-group">
+    <a th:href="@{/api/v1/admin/signup}">
+        <button>ADMIN 회원가입</button>
+    </a>
+    <a th:href="@{/api/v1/admin/login}">
+        <button>ADMIN 로그인</button>
+    </a>
+</div>
+</body>
+</html>
