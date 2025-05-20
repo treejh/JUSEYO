@@ -101,7 +101,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
                     // 알림 스토어에 추가
                     useNotificationStore.getState().addNotification({
-                      id: parsed.id,
+                      id: Number(parsed.id),
                       message: parsed.message,
                       type: parsed.type,
                       createdAt: parsed.createdAt,
@@ -144,9 +144,6 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         } bg-white`}
       >
         {!isAuthPage && <Header />}
-        <div className="fixed top-4 right-4 z-50">
-          <NotificationBell />
-        </div>
         <main
           className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
         >

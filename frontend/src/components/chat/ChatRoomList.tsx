@@ -24,7 +24,7 @@ const ChatRoomList: React.FC<Props> = ({
   onSelectRoom,
   client,
   loginUserId,
-  roomType,
+  roomType = "", // 기본값 추가
 }) => {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -103,6 +103,14 @@ const ChatRoomList: React.FC<Props> = ({
       }));
     } catch (err) {
       console.error(`상대방 정보 로드 실패 (채팅방 ID: ${roomId}):`, err);
+      // 에러 발생 시 기본값 설정
+      setOpponentInfo((prev) => ({
+        ...prev,
+        [roomId]: {
+          name: "정보 없음",
+          department: "",
+        },
+      }));
     }
   };
 
@@ -134,13 +142,23 @@ const ChatRoomList: React.FC<Props> = ({
       }));
     } catch (err) {
       console.error(`상대방 정보 로드 실패 (채팅방 ID: ${roomId}):`, err);
+      // 에러 발생 시 기본값 설정
+      setOpponentInfo((prev) => ({
+        ...prev,
+        [roomId]: {
+          name: "정보 없음",
+          department: "부서 정보 없음",
+        },
+      }));
     }
   };
 
   useEffect(() => {
-    if (roomType !== "GROUP") {
+    if (roomType !== "GROUP" && chatRooms && chatRooms.length > 0) {
       chatRooms.forEach((room) => {
-        fetchOpponentName(room.id);
+        if (room && room.id) {
+          fetchOpponentName(room.id);
+        }
       });
     }
   }, [chatRooms, roomType]);
@@ -177,32 +195,59 @@ const ChatRoomList: React.FC<Props> = ({
 
   useEffect(() => {
     // 모든 채팅방의 새 메시지 여부 확인
-    chatRooms.forEach((room) => {
-      fetchNewMessageStatus(room.id);
-    });
+    if (chatRooms && chatRooms.length > 0) {
+      chatRooms.forEach((room) => {
+        if (room && room.id) {
+          fetchNewMessageStatus(room.id);
+        }
+      });
+    }
   }, [chatRooms]);
 
-  // WebSocket 메시지 수신 시 처리
+  // WebSocket 메시지 수신 시 처리 - 수정된 부분
   useEffect(() => {
     const subscriptions: { [key: number]: boolean } = {};
 
-    if (client && client.connected) {
+    if (client && client.connected && chatRooms && chatRooms.length > 0) {
       chatRooms.forEach((room) => {
-        if (!subscriptions[room.id]) {
-          client.subscribe(`/sub/chat/${room.id}`, (message) => {
-            if (currentRoomId !== room.id) {
-              // 현재 열려 있는 채팅방이 아닌 경우에만 NEW 상태 설정
-              setNewMessages((prev) => ({
-                ...prev,
-                [room.id]: true,
-              }));
+        if (room && room.id && !subscriptions[room.id]) {
+          client.subscribe(`/sub/chat/${room.id}`, (messageEvent) => {
+            try {
+              // 메시지 파싱
+              const response = JSON.parse(messageEvent.body);
+              const chatMessage = response.data;
+
+              // 현재 열려 있는 채팅방이 아니고, 본인이 보낸 메시지가 아닌 경우에만 NEW 상태 설정
+              if (
+                currentRoomId !== room.id &&
+                chatMessage.userId !== loginUserId
+              ) {
+                console.log(
+                  `채팅방 ${room.id}에 새 메시지 수신 (발신자: ${chatMessage.userId})`
+                );
+                setNewMessages((prev) => ({
+                  ...prev,
+                  [room.id]: true,
+                }));
+              } else {
+                console.log(
+                  `채팅방 ${room.id}에 메시지 수신 (현재방 또는 본인 메시지)`
+                );
+              }
+            } catch (error) {
+              console.error("메시지 처리 오류:", error);
             }
           });
           subscriptions[room.id] = true; // 구독 상태 저장
         }
       });
     }
-  }, [client, chatRooms, currentRoomId]);
+
+    return () => {
+      // 컴포넌트 언마운트 시 구독 해제 (선택적)
+      // 실제로는 StompJS 클라이언트가 자체적으로 연결 해제 시 구독을 정리함
+    };
+  }, [client, chatRooms, currentRoomId, loginUserId]);
 
   const validateAndEnterRoom = async (roomId: number) => {
     try {
@@ -302,16 +347,37 @@ const ChatRoomList: React.FC<Props> = ({
     }));
   };
 
+  // 검색어 변경 시 필터링 - 방어적인 코드로 수정
   useEffect(() => {
-    // 검색어 변경 시 필터링
-    const filtered = chatRooms.filter((room) => {
-      const displayName =
-        roomType === "GROUP"
-          ? room.roomName
-          : opponentInfo[room.id]?.name || "";
-      return displayName.toLowerCase().includes(searchQuery.toLowerCase());
-    });
-    setFilteredChatRooms(filtered);
+    // 방어적 검사 추가
+    if (!chatRooms || !roomType) {
+      setFilteredChatRooms([]);
+      return;
+    }
+
+    try {
+      const filtered = chatRooms.filter((room) => {
+        if (!room) return false;
+
+        let displayName = "";
+        if (roomType === "GROUP") {
+          displayName = room.roomName || "";
+        } else {
+          displayName = opponentInfo[room.id]?.name || "";
+        }
+
+        // 방어적 검사를 통한 안전한 비교
+        const query = (searchQuery || "").toLowerCase();
+        return (
+          typeof displayName === "string" &&
+          displayName.toLowerCase().includes(query)
+        );
+      });
+      setFilteredChatRooms(filtered);
+    } catch (err) {
+      console.error("필터링 중 오류:", err);
+      setFilteredChatRooms([]); // 오류 시 빈 배열로 설정
+    }
   }, [searchQuery, chatRooms, roomType, opponentInfo]);
 
   if (loading) return <p>로딩 중...</p>;
@@ -325,7 +391,7 @@ const ChatRoomList: React.FC<Props> = ({
       <div className="mb-4">
         <input
           type="text"
-          value={searchQuery}
+          value={searchQuery || ""}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={
             roomType === "GROUP"
@@ -337,15 +403,22 @@ const ChatRoomList: React.FC<Props> = ({
       </div>
 
       <ul className="divide-y divide-gray-200">
-        {filteredChatRooms.map((room) => {
-          const displayName =
-            roomType === "GROUP"
-              ? room.roomName
-              : opponentInfo[room.id]?.name || "로딩중..";
-          const department =
-            roomType !== "GROUP" && opponentInfo[room.id]?.department
-              ? opponentInfo[room.id].department
-              : null;
+        {(filteredChatRooms || []).map((room) => {
+          if (!room) return null; // 안전 검사
+
+          let displayName = "알 수 없음";
+          let department = null;
+
+          try {
+            if (roomType === "GROUP") {
+              displayName = room.roomName || "알 수 없음";
+            } else {
+              displayName = opponentInfo[room.id]?.name || "로딩중..";
+              department = opponentInfo[room.id]?.department || null;
+            }
+          } catch (err) {
+            console.error("표시명 가져오기 오류:", err);
+          }
 
           return (
             <li
@@ -372,7 +445,7 @@ const ChatRoomList: React.FC<Props> = ({
                 {/* 입장 버튼 */}
                 <button
                   className="border border-blue-500 text-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-100"
-                  onClick={() => validateAndEnterRoom(room.id)} // 입장 검증 및 처리
+                  onClick={() => validateAndEnterRoom(room.id)}
                 >
                   입장
                 </button>
@@ -380,7 +453,7 @@ const ChatRoomList: React.FC<Props> = ({
                 {/* 나가기 버튼 */}
                 <button
                   className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                  onClick={() => leaveChatRoom(client, room.id, loginUserId)} // 나가기 로직 호출
+                  onClick={() => leaveChatRoom(client, room.id, loginUserId)}
                 >
                   나가기
                 </button>

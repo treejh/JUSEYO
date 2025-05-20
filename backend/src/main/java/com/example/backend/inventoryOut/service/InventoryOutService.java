@@ -150,15 +150,6 @@ public class InventoryOutService {
                 .toList();
     }
 
-    @Transactional
-    // 재고 부족 알림 테스트용 메서드
-    public void stockdown() {
-        Item pen = itemRepo.findByName("볼펜").get();
-        pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
-        itemRepo.save(pen);
-        eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
-    }
-
     /** 페이징·정렬·검색·날짜 필터된 페이지 조회 (매니저용) */
     @Transactional(readOnly = true)
     public Page<InventoryOutResponseDto> getOutbound(
@@ -283,5 +274,14 @@ public class InventoryOutService {
                 .createdAt(o.getCreatedAt())
                 .modifiedAt(o.getModifiedAt())
                 .build();
+    }
+
+    @Transactional
+    // 재고 부족 알림 테스트용 메서드
+    public void stockdown() {
+        Item pen = itemRepo.findByName("볼펜").get();
+        pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
+        itemRepo.save(pen);
+        eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
     }
 }

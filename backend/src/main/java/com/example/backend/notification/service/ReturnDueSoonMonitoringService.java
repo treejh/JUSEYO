@@ -11,6 +11,7 @@ import com.example.backend.supplyReturn.repository.SupplyReturnRepository;
 import com.example.backend.user.entity.User;
 import com.example.backend.notification.strategy.factory.NotificationStrategyFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +24,12 @@ public class ReturnDueSoonMonitoringService {
     private final NotificationService notificationService;
     private final NotificationStrategyFactory strategyFactory;
     private final SupplyReturnRepository supplyReturnRepository;
+
+    //    @Scheduled(cron = "0 0 0 * * *") // 배포용 : 매일 자정 실행
+    @Scheduled(fixedRate = 60000)   // 테스트용 : 1분마다
+    public void scheduledCheckAndNotify() {
+        checkAndNotifyUsersBeforeDueDate();
+    }
 
     public void checkAndNotifyUsersBeforeDueDate() {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.RETURN_DUE_SOON);

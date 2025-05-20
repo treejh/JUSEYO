@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 interface Notification {
-  id: string;
+  id: number;
   message: string;
   type: string;
   createdAt: string;
@@ -11,7 +11,7 @@ interface Notification {
 interface NotificationStore {
   notifications: Notification[];
   addNotification: (notification: Notification) => void;
-  markAsRead: (id: string) => void;
+  markAsRead: (id: number) => void;
   markAllAsRead: () => void;
   clearNotifications: () => void;
 }
