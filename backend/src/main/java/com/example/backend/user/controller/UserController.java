@@ -380,7 +380,7 @@ public class UserController {
             description = "사용자가 입력한 인증코드를 확인하여 이메일 인증을 진행합니다. 인증번호가 유효한 경우 인증이 완료됩니다."
     )
     public ResponseEntity sendCertificationNumberValid(@Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
-        //userService.verifyEmailCode(emailVerificationRequest);
+        userService.verifyEmailCode(emailVerificationRequest);
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "이메일 인증 성공 (인증 번호 인증 성공) "),
