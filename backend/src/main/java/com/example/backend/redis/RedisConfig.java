@@ -21,7 +21,6 @@ public class RedisConfig {
     private int redisPort;
 
 
-
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(redisHost, redisPort); // localhost:6379 기본 설정

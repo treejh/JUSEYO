@@ -4,6 +4,7 @@ package com.example.backend.chat.chatroom.controller;
 import com.example.backend.chat.chatroom.dto.request.ChatRoomRequestDto;
 import com.example.backend.chat.chatroom.dto.request.ChatRoomValidRequestDto;
 import com.example.backend.chat.chatroom.dto.response.ChatRoomResponseDto;
+import com.example.backend.chat.chatroom.dto.response.OpponentResponseDto;
 import com.example.backend.chat.chatroom.dto.response.ParticipantsResponseDto;
 import com.example.backend.chat.chatroom.entity.ChatRoom;
 import com.example.backend.chat.chatroom.service.ChatRoomService;
@@ -27,6 +28,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,6 +52,7 @@ public class ChatRoomController {
             description = "채팅방을 생성할 수 있습니다.  "
     )
     public ResponseEntity<ApiResponse<ChatRoomResponseDto>> createChatRoom(@Valid @RequestBody ChatRoomRequestDto chatRoomRequestDto) {
+        log.info("roomName !! "+chatRoomRequestDto.getRoomName());
         ChatRoomResponseDto chatRoomResponseDto = new ChatRoomResponseDto(chatRoomService.createChatRoom(chatRoomRequestDto));
 
         //ChatRoomType에 따라 다름
@@ -82,6 +85,22 @@ public class ChatRoomController {
         );
     }
 
+    @GetMapping("/{roomId}")
+    @Operation(
+            summary = "특정 채팅방 조회",
+            description = "roomId를 기반으로 해당 채팅방의 정보를 조회합니다."
+    )
+
+    public ResponseEntity<ApiResponse<ChatRoomResponseDto>> getChatRoomById(@PathVariable Long roomId) {
+        ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId); // 존재하지 않으면 예외 발생
+        ChatRoomResponseDto responseDto = new ChatRoomResponseDto(chatRoom);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(HttpStatus.OK.value(), "채팅방 상세 조회 완료", responseDto)
+        );
+    }
+
+
 
 
 
@@ -101,7 +120,19 @@ public class ChatRoomController {
         );
     }
 
-    @GetMapping ("/exists")
+    @GetMapping("/{roomId}/opponent")
+    @Operation(
+            summary = "채팅 상대방 정보 조회",
+            description = "채팅방 ID를 기반으로 현재 로그인한 유저를 제외한 상대방의 이름과 부서를 반환합니다."
+    )
+    public ResponseEntity<ApiResponse<OpponentResponseDto>> getOpponentInfo(@PathVariable Long roomId) {
+        OpponentResponseDto opponentInfo = chatRoomService.findOpponentInfo(roomId);
+        return ResponseEntity.ok(ApiResponse.of(200, "상대방 정보 조회 완료", opponentInfo));
+    }
+
+
+
+    @GetMapping ("/exists/users")
     @Operation(
             summary = "1:1 채팅방 존재 여부 확인",
             description = "두 사용자 간 1:1 채팅방이 이미 존재하는지 확인합니다."
@@ -145,6 +176,8 @@ public class ChatRoomController {
     )
     public ResponseEntity<ApiResponse<Void>> leaveChatRoom(@PathVariable Long roomId) {
         chatRoomService.leaveChatRoom(roomId);
+
+
         return ResponseEntity.ok(
                 ApiResponse.of(
                         HttpStatus.OK.value(),
@@ -153,6 +186,70 @@ public class ChatRoomController {
                 )
         );
     }
+
+    @GetMapping("/exist/support")
+    @Operation(
+            summary = "고객센터 채팅방 존재 여부 확인",
+            description = "현재 로그인한 사용자가 고객센터(SUPPORT) 채팅방을 보유하고 있는지 확인합니다. " +
+                    "존재하면 true, 없으면 false를 반환합니다."
+    )
+    public ResponseEntity<ApiResponse<Boolean>> checkSupportChatRoomExistence() {
+        boolean exists = chatRoomService.existsSupportChatRoomForCurrentUser();
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        HttpStatus.OK.value(),
+                        "고객센터 채팅방 존재 여부 조회 성공",
+                        exists
+                )
+        );
+    }
+
+    @GetMapping("/{chatRoomId}/has-new-message")
+    @Operation(
+            summary = "채팅방 새 메시지 존재 여부 확인",
+            description = "해당 채팅방에 대해 현재 로그인한 사용자가 마지막으로 입장한 시간 이후에 새 메시지가 존재하는지 여부를 반환합니다."
+    )
+    public ResponseEntity<ApiResponse<Boolean>> hasNewMessage(
+            @PathVariable Long chatRoomId
+    ) {
+        boolean hasNewMessage = chatRoomService.hasNewMessageForCurrentUser(chatRoomId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        HttpStatus.OK.value(),
+                        "새 메시지 존재 여부 조회 성공",
+                        hasNewMessage
+                )
+        );
+    }
+
+    @PatchMapping("/{chatRoomId}/enter")
+    @Operation(
+            summary = "채팅방 입장 시간 업데이트",
+            description = "현재 로그인한 사용자가 해당 채팅방에 입장했을 때, 마지막 입장 시간을 현재 시각으로 갱신합니다."
+    )
+    public ResponseEntity<ApiResponse<Void>> updateEnterTime(
+            @PathVariable Long chatRoomId
+    ) {
+        chatRoomService.updateLastEnterTime(chatRoomId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        HttpStatus.OK.value(),
+                        "채팅방 입장 시간 업데이트 성공",
+                        null
+                )
+        );
+    }
+
+
+
+
+
+
+
+
 
 
 

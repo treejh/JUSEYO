@@ -6,9 +6,6 @@ import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
 import { NotificationBell } from "@/components/Notification/NotificationBell";
-import LoadingScreen from "./components/LoadingScreen";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
 
@@ -17,9 +14,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const isRootPage = pathname === "/";
   const shouldHideNav = isAuthPage || isRootPage;
-  
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
+
 
   const {
     loginUser,
@@ -30,7 +27,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     logout,
     logoutAndHome,
   } = useLoginUser();
-  
+
   // 사이드바 접기/펼치기 토글 함수
   const toggleSidebar = () => {
     setSidebarCollapsed(prev => !prev);
@@ -69,7 +66,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           username: userData.name,
           managementDashboardName: userData.managementDashboardName ?? "",
           departmentName: userData.departmentName ?? "",
-          role: userData.role,
+          role: userData.role ?? "user", // Provide a default role if not present
         });
 
         // SSE 연결
@@ -149,29 +146,19 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
-      <div className={`flex flex-col ${isAuthPage ? 'h-screen w-screen' : 'min-h-screen'} bg-white ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        {!isAuthPage && <Header onToggleSidebar={toggleSidebar} />}
+      <div
+        className={`flex flex-col ${isAuthPage ? "h-screen w-screen" : "min-h-screen"
+          } bg-white`}
+      >
+        {!isAuthPage && <Header />}
         <div className="fixed top-4 right-4 z-50">
           <NotificationBell />
         </div>
-        <div className="flex flex-col flex-1">
-          <div className="flex flex-1">
-            {!shouldHideNav && (
-              <Navigation 
-                userRole={loginUser?.role === 'MANAGER' || loginUser?.role === 'ADMIN' ? 'manager' : 'user'} 
-                isSidebarCollapsed={sidebarCollapsed}
-                onToggleSidebar={toggleSidebar}
-              />
-            )}
-            <main 
-              className={`flex-1 ${!isAuthPage ? 'pt-[60px]' : ''} 
-              ${!shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''} 
-              bg-[#F4F4F4] transition-all duration-300`}
-            >
-              {children}
-            </main>
-          </div>
-        </div>
+        <main
+          className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
+        >
+          {children}
+        </main>
       </div>
     </LoginUserContext.Provider>
   );

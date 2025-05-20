@@ -17,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,13 +42,15 @@ public class ChatUser extends Auditable {
     @Column(name = "chat_status",nullable = false)
     private ChatStatus chatStatus;
 
+    @Column(name = "last_enter_time")
+    private LocalDateTime lastEnterTime;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "is_creator", nullable = false)
     private boolean isCreator; //true일 경우 최초 생성자
-
 
     @ManyToOne
     @JoinColumn(name = "chat_room_id")

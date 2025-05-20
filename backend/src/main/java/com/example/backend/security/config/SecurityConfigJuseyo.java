@@ -3,8 +3,10 @@ package com.example.backend.security.config;
 
 
 
+import com.example.backend.redis.RedisService;
 import com.example.backend.security.jwt.filter.JwtAuthenticationFilter;
 import com.example.backend.security.jwt.filter.UserStatusCheckFilter;
+import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.security.jwt.util.JwtTokenizer;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class SecurityConfigJuseyo {
 
     private final JwtTokenizer jwtTokenizer;
     private final UserStatusCheckFilter userStatusCheckFilter;
+    private final RedisService redisService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -67,12 +70,21 @@ public class SecurityConfigJuseyo {
                         //입고
                         .requestMatchers("/api/v1/inventory-in/**").hasAnyRole("MANAGER", "ADMIN")
 
+                        // 카테고리
+                        .requestMatchers(HttpMethod.GET,    "/api/v1/categories/**").hasAnyRole("USER","MANAGER","ADMIN")
+                        .requestMatchers(HttpMethod.POST,   "/api/v1/categories/**").hasAnyRole("MANAGER","ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/v1/categories/**").hasAnyRole("MANAGER","ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").hasAnyRole("MANAGER","ADMIN")
 
+                        // 검색
+                        .requestMatchers(HttpMethod.GET, "/api/v1/search/items").hasAnyRole("MANAGER", "USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/search/users").hasAnyRole("MANAGER", "USER", "ADMIN")
 
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer,redisService), UsernamePasswordAuthenticationFilter.class)
+
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

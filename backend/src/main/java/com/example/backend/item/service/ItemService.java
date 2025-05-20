@@ -8,6 +8,7 @@ import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.image.service.ImageService;
 import com.example.backend.item.dto.request.ItemRequestDto;
+import com.example.backend.item.dto.response.ItemSearchProjection;
 import com.example.backend.item.dto.response.ItemResponseDto;
 import com.example.backend.item.entity.Item;
 import com.example.backend.item.repository.ItemRepository;
@@ -177,4 +178,20 @@ public class ItemService {
         return repo.findAllAsDto(Status.ACTIVE, pageable);
     }
 
+    //비품 검색
+    @Transactional(readOnly = true)
+    public Page<ItemSearchProjection> findItemsByKeyword(Long managementDashboardId, String keyword, Pageable pageable) {
+
+        // 현재 로그인된 사용자 ID로 소속 관리페이지 확인
+        Long userId = tokenService.getIdFromToken();
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
+        if (!user.getManagementDashboard().getId().equals(managementDashboardId)) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
+        }
+
+        // 검색 로직 실행 (Projection 활용)
+        return repo.searchItemsWithCategory(managementDashboardId, keyword, pageable);
+    }
 }
