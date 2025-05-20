@@ -257,6 +257,29 @@ public class ItemInstanceService {
         return instanceRepo.countByItemId(itemId);
     }
 
+    /**
+     * 전체 개별 자산 목록 조회 (페이지네이션 + 키워드 검색)
+     */
+    @Transactional(readOnly = true)
+    public Page<ItemInstanceResponseDto> getByItemPage(Pageable pageable, String keyword) {
+
+        // (1) 검색 조건 구성
+        Specification<ItemInstance> spec = (root, query, cb) -> cb.conjunction(); // always true
+        if (keyword != null && !keyword.isBlank()) {
+            String like = "%" + keyword.toLowerCase() + "%";
+            spec = spec.and((root, q, cb) ->
+                    cb.or(
+                            cb.like(cb.lower(root.get("instanceCode")), like),
+                            cb.like(cb.lower(root.get("item").get("name")), like)
+                    )
+            );
+        }
+
+        // (2) 조회 + DTO 매핑
+        return instanceRepo.findAll(spec, pageable)
+                .map(this::map);   // ← map 메서드 사용
+    }
+
     private ItemInstanceResponseDto map(ItemInstance e) {
         return ItemInstanceResponseDto.builder()
                 .id(e.getId())
