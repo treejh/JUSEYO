@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
+import { NotificationBell } from "@/components/Notification/NotificationBell";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
