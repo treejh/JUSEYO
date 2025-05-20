@@ -30,9 +30,5 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> of(int statusCode, String message, T data) {
         return new ApiResponse<>(LocalDateTime.now(), statusCode, message, data);
     }
-
-    // 204 No Content 전용 메서드
-    public static ApiResponse<Void> ofNoContent(String message) {
-        return new ApiResponse<>(LocalDateTime.now(), 204, message, null);
-    }
+    
 }

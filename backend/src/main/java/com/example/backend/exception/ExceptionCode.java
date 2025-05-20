@@ -46,6 +46,7 @@ public enum ExceptionCode {
     //회원가입 예외 처리
     ALREADY_HAS_EMAIL(409,"이미 존재하는 이메일입니다."),
     ALREADY_HAS_PHONE_NUMBER(409,"이미 존재하는 전화번호입니다."),
+    INVALID_REFRESH_TOKEN(401, "유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요."),
 
     //S3 예외 처리
     S3_DELETE_ERROR(404, "이미지를 삭제할 수 없습니다."),

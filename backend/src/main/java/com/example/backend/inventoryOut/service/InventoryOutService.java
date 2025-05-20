@@ -114,15 +114,20 @@ public class InventoryOutService {
         // 4) 아이템 재고 차감
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());
 
-        // 5) 개별자산단위 상태 변경 (출고: AVAILABLE → LEND 또는 ISSUE)
-        for (int i = 0; i < saved.getQuantity(); i++) {
-            ItemInstance inst = instanceRepo
-                    .findFirstByItemIdAndOutboundAndStatus(item.getId(), Outbound.AVAILABLE, Status.ACTIVE)
-                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
-            UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
-            upd.setOutbound(saved.getOutbound());  // LEND 또는 ISSUE
-            upd.setFinalImage(null);
-            instanceService.updateStatus(inst.getId(), upd);
+        // 5) **대여(LEND) 케이스에만** 개별자산단위 상태 변경 (AVAILABLE → LEND)
+        if (saved.getOutbound() == Outbound.LEND) {
+            for (int i = 0; i < saved.getQuantity(); i++) {
+                ItemInstance inst = instanceRepo
+                        .findFirstByItemIdAndOutboundAndStatus(item.getId(),
+                                Outbound.AVAILABLE,
+                                Status.ACTIVE)
+                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+
+                UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
+                upd.setOutbound(Outbound.LEND);
+                upd.setFinalImage(null);
+                instanceService.updateStatus(inst.getId(), upd);
+            }
         }
 
         // 6) 응답 DTO 반환
@@ -143,15 +148,6 @@ public class InventoryOutService {
         return outRepo.findAllByManagementDashboardId(userMgmtId).stream()
                 .map(this::mapToDto)
                 .toList();
-    }
-
-    @Transactional
-    // 재고 부족 알림 테스트용 메서드
-    public void stockdown() {
-        Item pen = itemRepo.findByName("볼펜").get();
-        pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
-        itemRepo.save(pen);
-        eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
     }
 
     /** 페이징·정렬·검색·날짜 필터된 페이지 조회 (매니저용) */
@@ -278,5 +274,14 @@ public class InventoryOutService {
                 .createdAt(o.getCreatedAt())
                 .modifiedAt(o.getModifiedAt())
                 .build();
+    }
+
+    @Transactional
+    // 재고 부족 알림 테스트용 메서드
+    public void stockdown() {
+        Item pen = itemRepo.findByName("볼펜").get();
+        pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
+        itemRepo.save(pen);
+        eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
     }
 }

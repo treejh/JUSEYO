@@ -24,4 +24,5 @@ public interface SupplyRequestRepository extends JpaRepository<SupplyRequest, Lo
     // 사용자별 요청 조회
     List<SupplyRequest> findAllByUserId(Long userId);
 
+
 }

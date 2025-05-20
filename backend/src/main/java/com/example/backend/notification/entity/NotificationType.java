@@ -11,6 +11,7 @@ public enum NotificationType {
     SUPPLY_REQUEST_MODIFIED("비품 요청 수정"),     // 비품 요청 수정
     RETURN_DUE_DATE_EXCEEDED("지정 반납일 초과"),  // 지정 반납일 초과
     LONG_TERM_UNRETURNED_SUPPLIES("장기 미반납 비품 목록 알림"), // 장기 미반납 비품 목록 알림
+    USER_SENT_MESSAGE_TO_MANAGER("채팅 알림"),
 
     // 회원 알림
     SUPPLY_REQUEST_APPROVED("비품 요청 승인"),      // 비품 요청 승인
@@ -21,7 +22,8 @@ public enum NotificationType {
     // 기타 알림
     SYSTEM_MAINTENANCE("시스템 점검 알림"),        // 시스템 점검 알림
     ADMIN_APPROVAL_ALERT("관리 페이지 승인 알림"), // 관리 페이지 승인 알림 (어드민 -> 이니셜 매니저)
-    MANAGER_APPROVAL_ALERT("매니저 승인 알림");     // 매니저 승인 알림 (이니셜 매니저 -> 새 매니저)
+    MANAGER_APPROVAL_ALERT("매니저 승인 알림"),     // 매니저 승인 알림 (이니셜 매니저 -> 새 매니저)
+    NEW_CHAT("새로운 채팅 알림");   // 새로운 채팅 알림(회원 -> 회원 / 회원 -> 매니저)
 
     private final String description;
 

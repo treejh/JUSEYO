@@ -25,12 +25,15 @@ import com.example.backend.user.dto.request.UserPatchRequestDto;
 import com.example.backend.user.dto.request.UserSignRequestDto;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.user.dto.response.ApproveUserListForManagerResponseDto;
+import com.example.backend.user.dto.response.UserSearchProjection;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import com.example.backend.utils.CreateRandomNumber;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +61,9 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+
+    // 알림용 - 현재 페이지 저장: userId -> pageUrl
+    private final Map<Long, String> userCurrentPageMap = new ConcurrentHashMap<>();
 
     @Transactional
     public User createUser(UserSignRequestDto userSignRequestDto) {
@@ -93,7 +99,7 @@ public class UserService {
 
         User manager =User.builder()
                 .email(initialManagerSignupRequestDto.getEmail())
-                .name(initialManagerSignupRequestDto.getName())
+                .name(initialManagerSignupRequestDto.getName()+" 매니저")
                 .password(passwordEncoder.encode(initialManagerSignupRequestDto.getPassword()))
                 .phoneNumber(initialManagerSignupRequestDto.getPhoneNumber())
                 .initialManager(true)
@@ -114,7 +120,7 @@ public class UserService {
 
         User manager =User.builder()
                 .email(managerSignupRequestDto.getEmail())
-                .name(managerSignupRequestDto.getName())
+                .name(managerSignupRequestDto.getName() +" 매니저")
                 .password(passwordEncoder.encode(managerSignupRequestDto.getPassword()))
                 .phoneNumber(managerSignupRequestDto.getPhoneNumber())
                 .managementDashboard(managementDashboard)
@@ -659,10 +665,38 @@ public class UserService {
         return userRepository.findAllByRole(role);
     }
 
-
-
     public User findUserByName(String name){
         return userRepository.findByName(name).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    }
+
+    // 회원 검색
+    public Page<UserSearchProjection> searchUsers(Long mdId, String keyword, Pageable pageable) {
+
+        // 대시보드가 실제로 존재하는지 확인
+        ManagementDashboard md = managementDashboardRepository.findById(mdId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        // 로그인한 사용자가 그 대시보드에 속해있는지 검증
+        validateManagementDashboardUser(md);
+
+        // 실제 검색 실행
+        return userRepository.searchUsers(mdId, keyword, pageable);
+    }
+
+    // 회원 검색 - 일반 회원만 검색 (승인 된 일반 회원만)
+    public Page<UserSearchProjection> searchBasicUsers(Long managementDashboardId, String keyword, Pageable pageable) {
+        // 대시보드가 실제로 존재하는지 확인
+        ManagementDashboard md = managementDashboardRepository.findById(managementDashboardId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        // 로그인한 사용자가 그 대시보드에 속해있는지 검증
+        validateManagementDashboardUser(md);
+
+        // 검색 키워드 처리
+        String searchKeyword = (keyword != null && !keyword.isEmpty()) ? keyword : "";
+
+        // 실제 검색 실행 (승인된 사용자만 조회)
+        return userRepository.searchBasicUsers(managementDashboardId, searchKeyword, RoleType.USER, ApprovalStatus.APPROVED, pageable);
     }
 
 }

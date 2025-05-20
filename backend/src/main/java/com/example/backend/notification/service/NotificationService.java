@@ -98,7 +98,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public Notification markAsRead(String notificationId) {
+    public Notification markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
         notification.setReadStatus(true);

@@ -59,6 +59,7 @@ public class ItemInstanceController {
     }
 
     // (3) 인스턴스 상태 변경 - 매니저만
+    @Operation(summary = "아이템 인스턴스 수정")
     @PreAuthorize("hasRole('MANAGER')")
     @PatchMapping("/{instanceId}/status")
     public ItemInstanceResponseDto updateStatus(

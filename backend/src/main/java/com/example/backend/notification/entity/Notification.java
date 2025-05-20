@@ -1,6 +1,7 @@
 package com.example.backend.notification.entity;
 
 import com.example.backend.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import com.example.backend.auditable.Auditable;
@@ -22,7 +23,7 @@ public class Notification extends Auditable {
 
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "notification_type", nullable = false)
+    @Column(name = "notification_type", nullable = false, length = 30)
     private NotificationType notificationType; // 승인 상태
 
 
@@ -37,6 +38,7 @@ public class Notification extends Auditable {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
 

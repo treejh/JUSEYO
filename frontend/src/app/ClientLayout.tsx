@@ -17,9 +17,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const isRootPage = pathname === "/";
   const shouldHideNav = isAuthPage || isRootPage;
-  
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
+
 
   const {
     loginUser,
@@ -30,7 +30,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     logout,
     logoutAndHome,
   } = useLoginUser();
-  
+
   // 사이드바 접기/펼치기 토글 함수
   const toggleSidebar = () => {
     setSidebarCollapsed(prev => !prev);
@@ -69,7 +69,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           username: userData.name,
           managementDashboardName: userData.managementDashboardName ?? "",
           departmentName: userData.departmentName ?? "",
-          role: userData.role,
+          role: userData.role ?? "user", // Provide a default role if not present
         });
 
         // SSE 연결
@@ -116,7 +116,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
                     // 알림 스토어에 추가
                     useNotificationStore.getState().addNotification({
-                      id: parsed.id,
+                      id: Number(parsed.id),
                       message: parsed.message,
                       type: parsed.type,
                       createdAt: parsed.createdAt,
@@ -157,13 +157,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <div className="flex flex-col flex-1">
           <div className="flex flex-1">
             {!shouldHideNav && (
-              <Navigation 
-                userRole={loginUser?.role === 'MANAGER' || loginUser?.role === 'ADMIN' ? 'manager' : 'user'} 
+              <Navigation
+                userRole={loginUser?.role === 'MANAGER' || loginUser?.role === 'ADMIN' ? 'manager' : 'user'}
                 isSidebarCollapsed={sidebarCollapsed}
                 onToggleSidebar={toggleSidebar}
               />
             )}
-            <main 
+            <main
               className={`flex-1 ${!isAuthPage ? 'pt-[60px]' : ''} 
               ${!shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''} 
               bg-[#F4F4F4] transition-all duration-300`}

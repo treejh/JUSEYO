@@ -2,6 +2,7 @@ package com.example.backend.chat.chatMessage.repository;
 
 import com.example.backend.chat.chatMessage.entity.ChatMessage;
 import com.example.backend.chat.chatroom.entity.ChatRoom;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     void deleteAllByChatRoom(ChatRoom chatRoom);
 
     Page<ChatMessage> findByChatRoom(ChatRoom chatRoom, Pageable pageable);
+    Optional<ChatMessage> findTopByChatRoomOrderByCreatedAtDesc(ChatRoom chatRoom);
+
 }

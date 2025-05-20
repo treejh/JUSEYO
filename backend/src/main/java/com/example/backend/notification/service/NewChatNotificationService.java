@@ -1,0 +1,44 @@
+package com.example.backend.notification.service;
+
+import com.example.backend.enums.RoleType;
+import com.example.backend.notification.dto.NotificationRequestDTO;
+import com.example.backend.notification.entity.NotificationType;
+import com.example.backend.notification.strategy.NotificationStrategy;
+import com.example.backend.notification.strategy.context.ItemStockContext;
+import com.example.backend.notification.strategy.context.NewChatContext;
+import com.example.backend.notification.strategy.factory.NotificationStrategyFactory;
+import com.example.backend.role.RoleService;
+import com.example.backend.role.entity.Role;
+import com.example.backend.user.entity.User;
+import com.example.backend.user.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class NewChatNotificationService {
+    private final NotificationStrategyFactory strategyFactory;
+    private final NotificationService notificationService;
+
+    public void notifyNewChat(Long targetId, Long roomId, RoleType role, String name) {
+        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.NEW_CHAT);
+
+        NewChatContext context = new NewChatContext(targetId, roomId, role, name);
+
+        // 조건을 확인하고 알림을 생성
+        if (strategy.shouldTrigger(context)) {
+            // context를 사용하여 메시지 생성
+            String msg = strategy.generateMessage(context);
+
+            // NotificationRequestDTO에 메시지 전달
+            notificationService.createNotification(new NotificationRequestDTO(
+                    NotificationType.NEW_CHAT,
+                    msg,
+                    targetId)
+            );
+        }
+    }
+}
+

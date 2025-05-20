@@ -7,17 +7,20 @@ import com.example.backend.category.service.CategoryService;
 import com.example.backend.enums.RoleType;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
-import com.example.backend.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,9 +36,7 @@ public class CategoryController {
     private final TokenService tokenService;
     private final UserService userService;
 
-    /**
-     * 🔹 카테고리 생성 (매니저만 가능)
-     */
+    // 카테고리 생성 (매니저만 가능)
     @PostMapping
     @Operation(
             summary = "카테고리 생성",
@@ -43,18 +44,13 @@ public class CategoryController {
     )
     public ResponseEntity<CategoryResponseDTO> createCategory(@Valid @RequestBody CategoryCreateRequestDTO dto) {
         User user = getAuthorizedManager();
-        ManagementDashboard dashboard = user.getManagementDashboard();
 
-        // ✅ Service 호출 - 생성 후 DTO 반환
-        CategoryResponseDTO responseDTO = categoryService.createCategory(dto, dashboard);
+        CategoryResponseDTO responseDTO = categoryService.createCategory(dto, user);
 
-        // ✅ 생성된 카테고리 반환
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
-    /**
-     * 🔹 전체 카테고리 조회 (로그인한 유저 + 자신의 관리 페이지에 속한 것만 조회)
-     */
+    // 전체 카테고리 조회 (로그인한 유저 + 자신의 관리 페이지에 속한 것만 조회)
     @GetMapping
     @Operation(
             summary = "전체 카테고리 조회",
@@ -62,109 +58,104 @@ public class CategoryController {
     )
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
         User user = getAuthorizedUser();
-        ManagementDashboard dashboard = user.getManagementDashboard();
 
-        if (dashboard == null) {
-            throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
-        }
-
-        // ✅ Service 호출 - 전체 조회 후 DTO로 반환
-        List<CategoryResponseDTO> response = categoryService.findAllCategoriesByDashboard(dashboard.getId());
+        List<CategoryResponseDTO> response = categoryService.findAllCategories(user);
 
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 🔹 특정 카테고리 조회 (로그인한 유저 + 자신의 관리 페이지에 속할 때만 조회 가능)
-     */
+    // 특정 카테고리 조회 (로그인한 유저 + 자신의 관리 페이지에 속할 때만 조회 가능)
     @GetMapping("/{id}")
     @Operation(
             summary = "특정 카테고리 조회",
             description = "특정 카테고리 조회를 처리합니다."
     )
-    public ResponseEntity<CategoryResponseDTO> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<CategoryResponseDTO> getCategoryById(
+            @Parameter(
+                    name = "id",
+                    description = "조회할 카테고리 ID",
+                    example = "1",
+                    in = ParameterIn.PATH
+            )
+            @PathVariable("id") Long id) {
         User user = getAuthorizedUser();
-        ManagementDashboard dashboard = user.getManagementDashboard();
 
-        if (dashboard == null) {
-            throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
-        }
-
-        // ✅ Service 호출 - 권한 체크 포함된 단일 조회
-        CategoryResponseDTO response = categoryService.findCategoryById(id, dashboard);
+        CategoryResponseDTO response = categoryService.findCategoryById(id, user);
 
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 🔹 카테고리 수정 (매니저만 가능)
-     */
+    // 카테고리 수정 (매니저만 가능)
     @PutMapping("/{id}")
     @Operation(
             summary = "카테고리 수정",
             description = "매니저가 카테고리를 수정합니다."
     )
     public ResponseEntity<CategoryResponseDTO> updateCategory(
-            @PathVariable Long id,
-            @Valid @RequestBody CategoryUpdateRequestDTO dto) {
+            @Parameter(
+                    name = "id",
+                    description = "수정할 카테고리 ID",
+                    example = "1",
+                    in = ParameterIn.PATH
+            )
+            @PathVariable("id") Long id,
 
+            @Valid @RequestBody CategoryUpdateRequestDTO dto
+    ) {
         User user = getAuthorizedManager();
-        ManagementDashboard dashboard = user.getManagementDashboard();
 
-        // ✅ Service 호출 - 업데이트 처리
-        CategoryResponseDTO responseDTO = categoryService.updateCategory(id, dto, dashboard);
+        CategoryResponseDTO responseDTO = categoryService.updateCategory(id, dto, user);
 
         return ResponseEntity.ok(responseDTO);
     }
 
-    /**
-     * 🔹 카테고리 삭제 (매니저만 가능)
-     */
+    // 카테고리 삭제 (매니저만 가능)
     @DeleteMapping("/{id}")
     @Operation(
             summary = "카테고리 삭제",
             description = "매니저가 카테고리를 삭제합니다."
     )
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCategory(
+            @Parameter(
+                    name = "id",
+                    description = "삭제할 카테고리 ID",
+                    example = "1",
+                    in = ParameterIn.PATH
+            )
+            @PathVariable("id") Long id
+    ) {
         User user = getAuthorizedManager();
-        ManagementDashboard dashboard = user.getManagementDashboard();
 
-        // ✅ Service 호출 - 삭제 처리
-        categoryService.deleteCategory(id, dashboard);
+        categoryService.deleteCategory(id, user);
 
         return ResponseEntity.noContent().build();
-
     }
 
-    /**
-     * 🔹 매니저 권한 체크 메서드
-     */
+    // 매니저 권한 체크 메서드
     private User getAuthorizedManager() {
         Long userId = tokenService.getIdFromToken();
         User user = userService.findById(userId);
 
-        if (user.getManagementDashboard() == null) {
-            throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
+        if (user.getRole().getRole() != RoleType.MANAGER) {
+            throw new BusinessLogicException(ExceptionCode.NOT_MANAGER);
         }
 
-        if (!RoleType.MANAGER.equals(user.getRole().getRole())) {
-            log.error("매니저 권한이 아닌 사용자가 접근 시도: {}", user.getRole().getRole());
-            throw new BusinessLogicException(ExceptionCode.NOT_MANAGER);
+        if (user.getManagementDashboard() == null && (user.getDepartment() == null || user.getDepartment().getManagementDashboard() == null)) {
+            throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
 
         return user;
     }
 
-    /**
-     * 🔹 사용자 권한 체크 메서드 (매니저가 아니어도 조회 가능하도록)
-     */
+    // 일반 사용자 체크 메서드
     private User getAuthorizedUser() {
         Long userId = tokenService.getIdFromToken();
         User user = userService.findById(userId);
 
-        if (user.getManagementDashboard() == null) {
+        if (user.getManagementDashboard() == null && (user.getDepartment() == null || user.getDepartment().getManagementDashboard() == null)) {
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
+
         return user;
     }
 }
