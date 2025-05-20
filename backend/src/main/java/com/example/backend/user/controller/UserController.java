@@ -4,6 +4,7 @@ package com.example.backend.user.controller;
 import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.sms.dto.SmsRequestDto;
 import com.example.backend.user.dto.request.*;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.user.dto.response.UserListResponseDto;
@@ -73,34 +74,6 @@ public class UserController {
         userService.createManager(managerSignupRequestDto);
         return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
 
-    }
-
-    //admin signup
-    @PostMapping("/signup/admin")
-    @Operation(
-            summary = "회원 가입 ( 최고 관리자 )",
-            description = "최고 관리자(Admin)의 회원가입을 처리합니다."
-    )
-    public ResponseEntity signupAdmin(@Valid @RequestBody AdminSignupRequestDto adminSignupRequestDto) {
-        userService.createAdmin(adminSignupRequestDto);
-        return new ResponseEntity<>(" admin( 최고 관리자 ) 생성 성공", HttpStatus.CREATED);
-
-    }
-
-    @GetMapping("/admin")
-    @Operation(
-            summary = "최고 관리자 ( admin ) 리스트 조회 ",
-            description = "존재하는 최고 관리자 리스트를 조회합니다. "
-    )
-    public ResponseEntity getAdminList(
-                                       @RequestParam(name = "page", defaultValue = "1") int page,
-                                       @RequestParam(name="size", defaultValue = "10") int size) {
-
-       Page<User> approveUserList = userService.getAdminList(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
-        return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), " admin( 최고 관리자 ) 리스트 조회 성공", approveUserList),
-                HttpStatus.OK
-        );
     }
 
     @PatchMapping("/name")
@@ -415,6 +388,7 @@ public class UserController {
         );
     }
 
+
     @GetMapping("/token")
     @Operation(
             summary = "토큰으로 유저 조회하기 ",
@@ -427,6 +401,22 @@ public class UserController {
                 HttpStatus.OK
         );
     }
+
+    @GetMapping("/email/phone")
+    @Operation(
+            summary = "핸드폰 번호로 이메일 조회하기",
+            description = "핸드폰 번호로 이메일 조회, 핸드폰 번호로 인증된 사용자만 사용 가능"
+    )
+    public ResponseEntity getEmailByPhone(@Valid @RequestBody SmsRequestDto smsRequestDto) {
+        String response = userService.findEmailByPhone(
+                smsRequestDto.getPhoneNumber());
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호로 이메일 조회 성공 ",response),
+                HttpStatus.OK
+        );
+    }
+
+
 
 
 

@@ -85,29 +85,7 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.backend 빌드.executor&quot;: &quot;Run&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.BackendApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;front/style-163-개별자산구현&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/hsle/Desktop/likelion/JUSEYO-main/backend/settings.gradle.kts&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}</component>
   <component name="RunManager">
     <configuration name="BackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
@@ -137,7 +115,6 @@
       <workItem from="1746720770497" duration="116400000" />
       <workItem from="1747267673103" duration="80368000" />
       <workItem from="1747672475274" duration="252000" />
-      <workItem from="1747673193096" duration="17290000" />
     </task>
     <task id="LOCAL-00020" summary="[ back/feat ] 41 : 개별자산단위 구현">
       <option name="closed" value="true" />
@@ -483,55 +460,6 @@
       <option name="project" value="LOCAL" />
       <updated>1747707709940</updated>
     </task>
-    <task id="LOCAL-00063" summary="[ front / style ] 153 : 프론트 비품요청서 생성">
-      <option name="closed" value="true" />
-      <created>1747721202276</created>
-      <option name="number" value="00063" />
-      <option name="presentableId" value="LOCAL-00063" />
-      <option name="project" value="LOCAL" />
-      <updated>1747721202276</updated>
-    </task>
-    <task id="LOCAL-00064" summary="[ front / style ] 153 : 프론트 비품요청서 생성">
-      <option name="closed" value="true" />
-      <created>1747721234305</created>
-      <option name="number" value="00064" />
-      <option name="presentableId" value="LOCAL-00064" />
-      <option name="project" value="LOCAL" />
-      <updated>1747721234305</updated>
-    </task>
-    <task id="LOCAL-00065" summary="[ front / style ] 153 : 프론트 비품요청서 생성">
-      <option name="closed" value="true" />
-      <created>1747726055709</created>
-      <option name="number" value="00065" />
-      <option name="presentableId" value="LOCAL-00065" />
-      <option name="project" value="LOCAL" />
-      <updated>1747726055710</updated>
-    </task>
-    <task id="LOCAL-00066" summary="[ front / style ] 163 : 개별자산구현 프론트 띠우기">
-      <option name="closed" value="true" />
-      <created>1747732740698</created>
-      <option name="number" value="00066" />
-      <option name="presentableId" value="LOCAL-00066" />
-      <option name="project" value="LOCAL" />
-      <updated>1747732740698</updated>
-    </task>
-    <task id="LOCAL-00067" summary="[ front / style ] 163 : 개별자산구현 프론트 띠우기">
-      <option name="closed" value="true" />
-      <created>1747732751698</created>
-      <option name="number" value="00067" />
-      <option name="presentableId" value="LOCAL-00067" />
-      <option name="project" value="LOCAL" />
-      <updated>1747732751698</updated>
-    </task>
-    <task id="LOCAL-00068" summary="[ front / style ] 163 : 개별자산구현 비품명 띄우기">
-      <option name="closed" value="true" />
-      <created>1747733034684</created>
-      <option name="number" value="00068" />
-      <option name="presentableId" value="LOCAL-00068" />
-      <option name="project" value="LOCAL" />
-      <updated>1747733034684</updated>
-    </task>
-    <option name="localTasksCounter" value="69" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -559,6 +487,9 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="[ back / feat ] 73 : 같은 관리페이지 내 일반회원 조회" />
+    <MESSAGE value="[ back / feat ] 88 : 같은 관리페이지 내 매니저 조회" />
+    <MESSAGE value="[ back / refact ] 90 : 매니저만 비품요청서 승인거절 가능" />
     <MESSAGE value="[ back / refact ] 90 : 비품요청서 자신의 요청서 수정" />
     <MESSAGE value="[ back / refact ] 90 : 비품요청서 대여하면 반납날짜 기입" />
     <MESSAGE value="[ back / refact ] 92 : 출고내역 전제조회, 자신의 글만 조회 추가" />
@@ -581,10 +512,6 @@
     <MESSAGE value="[ back / feat ] 102 : 비품추적 요청할때 자동을 추적" />
     <MESSAGE value="[ back / feat ] 102 : 풀 받은 이후 커밋" />
     <MESSAGE value="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름" />
-    <MESSAGE value="[ front / style ] 153 : 프론트 비품요청서 생성" />
-    <MESSAGE value="[ front / style ] 163 : 개별자산구현 프론트 띠우기" />
-    <MESSAGE value="[ front / style ] 163 : 개별자산구현 비품명 띄우기" />
-    <option name="LAST_COMMIT_MESSAGE" value="[ front / style ] 163 : 개별자산구현 비품명 띄우기" />
     <option name="GROUP_MULTIFILE_MERGE_BY_DIRECTORY" value="true" />
   </component>
 </project>
