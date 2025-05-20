@@ -8,6 +8,7 @@ import com.example.backend.notification.strategy.factory.NotificationStrategyFac
 import com.example.backend.notification.strategy.context.SupplyRequestApprovalContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ public class SupplyRequestRejectedNotificationService {
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
 
+    @Transactional
     public void notifyIfApproved(Long userId, String itemName, Long itemQuantity, ApprovalStatus approvalStatus) {
         if (approvalStatus != ApprovalStatus.REJECTED) return;
 

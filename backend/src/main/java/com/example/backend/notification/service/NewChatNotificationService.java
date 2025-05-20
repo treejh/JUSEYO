@@ -13,6 +13,7 @@ import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class NewChatNotificationService {
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
 
+    @Transactional
     public void notifyNewChat(Long targetId, Long roomId, RoleType role, String name) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.NEW_CHAT);
 

@@ -12,6 +12,7 @@ import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class SupplyRequestNotificationService {
     private final UserService userService;
     private final RoleService roleService;
 
+    @Transactional
     public void notifySupplyRequest(String itemName, Long itemQuantity, String requesterName) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_REQUEST);
 

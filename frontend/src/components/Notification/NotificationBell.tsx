@@ -1,9 +1,26 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNotificationStore } from "@/stores/notifications";
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const notificationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleMarkAllAsRead = async () => {
     try {
@@ -46,7 +63,7 @@ export function NotificationBell() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={notificationRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-gray-800"
