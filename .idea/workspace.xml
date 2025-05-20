@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="27e471b3-3d08-4bff-979d-b5fa21020799" name="변경" comment="[ front / style ] 153 : 프론트 비품요청서 생성">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/controller/ItemInstanceController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/controller/ItemInstanceController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/repository/ItemInstanceRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/repository/ItemInstanceRepository.java" afterDir="false" />
+    <list default="true" id="27e471b3-3d08-4bff-979d-b5fa21020799" name="변경" comment="[ front / style ] 163 : 개별자산구현 프론트 띠우기">
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/dto/response/ItemInstanceResponseDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/dto/response/ItemInstanceResponseDto.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/service/ItemInstanceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/service/ItemInstanceService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/settings/categories/add/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/settings/categories/add/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/settings/categories/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/settings/categories/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -137,23 +134,7 @@
       <workItem from="1746720770497" duration="116400000" />
       <workItem from="1747267673103" duration="80368000" />
       <workItem from="1747672475274" duration="252000" />
-      <workItem from="1747673193096" duration="14904000" />
-    </task>
-    <task id="LOCAL-00017" summary="[ back/refact ] 32 : 자신의 관리페이지만 비품조회가능">
-      <option name="closed" value="true" />
-      <created>1746967820672</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1746967820672</updated>
-    </task>
-    <task id="LOCAL-00018" summary="[ back/refact ] 32 : 비품요청서 재요청하면 true로 수정">
-      <option name="closed" value="true" />
-      <created>1746969605935</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1746969605935</updated>
+      <workItem from="1747673193096" duration="15175000" />
     </task>
     <task id="LOCAL-00019" summary="[ back/feat ] 41 : 개별자산단위 중간 구현">
       <option name="closed" value="true" />
@@ -531,7 +512,23 @@
       <option name="project" value="LOCAL" />
       <updated>1747726055710</updated>
     </task>
-    <option name="localTasksCounter" value="66" />
+    <task id="LOCAL-00066" summary="[ front / style ] 163 : 개별자산구현 프론트 띠우기">
+      <option name="closed" value="true" />
+      <created>1747732740698</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1747732740698</updated>
+    </task>
+    <task id="LOCAL-00067" summary="[ front / style ] 163 : 개별자산구현 프론트 띠우기">
+      <option name="closed" value="true" />
+      <created>1747732751698</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1747732751698</updated>
+    </task>
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -559,7 +556,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="[ back / feat ] 88 : 같은 관리페이지 내 매니저 조회" />
     <MESSAGE value="[ back / refact ] 90 : 매니저만 비품요청서 승인거절 가능" />
     <MESSAGE value="[ back / refact ] 90 : 비품요청서 자신의 요청서 수정" />
     <MESSAGE value="[ back / refact ] 90 : 비품요청서 대여하면 반납날짜 기입" />
@@ -584,7 +580,8 @@
     <MESSAGE value="[ back / feat ] 102 : 풀 받은 이후 커밋" />
     <MESSAGE value="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름" />
     <MESSAGE value="[ front / style ] 153 : 프론트 비품요청서 생성" />
-    <option name="LAST_COMMIT_MESSAGE" value="[ front / style ] 153 : 프론트 비품요청서 생성" />
+    <MESSAGE value="[ front / style ] 163 : 개별자산구현 프론트 띠우기" />
+    <option name="LAST_COMMIT_MESSAGE" value="[ front / style ] 163 : 개별자산구현 프론트 띠우기" />
     <option name="GROUP_MULTIFILE_MERGE_BY_DIRECTORY" value="true" />
   </component>
 </project>

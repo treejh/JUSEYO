@@ -284,6 +284,7 @@ public class ItemInstanceService {
         return ItemInstanceResponseDto.builder()
                 .id(e.getId())
                 .itemId(e.getItem().getId())
+                .itemName(e.getItem().getName())
                 .instanceCode(e.getInstanceCode())
                 .status(e.getStatus())
                 .outbound(e.getOutbound())
