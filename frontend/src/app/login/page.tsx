@@ -57,7 +57,7 @@ export default function LoginPage() {
         username: loginType === "manager" ? "관리자" : "일반 사용자",
         managementDashboardName: "테스트 대시보드",
         departmentName: "개발팀",
-        userType: loginType,
+        role: loginType,
       });
       
       // 로그인 성공 화면으로 이동
