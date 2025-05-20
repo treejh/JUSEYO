@@ -108,7 +108,7 @@ const ChatRoomList: React.FC<Props> = ({
         setOpponentInfo((prev) => ({
           ...prev,
           [roomId]: {
-            name: "알수없음", // name만 "알 수 없음"으로 설정
+            name: "종료된 채팅방", // name만 "알 수 없음"으로 설정
             department: "", // department는 빈 문자열로 설정
           },
         }));
@@ -233,6 +233,14 @@ const ChatRoomList: React.FC<Props> = ({
 
   const validateAndEnterRoom = async (roomId: number) => {
     try {
+      // 현재 열려 있는 채팅방이 있는지 확인
+      if (currentRoomId && currentRoomId !== roomId) {
+        alert(
+          "현재 열려 있는 채팅방을 닫아야 다른 채팅방에 입장할 수 있습니다."
+        );
+        return;
+      }
+
       // 입장 검증 API 호출
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/enter/valid/${roomId}`,
