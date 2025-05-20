@@ -307,9 +307,7 @@ export default function SignupPage() {
   };
 
   const handleCreateManagementPage = () => {
-    // 관리자 페이지 생성 로직 구현
-    alert("관리자 페이지 생성 기능은 추후 구현될 예정입니다.");
-    router.push("/login");
+    router.push('/admin/request');  // 관리자 페이지 생성 페이지로 이동
   };
 
   return (
