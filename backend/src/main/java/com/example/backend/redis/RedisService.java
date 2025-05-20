@@ -4,11 +4,13 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisService {
 
     private final StringRedisTemplate redisTemplate;
@@ -64,5 +66,21 @@ public class RedisService {
     public boolean checkExistsKey(String key) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
+
+    // refreshToken 저장 (7일 TTL)
+    public void saveRefreshToken(Long userId, String refreshToken) {
+        saveData("refresh:" + userId, refreshToken, Duration.ofDays(7));
+    }
+
+    // refreshToken 조회
+    public String getRefreshToken(Long userId) {
+        return getData("refresh:" + userId);
+    }
+
+    // refreshToken 삭제
+    public void deleteRefreshToken(Long userId) {
+        deleteData("refresh:" + userId);
+    }
+
 
 }

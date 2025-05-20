@@ -1,8 +1,12 @@
 package com.example.backend.security.jwt.filter;
 
 
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import com.example.backend.exception.JwtExceptionCode;
+import com.example.backend.redis.RedisService;
 import com.example.backend.security.dto.CustomUserDetails;
+import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.security.jwt.token.JwtAuthenticationToken;
 import com.example.backend.security.jwt.util.JwtTokenizer;
 import io.jsonwebtoken.Claims;
@@ -33,6 +37,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenizer jwtTokenizer;
+    private final RedisService redisService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -41,12 +46,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = getAccessToken(request);
         String refreshToken = getRefreshToken(request);
 
+
         if (accessToken == null && refreshToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
         if (accessToken == null && refreshToken != null) {
+            log.info("refreshToken 검사 filter !  " + refreshToken);
+            validRefreshToken(refreshToken);
             log.info("refreshToken 33 " + refreshToken);
             if (StringUtils.hasText(refreshToken) && jwtTokenizer.validateRefreshToken(refreshToken)) {
                 try {
@@ -62,6 +70,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }
+
+
+
+
 
         if (StringUtils.hasText(accessToken)) {
             try {
@@ -185,22 +197,48 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String name = claims.get("username", String.class);
         List<String> roles = claims.get("roles", List.class);
 
-        log.info("역할 이름 확인!!!!" + roles.get(0));
+        long maxAgeAccessInSeconds = jwtTokenizer.accessTokenExpirationMinutes / 1000;
+        long maxAgeRefreshInSeconds = jwtTokenizer.refreshTokenExpirationMinutes / 1000;
 
         String newAccessToken = jwtTokenizer.createAccessToken(userId, email, name, roles.get(0));
+        String newRefreshToken = jwtTokenizer.createRefreshToken(userId, email, name, roles.get(0));
 
         // 쿠키로 재전송
         Cookie newAccessTokenCookie = new Cookie("accessToken", newAccessToken);
         newAccessTokenCookie.setHttpOnly(true);
         newAccessTokenCookie.setPath("/");
-        newAccessTokenCookie.setMaxAge(60 * 30); // 30분
+        newAccessTokenCookie.setMaxAge(Math.toIntExact(maxAgeAccessInSeconds)); // 30분
         response.addCookie(newAccessTokenCookie);
+
+        // 쿠키로 재전송
+        Cookie newRefreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
+        newRefreshTokenCookie.setHttpOnly(true);
+        newRefreshTokenCookie.setPath("/");
+        newRefreshTokenCookie.setMaxAge(Math.toIntExact(maxAgeRefreshInSeconds)); // 30분
+        response.addCookie(newRefreshTokenCookie);
+
+        redisService.saveRefreshToken(userId,newRefreshToken);
 
         // SecurityContext 갱신
         Authentication authentication = getAuthentication(newAccessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
     }
+
+    public void validRefreshToken(String refreshToken) {
+        Claims claims = jwtTokenizer.parseRefreshToken(refreshToken);
+
+        Long userId = claims.get("userId", Long.class);
+
+        String savedRefreshToken = redisService.getRefreshToken(userId);
+        log.info("userId" + userId);
+        log.info("확인 111 + " + savedRefreshToken);
+        log.info("확인 22 " + refreshToken);
+
+        if (savedRefreshToken == null || !refreshToken.equals(savedRefreshToken)) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_REFRESH_TOKEN);
+        }
+    }
+
 
 
 

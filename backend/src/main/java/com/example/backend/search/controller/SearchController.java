@@ -72,4 +72,19 @@ public class SearchController {
         );
     }
 
+    // 회원 검색 - 일반 회원만 조회
+    @Operation(summary = "일반 회원 검색", description = "관리 페이지 안의 일반 회원을 키워드로 검색합니다.")
+    @GetMapping("/basic-users")
+    public ResponseEntity<ApiResponse<Page<UserSearchProjection>>> searchBasicUsers(
+            @RequestParam(name = "managementDashboardId") Long managementDashboardId,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @ParameterObject Pageable pageable
+    ) {
+        Page<UserSearchProjection> page = userService.searchBasicUsers(managementDashboardId, keyword, pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "일반 회원 검색 성공", page)
+        );
+    }
+
 }

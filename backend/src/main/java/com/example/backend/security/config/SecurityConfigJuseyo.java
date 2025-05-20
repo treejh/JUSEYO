@@ -3,8 +3,10 @@ package com.example.backend.security.config;
 
 
 
+import com.example.backend.redis.RedisService;
 import com.example.backend.security.jwt.filter.JwtAuthenticationFilter;
 import com.example.backend.security.jwt.filter.UserStatusCheckFilter;
+import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.security.jwt.util.JwtTokenizer;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class SecurityConfigJuseyo {
 
     private final JwtTokenizer jwtTokenizer;
     private final UserStatusCheckFilter userStatusCheckFilter;
+    private final RedisService redisService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -80,7 +83,7 @@ public class SecurityConfigJuseyo {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer,redisService), UsernamePasswordAuthenticationFilter.class)
 
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session

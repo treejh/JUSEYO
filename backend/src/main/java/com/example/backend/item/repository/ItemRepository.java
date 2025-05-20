@@ -51,5 +51,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             @Param("keyword")               String keyword,
             Pageable                        pageable
     );
+
+    // ID + 상태 기반 조회
+    Optional<Item> findByIdAndStatus(Long id, Status status);
 }
 
