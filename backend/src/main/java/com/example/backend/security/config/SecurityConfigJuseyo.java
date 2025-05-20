@@ -45,6 +45,8 @@ public class SecurityConfigJuseyo {
                                 "/api/v1/admin/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
+                        //핸드폰
+                        .requestMatchers(HttpMethod.POST, "/api/v1/sms/**").permitAll()
                         //채팅
                         .requestMatchers( "/api/v1/users/chat/list/**","/api/v1/users/chat/**").hasAnyRole("MANAGER", "USER","ADMIN")
                         //회원
