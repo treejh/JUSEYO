@@ -6,6 +6,7 @@ import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
 import { NotificationBell } from "@/components/Notification/NotificationBell";
+import LoadingScreen from "./components/LoadingScreen";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
 
