@@ -15,7 +15,7 @@ public class NotificationEventListener {
 
     private final SupplyRequestApprovedNotificationService supplyRequestApprovedNotificationService;
     private final SupplyRequestRejectedNotificationService supplyRequestRejectedNotificationService;
-
+    private final NewChatNotificationService newChatNotificationService;
     // 매니저
     // 비품 요청 알림
     @EventListener
@@ -51,10 +51,18 @@ public class NotificationEventListener {
     // 기타
     // 관리자 페이지 승인 알림
     public void handleManagementDashboardCreateApproved(ManagementDashboardCreateApproved dashboardCreateApproved) {
+    }
+
+    // 매니저 승인 알림
+    public void handleNewManagerApproved() {
 
     }
 
-
+    // 새로운 채팅
+    @EventListener
+    public void handleNewChat(NewChatEvent event) {
+        newChatNotificationService.notifyNewChat(event.getTargetId(), event.getRoomId(), event.getSenderRole(), event.getSenderName());
+    }
 
     // 추가 이벤트도 여기에 계속 추가하면 됨
 }
