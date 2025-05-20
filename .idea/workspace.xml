@@ -4,9 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="27e471b3-3d08-4bff-979d-b5fa21020799" name="변경" comment="[ front / style ] 163 : 개별자산구현 프론트 띠우기">
+    <list default="true" id="27e471b3-3d08-4bff-979d-b5fa21020799" name="변경" comment="[ front / style ] 163 : 개별자산구현 비품명 띄우기">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/dto/response/ItemInstanceResponseDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/dto/response/ItemInstanceResponseDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/repository/ItemInstanceRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/repository/ItemInstanceRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/service/ItemInstanceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/itemInstance/service/ItemInstanceService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/iteminstances/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/iteminstances/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -134,15 +137,7 @@
       <workItem from="1746720770497" duration="116400000" />
       <workItem from="1747267673103" duration="80368000" />
       <workItem from="1747672475274" duration="252000" />
-      <workItem from="1747673193096" duration="15175000" />
-    </task>
-    <task id="LOCAL-00019" summary="[ back/feat ] 41 : 개별자산단위 중간 구현">
-      <option name="closed" value="true" />
-      <created>1747012045012</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1747012045013</updated>
+      <workItem from="1747673193096" duration="17290000" />
     </task>
     <task id="LOCAL-00020" summary="[ back/feat ] 41 : 개별자산단위 구현">
       <option name="closed" value="true" />
@@ -528,7 +523,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747732751698</updated>
     </task>
-    <option name="localTasksCounter" value="68" />
+    <task id="LOCAL-00068" summary="[ front / style ] 163 : 개별자산구현 비품명 띄우기">
+      <option name="closed" value="true" />
+      <created>1747733034684</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1747733034684</updated>
+    </task>
+    <option name="localTasksCounter" value="69" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -556,7 +559,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="[ back / refact ] 90 : 매니저만 비품요청서 승인거절 가능" />
     <MESSAGE value="[ back / refact ] 90 : 비품요청서 자신의 요청서 수정" />
     <MESSAGE value="[ back / refact ] 90 : 비품요청서 대여하면 반납날짜 기입" />
     <MESSAGE value="[ back / refact ] 92 : 출고내역 전제조회, 자신의 글만 조회 추가" />
@@ -581,7 +583,8 @@
     <MESSAGE value="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름" />
     <MESSAGE value="[ front / style ] 153 : 프론트 비품요청서 생성" />
     <MESSAGE value="[ front / style ] 163 : 개별자산구현 프론트 띠우기" />
-    <option name="LAST_COMMIT_MESSAGE" value="[ front / style ] 163 : 개별자산구현 프론트 띠우기" />
+    <MESSAGE value="[ front / style ] 163 : 개별자산구현 비품명 띄우기" />
+    <option name="LAST_COMMIT_MESSAGE" value="[ front / style ] 163 : 개별자산구현 비품명 띄우기" />
     <option name="GROUP_MULTIFILE_MERGE_BY_DIRECTORY" value="true" />
   </component>
 </project>

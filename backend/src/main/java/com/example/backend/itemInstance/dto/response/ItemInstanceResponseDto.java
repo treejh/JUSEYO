@@ -21,4 +21,5 @@ public class ItemInstanceResponseDto {
     private String itemImage;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private long borrowedCount;
 }

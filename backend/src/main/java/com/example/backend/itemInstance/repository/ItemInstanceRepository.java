@@ -30,6 +30,6 @@ public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long
 
     Optional<ItemInstance> findFirstByItemIdAndStatus(Long itemId, Outbound status);
 
-    long countByItemIdAndStatus(Long itemId, Outbound status);
+    long countByItemIdAndOutbound(Long itemId, Outbound outbound);
 
 }

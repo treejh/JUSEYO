@@ -1,61 +1,50 @@
 "use client";
 
 // app/iteminstances/page.tsx
-// 개별 자산(ItemInstance) 목록 + 검색 + 페이징
-// TailwindCSS + 기본 HTML 구성. API: GET /api/v1/item-instances
+// ✅ 컴파일 오류 수정: pageSize 상수, 중복 코드 제거, 변수 스코프 정리
 
 import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 
 interface ItemInstance {
   id: number;
-  instanceCode: string;
   itemName: string;
+  borrowedCount: number;
   status: string;
   createdAt: string;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-const PAGE_SIZE = 20;
+const pageSize = 20; // 한 페이지당 항목 수
 
-export default function ItemInstancePage() {
-  const router = useRouter();
-  const params = useSearchParams();
-
+export default function ItemInstancesPage() {
   const [instances, setInstances] = useState<ItemInstance[]>([]);
-  const [page, setPage] = useState<number>(Number(params.get("page")) || 0);
-  const [totalPages, setTotalPages] = useState<number>(0);
-  const [keyword, setKeyword] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [keyword, setKeyword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const fetchInstances = async () => {
+  /** 목록 조회 */
+  const fetchInstances = async (p = 0) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const url = new URL("/api/v1/item-instances", API_BASE);
-      url.searchParams.set("page", String(page));
-      url.searchParams.set("size", String(PAGE_SIZE));
-      if (keyword.trim().length >= 2)
-        url.searchParams.set("keyword", keyword.trim());
-
-      console.log("GET", url.toString());
-      const res = await fetch(url.toString(), {
-        method: "GET",
-        credentials: "include",
-      });
+      const url = `${API_BASE}/api/v1/item-instances?page=${p}&size=${pageSize}&keyword=${encodeURIComponent(
+        keyword
+      )}`;
+      const res = await fetch(url, { credentials: "include" });
 
       if (!res.ok) {
-        throw new Error(await res.text());
+        const msg = await res.text();
+        throw new Error(msg || `서버 오류: ${res.status}`);
       }
 
-      const data = await res.json();
-      const content: ItemInstance[] = Array.isArray(data)
-        ? data
-        : data.content ?? [];
-      setInstances(content);
-      setTotalPages(data.totalPages ?? 1);
-    } catch (err) {
-      console.error("조회 실패", err);
-      alert("개별 자산 조회에 실패했습니다.");
+      const data: any = await res.json();
+      // Page<ItemInstanceResponseDto> 또는 배열 둘 다 처리
+      setInstances(Array.isArray(data) ? data : data.content ?? []);
+      setTotalPages(Array.isArray(data) ? 1 : data.totalPages ?? 1);
+      setPage(p);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "목록을 불러오지 못했습니다.");
     } finally {
       setLoading(false);
     }
@@ -64,64 +53,82 @@ export default function ItemInstancePage() {
   useEffect(() => {
     fetchInstances();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, []);
 
-  const handleSearch = () => {
-    setPage(0);
-    fetchInstances();
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchInstances(0);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-5xl bg-white shadow-lg rounded-lg p-8">
-        <h1 className="text-3xl font-bold mb-6 text-center">개별 자산 목록</h1>
+    <div className="min-h-screen flex items-start justify-center py-10 px-4 bg-gray-100">
+      <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg p-8">
+        <h1 className="text-2xl font-semibold mb-6">개별 자산 목록</h1>
 
         {/* 검색 */}
-        <div className="flex gap-2 mb-6">
+        <form onSubmit={handleSearch} className="mb-4 flex gap-2">
           <input
             type="text"
+            placeholder="비품명 검색"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            placeholder="자산 이름 또는 코드 검색 (2자 이상)"
-            className="flex-1 border rounded px-3 py-2"
+            className="flex-1 px-3 py-2 border rounded"
           />
           <button
-            onClick={handleSearch}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
-            disabled={loading}
+            type="submit"
+            className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700"
           >
             검색
           </button>
-        </div>
+        </form>
 
         {/* 테이블 */}
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-left whitespace-nowrap">
+          <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="bg-gray-200 text-gray-700">
-                <th className="px-4 py-2">ID</th>
-                <th className="px-4 py-2">코드</th>
-                <th className="px-4 py-2">비품명</th>
-                <th className="px-4 py-2">상태</th>
-                <th className="px-4 py-2">생성일</th>
+              <tr className="bg-gray-50 text-left">
+                <th className="px-3 py-2 border">ID</th>
+                <th className="px-3 py-2 border">비품명</th>
+                <th className="px-3 py-2 border text-center">대여 수량</th>
+                <th className="px-3 py-2 border text-center">상태</th>
+                <th className="px-3 py-2 border">생성일</th>
               </tr>
             </thead>
             <tbody>
-              {instances.map((it) => (
-                <tr key={it.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2">{it.id}</td>
-                  <td className="px-4 py-2">{it.instanceCode}</td>
-                  <td className="px-4 py-2">{it.itemName}</td>
-                  <td className="px-4 py-2">{it.status}</td>
-                  <td className="px-4 py-2">
-                    {new Date(it.createdAt).toLocaleDateString()}
+              {instances.map((item) => (
+                <tr key={item.id} className="border-b hover:bg-gray-50">
+                  <td className="px-3 py-2 border">{item.id}</td>
+                  <td className="px-3 py-2 border">{item.itemName}</td>
+                  <td className="px-3 py-2 border text-center">
+                    {item.borrowedCount}
+                  </td>
+                  <td className="px-3 py-2 border text-center">
+                    <span
+                      className={`px-2 py-1 rounded text-xs ${
+                        item.status === "ACTIVE"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 border">
+                    {item.createdAt?.slice(0, 10)}
                   </td>
                 </tr>
               ))}
               {instances.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={5} className="text-center py-10 text-gray-500">
-                    결과가 없습니다.
+                  <td colSpan={5} className="text-center py-6 text-gray-500">
+                    데이터가 없습니다.
+                  </td>
+                </tr>
+              )}
+              {loading && (
+                <tr>
+                  <td colSpan={5} className="text-center py-6">
+                    Loading...
                   </td>
                 </tr>
               )}
@@ -129,24 +136,24 @@ export default function ItemInstancePage() {
           </table>
         </div>
 
-        {/* 페이지네이션 */}
-        <div className="flex justify-center gap-2 mt-6">
+        {/* 페이징 */}
+        <div className="mt-4 flex justify-between items-center">
           <button
-            onClick={() => setPage((p) => Math.max(p - 1, 0))}
             disabled={page === 0}
-            className="px-3 py-1 border rounded disabled:opacity-50"
+            onClick={() => fetchInstances(page - 1)}
+            className="px-3 py-1 rounded border disabled:opacity-50"
           >
-            이전
+            ◀ Prev
           </button>
-          <span className="px-3 py-1">
+          <span className="text-sm text-gray-600">
             {page + 1} / {totalPages}
           </span>
           <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
             disabled={page + 1 >= totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-50"
+            onClick={() => fetchInstances(page + 1)}
+            className="px-3 py-1 rounded border disabled:opacity-50"
           >
-            다음
+            Next ▶
           </button>
         </div>
       </div>

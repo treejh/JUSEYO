@@ -281,6 +281,10 @@ public class ItemInstanceService {
     }
 
     private ItemInstanceResponseDto map(ItemInstance e) {
+
+        long lendCnt = instanceRepo
+                .countByItemIdAndOutbound(e.getItem().getId(), Outbound.LEND);
+
         return ItemInstanceResponseDto.builder()
                 .id(e.getId())
                 .itemId(e.getItem().getId())
@@ -293,6 +297,7 @@ public class ItemInstanceService {
                 .itemImage(e.getItem().getImage())
                 .createdAt(e.getCreatedAt())
                 .modifiedAt(e.getModifiedAt())
+                .borrowedCount(lendCnt)
                 .build();
     }
 }
