@@ -8,6 +8,11 @@ interface ChatRoom {
   roomType: string;
 }
 
+interface OpponentInfo {
+  name: string;
+  department: string;
+}
+
 interface Props {
   onSelectRoom: (roomId: number) => void; // 선택된 채팅방 ID를 부모 컴포넌트로 전달
   client: Client | null; // WebSocket 클라이언트
@@ -31,6 +36,13 @@ const ChatRoomList: React.FC<Props> = ({
     {}
   ); // 채팅방별 새 메시지 여부
   const [currentRoomId, setCurrentRoomId] = useState<number | null>(null); // 현재 열려 있는 채팅방 ID
+
+  const [opponentInfo, setOpponentInfo] = useState<{
+    [key: number]: OpponentInfo;
+  }>({});
+
+  const [searchQuery, setSearchQuery] = useState<string>(""); // 검색어 상태
+  const [filteredChatRooms, setFilteredChatRooms] = useState<ChatRoom[]>([]); // 필터링된 채팅방 리스트
 
   useEffect(() => {
     const fetchChatRooms = async () => {
@@ -77,21 +89,55 @@ const ChatRoomList: React.FC<Props> = ({
       );
 
       if (!response.ok) {
-        throw new Error("상대방 이름을 가져오는 중 오류가 발생했습니다.");
+        throw new Error("상대방 정보를 가져오는 중 오류가 발생했습니다.");
       }
 
       const data = await response.json();
-      setOpponentNames((prev) => ({
+
+      setOpponentInfo((prev) => ({
         ...prev,
-        [roomId]: data.data || "종료된 채팅", // 상대방 이름이 null이면 "종료된 채팅"으로 설정
+        [roomId]: {
+          name: data.data.name || "알 수 없음",
+          department: data.data.department || " ",
+        },
       }));
     } catch (err) {
-      console.error(`상대방 이름 로드 실패 (채팅방 ID: ${roomId}):`, err);
+      console.error(`상대방 정보 로드 실패 (채팅방 ID: ${roomId}):`, err);
+    }
+  };
+
+  // 특정 채팅방의 상대방 정보 가져오기
+  const fetchOpponentInfo = async (roomId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/${roomId}/opponent`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("상대방 정보를 가져오는 중 오류가 발생했습니다.");
+      }
+
+      const data = await response.json();
+      setOpponentInfo((prev) => ({
+        ...prev,
+        [roomId]: {
+          name: data.data.name || "알 수 없음",
+          department: data.data.department || "부서 정보 없음",
+        },
+      }));
+    } catch (err) {
+      console.error(`상대방 정보 로드 실패 (채팅방 ID: ${roomId}):`, err);
     }
   };
 
   useEffect(() => {
-    // 모든 채팅방의 상대방 이름 가져오기
     if (roomType !== "GROUP") {
       chatRooms.forEach((room) => {
         fetchOpponentName(room.id);
@@ -123,6 +169,7 @@ const ChatRoomList: React.FC<Props> = ({
         ...prev,
         [roomId]: data.data, // true 또는 false
       }));
+      console.log(`채팅방 ${roomId}의 새 메시지 여부:`, data.data);
     } catch (err) {
       console.error(`새 메시지 여부 로드 실패 (채팅방 ID: ${roomId}):`, err);
     }
@@ -135,6 +182,7 @@ const ChatRoomList: React.FC<Props> = ({
     });
   }, [chatRooms]);
 
+  // WebSocket 메시지 수신 시 처리
   useEffect(() => {
     const subscriptions: { [key: number]: boolean } = {};
 
@@ -142,18 +190,19 @@ const ChatRoomList: React.FC<Props> = ({
       chatRooms.forEach((room) => {
         if (!subscriptions[room.id]) {
           client.subscribe(`/sub/chat/${room.id}`, (message) => {
-            console.log(`채팅방 ${room.id}에서 메시지 수신:`, message.body);
-            // 새 메시지가 수신되면 상태를 업데이트
-            setNewMessages((prev) => ({
-              ...prev,
-              [room.id]: true,
-            }));
+            if (currentRoomId !== room.id) {
+              // 현재 열려 있는 채팅방이 아닌 경우에만 NEW 상태 설정
+              setNewMessages((prev) => ({
+                ...prev,
+                [room.id]: true,
+              }));
+            }
           });
           subscriptions[room.id] = true; // 구독 상태 저장
         }
       });
     }
-  }, [client, chatRooms]);
+  }, [client, chatRooms, currentRoomId]);
 
   const validateAndEnterRoom = async (roomId: number) => {
     try {
@@ -180,12 +229,19 @@ const ChatRoomList: React.FC<Props> = ({
         console.log(`이미 입장한 채팅방: ${roomId}`);
         setCurrentRoomId(roomId); // 현재 열려 있는 채팅방 ID 설정
         onSelectRoom(roomId); // 채팅방만 보이게 설정
+        await updateEnterTime(roomId);
       } else {
         // 입장하지 않은 경우
         console.log(`입장하지 않은 채팅방: ${roomId}`);
         await updateEnterTime(roomId); // 입장 시간 업데이트
         enterRoom(roomId); // 입장 처리
       }
+
+      // NEW 상태 제거
+      setNewMessages((prev) => ({
+        ...prev,
+        [roomId]: false,
+      }));
     } catch (error) {
       console.error("입장 검증 실패:", error);
     }
@@ -239,46 +295,91 @@ const ChatRoomList: React.FC<Props> = ({
     setCurrentRoomId(roomId); // 현재 열려 있는 채팅방 ID 설정
     onSelectRoom(roomId);
 
-    // 새 메시지 상태 초기화
+    // NEW 상태 제거
     setNewMessages((prev) => ({
       ...prev,
       [roomId]: false,
     }));
   };
 
+  useEffect(() => {
+    // 검색어 변경 시 필터링
+    const filtered = chatRooms.filter((room) => {
+      const displayName =
+        roomType === "GROUP"
+          ? room.roomName
+          : opponentInfo[room.id]?.name || "";
+      return displayName.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+    setFilteredChatRooms(filtered);
+  }, [searchQuery, chatRooms, roomType, opponentInfo]);
+
   if (loading) return <p>로딩 중...</p>;
   if (error) return <p>{error}</p>;
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">채팅방 리스트</h2>
-      <ul className="space-y-2">
-        {chatRooms.map((room) => {
+    <div className="h-full overflow-y-auto bg-white rounded-lg shadow-md p-4">
+      <h2 className="text-lg font-bold mb-4">채팅방 리스트</h2>
+
+      {/* 검색 입력 필드 */}
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={
+            roomType === "GROUP"
+              ? "채팅방 이름으로 검색"
+              : "상대방 이름으로 검색"
+          }
+          className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <ul className="divide-y divide-gray-200">
+        {filteredChatRooms.map((room) => {
           const displayName =
             roomType === "GROUP"
-              ? room.roomName // GROUP 타입일 경우 채팅방 이름
-              : opponentNames[room.id] || "로딩중.."; // 다른 타입일 경우 상대방 이름
+              ? room.roomName
+              : opponentInfo[room.id]?.name || "로딩중..";
+          const department =
+            roomType !== "GROUP" && opponentInfo[room.id]?.department
+              ? opponentInfo[room.id].department
+              : null;
 
           return (
             <li
               key={room.id}
-              className="flex justify-between items-center border p-2 rounded"
+              className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
             >
-              <span>
-                {displayName}{" "}
-                {newMessages[room.id] && currentRoomId !== room.id && (
-                  <span className="text-red-500 font-bold ml-2">NEW</span>
+              {/* 채팅방 이름 및 부서 */}
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-800">{displayName}</span>
+                {department && (
+                  <span className="text-sm text-gray-500">{department}</span>
                 )}
-              </span>
+              </div>
+
+              {/* NEW 뱃지 */}
+              {newMessages[room.id] && currentRoomId !== room.id && (
+                <span className="text-white bg-blue-500 rounded-full px-2 py-1 text-xs font-bold">
+                  NEW
+                </span>
+              )}
+
+              {/* 버튼 영역 */}
               <div className="flex gap-2">
+                {/* 입장 버튼 */}
                 <button
-                  className="bg-green-500 text-white px-4 py-2 rounded"
+                  className="border border-blue-500 text-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-100"
                   onClick={() => validateAndEnterRoom(room.id)} // 입장 검증 및 처리
                 >
-                  채팅방 입장
+                  입장
                 </button>
+
+                {/* 나가기 버튼 */}
                 <button
-                  className="bg-red-500 text-white px-4 py-2 rounded"
+                  className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
                   onClick={() => leaveChatRoom(client, room.id, loginUserId)} // 나가기 로직 호출
                 >
                   나가기

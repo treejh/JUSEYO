@@ -7,6 +7,7 @@ import com.example.backend.chat.chatUser.entity.ChatUser;
 import com.example.backend.chat.chatUser.repository.ChatUserRepository;
 import com.example.backend.chat.chatroom.dto.request.ChatRoomRequestDto;
 import com.example.backend.chat.chatroom.dto.request.ChatRoomValidRequestDto;
+import com.example.backend.chat.chatroom.dto.response.OpponentResponseDto;
 import com.example.backend.chat.chatroom.entity.ChatRoom;
 import com.example.backend.chat.chatroom.repository.ChatRoomRepository;
 import com.example.backend.enums.ChatRoomType;
@@ -307,8 +308,9 @@ public class ChatRoomService {
 
 
     // 현재 채팅하고 있는 상대방 조회 (1:1, 고객센터 채팅에서만 사용)
-    public String findOpponentName(Long roomId) {
+    // ChatRoomService.java
 
+    public OpponentResponseDto findOpponentInfo(Long roomId) {
         User loginUser = userService.findById(tokenService.getIdFromToken());
         ChatRoom room = findId(roomId);
 
@@ -321,12 +323,20 @@ public class ChatRoomService {
         return chatUserList.stream()
                 .filter(chatUser ->
                         !chatUser.getUser().getId().equals(loginUser.getId()) && // 현재 사용자 제외
-                                chatUser.getChatStatus() != ChatStatus.LEAVE             // 나간 사용자 제외
+                                chatUser.getChatStatus() != ChatStatus.LEAVE     // 나간 사용자 제외
                 )
-                .map(chatUser -> chatUser.getUser().getName()) // 상대방 이름 반환
+                .map(chatUser -> {
+                    User opponent = chatUser.getUser();
+                    return new OpponentResponseDto(
+                            opponent.getName(),
+                            opponent.getDepartment() != null ? opponent.getDepartment().getName() : null
+
+                    );
+                })
                 .findFirst()
-                .orElse(null); // 상대방이 없을 경우 null
+                .orElse(null);
     }
+
 
     public boolean existsSupportChatRoomForCurrentUser() {
         User loginUser = userService.findById(tokenService.getIdFromToken());
@@ -370,7 +380,6 @@ public class ChatRoomService {
         if (chatUser.getChatStatus() == ChatStatus.CREATE || chatUser.getChatStatus() == ChatStatus.INVITED) {
             return false;
         }
-
 
         //유저가 마지막으로 접속한 시간
         LocalDateTime lastEnterTime = chatUser.getLastEnterTime();

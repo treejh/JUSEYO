@@ -110,6 +110,7 @@ public class TokenService {
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(Math.toIntExact(maxAgeRefreshInSeconds));
+
         redisService.saveRefreshToken(user.getId(),refreshToken);
 
 

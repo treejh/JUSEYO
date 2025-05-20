@@ -14,6 +14,7 @@ public class ChatResponseDto {
 
     private Long roomId;         // 방 번호
     private String sender;       // 보낸 사람 닉네임
+    private Long userId;
     private String message;      // 메시지 내용
     private LocalDateTime createDate; // 메시지 생성 시간
     private ChatMessageStatus chatStatus; //메시지 타입
@@ -24,5 +25,6 @@ public class ChatResponseDto {
         this.message = chatMessage.getMessage();
         this.createDate = chatMessage.getCreatedAt();
         this.chatStatus = chatMessage.getMessageStatus();
+        this.userId  = chatMessage.getUser().getId();
     }
 }

@@ -31,16 +31,18 @@ const ChatPage = () => {
   }, []);
 
   return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold mb-6">채팅 시스템</h1>
-      <div className="grid grid-cols-3 gap-4">
-        <div>
+    <div className="p-4 h-screen flex flex-col">
+      <div className="flex flex-1 gap-4">
+        {/* 유저 리스트 */}
+        <div className="w-1/6">
           <UserList
             onSelectUser={(userId) => console.log(`유저 ${userId} 선택됨`)}
             managementDashboardName={managementDashboardName || ""}
           />
         </div>
-        <div>
+
+        {/* 채팅방 리스트 */}
+        <div className="w-1/6">
           <ChatRoomList
             onSelectRoom={(roomId) => setSelectedRoomId(roomId)} // 선택된 채팅방 ID 설정
             client={client} // WebSocket 클라이언트 전달
@@ -48,15 +50,20 @@ const ChatPage = () => {
             roomType="ONE_TO_ONE" // SUPPORT 타입 채팅방 조회
           />
         </div>
-        <div>
+
+        {/* 채팅창 */}
+        <div className="col-span-2 flex-1 bg-white p-4 rounded-lg shadow-md overflow-hidden">
           {selectedRoomId ? (
             <Chat
               roomId={selectedRoomId}
               client={client}
               loginUserId={loginUser.id}
-            /> // WebSocket 클라이언트 전달
+              onClose={() => setSelectedRoomId(null)}
+            />
           ) : (
-            <p>채팅방을 선택하세요.</p>
+            <div className="flex items-center justify-center h-full text-gray-500">
+              채팅방을 선택하세요.
+            </div>
           )}
         </div>
       </div>
