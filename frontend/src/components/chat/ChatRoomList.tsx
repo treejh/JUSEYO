@@ -47,6 +47,7 @@ const ChatRoomList: React.FC<Props> = ({
   useEffect(() => {
     const fetchChatRooms = async () => {
       try {
+        setLoading(true); // 새로고침 시 로딩 상태 초기화
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms?chatRoomType=${roomType}&page=1&size=10`,
           {
@@ -67,11 +68,18 @@ const ChatRoomList: React.FC<Props> = ({
       } catch (err) {
         setError("채팅방 리스트를 가져오는 중 오류가 발생했습니다.");
       } finally {
-        setLoading(false);
+        setLoading(false); // 로딩 상태 해제
       }
     };
 
     fetchChatRooms();
+
+    // 새로고침 시에도 실행되도록 설정
+    window.addEventListener("load", fetchChatRooms);
+
+    return () => {
+      window.removeEventListener("load", fetchChatRooms);
+    };
   }, [roomType]); // roomType이 변경될 때마다 호출
 
   // 특정 채팅방의 상대방 이름 가져오기
@@ -94,6 +102,19 @@ const ChatRoomList: React.FC<Props> = ({
 
       const data = await response.json();
 
+      // 상대방 정보가 null이면 name만 "알 수 없음"으로 저장
+      if (!data.data) {
+        console.warn(`채팅방 ID ${roomId}의 상대방 정보가 없습니다.`);
+        setOpponentInfo((prev) => ({
+          ...prev,
+          [roomId]: {
+            name: "알수없음", // name만 "알 수 없음"으로 설정
+            department: "", // department는 빈 문자열로 설정
+          },
+        }));
+        return;
+      }
+      console.log("상대방 정보:", data.data);
       setOpponentInfo((prev) => ({
         ...prev,
         [roomId]: {
@@ -109,45 +130,6 @@ const ChatRoomList: React.FC<Props> = ({
         [roomId]: {
           name: "정보 없음",
           department: "",
-        },
-      }));
-    }
-  };
-
-  // 특정 채팅방의 상대방 정보 가져오기
-  const fetchOpponentInfo = async (roomId: number) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/${roomId}/opponent`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("상대방 정보를 가져오는 중 오류가 발생했습니다.");
-      }
-
-      const data = await response.json();
-      setOpponentInfo((prev) => ({
-        ...prev,
-        [roomId]: {
-          name: data.data.name || "알 수 없음",
-          department: data.data.department || "부서 정보 없음",
-        },
-      }));
-    } catch (err) {
-      console.error(`상대방 정보 로드 실패 (채팅방 ID: ${roomId}):`, err);
-      // 에러 발생 시 기본값 설정
-      setOpponentInfo((prev) => ({
-        ...prev,
-        [roomId]: {
-          name: "정보 없음",
-          department: "부서 정보 없음",
         },
       }));
     }

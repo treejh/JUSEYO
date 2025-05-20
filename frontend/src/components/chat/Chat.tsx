@@ -371,6 +371,12 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
                     isMyMessage ? "items-end" : "items-start"
                   } mb-2`}
                 >
+                  {/* 보낸 사람 이름 표시 */}
+                  {!isMyMessage && (
+                    <span className="text-sm font-semibold text-gray-800 mb-1">
+                      {msg.sender || "알 수 없음"}
+                    </span>
+                  )}
                   <div
                     className={`p-2 rounded-lg max-w-xs ${
                       isMyMessage
