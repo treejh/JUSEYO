@@ -5,7 +5,6 @@ import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Footer } from "@/components/Footer";
 
 // particles.js의 타입 선언 추가
 declare global {
@@ -553,7 +552,6 @@ export default function Home() {
             </button>
           </div>
         </section>
-        <Footer />
       </div>
     </div>
   );

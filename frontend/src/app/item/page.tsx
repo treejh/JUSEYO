@@ -133,7 +133,7 @@ export default function ItemsPage() {
                 <th className="px-3 py-2 border">카테고리</th>
                 <th className="px-3 py-2 border">위치</th>
                 <th className="px-3 py-2 border">구매처</th>
-                <th className="px-3 py-2 border">시리얼</th>
+                <th className="px-3 py-2 border">시리얼넘버</th>
                 <th className="px-3 py-2 border text-center">총수량</th>
                 <th className="px-3 py-2 border text-center">잔여수량</th>
               </tr>
