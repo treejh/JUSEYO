@@ -20,14 +20,10 @@ export default function Home() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const particlesLoaded = useRef(false);
-<<<<<<< HEAD
   const isChatPage =
     typeof window !== "undefined"
       ? window.location.pathname.includes("/chat")
       : false;
-=======
-  const isChatPage = typeof window !== 'undefined' ? window.location.pathname.includes('/chat') : false;
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
 
   // 기능 소개 슬라이드 데이터
   const featureSlides = [
@@ -186,7 +182,6 @@ export default function Home() {
     if (isChatPage) return;
 
     // 서버 사이드 렌더링 방지 또는 이미 로드된 경우 중복 로드 방지
-<<<<<<< HEAD
     if (typeof window === "undefined" || particlesLoaded.current) return;
 
     // 파티클 스크립트 로드
@@ -199,23 +194,11 @@ export default function Home() {
       const script = document.createElement("script");
       script.src =
         "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
-=======
-    if (typeof window === 'undefined' || particlesLoaded.current) return;
-
-    // 파티클 스크립트 로드
-    const loadParticles = () => {
-      const existingScript = document.querySelector('script[src*="particles.min.js"]');
-      if (existingScript) return existingScript;
-
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
       script.async = true;
 
       script.onload = () => {
         if (window.particlesJS) {
           // 최적화된 파티클 설정
-<<<<<<< HEAD
           window.particlesJS("particles-js", {
             particles: {
               number: {
@@ -224,16 +207,6 @@ export default function Home() {
                   enable: true,
                   value_area: 1000, // 더 넓은 영역에 분산
                 },
-=======
-          window.particlesJS('particles-js', {
-            "particles": {
-              "number": {
-                "value": 30, // 파티클 수 대폭 감소
-                "density": {
-                  "enable": true,
-                  "value_area": 1000 // 더 넓은 영역에 분산
-                }
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
               },
               color: {
                 value: "#1543a8",
@@ -245,7 +218,6 @@ export default function Home() {
                   color: "#000000",
                 },
               },
-<<<<<<< HEAD
               opacity: {
                 value: 0.3, // 투명도 증가
                 random: false,
@@ -298,60 +270,6 @@ export default function Home() {
               },
             },
             retina_detect: false, // 레티나 감지 비활성화
-=======
-              "opacity": {
-                "value": 0.3, // 투명도 증가
-                "random": false,
-                "anim": {
-                  "enable": false,
-                  "speed": 1,
-                  "opacity_min": 0.1,
-                  "sync": false
-                }
-              },
-              "size": {
-                "value": 3,
-                "random": true,
-                "anim": {
-                  "enable": false
-                }
-              },
-              "line_linked": {
-                "enable": true,
-                "distance": 250, // 거리 증가하여 선 개수 감소
-                "color": "#1543a8",
-                "opacity": 0.2, // 투명도 증가
-                "width": 1
-              },
-              "move": {
-                "enable": true,
-                "speed": 0.8, // 속도 감소
-                "direction": "none",
-                "random": false,
-                "straight": false,
-                "out_mode": "out",
-                "bounce": false,
-                "attract": {
-                  "enable": false
-                }
-              }
-            },
-            "interactivity": {
-              "detect_on": "canvas",
-              "events": {
-                "onhover": {
-                  "enable": false, // 호버 이벤트 비활성화
-                  "mode": "grab"
-                },
-                "onclick": {
-                  "enable": false, // 클릭 이벤트 비활성화
-                  "mode": "push"
-                },
-                "resize": true
-              }
-            },
-            "retina_detect": false // 레티나 감지 비활성화
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
           });
           particlesLoaded.current = true;
         }
@@ -384,13 +302,9 @@ export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* 파티클 배경 - 채팅 페이지에서는 렌더링하지 않음 */}
-<<<<<<< HEAD
       {renderParticles && (
         <div id="particles-js" className="absolute inset-0 z-0" />
       )}
-=======
-      {renderParticles && <div id="particles-js" className="absolute inset-0 z-0" />}
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
 
       {/* 메인 컨텐츠 */}
       <div className="relative z-10">
@@ -414,13 +328,9 @@ export default function Home() {
               {isLogin && (
                 <div className="bg-white mb-8 p-6 rounded-xl shadow-lg relative backdrop-blur-lg border border-blue-100">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500 rounded-bl-full rounded-tr-xl -z-10 opacity-10"></div>
-<<<<<<< HEAD
                   <h2 className="text-xl font-bold text-blue-800 mb-3">
                     {loginUser.username}님 환영합니다!
                   </h2>
-=======
-                  <h2 className="text-xl font-bold text-blue-800 mb-3">{loginUser.username}님 환영합니다!</h2>
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <p className="text-slate-600">
                       <span className="font-medium text-slate-800">
@@ -453,7 +363,6 @@ export default function Home() {
               )}
 
               <p className="text-slate-600 mb-8 max-w-xl">
-<<<<<<< HEAD
                 JUSEYO는{" "}
                 <span className="font-semibold text-blue-700">
                   지능형 알고리즘
@@ -461,10 +370,6 @@ export default function Home() {
                 으로 재고 관리를 혁신적으로 변화시키는 솔루션입니다. <br />
                 실시간 분석과 직관적인 인터페이스로 비즈니스 성장을
                 가속화하세요.
-=======
-                JUSEYO는 <span className="font-semibold text-blue-700">지능형 알고리즘</span>으로 재고 관리를
-                혁신적으로 변화시키는 솔루션입니다. <br />실시간 분석과 직관적인 인터페이스로 비즈니스 성장을 가속화하세요.
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -555,24 +460,18 @@ export default function Home() {
 
             {/* 타이틀 */}
             <div className="mb-8 text-center">
-<<<<<<< HEAD
               <h2 className="text-3xl font-bold text-white mb-2">
                 주요 기능 소개
               </h2>
               <p className="text-blue-100 text-sm">
                 JUSEYO가 제공하는 스마트한 기능들
               </p>
-=======
-              <h2 className="text-3xl font-bold text-white mb-2">주요 기능 소개</h2>
-              <p className="text-blue-100 text-sm">JUSEYO가 제공하는 스마트한 기능들</p>
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
             </div>
 
             {/* 기능 소개 슬라이드 - 최적화 버전 */}
             <div className="relative w-full max-w-md px-4">
               <div className="relative h-80">
                 {/* 현재 슬라이드만 렌더링하여 DOM 노드 수 감소 */}
-<<<<<<< HEAD
                 {isChatPage ? (
                   <div className="absolute inset-0 bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 shadow-lg z-10">
                     <div className="flex flex-col items-center h-full justify-center">
@@ -610,37 +509,6 @@ export default function Home() {
                       )
                   )
                 )}
-=======
-                {isChatPage
-                  ? (
-                    <div className="absolute inset-0 bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 shadow-lg z-10">
-                      <div className="flex flex-col items-center h-full justify-center">
-                        <div className="p-4 bg-white/20 rounded-xl mb-5 text-white">
-                          {featureSlides[0].icon}
-                        </div>
-                        <h4 className="text-2xl font-bold text-white mb-3 text-center">{featureSlides[0].title}</h4>
-                        <p className="text-blue-100 text-center">{featureSlides[0].description}</p>
-                      </div>
-                    </div>
-                  )
-                  : featureSlides.map((slide, index) =>
-                    index === currentSlide && (
-                      <div
-                        key={index}
-                        className="absolute inset-0 bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 shadow-lg z-10"
-                      >
-                        <div className="flex flex-col items-center h-full justify-center">
-                          <div className="p-4 bg-white/20 rounded-xl mb-5 text-white">
-                            {slide.icon}
-                          </div>
-                          <h4 className="text-2xl font-bold text-white mb-3 text-center">{slide.title}</h4>
-                          <p className="text-blue-100 text-center">{slide.description}</p>
-                        </div>
-                      </div>
-                    )
-                  )
-                }
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
               </div>
 
               {/* 슬라이드 인디케이터 - 간소화 */}
@@ -650,16 +518,11 @@ export default function Home() {
                     <button
                       key={index}
                       onClick={() => setCurrentSlide(index)}
-<<<<<<< HEAD
                       className={`h-3 rounded-full transition-all duration-300 ${
                         currentSlide === index
                           ? "bg-white w-8"
                           : "bg-white/40 w-3"
                       }`}
-=======
-                      className={`h-3 rounded-full transition-all duration-300 ${currentSlide === index ? "bg-white w-8" : "bg-white/40 w-3"
-                        }`}
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
                       aria-label={`슬라이드 ${index + 1}`}
                     />
                   ))}
@@ -670,11 +533,7 @@ export default function Home() {
             {/* 추가 정보 버튼 */}
             <button
               className="mt-8 px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-full font-medium flex items-center gap-2 hover:bg-white/20 transition-all"
-<<<<<<< HEAD
               onClick={() => router.push("/features")}
-=======
-              onClick={() => router.push('/features')}
->>>>>>> 9e8a65c ([front/style]121:ADMIN 페이지 생성)
             >
               <span>더 많은 기능 살펴보기</span>
               <svg
