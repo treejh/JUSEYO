@@ -4,6 +4,7 @@ package com.example.backend.user.controller;
 import com.example.backend.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.sms.dto.SmsRequestDto;
 import com.example.backend.user.dto.request.*;
 import com.example.backend.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.user.dto.response.UserListResponseDto;
@@ -415,6 +416,7 @@ public class UserController {
         );
     }
 
+
     @GetMapping("/token")
     @Operation(
             summary = "토큰으로 유저 조회하기 ",
@@ -427,6 +429,22 @@ public class UserController {
                 HttpStatus.OK
         );
     }
+
+    @GetMapping("/email/phone")
+    @Operation(
+            summary = "핸드폰 번호로 이메일 조회하기",
+            description = "핸드폰 번호로 이메일 조회, 핸드폰 번호로 인증된 사용자만 사용 가능"
+    )
+    public ResponseEntity getEmailByPhone(@Valid @RequestBody SmsRequestDto smsRequestDto) {
+        String response = userService.findEmailByPhone(
+                smsRequestDto.getPhoneNumber());
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호로 이메일 조회 성공 ",response),
+                HttpStatus.OK
+        );
+    }
+
+
 
 
 
