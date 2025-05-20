@@ -41,6 +41,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
   const [participants, setParticipants] = useState<Participant[]>([]); // 참여 유저 목록 상태
   const [showParticipants, setShowParticipants] = useState<boolean>(false); // 참여 유저 목록 표시 여부
   const messagesEndRef = useRef<HTMLDivElement | null>(null); // 스크롤 이동을 위한 ref
+  const messageContainerRef = useRef<HTMLDivElement | null>(null); // 메시지 컨테이너 ref 추가
 
   // 참여 유저 목록 가져오기
   const loadParticipants = async () => {
@@ -52,9 +53,42 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
     }
   };
 
-  // 스크롤을 가장 아래로 이동
+  // 스크롤을 가장 아래로 이동 - 개선된 버전
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // setTimeout을 사용하여 DOM 업데이트 후 스크롤 실행
+    setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      } else if (messageContainerRef.current) {
+        // 대체 방법: 컨테이너의 scrollTop 사용
+        const container = messageContainerRef.current;
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 100); // 약간의 지연으로 메시지 렌더링 보장
+  };
+
+  // 채팅방 입장 시간 업데이트 함수
+  const updateEnterTime = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/${roomId}/enter`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("채팅방 입장 시간 업데이트 중 오류가 발생했습니다.");
+      }
+
+      console.log(`채팅방 ${roomId} 입장 시간 업데이트 성공`);
+    } catch (error) {
+      console.error(`채팅방 ${roomId} 입장 시간 업데이트 실패:`, error);
+    }
   };
 
   // 채팅방 메시지 초기 로드
@@ -79,7 +113,9 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
         const data = await response.json();
         console.log("로드된 메시지:", data.data.content);
         setMessages(data.data.content.reverse()); // 최신 메시지가 아래로 가도록 정렬
-        scrollToBottom(); // 스크롤을 가장 아래로 이동
+
+        // 채팅방 입장 시간 업데이트 (이렇게 하면 메시지를 로드할 때 자동으로 업데이트됨)
+        updateEnterTime();
       } catch (error) {
         console.error("채팅 메시지 로드 실패:", error);
       }
@@ -87,6 +123,11 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
 
     fetchChatMessages();
   }, [roomId]);
+
+  // 메시지가 변경될 때마다 스크롤 이동
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // WebSocket 구독
   useEffect(() => {
@@ -100,13 +141,18 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
       const receivedMessage: ChatResponseDto = response.data; // ApiResponse의 data 필드 추출
       console.log("수신된 메시지:", response); // 디버깅용 로그
       setMessages((prevMessages) => [...prevMessages, receivedMessage]); // 메시지 추가
-      scrollToBottom(); // 새 메시지 수신 시 스크롤 이동
+      // scrollToBottom()은 여기서 호출하지 않음 - useEffect에서 처리
+
+      // 자신이 보낸 메시지인 경우 lastEnterTime 업데이트
+      if (receivedMessage.userId === loginUserId) {
+        updateEnterTime();
+      }
     });
 
     return () => {
       subscription.unsubscribe(); // 컴포넌트 언마운트 시 구독 해제
     };
-  }, [roomId, client]);
+  }, [roomId, client, loginUserId]);
 
   //채팅방 나가기
   const handleLeaveChatRoom = async () => {
@@ -117,8 +163,8 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
     }
   };
 
-  // 메시지 전송
-  const sendMessage = () => {
+  // 메시지 전송 - 수정된 부분
+  const sendMessage = async () => {
     if (!client || !client.connected) {
       console.error("STOMP 연결이 활성화되지 않았습니다.");
       return;
@@ -138,7 +184,17 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
       });
 
       setInputMessage(""); // 입력 필드 초기화
-      scrollToBottom(); // 메시지 전송 후 스크롤을 맨 아래로 이동
+
+      // 메시지 전송 시 lastEnterTime 업데이트 (추가)
+      // WebSocket에서 자신의 메시지를 받을 때 업데이트하므로 여기서는 제거
+    }
+  };
+
+  // Enter 키 입력 처리
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
@@ -217,6 +273,16 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
     }
   }, [roomId, roomInfo]);
 
+  // 컴포넌트 마운트 시 스크롤 한 번 더 호출
+  useEffect(() => {
+    // 약간의 지연 후 스크롤
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 500); // 500ms 지연으로 컴포넌트가 완전히 렌더링된 후 스크롤 시도
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="flex flex-col h-[90vh] border border-gray-300 rounded-lg shadow-md">
       {/* 채팅방 헤더 */}
@@ -280,8 +346,12 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
         </div>
       )}
 
-      {/* 채팅 메시지 영역 */}
-      <div className="flex-1 overflow-y-auto p-4">
+      {/* 채팅 메시지 영역 - ref 추가 */}
+      <div
+        className="flex-1 overflow-y-auto p-4"
+        ref={messageContainerRef}
+        style={{ scrollBehavior: "smooth" }}
+      >
         {Object.keys(groupedMessages).map((date) => (
           <div key={date}>
             {/* 날짜 표시 */}
@@ -324,7 +394,8 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
             })}
           </div>
         ))}
-        <div ref={messagesEndRef} /> {/* 스크롤 이동을 위한 빈 div */}
+        {/* 스크롤 이동을 위한 빈 div */}
+        <div ref={messagesEndRef} style={{ float: "left", clear: "both" }} />
       </div>
 
       {/* 메시지 입력 영역 */}
@@ -334,6 +405,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
           className="flex-1 border border-gray-300 p-2 rounded-l"
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
+          onKeyPress={handleKeyPress} // Enter 키 처리 추가
           placeholder="메시지를 입력하세요..."
         />
         <button

@@ -2,19 +2,21 @@ package com.example.backend.notification.controller;
 
 
 
+import com.example.backend.enums.RoleType;
 import com.example.backend.inventoryOut.service.InventoryOutService;
+import com.example.backend.notification.dto.NewChatNotificationDTO;
 import com.example.backend.notification.dto.NotificationRequestDTO;
 import com.example.backend.notification.entity.Notification;
 import com.example.backend.notification.entity.NotificationType;
+import com.example.backend.notification.service.NewChatNotificationService;
 import com.example.backend.notification.service.NotificationService;
-import com.example.backend.security.dto.CustomUserDetails;
+import com.example.backend.role.entity.Role;
 import com.example.backend.security.jwt.service.TokenService;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -30,6 +32,7 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final InventoryOutService inventoryOutService; // 재고 알림 테스트용
     private final TokenService tokenService;
+    private final NewChatNotificationService newChatNotificationService;
     private final UserService userService;
 
     // 1. 알림 생성
@@ -47,7 +50,7 @@ public class NotificationController {
 
     // 3. 알림 읽음 처리
     @PutMapping("/{notificationId}/read")
-    public Notification markAsRead(@PathVariable String notificationId) {
+    public Notification markAsRead(@PathVariable Long notificationId) {
         return notificationService.markAsRead(notificationId);
     }
 
@@ -68,13 +71,17 @@ public class NotificationController {
         return notificationService.streamNotifications(userId);
     }
 
-
-//    @GetMapping(value = "/stream/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-//    public SseEmitter streamNotifications(@PathVariable Long userId) throws IOException {
-//        System.out.println("📡 SSE 요청 받음: userId = " + userId);
-//
-//        return notificationService.streamNotifications(userId);
+//    // 채팅 전용 알림
+//    @PostMapping("/chat")
+//    public ResponseEntity<Void> createChatNotification(@RequestBody NewChatNotificationDTO request) {
+//        User user = userService.findById(request.getSenderId());
+//        String senderName = user.getName();
+//        RoleType senderRole = user.getRole().getRole();
+//        newChatNotificationService.notifyNewChat(request.getTargetUserId(), request.getRoomId(), senderRole, senderName);
+//        return ResponseEntity.ok().build();
 //    }
+
+
 
     // 테스트용 알림 보내기 API
     @PostMapping("/test/{userId}")
@@ -88,7 +95,7 @@ public class NotificationController {
         return notificationService.createNotification(testRequest);
     }
 
-    // 재고 알림 테스트용 알림
+    // 재고 알림 테스트용
     @PostMapping("/test/stockDown")
     public void stockDownAlertTest() {
         inventoryOutService.stockdown();
