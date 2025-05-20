@@ -75,34 +75,6 @@ public class UserController {
 
     }
 
-    //admin signup
-    @PostMapping("/signup/admin")
-    @Operation(
-            summary = "회원 가입 ( 최고 관리자 )",
-            description = "최고 관리자(Admin)의 회원가입을 처리합니다."
-    )
-    public ResponseEntity signupAdmin(@Valid @RequestBody AdminSignupRequestDto adminSignupRequestDto) {
-        userService.createAdmin(adminSignupRequestDto);
-        return new ResponseEntity<>(" admin( 최고 관리자 ) 생성 성공", HttpStatus.CREATED);
-
-    }
-
-    @GetMapping("/admin")
-    @Operation(
-            summary = "최고 관리자 ( admin ) 리스트 조회 ",
-            description = "존재하는 최고 관리자 리스트를 조회합니다. "
-    )
-    public ResponseEntity getAdminList(
-                                       @RequestParam(name = "page", defaultValue = "1") int page,
-                                       @RequestParam(name="size", defaultValue = "10") int size) {
-
-       Page<User> approveUserList = userService.getAdminList(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
-        return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), " admin( 최고 관리자 ) 리스트 조회 성공", approveUserList),
-                HttpStatus.OK
-        );
-    }
-
     @PatchMapping("/name")
     @Operation(
             summary = "유저 이름 수정 ",

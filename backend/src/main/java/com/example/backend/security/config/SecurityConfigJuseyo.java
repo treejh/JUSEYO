@@ -38,7 +38,8 @@ public class SecurityConfigJuseyo {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/api/v1/admin/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
                         //채팅
