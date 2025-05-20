@@ -50,7 +50,7 @@ public class NotificationController {
 
     // 3. 알림 읽음 처리
     @PutMapping("/{notificationId}/read")
-    public Notification markAsRead(@PathVariable String notificationId) {
+    public Notification markAsRead(@PathVariable Long notificationId) {
         return notificationService.markAsRead(notificationId);
     }
 
