@@ -117,7 +117,7 @@ export default function SupplyRequestPage() {
         throw new Error(txt || "요청 실패");
       }
       alert("비품 요청이 등록되었습니다.");
-      router.push("/mypage/requests");
+      router.push("/item/supplyrequest");
     } catch (err) {
       alert((err as Error).message);
     }

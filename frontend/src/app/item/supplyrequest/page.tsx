@@ -20,9 +20,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export default function SupplyRequestListPage() {
   const { loginUser, isLogin } = useGlobalLoginUser();
-  const isManager =
-    isLogin &&
-    (loginUser?.roles?.includes("MANAGER") || loginUser?.role === "MANAGER");
+  const isManager = isLogin && loginUser?.role === "MANAGER";
   const [requests, setRequests] = useState<SupplyRequest[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -47,7 +45,6 @@ export default function SupplyRequestListPage() {
 
   useEffect(() => {
     fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -89,6 +86,7 @@ export default function SupplyRequestListPage() {
                   <th className="px-3 py-2 border">대여여부</th>
                   <th className="px-3 py-2 border">승인상태</th>
                   <th className="px-3 py-2 border">작성일</th>
+                  <th className="px-3 py-2 border">수정</th>
                 </tr>
               </thead>
               <tbody>
@@ -107,6 +105,18 @@ export default function SupplyRequestListPage() {
                     </td>
                     <td className="px-3 py-2 border">{req.approvalStatus}</td>
                     <td className="px-3 py-2 border">{req.createdAt}</td>
+                    <td className="px-3 py-2 border">
+                      {req.approvalStatus === "REQUESTED" ? (
+                        <Link
+                          href={`/item/supplyrequest/update/${req.id}`}
+                          className="text-indigo-600 hover:underline"
+                        >
+                          수정
+                        </Link>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
