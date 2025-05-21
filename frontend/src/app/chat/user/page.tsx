@@ -34,7 +34,7 @@ const ChatPage = () => {
     <div className="p-4 h-screen flex flex-col">
       <div className="flex flex-1 gap-4">
         {/* 유저 리스트 */}
-        <div className="w-1/6">
+        <div className="w-1/5">
           <UserList
             onSelectUser={(userId) => console.log(`유저 ${userId} 선택됨`)}
             managementDashboardName={managementDashboardName || ""}
@@ -42,7 +42,7 @@ const ChatPage = () => {
         </div>
 
         {/* 채팅방 리스트 */}
-        <div className="w-1/6">
+        <div className="w-1/5">
           <ChatRoomList
             onSelectRoom={(roomId) => setSelectedRoomId(roomId)} // 선택된 채팅방 ID 설정
             client={client} // WebSocket 클라이언트 전달

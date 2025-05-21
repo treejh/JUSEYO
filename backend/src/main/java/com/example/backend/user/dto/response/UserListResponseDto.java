@@ -21,6 +21,9 @@ public class UserListResponseDto {
     public UserListResponseDto(User user){
         this.id= user.getId();
         this.name = user.getName();
-        this.department  = user.getDepartment().getName();
+        this.department = user.getDepartment() != null
+                ? user.getDepartment().getName()
+                : user.getManagementDashboard().getName() +" 매니저";
+
     }
 }

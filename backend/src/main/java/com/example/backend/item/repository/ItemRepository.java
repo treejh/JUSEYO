@@ -34,11 +34,11 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     //상태 별 아이템 목록 가졍
     @Query("SELECT new com.example.backend.item.dto.response.ItemResponseDto(" +
-            "i.id, i.name, i.serialNumber, i.minimumQuantity, " +
+            "i.id, i.name, c.name, i.serialNumber, i.minimumQuantity, " +
             "i.totalQuantity, i.availableQuantity, i.purchaseSource, " +
             "i.location, i.isReturnRequired, i.image, " +
             "i.category.id, i.managementDashboard.id, i.createdAt, i.modifiedAt, i.status) " +
-            "FROM Item i WHERE i.status = :status")
+            "FROM Item i Join i.category c WHERE i.status = :status")
     Page<ItemResponseDto> findAllAsDto(@Param("status") Status status, Pageable pageable);
 
     //비품 검색

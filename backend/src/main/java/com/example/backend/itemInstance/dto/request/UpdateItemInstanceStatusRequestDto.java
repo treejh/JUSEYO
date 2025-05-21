@@ -2,13 +2,13 @@ package com.example.backend.itemInstance.dto.request;
 
 import com.example.backend.enums.Outbound;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UpdateItemInstanceStatusRequestDto {
     @NotNull
     private Outbound outbound;

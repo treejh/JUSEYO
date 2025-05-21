@@ -64,9 +64,14 @@ public class SupplyRequestController {
     @Operation(summary = "비품 요청 승인", description = "매니저 권한으로 특정 요청을 승인합니다.")
     @PostMapping("/{requestId}/approve")
     @PreAuthorize("hasRole('MANAGER')")
-    public ResponseEntity<Void> approveRequest(@PathVariable Long requestId) {
-        supplyRequestService.approveRequest(requestId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<SupplyRequestResponseDto> approveRequest(
+            @PathVariable Long requestId
+    ) {
+        SupplyRequestResponseDto dto = supplyRequestService.updateRequestStatus(
+                requestId,
+                ApprovalStatus.APPROVED
+        );
+        return ResponseEntity.ok(dto);
     }
 
     /**

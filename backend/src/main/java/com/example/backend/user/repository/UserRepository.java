@@ -101,4 +101,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
             Pageable pageable
     );
 
+    Page<User> findByManagementDashboardAndApprovalStatusAndRoleInAndIdNot(
+            ManagementDashboard managementDashboard,
+            ApprovalStatus approvalStatus,
+            Pageable pageable,
+            List<Role> roles,
+            Long excludeUserId
+    );
+
+
 }
