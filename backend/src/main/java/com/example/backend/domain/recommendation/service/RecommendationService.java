@@ -1,6 +1,6 @@
 package com.example.backend.domain.recommendation.service;
 
-import com.example.backend.domain.Inventory.inventoryOut.repository.InventoryOutRepository;
+import com.example.backend.domain.inventory.inventoryOut.repository.InventoryOutRepository;
 import com.example.backend.domain.recommendation.dto.OutHistoryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,7 +1,7 @@
 package com.example.backend.domain.excel.service;
 
-import com.example.backend.domain.Inventory.inventoryIn.dto.response.InventoryInExcelResponseDto;
-import com.example.backend.domain.Inventory.inventoryOut.dto.response.InventoryOutResponseDto;
+import com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInExcelResponseDto;
+import com.example.backend.domain.inventory.inventoryOut.dto.response.InventoryOutResponseDto;
 import com.example.backend.domain.item.dto.response.ItemResponseDto;
 import com.example.backend.domain.itemInstance.dto.response.ItemInstanceResponseDto;
 import com.example.backend.domain.supply.supplyRequest.dto.response.SupplyRequestResponseDto;

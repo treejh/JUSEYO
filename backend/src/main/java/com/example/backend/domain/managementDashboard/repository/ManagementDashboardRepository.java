@@ -16,7 +16,7 @@ public interface ManagementDashboardRepository extends CrudRepository<Management
 
     Optional<ManagementDashboard> findByBusinessRegistrationNumber(String businessNumber);
 
-    @Query("select new com.example.backend.managementDashboard.dto.ManagementDashBoardResponseDto" +
+    @Query("select new com.example.backend.domain.managementDashboard.dto.ManagementDashBoardResponseDto" +
             "(m.id, m.name, m.owner, m.companyName, m.businessRegistrationNumber, m.status, m.approval, m.createdAt) " +
             "from ManagementDashboard m " +
             "where m.approval = :approval and m.status = :status")
