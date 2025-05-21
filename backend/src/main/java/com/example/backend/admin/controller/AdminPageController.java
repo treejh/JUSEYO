@@ -120,7 +120,7 @@ public class AdminPageController {
     @PostMapping("/management/approve/{id}")
     public String approve(@PathVariable(name = "id") Long id) {
         managementDashboardService.approvalManagementDashBoard(id);
-        return "redirect:/api/v1/management/approval";
+        return "redirect:/api/v1/admin/management/approval";
     }
 
     @Operation(summary = "관리 페이지 삭제", description = "ID를 기준으로 관리 페이지를 삭제합니다.")
@@ -128,7 +128,7 @@ public class AdminPageController {
     @DeleteMapping("/management/{id}")
     public String deleteManagementDashboard(@Parameter(description = "관리 페이지 ID") @PathVariable(name = "id") Long id) {
         managementDashboardService.deleteManagementDashBoard(id);
-        return "redirect:/api/v1/management/approval";
+        return "redirect:/api/v1/admin/management/approval";
     }
 
 }

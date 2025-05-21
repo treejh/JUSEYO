@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class ItemInstanceResponseDto {
     private Long id;
     private Long itemId;
+    private String itemName;
     private String instanceCode;
     private Status status;
     private Outbound outbound;
@@ -20,4 +21,5 @@ public class ItemInstanceResponseDto {
     private String itemImage;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private long borrowedCount;
 }

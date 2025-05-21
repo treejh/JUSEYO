@@ -1,41 +1,44 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { FC, useState } from 'react';
-import { HiArchiveBox } from 'react-icons/hi2';
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { FC, useState } from "react";
+import { HiArchiveBox } from "react-icons/hi2";
 
 interface CategoryItem {
   id: number;
   name: string;
   count: number;
-  status: '삭제' | '사용';
+  status: "삭제" | "사용";
 }
 
 const ITEMS_PER_PAGE = 10;
 
 const CategoryManagementPage: FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // 실제로는 API에서 받아올 데이터
   const categories: CategoryItem[] = [
-    { id: 1, name: '전자기기', count: 5, status: '사용' },
-    { id: 2, name: '종이', count: 5, status: '사용' },
-    { id: 3, name: '소프트웨어', count: 3, status: '사용' },
-    { id: 4, name: '하드웨어', count: 7, status: '삭제' },
-    { id: 5, name: '사무용품', count: 12, status: '사용' },
-    { id: 6, name: '가구', count: 4, status: '사용' },
-    { id: 7, name: '도서', count: 8, status: '사용' },
-    { id: 8, name: '음향기기', count: 6, status: '삭제' },
-    { id: 9, name: '네트워크장비', count: 9, status: '사용' },
-    { id: 10, name: '소모품', count: 15, status: '사용' },
-    { id: 11, name: '기타', count: 3, status: '사용' },
+    { id: 1, name: "전자기기", count: 5, status: "사용" },
+    { id: 2, name: "종이", count: 5, status: "사용" },
+    { id: 3, name: "소프트웨어", count: 3, status: "사용" },
+    { id: 4, name: "하드웨어", count: 7, status: "삭제" },
+    { id: 5, name: "사무용품", count: 12, status: "사용" },
+    { id: 6, name: "가구", count: 4, status: "사용" },
+    { id: 7, name: "도서", count: 8, status: "사용" },
+    { id: 8, name: "음향기기", count: 6, status: "삭제" },
+    { id: 9, name: "네트워크장비", count: 9, status: "사용" },
+    { id: 10, name: "소모품", count: 15, status: "사용" },
+    { id: 11, name: "기타", count: 3, status: "사용" },
   ];
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedCategories = categories.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const paginatedCategories = categories.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -43,7 +46,7 @@ const CategoryManagementPage: FC = () => {
 
   const handleDelete = (id: number) => {
     // TODO: 삭제 로직 구현
-    console.log('삭제:', id);
+    console.log("삭제:", id);
   };
 
   return (
@@ -66,20 +69,24 @@ const CategoryManagementPage: FC = () => {
             <table className="w-full border border-[#EEEEEE] rounded-xl overflow-hidden shadow-sm">
               <thead>
                 <tr className="border-b border-[#EEEEEE]">
-                  <th className="text-left px-6 py-4 text-gray-900 font-bold text-base">카테고리</th>
-                  <th className="text-center px-6 py-4 text-gray-900 font-bold text-base">품목 수</th>
+                  <th className="text-left px-6 py-4 text-gray-900 font-bold text-base">
+                    카테고리
+                  </th>
+                  <th className="text-center px-6 py-4 text-gray-900 font-bold text-base">
+                    품목 수
+                  </th>
                   <th className="w-24 px-6 py-4"></th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedCategories.map((category, index) => (
-                  <tr 
-                    key={category.id} 
+                  <tr
+                    key={category.id}
                     className={`border-b border-[#EEEEEE] hover:bg-[#0047AB]/5 transition-colors cursor-pointer
-                      ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                      ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                   >
                     <td className="text-left px-6 py-4">
-                      <Link 
+                      <Link
                         href={`/settings/categories/edit/${category.id}`}
                         className="hover:text-[#0047AB] hover:font-semibold transition-all flex items-center gap-4"
                       >
@@ -119,21 +126,23 @@ const CategoryManagementPage: FC = () => {
                 >
                   이전
                 </button>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-1 rounded ${
-                      currentPage === page
-                        ? 'bg-gray-200 text-gray-700'
-                        : 'border border-[#EEEEEE] hover:bg-gray-50'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-                
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-1 rounded ${
+                        currentPage === page
+                          ? "bg-gray-200 text-gray-700"
+                          : "border border-[#EEEEEE] hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
@@ -150,4 +159,4 @@ const CategoryManagementPage: FC = () => {
   );
 };
 
-export default CategoryManagementPage; 
+export default CategoryManagementPage;
