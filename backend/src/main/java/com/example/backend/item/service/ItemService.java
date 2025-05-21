@@ -158,6 +158,7 @@ public class ItemService {
         return ItemResponseDto.builder()
                 .id(e.getId())
                 .name(e.getName())
+                .categoryName(e.getCategory().getName())
                 .serialNumber(e.getSerialNumber())
                 .minimumQuantity(e.getMinimumQuantity())
                 .totalQuantity(e.getTotalQuantity())
