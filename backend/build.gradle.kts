@@ -86,6 +86,9 @@ dependencies {
     //S3 의존성
     implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 
+    //누리고
+    implementation("net.nurigo:sdk:4.2.7") // 누리고 SDK
+
 }
 
 

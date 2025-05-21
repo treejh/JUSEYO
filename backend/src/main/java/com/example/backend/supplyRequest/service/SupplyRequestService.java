@@ -99,12 +99,16 @@ public class SupplyRequestService {
         // 1) 승인 상태 변경
         req.setApprovalStatus(ApprovalStatus.APPROVED);
 
-        // 2) 자동으로 비품추적 기록 생성
+        // 2) 자동으로 비품추적 기록 생성 (대여 vs 비대여 메시지 분기)
+        String issueMsg = req.isRental()
+                ? "대여 승인 자동 기록"
+                : "비대여 승인 자동 기록";
+
         ChaseItemRequestDto chaseDto = ChaseItemRequestDto.builder()
                 .requestId(req.getId())
                 .productName(req.getProductName())
                 .quantity(req.getQuantity())
-                .issue("자동 승인 트리거")
+                .issue(issueMsg)
                 .build();
         chaseItemService.addChaseItem(chaseDto);
 

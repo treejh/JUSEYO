@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="27e471b3-3d08-4bff-979d-b5fa21020799" name="변경" comment="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/settings/categories/add/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/settings/categories/add/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/settings/categories/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/settings/categories/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/supplyrequest/page.tsx" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$/backend">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="backend" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="back/refact-158-비품추적서코드수정" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;hsle95&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/treejh/JUSEYO.git&quot;,
+    &quot;accountId&quot;: &quot;aa767555-b5e6-441b-bf25-7586ca83819a&quot;
+  }
+}</component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="2wovVsSd9qHqD40wAmvDiSFJDk0" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.backend 빌드.executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.BackendApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;front/style-168-비품구현&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/hsle/Desktop/likelion/JUSEYO-main/backend/settings.gradle.kts&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="BackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="backend.main" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.backend.BackendApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="27e471b3-3d08-4bff-979d-b5fa21020799" name="변경" comment="" />
+      <created>1746720769223</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1746720769223</updated>
+      <workItem from="1746720770497" duration="116400000" />
+      <workItem from="1747267673103" duration="80368000" />
+      <workItem from="1747672475274" duration="252000" />
+      <workItem from="1747673193096" duration="9026000" />
+    </task>
+    <task id="LOCAL-00014" summary="[ back/refact ] 32 : 비품, 비품요청서, 출고내역 erd 수정에 의한 엔티티수정">
+      <option name="closed" value="true" />
+      <created>1746808327679</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1746808327679</updated>
+    </task>
+    <task id="LOCAL-00015" summary="[ back/refact ] 32 : 비품 수정은 관리자만 가능">
+      <option name="closed" value="true" />
+      <created>1746810113621</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1746810113621</updated>
+    </task>
+    <task id="LOCAL-00016" summary="[ back/refact ] 32 : 비품요청서 수정">
+      <option name="closed" value="true" />
+      <created>1746967205583</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1746967205583</updated>
+    </task>
+    <task id="LOCAL-00017" summary="[ back/refact ] 32 : 자신의 관리페이지만 비품조회가능">
+      <option name="closed" value="true" />
+      <created>1746967820672</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1746967820672</updated>
+    </task>
+    <task id="LOCAL-00018" summary="[ back/refact ] 32 : 비품요청서 재요청하면 true로 수정">
+      <option name="closed" value="true" />
+      <created>1746969605935</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1746969605935</updated>
+    </task>
+    <task id="LOCAL-00019" summary="[ back/feat ] 41 : 개별자산단위 중간 구현">
+      <option name="closed" value="true" />
+      <created>1747012045012</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1747012045013</updated>
+    </task>
+    <task id="LOCAL-00020" summary="[ back/feat ] 41 : 개별자산단위 구현">
+      <option name="closed" value="true" />
+      <created>1747014202902</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1747014202902</updated>
+    </task>
+    <task id="LOCAL-00021" summary="[ back/feat ] 41 : 자산코드 구현">
+      <option name="closed" value="true" />
+      <created>1747014494141</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1747014494141</updated>
+    </task>
+    <task id="LOCAL-00022" summary="[ back/feat ] 41 : 개별자산 자동 생성업데이트">
+      <option name="closed" value="true" />
+      <created>1747026518788</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1747026518788</updated>
+    </task>
+    <task id="LOCAL-00023" summary="[ back/feat ] 60 : 엑셀기능추가: 비품,개별자산단위,입고,출구,비품요청서 가능">
+      <option name="closed" value="true" />
+      <created>1747066035864</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1747066035864</updated>
+    </task>
+    <task id="LOCAL-00024" summary="[ back / refact ] 66 : 시리얼넘버 품명-순번-랜덤값">
+      <option name="closed" value="true" />
+      <created>1747097894990</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1747097894990</updated>
+    </task>
+    <task id="LOCAL-00025" summary="[ back / refact ] 66 : 유저 구분 가능">
+      <option name="closed" value="true" />
+      <created>1747110315122</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1747110315122</updated>
+    </task>
+    <task id="LOCAL-00026" summary="[ back / refact ] 66 : 유저 구분 가능 이후 dev받기">
+      <option name="closed" value="true" />
+      <created>1747111139715</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1747111139715</updated>
+    </task>
+    <task id="LOCAL-00027" summary="[ back / refact ] 66 : 비품 엑셀 기능 수정, 출고는 기본으로 지급으로 나감">
+      <option name="closed" value="true" />
+      <created>1747114732836</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1747114732836</updated>
+    </task>
+    <task id="LOCAL-00028" summary="[ back / refact ] 66 : 반납 요청서 엑셀 다운로드 추가">
+      <option name="closed" value="true" />
+      <created>1747122008243</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1747122008243</updated>
+    </task>
+    <task id="LOCAL-00029" summary="[ back / refact ] 66 : 레디스 주석 풀기">
+      <option name="closed" value="true" />
+      <created>1747123037803</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1747123037803</updated>
+    </task>
+    <task id="LOCAL-00030" summary="[ back / feat ] 73 : 오류해결">
+      <option name="closed" value="true" />
+      <created>1747129153724</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1747129153724</updated>
+    </task>
+    <task id="LOCAL-00031" summary="[ back / feat ] 73 : 풀 받은거">
+      <option name="closed" value="true" />
+      <created>1747129207042</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1747129207042</updated>
+    </task>
+    <task id="LOCAL-00032" summary="[ back / feat ] 73 : 같은 관리페이지 회원조회 구현">
+      <option name="closed" value="true" />
+      <created>1747197026116</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1747197026118</updated>
+    </task>
+    <task id="LOCAL-00033" summary="[ back / feat ] 73 : 같은 관리페이지 회원조회 카테고리 추가">
+      <option name="closed" value="true" />
+      <created>1747197989494</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1747197989494</updated>
+    </task>
+    <task id="LOCAL-00034" summary="[ back / feat ] 73 : 같은 관리페이지 내 일반회원 조회">
+      <option name="closed" value="true" />
+      <created>1747203876103</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1747203876103</updated>
+    </task>
+    <task id="LOCAL-00035" summary="[ back / feat ] 73 : 같은 관리페이지 내 일반회원 조회">
+      <option name="closed" value="true" />
+      <created>1747203905851</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1747203905851</updated>
+    </task>
+    <task id="LOCAL-00036" summary="[ back / feat ] 88 : 같은 관리페이지 내 매니저 조회">
+      <option name="closed" value="true" />
+      <created>1747205121081</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1747205121082</updated>
+    </task>
+    <task id="LOCAL-00037" summary="[ back / refact ] 90 : 매니저만 비품요청서 승인거절 가능">
+      <option name="closed" value="true" />
+      <created>1747208526975</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1747208526975</updated>
+    </task>
+    <task id="LOCAL-00038" summary="[ back / refact ] 90 : 비품요청서 자신의 요청서 수정">
+      <option name="closed" value="true" />
+      <created>1747237139539</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1747237139539</updated>
+    </task>
+    <task id="LOCAL-00039" summary="[ back / refact ] 90 : 비품요청서 대여하면 반납날짜 기입">
+      <option name="closed" value="true" />
+      <created>1747237674897</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1747237674897</updated>
+    </task>
+    <task id="LOCAL-00040" summary="[ back / refact ] 90 : 비품요청서 대여하면 반납날짜 기입">
+      <option name="closed" value="true" />
+      <created>1747238310314</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1747238310314</updated>
+    </task>
+    <task id="LOCAL-00041" summary="[ back / refact ] 92 : 출고내역 전제조회, 자신의 글만 조회 추가">
+      <option name="closed" value="true" />
+      <created>1747269626145</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1747269626145</updated>
+    </task>
+    <task id="LOCAL-00042" summary="[ back / refact ] 92 : 페이징처리, 정렬, 날짜필터 추가">
+      <option name="closed" value="true" />
+      <created>1747272626464</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1747272626464</updated>
+    </task>
+    <task id="LOCAL-00043" summary="[ back / refact ] 92 : 페이징처리, 정렬, 날짜필터 추가 수정">
+      <option name="closed" value="true" />
+      <created>1747276066980</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1747276066980</updated>
+    </task>
+    <task id="LOCAL-00044" summary="[ back / refact ] 92 : 페이징처리, 정렬, 날짜필터 추가 수정2">
+      <option name="closed" value="true" />
+      <created>1747276253096</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1747276253096</updated>
+    </task>
+    <task id="LOCAL-00045" summary="[ back / refact ] 96 : 페이징처리, 정렬, 날짜필터">
+      <option name="closed" value="true" />
+      <created>1747282742751</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1747282742751</updated>
+    </task>
+    <task id="LOCAL-00046" summary="[ back / refact ] 96 : 대여반납하면 사용가능으로 바뀜">
+      <option name="closed" value="true" />
+      <created>1747288274348</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1747288274348</updated>
+    </task>
+    <task id="LOCAL-00047" summary="[ back / refact ] 96 : 대여시 비품 연동하여 수량 조절">
+      <option name="closed" value="true" />
+      <created>1747291671021</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1747291671021</updated>
+    </task>
+    <task id="LOCAL-00048" summary="[ back / refact ] 96 : 이미지 dto 추가">
+      <option name="closed" value="true" />
+      <created>1747296615385</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1747296615385</updated>
+    </task>
+    <task id="LOCAL-00049" summary="[ back / refact ] 92 : 병합한거">
+      <option name="closed" value="true" />
+      <created>1747297601585</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1747297601585</updated>
+    </task>
+    <task id="LOCAL-00050" summary="[ back / refact ] 92 : 병합한거">
+      <option name="closed" value="true" />
+      <created>1747298541794</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1747298541796</updated>
+    </task>
+    <task id="LOCAL-00051" summary="[ back / feat ] 96 : 병합 이후">
+      <option name="closed" value="true" />
+      <created>1747299641251</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1747299641251</updated>
+    </task>
+    <task id="LOCAL-00052" summary="[ back / feat ] 96 : 병합 이후">
+      <option name="closed" value="true" />
+      <created>1747302383101</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1747302383101</updated>
+    </task>
+    <task id="LOCAL-00053" summary="[ back / feat ] 96 : 조회시 활성화만,필터 추가">
+      <option name="closed" value="true" />
+      <created>1747361364500</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1747361364500</updated>
+    </task>
+    <task id="LOCAL-00054" summary="[ back / feat ] 102 : 비품추적 뼈대 구현">
+      <option name="closed" value="true" />
+      <created>1747369578716</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1747369578716</updated>
+    </task>
+    <task id="LOCAL-00055" summary="[ back / feat ] 102 : 스웨거 설명 추가">
+      <option name="closed" value="true" />
+      <created>1747583333724</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1747583333724</updated>
+    </task>
+    <task id="LOCAL-00056" summary="[ back / feat ] 102 : 오류 수정중">
+      <option name="closed" value="true" />
+      <created>1747586065638</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1747586065638</updated>
+    </task>
+    <task id="LOCAL-00057" summary="[ back / feat ] 102 : 아이템요청서 관련 수정">
+      <option name="closed" value="true" />
+      <created>1747619534234</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1747619534236</updated>
+    </task>
+    <task id="LOCAL-00058" summary="[ back / feat ] 102 : 비품추적 api 수정">
+      <option name="closed" value="true" />
+      <created>1747637337942</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1747637337943</updated>
+    </task>
+    <task id="LOCAL-00059" summary="[ back / feat ] 102 : 비품추적 자동으로 기록 생성">
+      <option name="closed" value="true" />
+      <created>1747670786256</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1747670786257</updated>
+    </task>
+    <task id="LOCAL-00060" summary="[ back / feat ] 102 : 비품추적 요청할때 자동을 추적">
+      <option name="closed" value="true" />
+      <created>1747671933511</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1747671933511</updated>
+    </task>
+    <task id="LOCAL-00061" summary="[ back / feat ] 102 : 풀 받은 이후 커밋">
+      <option name="closed" value="true" />
+      <created>1747672079446</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1747672079446</updated>
+    </task>
+    <task id="LOCAL-00062" summary="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름">
+      <option name="closed" value="true" />
+      <created>1747707709940</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1747707709940</updated>
+    </task>
+    <option name="localTasksCounter" value="63" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="c4d9b699-9ff9-455b-b926-e401e1aa5f5b" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+        <entry key="c4d9b699-9ff9-455b-b926-e401e1aa5f5b">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="[ back / feat ] 73 : 같은 관리페이지 내 일반회원 조회" />
+    <MESSAGE value="[ back / feat ] 88 : 같은 관리페이지 내 매니저 조회" />
+    <MESSAGE value="[ back / refact ] 90 : 매니저만 비품요청서 승인거절 가능" />
+    <MESSAGE value="[ back / refact ] 90 : 비품요청서 자신의 요청서 수정" />
+    <MESSAGE value="[ back / refact ] 90 : 비품요청서 대여하면 반납날짜 기입" />
+    <MESSAGE value="[ back / refact ] 92 : 출고내역 전제조회, 자신의 글만 조회 추가" />
+    <MESSAGE value="[ back / refact ] 92 : 페이징처리, 정렬, 날짜필터 추가" />
+    <MESSAGE value="[ back / refact ] 92 : 페이징처리, 정렬, 날짜필터 추가 수정" />
+    <MESSAGE value="[ back / refact ] 92 : 페이징처리, 정렬, 날짜필터 추가 수정2" />
+    <MESSAGE value="[ back / refact ] 96 : 페이징처리, 정렬, 날짜필터" />
+    <MESSAGE value="[ back / refact ] 96 : 대여반납하면 사용가능으로 바뀜" />
+    <MESSAGE value="[ back / refact ] 96 : 대여시 비품 연동하여 수량 조절" />
+    <MESSAGE value="[ back / refact ] 96 : 이미지 dto 추가" />
+    <MESSAGE value="[ back / refact ] 92 : 병합한거" />
+    <MESSAGE value="[ back / feat ] 96 : 병합 이후" />
+    <MESSAGE value="[ back / feat ] 96 : 조회시 활성화만,필터 추가" />
+    <MESSAGE value="[ back / feat ] 102 : 비품추적 뼈대 구현" />
+    <MESSAGE value="[ back / feat ] 102 : 스웨거 설명 추가" />
+    <MESSAGE value="[ back / feat ] 102 : 오류 수정중" />
+    <MESSAGE value="[ back / feat ] 102 : 아이템요청서 관련 수정" />
+    <MESSAGE value="[ back / feat ] 102 : 비품추적 api 수정" />
+    <MESSAGE value="[ back / feat ] 102 : 비품추적 자동으로 기록 생성" />
+    <MESSAGE value="[ back / feat ] 102 : 비품추적 요청할때 자동을 추적" />
+    <MESSAGE value="[ back / feat ] 102 : 풀 받은 이후 커밋" />
+    <MESSAGE value="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름" />
+    <option name="LAST_COMMIT_MESSAGE" value="[ back / refact ] 158 : 비품추적서 대여에 따라 이슈 다름" />
+    <option name="GROUP_MULTIFILE_MERGE_BY_DIRECTORY" value="true" />
+  </component>
+</project>

@@ -545,6 +545,14 @@ public class UserService {
         return findById(tokenService.getIdFromToken());
     }
 
+    public String findEmailByPhone(String phone){
+        User user = findByPhoneNumber(phone);
+
+        return user.getEmail();
+    }
+
+
+
 
     public Page<User> getUserListForChat(String managementDashboardName, Pageable pageable) {
         ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
