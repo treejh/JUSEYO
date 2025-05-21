@@ -13,6 +13,7 @@ import com.example.backend.managementDashboard.repository.ManagementDashboardRep
 import com.example.backend.supplyRequest.entity.SupplyRequest;
 import com.example.backend.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.supplyReturn.dto.request.SupplyReturnRequestDto;
+import com.example.backend.supplyReturn.dto.request.SupplyReturnStatusUpdateRequestDto;
 import com.example.backend.supplyReturn.dto.response.SupplyReturnResponseDto;
 import com.example.backend.supplyReturn.entity.SupplyReturn;
 import com.example.backend.supplyReturn.repository.SupplyReturnRepository;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -60,9 +62,9 @@ public class SupplyReturnService {
                 .user(user)
                 .managementDashboard(managementDashboard)
                 .item(item)
-                .serialNumber(supplyRequest.getSerialNumber())
-                .productName(supplyRequest.getProductName())
-                .quantity(supplyRequest.getQuantity())
+                .serialNumber(supplyReturnRequestDto.getSerialNumber())
+                .productName(supplyReturnRequestDto.getProductName())
+                .quantity(supplyReturnRequestDto.getQuantity())
                 .useDate(supplyRequest.getUseDate())
                 .returnDate(supplyReturnRequestDto.getReturnDate())
                 .approvalStatus(ApprovalStatus.RETURN_PENDING)
@@ -91,21 +93,21 @@ public class SupplyReturnService {
 
     //비품 반납서 상태 변경
     @Transactional
-    public SupplyReturnResponseDto updateSupplyReturn(Long id,ApprovalStatus approvalStatus) {
+    public SupplyReturnResponseDto updateSupplyReturn(Long id, SupplyReturnStatusUpdateRequestDto dto) {
         SupplyReturn supplyReturn = supplyReturnRepository.findById(id).orElse(null);
         if (supplyReturn == null) {
             throw new BusinessLogicException(ExceptionCode.SUPPLY_RETURN_NOT_FOUND);
         }
-        supplyReturn.setApprovalStatus(approvalStatus);
-        if(approvalStatus==ApprovalStatus.RETURNED){
-            addInbound(supplyReturn);
+        supplyReturn.setApprovalStatus(dto.getApprovalStatus());
+        if(dto.getApprovalStatus()==ApprovalStatus.RETURNED){
+            addInbound(supplyReturn, dto.getImage());
         }
         return toDto(supplyReturn);
     }
 
     //입고요청 생성
     @Transactional
-    public void addInbound(SupplyReturn supplyReturn) {
+    public void addInbound(SupplyReturn supplyReturn, MultipartFile multipartFile) {
         InventoryInRequestDto inventoryInRequestDto = InventoryInRequestDto.builder()
                 .itemId(supplyReturn.getItem().getId())
                 .returnId(supplyReturn.getId())
@@ -113,6 +115,7 @@ public class SupplyReturnService {
                 .inbound(Inbound.RETURN)
                 .categoryId(supplyReturn.getItem().getCategory().getId())
                 .managementId(supplyReturn.getManagementDashboard().getId())
+                .image(multipartFile)
                 .build();
         inventoryInService.addInbound(inventoryInRequestDto);
     }
