@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
 interface SupplyRequest {
   id: number;
@@ -18,24 +17,18 @@ interface SupplyRequest {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-export default function SupplyRequestListPage() {
-  const { loginUser, isLogin } = useGlobalLoginUser();
-  const isManager =
-    isLogin &&
-    (loginUser?.roles?.includes("MANAGER") || loginUser?.role === "MANAGER");
+export default function ManageSupplyRequestsPage() {
   const [requests, setRequests] = useState<SupplyRequest[]>([]);
   const [loading, setLoading] = useState(false);
+  const [processingIds, setProcessingIds] = useState<number[]>([]);
 
-  const fetchRequests = async () => {
+  const fetchPending = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/supply-requests/me`, {
+      const res = await fetch(`${API_BASE}/api/v1/supply-requests/pending`, {
         credentials: "include",
       });
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(`서버 오류: ${msg}`);
-      }
+      if (!res.ok) throw new Error(`서버 오류: ${await res.text()}`);
       const data: SupplyRequest[] = await res.json();
       setRequests(data);
     } catch (err: any) {
@@ -45,32 +38,38 @@ export default function SupplyRequestListPage() {
     }
   };
 
+  const updateStatus = async (id: number, action: "approve" | "reject") => {
+    setProcessingIds((prev) => [...prev, id]);
+    try {
+      const url = `${API_BASE}/api/v1/supply-requests/${id}/${action}`;
+      const res = await fetch(url, { method: "POST", credentials: "include" });
+      if (!res.ok) throw new Error(`서버 오류: ${await res.text()}`);
+      // Refresh list after action
+      await fetchPending();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setProcessingIds((prev) => prev.filter((pid) => pid !== id));
+    }
+  };
+
   useEffect(() => {
-    fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchPending();
   }, []);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-100 py-10">
       <div className="w-full max-w-full lg:max-w-7xl bg-white shadow-lg rounded-xl p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">내 비품 요청서 목록</h1>
-          <div className="flex gap-2">
-            <Link
-              href="/item/supplyrequest/create"
-              className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700"
-            >
-              새 요청서 작성
-            </Link>
-            {isManager && (
-              <Link
-                href="/item/supplyrequest/manage"
-                className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-              >
-                요청 승인/거절
-              </Link>
-            )}
-          </div>
+          <h1 className="text-2xl font-semibold">
+            대시보드: 비품 요청 승인/거절
+          </h1>
+          <Link
+            href="/item/supplyrequest"
+            className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700"
+          >
+            내 요청서 보기
+          </Link>
         </div>
 
         {loading ? (
@@ -87,8 +86,8 @@ export default function SupplyRequestListPage() {
                   <th className="px-3 py-2 border">사용일</th>
                   <th className="px-3 py-2 border">반납일</th>
                   <th className="px-3 py-2 border">대여여부</th>
-                  <th className="px-3 py-2 border">승인상태</th>
                   <th className="px-3 py-2 border">작성일</th>
+                  <th className="px-3 py-2 border">액션</th>
                 </tr>
               </thead>
               <tbody>
@@ -105,8 +104,23 @@ export default function SupplyRequestListPage() {
                     <td className="px-3 py-2 border">
                       {req.rental ? "대여" : "지급"}
                     </td>
-                    <td className="px-3 py-2 border">{req.approvalStatus}</td>
                     <td className="px-3 py-2 border">{req.createdAt}</td>
+                    <td className="px-3 py-2 border space-x-2">
+                      <button
+                        onClick={() => updateStatus(req.id, "approve")}
+                        disabled={processingIds.includes(req.id)}
+                        className="px-2 py-1 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                      >
+                        승인
+                      </button>
+                      <button
+                        onClick={() => updateStatus(req.id, "reject")}
+                        disabled={processingIds.includes(req.id)}
+                        className="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                      >
+                        거절
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

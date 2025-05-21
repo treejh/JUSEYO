@@ -1,9 +1,5 @@
 "use client";
 
-// app/items/page.tsx
-// 비품 목록 + 검색 + 페이징 + "비품 요청서" 버튼 + Excel 다운로드 버튼 (정상 동작 버전)
-// 구매처 → purchase_source/purchaseSource, 인스턴스 컬럼 제거, # = 순번
-
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
