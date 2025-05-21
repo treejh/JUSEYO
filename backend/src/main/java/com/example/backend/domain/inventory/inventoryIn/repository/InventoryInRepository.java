@@ -1,8 +1,9 @@
-package com.example.backend.domain.Inventory.inventoryIn.repository;
+package com.example.backend.domain.inventory.inventoryIn.repository;
 
-import com.example.backend.domain.Inventory.inventoryIn.entity.InventoryIn;
+
+import com.example.backend.domain.inventory.inventoryIn.entity.InventoryIn;
 import com.example.backend.enums.Inbound;
-import com.example.backend.domain.Inventory.inventoryIn.dto.response.InventoryInResponseDto;
+import com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,11 +17,11 @@ import java.util.List;
 @Repository
 public interface InventoryInRepository extends JpaRepository<InventoryIn, Long> {
 
-    @Query("select new com.example.backend.inventoryIn.dto.response.InventoryInResponseDto " +
+    @Query("select new com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInResponseDto " +
             "(i.id,i.item.id, i.item.name, i.quantity, i.inbound, i.createdAt,i.image) from InventoryIn i")
     Page<InventoryInResponseDto> getInventoryIns(Pageable pageable);
 
-    @Query("select new com.example.backend.inventoryIn.dto.response.InventoryInResponseDto " +
+    @Query("select new com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInResponseDto " +
             "(i.id, i.item.id, i.item.name, i.quantity, i.inbound, i.createdAt,i.image) " +
             "from InventoryIn i " +
             "where i.inbound = :inbound")

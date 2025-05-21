@@ -1,14 +1,12 @@
-package com.example.backend.domain.Inventory.inventoryIn.entity;
+package com.example.backend.domain.inventory.inventoryOut.entity;
 
 import com.example.backend.global.auditable.Auditable;
 import com.example.backend.domain.category.entity.Category;
-import com.example.backend.enums.Inbound;
+import com.example.backend.enums.Outbound;
 import com.example.backend.domain.item.entity.Item;
 import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
-import com.example.backend.domain.registerItem.entity.RegisterItem;
-import com.example.backend.domain.supply.supplyReturn.entity.SupplyReturn;
+import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import jakarta.persistence.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,48 +15,42 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "inventory_ins")
+@Table(name = "inventory_outs")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-public class InventoryIn extends Auditable {
+public class InventoryOut extends Auditable {
 
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "return_id", nullable = true)
-    private SupplyReturn supplyReturn;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "suuply_id", nullable = false)
+    private SupplyRequest supplyRequest;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "management_id", nullable = false)
     private ManagementDashboard managementDashboard;
-
-    @ManyToOne
-    @JoinColumn(name = "item_id")
-    private Item item;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "inbound_type", nullable = false)
-    private Inbound inbound; //입고 유형
 
     @Column(name = "quantity", nullable = false)
     private Long quantity;
 
-    @ManyToOne
-    @JoinColumn(name = "register_item_id", nullable = true)
-    private RegisterItem registerItem;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
 
-    @Column(name = "image")
-    private String image;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "outbound_type", nullable = false)
+    private Outbound outbound; //출고 유형
+
 
 }

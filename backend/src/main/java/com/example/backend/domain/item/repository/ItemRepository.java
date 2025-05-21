@@ -33,7 +33,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     Optional<Item> findByName(String name);
 
     //상태 별 아이템 목록 가졍
-    @Query("SELECT new com.example.backend.item.dto.response.ItemResponseDto(" +
+    @Query("SELECT new com.example.backend.domain.item.dto.response.ItemResponseDto(" +
             "i.id, i.name, c.name, i.serialNumber, i.minimumQuantity, " +
             "i.totalQuantity, i.availableQuantity, i.purchaseSource, " +
             "i.location, i.isReturnRequired, i.image, " +

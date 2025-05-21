@@ -6,7 +6,6 @@ import com.example.backend.domain.notification.service.SupplyRequestApprovedNoti
 import com.example.backend.domain.notification.service.SupplyRequestNotificationService;
 import com.example.backend.domain.notification.service.SupplyRequestRejectedNotificationService;
 import com.example.backend.domain.notification.service.SupplyReturnNotificationService;
-import com.example.backend.notification.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

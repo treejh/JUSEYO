@@ -11,7 +11,6 @@ import com.example.backend.domain.notification.strategy.SupplyRequestApprovedStr
 import com.example.backend.domain.notification.strategy.SupplyRequestRejectedStrategy;
 import com.example.backend.domain.notification.strategy.SupplyRequestStrategy;
 import com.example.backend.domain.notification.strategy.SupplyReturnStrategy;
-import com.example.backend.notification.strategy.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 

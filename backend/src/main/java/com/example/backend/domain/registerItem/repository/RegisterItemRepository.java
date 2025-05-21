@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface RegisterItemRepository extends JpaRepository<RegisterItem, Long> {
 
-    @Query("SELECT new com.example.backend.registerItem.dto.response.RegisterItemResponseDto(" +
+    @Query("SELECT new com.example.backend.domain.registerItem.dto.response.RegisterItemResponseDto(" +
             "r.id, " +
             "r.managementDashboard.id, " +
             "r.category.id, " +

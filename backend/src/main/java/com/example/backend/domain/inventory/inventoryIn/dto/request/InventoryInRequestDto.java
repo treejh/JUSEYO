@@ -1,4 +1,4 @@
-package com.example.backend.domain.Inventory.inventoryIn.dto.request;
+package com.example.backend.domain.inventory.inventoryIn.dto.request;
 
 import com.example.backend.enums.Inbound;
 import io.swagger.v3.oas.annotations.media.Schema;

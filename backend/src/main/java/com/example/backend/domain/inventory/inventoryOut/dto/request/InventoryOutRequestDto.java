@@ -1,4 +1,4 @@
-package com.example.backend.domain.Inventory.inventoryOut.dto.request;
+package com.example.backend.domain.inventory.inventoryOut.dto.request;
 
 import lombok.*;
 

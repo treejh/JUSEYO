@@ -1,8 +1,8 @@
-package com.example.backend.domain.Inventory.inventoryOut.controller;
+package com.example.backend.domain.inventory.inventoryOut.controller;
 
-import com.example.backend.domain.Inventory.inventoryOut.dto.request.InventoryOutRequestDto;
-import com.example.backend.domain.Inventory.inventoryOut.dto.response.InventoryOutResponseDto;
-import com.example.backend.domain.Inventory.inventoryOut.service.InventoryOutService;
+import com.example.backend.domain.inventory.inventoryOut.dto.request.InventoryOutRequestDto;
+import com.example.backend.domain.inventory.inventoryOut.dto.response.InventoryOutResponseDto;
+import com.example.backend.domain.inventory.inventoryOut.service.InventoryOutService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

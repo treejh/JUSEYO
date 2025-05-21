@@ -1,6 +1,6 @@
-package com.example.backend.domain.Inventory.inventoryOut.repository;
+package com.example.backend.domain.inventory.inventoryOut.repository;
 
-import com.example.backend.domain.Inventory.inventoryOut.entity.InventoryOut;
+import com.example.backend.domain.inventory.inventoryOut.entity.InventoryOut;
 import com.example.backend.domain.recommendation.dto.OutHistoryDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -16,7 +16,7 @@ public interface InventoryOutRepository extends JpaRepository<InventoryOut, Inte
 
 
     @Query("""
-    SELECT new com.example.backend.recommendation.dto.OutHistoryDto(
+    SELECT new com.example.backend.domain.recommendation.dto.OutHistoryDto(
         r.user.id, i.name
     )
     FROM InventoryOut o

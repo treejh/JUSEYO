@@ -1,7 +1,6 @@
 package com.example.backend.domain.user.repository;
 
 
-import com.example.backend.base.entity.BoardEntity;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;

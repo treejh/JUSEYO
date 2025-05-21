@@ -1,16 +1,16 @@
-package com.example.backend.domain.Inventory.inventoryIn.service;
+package com.example.backend.domain.inventory.inventoryIn.service;
 
-import com.example.backend.domain.Inventory.inventoryIn.dto.request.InventoryInRequestDto;
-import com.example.backend.domain.Inventory.inventoryIn.entity.InventoryIn;
-import com.example.backend.domain.Inventory.inventoryIn.repository.InventoryInRepository;
+import com.example.backend.domain.inventory.inventoryIn.dto.request.InventoryInRequestDto;
+import com.example.backend.domain.inventory.inventoryIn.entity.InventoryIn;
+import com.example.backend.domain.inventory.inventoryIn.repository.InventoryInRepository;
 import com.example.backend.enums.Inbound;
 import com.example.backend.enums.Outbound;
 import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
 import com.example.backend.global.utils.service.ImageService;
-import com.example.backend.domain.Inventory.inventoryIn.dto.response.InventoryInExcelResponseDto;
-import com.example.backend.domain.Inventory.inventoryIn.dto.response.InventoryInResponseDto;
+import com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInExcelResponseDto;
+import com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInResponseDto;
 import com.example.backend.domain.item.entity.Item;
 import com.example.backend.domain.item.repository.ItemRepository;
 import com.example.backend.domain.itemInstance.dto.request.CreateItemInstanceRequestDto;

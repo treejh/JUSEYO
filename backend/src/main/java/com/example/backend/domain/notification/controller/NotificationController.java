@@ -2,7 +2,7 @@ package com.example.backend.domain.notification.controller;
 
 
 
-import com.example.backend.domain.Inventory.inventoryOut.service.InventoryOutService;
+import com.example.backend.domain.inventory.inventoryOut.service.InventoryOutService;
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.Notification;
 import com.example.backend.domain.notification.entity.NotificationType;

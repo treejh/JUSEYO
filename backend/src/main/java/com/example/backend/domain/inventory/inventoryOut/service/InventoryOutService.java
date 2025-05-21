@@ -1,9 +1,9 @@
-package com.example.backend.domain.Inventory.inventoryOut.service;
+package com.example.backend.domain.inventory.inventoryOut.service;
 
-import com.example.backend.domain.Inventory.inventoryOut.dto.request.InventoryOutRequestDto;
-import com.example.backend.domain.Inventory.inventoryOut.dto.response.InventoryOutResponseDto;
-import com.example.backend.domain.Inventory.inventoryOut.entity.InventoryOut;
-import com.example.backend.domain.Inventory.inventoryOut.repository.InventoryOutRepository;
+import com.example.backend.domain.inventory.inventoryOut.dto.request.InventoryOutRequestDto;
+import com.example.backend.domain.inventory.inventoryOut.dto.response.InventoryOutResponseDto;
+import com.example.backend.domain.inventory.inventoryOut.entity.InventoryOut;
+import com.example.backend.domain.inventory.inventoryOut.repository.InventoryOutRepository;
 import com.example.backend.domain.analysis.service.InventoryAnalysisService;
 import com.example.backend.domain.category.entity.Category;
 import com.example.backend.domain.category.repository.CategoryRepository;

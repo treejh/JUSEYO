@@ -1,4 +1,4 @@
-package com.example.backend.domain.Inventory.inventoryOut.dto.response;
+package com.example.backend.domain.inventory.inventoryOut.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

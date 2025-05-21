@@ -1,7 +1,6 @@
 package com.example.backend.domain.department.service;
 
 
-import com.example.backend.base.entity.BoardEntity;
 import com.example.backend.domain.department.dto.DepartmentCreateRequestDTO;
 import com.example.backend.domain.department.dto.DepartmentUpdateRequestDTO;
 import com.example.backend.domain.department.entity.Department;

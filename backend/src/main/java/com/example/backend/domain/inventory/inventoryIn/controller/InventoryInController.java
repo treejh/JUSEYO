@@ -1,9 +1,9 @@
-package com.example.backend.domain.Inventory.inventoryIn.controller;
+package com.example.backend.domain.inventory.inventoryIn.controller;
 
-import com.example.backend.domain.Inventory.inventoryIn.dto.request.InventoryInRequestDto;
-import com.example.backend.domain.Inventory.inventoryIn.service.InventoryInService;
+import com.example.backend.domain.inventory.inventoryIn.dto.request.InventoryInRequestDto;
+import com.example.backend.domain.inventory.inventoryIn.service.InventoryInService;
 import com.example.backend.enums.Inbound;
-import com.example.backend.domain.Inventory.inventoryIn.dto.response.InventoryInResponseDto;
+import com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
