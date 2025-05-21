@@ -13,9 +13,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,17 +67,21 @@ public class SupplyReturnController {
         return supplyReturnService.getSupplyReturn(id);
     }
 
-    @Operation(summary = "반납서 상태 변경", description = "반납 요청 상태를 변경합니다. 예: RETURN_PENDING → RETURNED")
+    @Operation(
+            summary = "반납서 상태 변경",
+            description = "반납 요청 상태를 변경합니다. 예: RETURN_PENDING → RETURNED"
+    )
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @PostMapping("/{id}")
+    @PostMapping(
+            path = "/{id}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
     public SupplyReturnResponseDto updateSupplyReturnStatus(
             @Parameter(description = "반납서 ID", example = "12")
             @PathVariable(name = "id") Long id,
-
-            @RequestBody @Valid SupplyReturnStatusUpdateRequestDto dto) {
-        return supplyReturnService.updateSupplyReturn(id, dto.getApprovalStatus());
+            @ParameterObject @ModelAttribute @Valid SupplyReturnStatusUpdateRequestDto dto) {
+        return supplyReturnService.updateSupplyReturn(id, dto);
     }
-
     // 반납 요청서 엑셀 다운로드
     @GetMapping("/supply-returns/excel")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")

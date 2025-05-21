@@ -9,6 +9,8 @@ import com.example.backend.itemInstance.service.ItemInstanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,5 +78,20 @@ public class ItemInstanceController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteInstance(@PathVariable Long instanceId) {
         service.softDeleteInstance(instanceId);
+    }
+
+    /**
+     * 개별 자산 목록 조회 (페이지네이션 + 검색)
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('MANAGER','USER')") 
+    public Page<ItemInstanceResponseDto> getItemInstances(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String keyword) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return service.getByItemPage(pageable, keyword);
     }
 }

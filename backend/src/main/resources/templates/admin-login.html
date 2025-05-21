@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ADMIN 로그인</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            max-width: 400px;
+            margin: auto;
+        }
+        h2 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        label {
+            display: flex;
+            flex-direction: column;
+            font-weight: bold;
+        }
+        input {
+            padding: 8px;
+            font-size: 1rem;
+        }
+        button {
+            padding: 10px;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .back-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<h2>ADMIN 로그인</h2>
+
+<!-- 🔴 로그인 실패 시 에러 메시지 -->
+<div th:if="${param.error}" class="error-message">
+    이메일 또는 비밀번호가 올바르지 않습니다.
+</div>
+
+<form th:action="@{/api/v1/admin/login}" method="post">
+    <label>
+        이메일
+        <input type="email" name="email" placeholder="이메일을 입력하세요" required>
+    </label>
+    <label>
+        비밀번호
+        <input type="password" name="password" placeholder="비밀번호를 입력하세요" required>
+    </label>
+    <button type="submit">로그인</button>
+</form>
+<div class="back-link">
+    <a th:href="@{/api/v1/admin}">← ADMIN 홈으로 돌아가기</a>
+</div>
+</body>
+</html>

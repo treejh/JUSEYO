@@ -7,8 +7,6 @@ import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
 import { NotificationBell } from "@/components/Notification/NotificationBell";
 import LoadingScreen from "./components/LoadingScreen";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
 

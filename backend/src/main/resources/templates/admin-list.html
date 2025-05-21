@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ADMIN 리스트</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .btn-main {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-main:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pagination a {
+            margin: 0 5px;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .pagination .current {
+            font-weight: bold;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>ADMIN 리스트</h2>
+    <a th:href="@{/api/v1/admin/main}" class="btn-main">메인으로</a>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>이름</th>
+        <th>이메일</th>
+        <th>전화번호</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="admin : ${admins.content}">
+        <td th:text="${admin.name}">홍길동</td>
+        <td th:text="${admin.email}">admin@example.com</td>
+        <td th:text="${admin.phoneNumber}">010-****-1234</td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- 페이징 -->
+<div class="pagination">
+    <a th:if="${admins.hasPrevious()}" th:href="@{/api/v1/admin(page=${admins.number})}">이전</a>
+
+    <span th:each="i : ${#numbers.sequence(1, admins.totalPages)}">
+        <a th:if="${i != admins.number + 1}" th:href="@{/api/v1/admin(page=${i})}" th:text="${i}">1</a>
+        <span th:if="${i == admins.number + 1}" class="current" th:text="${i}">1</span>
+    </span>
+
+    <a th:if="${admins.hasNext()}" th:href="@{/api/v1/admin(page=${admins.number + 2})}">다음</a>
+</div>
+
+</body>
+</html>

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { FC, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { FC, useState } from "react";
 
 const AddCategoryPage: FC = () => {
-  const [categoryName, setCategoryName] = useState('');
+  const [categoryName, setCategoryName] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: 카테고리 추가 로직 구현
-    console.log('카테고리 추가:', categoryName);
+    console.log("카테고리 추가:", categoryName);
   };
 
   return (
@@ -65,4 +65,4 @@ const AddCategoryPage: FC = () => {
   );
 };
 
-export default AddCategoryPage; 
+export default AddCategoryPage;

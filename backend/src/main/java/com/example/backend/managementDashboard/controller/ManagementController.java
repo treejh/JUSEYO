@@ -1,7 +1,7 @@
 package com.example.backend.managementDashboard.controller;
 
 
-import com.example.backend.enums.Status;
+
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.managementDashboard.dto.ManagementDashBoardRequestDto;
@@ -14,13 +14,9 @@ import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -47,20 +43,6 @@ public class ManagementController {
         return ResponseEntity.ok(managementDashboardService.createManagementDashBoard(managementDashBoardRequestDto));
     }
 
-    @Operation(summary = "관리 페이지 목록 조회", description = "승인 여부에 따라 관리 페이지 목록을 페이징 처리하여 조회합니다.")
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
-    public ResponseEntity<Page<ManagementDashBoardResponseDto>> getManagementDashboards(
-            @Parameter(description = "페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "상태값 (예: ACTIVE, INACTIVE)", schema = @Schema(implementation = Status.class))
-            @RequestParam(defaultValue = "ACTIVE") Status status,
-            @Parameter(description = "승인 여부 (true: 승인된 페이지만, false: 미승인 페이지만)") @RequestParam(defaultValue = "true") boolean approval
-    ) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        return ResponseEntity.ok(managementDashboardService.findAllManagementDashBoard(pageable,status,approval));
-    }
-
     @Operation(summary = "관리 페이지 단건 조회", description = "ID를 기반으로 특정 관리 페이지를 조회합니다.")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
     @GetMapping("/{id}")
@@ -76,24 +58,6 @@ public class ManagementController {
             @Parameter(description = "관리 페이지 ID") @PathVariable(name = "id") Long id,
             @RequestBody ManagementDashboardUpdateRequestDto managementDashBoardRequestDto) {
         return ResponseEntity.ok(managementDashboardService.updateManagementDashBoard(managementDashBoardRequestDto, id));
-    }
-
-    @Operation(summary = "관리 페이지 삭제", description = "ID를 기준으로 관리 페이지를 삭제합니다.")
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteManagementDashboard(
-            @Parameter(description = "관리 페이지 ID") @PathVariable(name = "id") Long id) {
-        managementDashboardService.deleteManagementDashBoard(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @Operation(summary = "관리 페이지 승인", description = "ID를 기준으로 관리 페이지를 승인 처리합니다.")
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/approve/{id}")
-    public ResponseEntity<Void> approveManagementDashboard(
-            @Parameter(description = "관리 페이지 ID") @PathVariable(name = "id") Long id) {
-        managementDashboardService.approvalManagementDashBoard(id);
-        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "관리 페이지 내 일반회원 조회",

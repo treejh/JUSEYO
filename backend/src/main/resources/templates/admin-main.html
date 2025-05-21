@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ADMIN 기능 페이지</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 15px;
+        }
+
+        a.feature-link {
+            display: block;
+            padding: 12px 16px;
+            background-color: #17a2b8;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        a.feature-link:hover {
+            background-color: #117a8b;
+        }
+
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 로그아웃 버튼 -->
+<form th:action="@{/api/v1/admin/logout}" method="post">
+    <button type="submit" class="logout-button">로그아웃</button>
+</form>
+
+
+<h2>ADMIN 기능 페이지</h2>
+<ul>
+    <li><a th:href="@{/api/v1/admin/list}" class="feature-link">ADMIN 리스트 조회 및 관리</a></li>
+    <li><a th:href="@{/api/v1/admin/management/approval}" class="feature-link">가입 승인 요청 처리</a></li>
+</ul>
+</body>
+</html>
