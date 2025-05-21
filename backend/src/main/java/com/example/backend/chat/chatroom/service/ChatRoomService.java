@@ -295,15 +295,27 @@ public class ChatRoomService {
         chatRoomRepository.deleteById(id);
     }
 
+
     public List<User> getChatRoomParticipants(Long roomId) {
         ChatRoom chatRoom = findId(roomId); // chatRoomId로 엔티티 조회
 
-        // ENTER 상태의 사용자만 필터링
         return chatUserRepository.findByChatRoom(chatRoom).stream()
-                .filter(chatUser -> chatUser.getChatStatus() == ChatStatus.ENTER)
+                .filter(chatUser -> {
+                    ChatStatus status = chatUser.getChatStatus();
+                    // GROUP 타입이면 ENTER 또는 INVITED 상태를 허용
+                    if (chatRoom.getRoomType() == ChatRoomType.GROUP) {
+                        return status == ChatStatus.ENTER || status == ChatStatus.INVITED;
+                    }
+                    // 나머지 타입은 ENTER만
+                    return status == ChatStatus.ENTER;
+                })
                 .map(ChatUser::getUser)
                 .toList();
     }
+
+
+
+
 
 
 
