@@ -556,23 +556,33 @@ public class UserService {
 
     public Page<User> getUserListForChat(String managementDashboardName, Pageable pageable) {
         ManagementDashboard managementDashboard = findByPageName(managementDashboardName);
-        Role role = roleService.findRoleByRoleType(RoleType.USER);
-        ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
         User loginUser = findById(tokenService.getIdFromToken());
+        ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
 
-
+        // ADMIN인 경우: 모든 사용자 중 자기 자신 제외
         if (isAdmin()) {
+            Role role = roleService.findRoleByRoleType(RoleType.USER); // 유지
             return userRepository.findByManagementDashboardAndApprovalStatusAndRoleAndIdNot(
                     managementDashboard, approvalStatus, pageable, role, loginUser.getId()
             );
         }
 
-        validateManagementDashboardUser(managementDashboard);
+        // MANAGER인 경우: USER와 MANAGER 둘 다 조회
+        if (loginUser.getRole().getRole() == RoleType.MANAGER) {
+            List<Role> roles = roleService.findRolesByRoleTypes(List.of(RoleType.USER, RoleType.MANAGER));
+            return userRepository.findByManagementDashboardAndApprovalStatusAndRoleInAndIdNot(
+                    managementDashboard, approvalStatus, pageable, roles, loginUser.getId()
+            );
+        }
 
+        // 기본 유저 검증 및 일반 사용자 조회
+        validateManagementDashboardUser(managementDashboard);
+        Role role = roleService.findRoleByRoleType(RoleType.USER);
         return userRepository.findByManagementDashboardAndApprovalStatusAndRoleAndIdNot(
                 managementDashboard, approvalStatus, pageable, role, loginUser.getId()
         );
     }
+
 
 
 

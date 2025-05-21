@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class ItemResponseDto {
     private Long id;
     private String name;
+    private String categoryName;
     private String serialNumber;
     private Long minimumQuantity;
     private Long totalQuantity;

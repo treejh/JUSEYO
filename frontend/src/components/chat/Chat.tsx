@@ -283,6 +283,38 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chats/chatRooms/${roomId}/enter`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("채팅방 입장 시간 업데이트 중 오류가 발생했습니다.");
+        }
+
+        console.log(`채팅방 ${roomId} 입장 시간 업데이트 성공`);
+      } catch (error) {
+        console.error(`채팅방 ${roomId} 입장 시간 업데이트 실패:`, error);
+      }
+    };
+
+    // 페이지를 떠날 때 lastEnterTime 업데이트
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [roomId]);
+
   return (
     <div className="flex flex-col h-[90vh] border border-gray-300 rounded-lg shadow-md">
       {/* 채팅방 헤더 */}
@@ -371,6 +403,12 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
                     isMyMessage ? "items-end" : "items-start"
                   } mb-2`}
                 >
+                  {/* 보낸 사람 이름 표시 */}
+                  {!isMyMessage && (
+                    <span className="text-sm font-semibold text-gray-800 mb-1">
+                      {msg.sender || "알 수 없음"}
+                    </span>
+                  )}
                   <div
                     className={`p-2 rounded-lg max-w-xs ${
                       isMyMessage
