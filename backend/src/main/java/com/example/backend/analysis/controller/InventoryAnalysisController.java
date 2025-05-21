@@ -4,7 +4,11 @@ import com.example.backend.analysis.dto.CategorySummaryDTO;
 import com.example.backend.analysis.dto.ItemUsageFrequencyDTO;
 import com.example.backend.analysis.dto.MonthlyInventoryDTO;
 import com.example.backend.analysis.service.InventoryAnalysisService;
+import com.example.backend.enums.Outbound;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -47,5 +51,23 @@ public class InventoryAnalysisController {
             @RequestParam(defaultValue = "2025") int year) {
         return ResponseEntity.ok(analysisService.getMonthlyInventorySummary(year));
     }
+
+    @Operation(
+            summary = "전체 아이템 인스턴스 Outbound 통계",
+            description = "모든 아이템 인스턴스에 대해 Outbound 상태(AVAILABLE, LEND 등)별 개수를 반환합니다. 결과는 Redis 캐시를 사용하며 약 10분간 유지됩니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "성공적으로 상태별 개수를 반환했습니다."
+    )
+    @GetMapping("/outbound-summary")
+    public ResponseEntity<Map<Outbound, Long>> getGlobalOutboundSummary() {
+        Map<Outbound, Long> cached = analysisService.getCachedOutboundSummary();
+        if (cached != null) return ResponseEntity.ok(cached);
+
+        Map<Outbound, Long> fresh = analysisService.loadAndCacheOutboundSummary();
+        return ResponseEntity.ok(fresh);
+    }
+
 }
 
