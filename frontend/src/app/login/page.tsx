@@ -49,18 +49,24 @@ export default function LoginPage() {
     setError("");
     
     try {
-      // API URL 가져오기
       const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
       
       if (!API_URL) {
         throw new Error('API URL이 설정되지 않았습니다. .env.local 파일을 확인해주세요.');
       }
-      
+
+      console.log('로그인 시도:', {
+        apiUrl: API_URL,
+        email: formData.email,
+        // password는 보안상 로깅하지 않습니다
+      });
+
       // API 호출
       const response = await fetch(`${API_URL}/api/v1/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           email: formData.email,
@@ -69,33 +75,58 @@ export default function LoginPage() {
         credentials: 'include'
       });
 
-      // 응답 타입 확인
-      const contentType = response.headers.get('content-type');
-      
+      console.log('서버 응답:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
       if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        console.log('응답 Content-Type:', contentType);
+
         if (contentType && contentType.includes('application/json')) {
           const errorData = await response.json();
+          console.error('로그인 에러 (JSON):', errorData);
           throw new Error(errorData.message || '로그인에 실패했습니다.');
         } else {
           const errorText = await response.text();
-          throw new Error(errorText || '로그인 처리 중 오류가 발생했습니다.');
+          const errorDetails = {
+            status: response.status,
+            statusText: response.statusText,
+            errorText: errorText,
+            url: response.url
+          };
+          console.error('로그인 에러 (Text):', errorDetails);
+          throw new Error(`로그인 실패 (${response.status}): ${errorText || response.statusText || '서버 연결에 실패했습니다. API 서버가 실행 중인지 확인해주세요.'}`);
         }
       }
       
       // 로그인 성공 후 사용자 정보 가져오기
-      const userInfoResponse = await fetch(`${API_URL}/api/v1/users/token`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-      });
-      
-      if (!userInfoResponse.ok) {
-        throw new Error('사용자 정보를 가져오는데 실패했습니다.');
+      let userData;
+      try {
+        const userInfoResponse = await fetch(`${API_URL}/api/v1/users/token`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        });
+
+        if (!userInfoResponse.ok) {
+          console.error('사용자 정보 조회 실패:', {
+            status: userInfoResponse.status,
+            statusText: userInfoResponse.statusText
+          });
+          throw new Error('사용자 정보를 가져오는데 실패했습니다.');
+        }
+
+        userData = await userInfoResponse.json();
+        console.log('사용자 정보 조회 성공:', userData);
+      } catch (error) {
+        console.error('사용자 정보 조회 중 오류 발생:', error);
+        throw error;
       }
-      
-      const userData = await userInfoResponse.json();
       
       // 로그인 유형 확인 (경고만 표시하고 계속 진행)
       const isManagerRole = userData.role === "MANAGER" || userData.role === "ADMIN";
