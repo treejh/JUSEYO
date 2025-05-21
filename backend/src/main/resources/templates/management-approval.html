@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>관리 페이지 가입 승인 요청</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px auto;
+            max-width: 1000px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        .btn-approve {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-approve:hover {
+            background-color: #0056b3;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .pagination a {
+            margin: 0 5px;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .pagination .current {
+            font-weight: bold;
+            color: #000;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .btn-main {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-main:hover {
+            background-color: #218838;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+
+    </style>
+</head>
+<body>
+
+<h2>관리자 페이지 가입 승인 요청 목록</h2>
+
+<div class="header">
+    <h2>관리자 페이지 가입 승인 요청 목록</h2>
+    <a th:href="@{/api/v1/admin/main}" class="btn-main">메인으로</a>
+</div>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>이름</th>
+        <th>대표자</th>
+        <th>회사명</th>
+        <th>사업자번호</th>
+        <th>상태</th>
+        <th>신청일</th>
+        <th>승인</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${managements.content}">
+        <td th:text="${item.id}"></td>
+        <td th:text="${item.name}"></td>
+        <td th:text="${item.owner}"></td>
+        <td th:text="${item.companyName}"></td>
+        <td th:text="${item.businessNumber}"></td>
+        <td th:text="${item.status}"></td>
+        <td th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+        <td>
+            <form th:action="@{'/api/v1/admin/management/approve/' + ${item.id}}" method="post"
+                  onsubmit="return confirm('승인하시겠습니까?');" style="display:inline;">
+                <button type="submit" class="btn-approve">승인</button>
+            </form>
+            <form th:action="@{/api/v1/admin/management/{id}(id=${item.id})}" method="post"
+                  onsubmit="return confirm('정말 삭제하시겠습니까?');" style="display:inline; margin-left: 5px;">
+                <input type="hidden" name="_method" value="delete"/>
+                <button type="submit" class="btn-delete">반려</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- 페이징 -->
+<div class="pagination" th:if="${managements.totalPages > 1}">
+    <a th:if="${managements.hasPrevious()}"
+       th:href="@{/api/v1/admin/management/approval(page=${managements.number})}">이전</a>
+
+    <span th:each="i : ${#numbers.sequence(1, managements.totalPages)}">
+        <a th:if="${i != managements.number + 1}"
+           th:href="@{/api/v1/admin/management/approval(page=${i})}"
+           th:text="${i}"></a>
+        <span th:if="${i == managements.number + 1}"
+              class="current" th:text="${i}"></span>
+    </span>
+
+    <a th:if="${managements.hasNext()}"
+       th:href="@{/api/v1/admin/management/approval(page=${managements.number + 2})}">다음</a>
+</div>
+
+</body>
+</html>

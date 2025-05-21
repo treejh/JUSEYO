@@ -21,12 +21,21 @@ spring:
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
   servlet:
     multipart:
       max-file-size: 500MB
       max-request-size: 500MB
+  config:
+    import: classpath:application-secret.yml
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
 
+recommend:
+  flask-url: http://localhost:5000/
 
 
 
