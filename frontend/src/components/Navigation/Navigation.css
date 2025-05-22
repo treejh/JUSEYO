@@ -57,7 +57,7 @@
     position: fixed;
     top: 60px;
     left: 0;
-    transition: width 0.3s ease;
+    transition: all 0.3s ease;
     overflow: hidden;
     z-index: 50;
 }
@@ -327,8 +327,8 @@
 }
 
 /* 접힌 모드용 스타일 */
-.sidebar-collapsed .juseyo-sidebar {
-    width: 80px;
+.sidebar-collapsed {
+    width: 80px !important;
 }
 
 .sidebar-collapsed .menu-title {

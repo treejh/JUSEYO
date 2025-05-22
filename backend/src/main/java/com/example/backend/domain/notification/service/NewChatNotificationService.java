@@ -8,6 +8,7 @@ import com.example.backend.domain.notification.strategy.NotificationStrategy;
 import com.example.backend.domain.notification.strategy.context.NewChatContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +16,7 @@ public class NewChatNotificationService {
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
 
+    @Transactional
     public void notifyNewChat(Long targetId, Long roomId, RoleType role, String name) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.NEW_CHAT);
 

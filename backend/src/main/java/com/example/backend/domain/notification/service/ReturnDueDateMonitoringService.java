@@ -18,6 +18,7 @@ import com.example.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -33,11 +34,13 @@ public class ReturnDueDateMonitoringService {
     private final UserService userService;
 
 //    @Scheduled(cron = "0 0 0 * * *") // 배포용 : 매일 자정 실행
-    @Scheduled(fixedRate = 60000)   // 테스트용 : 1분마다
+    @Scheduled(fixedRate = 600000)   // 테스트용 : 10분마다
+    @Transactional
     public void scheduledCheckAndNotify() {
         checkAndNotifyOverdueReturns();
     }
 
+    @Transactional
     public void checkAndNotifyOverdueReturns() {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.RETURN_DUE_DATE_EXCEEDED);
         List<SupplyRequest> requests = supplyRequestRepository.findAll();

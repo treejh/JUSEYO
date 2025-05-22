@@ -342,12 +342,8 @@ export default function Navigation({
   );
 
   return (
-    <aside className="juseyo-sidebar">
-      <div
-        className={`juseyo-menu-container ${
-          isSidebarCollapsed ? "sidebar-collapsed" : ""
-        }`}
-      >
+    <aside className={`juseyo-sidebar ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <div className="juseyo-menu-container">
         {/* 사이드바 접기/펼치기 버튼 */}
         {onToggleSidebar && (
           <div className="sidebar-toggle-container">
