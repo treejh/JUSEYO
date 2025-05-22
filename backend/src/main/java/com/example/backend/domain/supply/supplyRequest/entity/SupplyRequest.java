@@ -1,5 +1,6 @@
 package com.example.backend.domain.supply.supplyRequest.entity;
 
+import com.example.backend.enums.Status;
 import com.example.backend.global.auditable.Auditable;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.enums.ApprovalStatus;
@@ -61,6 +62,11 @@ public class SupplyRequest extends Auditable {
     @Enumerated(EnumType.STRING)
     @Column(name = "outbound_type", nullable = false)
     private ApprovalStatus approvalStatus; // 승인 상태
+
+    /** 활성/비활성 구분용 필드 */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
 
     @ManyToOne
     @JoinColumn(name = "item_id")

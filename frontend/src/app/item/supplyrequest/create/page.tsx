@@ -28,7 +28,7 @@ export default function SupplyRequestCreatePage() {
   }, [isLogin, router]);
   if (!isLogin) return null;
 
-  const user = loginUser as CustomUser;
+  const user = loginUser as unknown as CustomUser;
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
   // 폼 상태
