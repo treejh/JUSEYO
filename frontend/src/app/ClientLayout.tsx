@@ -7,6 +7,7 @@ import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
 import { NotificationBell } from "@/components/Notification/NotificationBell";
 import LoadingScreen from "./components/LoadingScreen";
+import Navigation from "@/components/Navigation/Navigation";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
 
@@ -147,15 +148,26 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
-      <div
-        className={`flex flex-col ${isAuthPage ? "h-screen w-screen" : "min-h-screen"
-          } bg-white`}
-      >
+      <div className={`flex flex-col ${isAuthPage ? "h-screen w-screen" : "min-h-screen"} bg-white`}>
         {!isAuthPage && <Header />}
-        <main
-          className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
-        >
-          {children}
+        <main className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}>
+          <div className="flex">
+            {/* 네비게이션 사이드바 */}
+            {!shouldHideNav && (
+              <div className={`juseyo-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+                <Navigation 
+                  userRole={loginUser?.role?.replace('ROLE_', '') as 'ADMIN' | 'MANAGER' | 'USER'}
+                  isSidebarCollapsed={sidebarCollapsed}
+                  onToggleSidebar={toggleSidebar}
+                />
+              </div>
+            )}
+            
+            {/* 메인 콘텐츠 */}
+            <div className={`flex-1 ${!shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''} transition-all duration-300`}>
+              {children}
+            </div>
+          </div>
         </main>
       </div>
     </LoginUserContext.Provider>
