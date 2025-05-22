@@ -20,7 +20,6 @@ public enum ExceptionCode {
     INSUFFICIENT_STOCK(400, "비품 보유 수량이 부족합니다."),
     CATEGORY_NOT_FOUND(404, "카테고리를 찾을 수 없습니다."),
     ACCESS_DENIED(404,"권한이 없습니다. "),
-    NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
     INVALID_REQUEST_STATUS(400, "요청 상태가 유효하지 않아 수정할 수 없습니다."),
     INVALID_RETURN_DATE(400, "대여 시 반납 날짜를 반드시 입력해야 합니다."),
     REGISTER_ITEM_NOT_FOUND(404, "비품 구매서를 찾을 수 없습니다."),
@@ -69,6 +68,9 @@ public enum ExceptionCode {
     //카테고리 예외 처리
     CATEGORY_ALREADY_EXISTS(409, "이미 존재하는 카테고리입니다."),
 
+    // 알림 예외 처리
+    NOTIFICATION_DENIED_EXCEPTION(403, "다른 사용자의 알림은 조회할 수 없습니다."),
+    NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
 
     ;
 
