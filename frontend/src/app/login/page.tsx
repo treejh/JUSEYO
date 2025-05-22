@@ -49,21 +49,75 @@ export default function LoginPage() {
     setError("");
     
     try {
-      // API 호출 대신 직접 성공 처리 (테스트용)
-      setLoginUser({
-        id: 12345, // 숫자 타입으로 설정
-        email: formData.email,
-        phoneNumber: "010-1234-5678",
-        username: loginType === "manager" ? "관리자" : "일반 사용자",
-        managementDashboardName: "테스트 대시보드",
-        departmentName: "개발팀",
-        role: loginType,
+      // API URL 가져오기
+      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+      
+      if (!API_URL) {
+        throw new Error('API URL이 설정되지 않았습니다. .env.local 파일을 확인해주세요.');
+      }
+      
+      // API 호출
+      const response = await fetch(`${API_URL}/api/v1/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        }),
+        credentials: 'include'
+      });
+
+      // 응답 타입 확인
+      const contentType = response.headers.get('content-type');
+      
+      if (!response.ok) {
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '로그인에 실패했습니다.');
+        } else {
+          const errorText = await response.text();
+          throw new Error(errorText || '로그인 처리 중 오류가 발생했습니다.');
+        }
+      }
+      
+      // 로그인 성공 후 사용자 정보 가져오기
+      const userInfoResponse = await fetch(`${API_URL}/api/v1/users/token`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
       });
       
-      // 로그인 성공 화면으로 이동
-      setStep("success");
+      if (!userInfoResponse.ok) {
+        throw new Error('사용자 정보를 가져오는데 실패했습니다.');
+      }
+      
+      const userData = await userInfoResponse.json();
+      
+      // 로그인 유형 확인 (경고만 표시하고 계속 진행)
+      const isManagerRole = userData.role === "MANAGER" || userData.role === "ADMIN";
+      const isUserRole = userData.role === "USER";
+      
+      if ((loginType === "manager" && !isManagerRole) || 
+          (loginType === "regular" && !isUserRole)) {
+        console.warn("선택한 로그인 유형이 계정 권한과 일치하지 않습니다.");
+        // 경고 표시만 하고 계속 진행 (return 제거)
+      }
+      
+      // 로그인 성공 처리
+      setLoginUser(userData);
+      
+      // 로그인 성공 시 대시보드 페이지로 바로 이동
+      router.push("/dashboard");
     } catch (error) {
-      setError("서버 연결 중 오류가 발생했습니다.");
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("서버 연결 중 오류가 발생했습니다.");
+      }
     } finally {
       setIsLoading(false);
     }

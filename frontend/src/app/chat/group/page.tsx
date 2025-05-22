@@ -140,6 +140,7 @@ const ChatPage = () => {
       setChatName(""); // 채팅방 이름 초기화
       setSelectedUserIds([]); // 선택된 유저 초기화
       closeModal(); // 모달 닫기
+      window.location.reload(); // 페이지 새로고침
     } catch (error) {
       console.error("채팅방 생성 실패:", error);
       alert("채팅방 생성에 실패했습니다.");
