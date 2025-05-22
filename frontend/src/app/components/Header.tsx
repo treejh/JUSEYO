@@ -31,6 +31,9 @@ export function Header({ onToggleSidebar }: HeaderProps) {
         <div className="flex items-center">
           {isLogin ? (
             <>
+              <div className="mr-4">
+                <NotificationBell />
+              </div>
               <button
                 onClick={logoutAndHome}
                 className="bg-white border border-blue-500 text-blue-500 px-4 py-1.5 rounded-md text-sm hover:bg-blue-50"
