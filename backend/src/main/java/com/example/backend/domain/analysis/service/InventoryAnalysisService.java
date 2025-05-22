@@ -9,6 +9,8 @@ import com.example.backend.domain.inventory.inventoryOut.entity.InventoryOut;
 import com.example.backend.domain.inventory.inventoryOut.repository.InventoryOutRepository;
 import com.example.backend.domain.item.entity.Item;
 import com.example.backend.domain.item.repository.ItemRepository;
+import com.example.backend.domain.itemInstance.repository.ItemInstanceRepository;
+import com.example.backend.enums.Outbound;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
