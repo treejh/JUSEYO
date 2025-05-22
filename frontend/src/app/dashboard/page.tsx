@@ -157,7 +157,7 @@ export default function DashboardPage() {
         categorySummary: `${API_URL}/api/v1/analysis/category-summary`,
         itemUsage: `${API_URL}/api/v1/analysis/item-usage`,
         monthlySummary: `${API_URL}/api/v1/analysis/monthly-summary`,
-        items: `${API_URL}/api/v1/items?page=0&size=100`
+        items: `${API_URL}/api/v1/items?page=0&size=5`
       };
 
       // 병렬로 API 호출
@@ -177,7 +177,7 @@ export default function DashboardPage() {
           credentials: 'include',  // 쿠키 포함
           headers
         }),
-        fetch(`${API_URL}/api/v1/items?page=0&size=100`, {
+        fetch(`${API_URL}/api/v1/items?page=0&size=5`, {
           method: 'GET',
           credentials: 'include',
           headers
