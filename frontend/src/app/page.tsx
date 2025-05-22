@@ -373,14 +373,17 @@ export default function Home() {
               <div className="flex flex-wrap gap-4">
                 {isLogin ? (
                   <button
-                    onClick={() =>
-                      !loginUser.managementDashboardName && loginUser.role !== 'ROLE_ADMIN'
-                        ? router.push('/admin/request')  // 관리자 페이지 생성 페이지로 이동
-                        : router.push('/admin/dashboard')  // 기존 대시보드로 이동
+                    onClick={
+                      () =>
+                        !loginUser.managementDashboardName &&
+                        loginUser.role !== "ROLE_ADMIN"
+                          ? router.push("/admin/request") // 관리자 페이지 생성 페이지로 이동
+                          : router.push("/admin/dashboard") // 기존 대시보드로 이동
                     }
                     className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                   >
-                    {!loginUser.managementDashboardName && loginUser.role !== 'ROLE_ADMIN'
+                    {!loginUser.managementDashboardName &&
+                    loginUser.role !== "ROLE_ADMIN"
                       ? "관리자 페이지 생성"
                       : "관리자 페이지 접속"}
                   </button>

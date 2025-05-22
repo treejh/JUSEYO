@@ -3,8 +3,11 @@ package com.example.backend.notification.service;
 import com.example.backend.exception.BusinessLogicException;
 import com.example.backend.exception.ExceptionCode;
 import com.example.backend.notification.dto.NotificationDTO;
+import com.example.backend.notification.dto.NotificationPageResponseDTO;
 import com.example.backend.notification.dto.NotificationRequestDTO;
+import com.example.backend.notification.dto.NotificationResponseDTO;
 import com.example.backend.notification.entity.Notification;
+import com.example.backend.notification.entity.NotificationType;
 import com.example.backend.notification.repository.NotificationRepository;
 import com.example.backend.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.notification.sse.EmitterRepository;
@@ -12,6 +15,8 @@ import com.example.backend.notification.strategy.NotificationStrategy;
 import com.example.backend.user.entity.User;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -58,6 +63,33 @@ public class NotificationService {
 
         return saved;
     }
+
+    public NotificationPageResponseDTO getNotifications(
+            Long userId,
+            NotificationType type,
+            Boolean unreadOnly,
+            Pageable pageable
+    ) {
+        Page<Notification> notifications;
+
+        if (type == null && unreadOnly == null) {
+            notifications = notificationRepository.findByUserId(userId, pageable);
+        } else if (type != null && unreadOnly == null) {
+            notifications = notificationRepository.findByUserIdAndNotificationType(userId, type, pageable);
+        } else if (type == null && unreadOnly != null) {
+            notifications = notificationRepository.findByUserIdAndReadStatus(userId, unreadOnly, pageable);
+        } else {
+            notifications = notificationRepository.findByUserIdAndNotificationTypeAndReadStatus(
+                    userId,
+                    type,
+                    unreadOnly,
+                    pageable
+            );
+        }
+
+        return NotificationPageResponseDTO.from(notifications);
+    }
+
 
     @Transactional
     public SseEmitter streamNotifications(Long userId) throws IOException {

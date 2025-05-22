@@ -2,20 +2,31 @@ package com.example.backend.notification.controller;
 
 
 
+import com.example.backend.exception.BusinessLogicException;
+import com.example.backend.exception.ExceptionCode;
 import com.example.backend.inventoryOut.service.InventoryOutService;
+import com.example.backend.notification.dto.NotificationPageResponseDTO;
 import com.example.backend.notification.dto.NotificationRequestDTO;
+import com.example.backend.notification.dto.NotificationResponseDTO;
 import com.example.backend.notification.entity.Notification;
 import com.example.backend.notification.entity.NotificationType;
 import com.example.backend.notification.repository.NotificationRepository;
 import com.example.backend.notification.service.NewChatNotificationService;
 import com.example.backend.notification.service.NotificationService;
+import com.example.backend.security.dto.CustomUserDetails;
 import com.example.backend.security.jwt.service.TokenService;
+import com.example.backend.user.entity.User;
 import com.example.backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -54,8 +65,34 @@ public class NotificationController {
     )
     @GetMapping("/user/{userId}")
     public List<Notification> getNotificationsByUser(@PathVariable Long userId) {
+
+        if (!userId.equals(tokenService.getIdFromToken())) {
+            throw new BusinessLogicException(ExceptionCode.NOTIFICATION_DENIED_EXCEPTION);
+        }
+
         return notificationService.getNotificationsByUser(userId);
     }
+
+    // 알림 조회 페이징
+    @GetMapping
+    public ResponseEntity<NotificationPageResponseDTO> getNotifications(
+            @RequestParam(required = false) NotificationType type,
+            @RequestParam(required = false) Boolean unreadOnly,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
+
+        NotificationPageResponseDTO notifications = notificationService.getNotifications(
+                user.getId(),
+                type,
+                unreadOnly,
+                pageable
+        );
+
+        return ResponseEntity.ok(notifications);
+    }
+
 
     // 알림 읽음 처리
     @PutMapping("/{notificationId}/read")
