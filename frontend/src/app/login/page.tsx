@@ -140,10 +140,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full h-screen bg-white flex  overflow-hidden ">
-      <div className="w-1/5 h-full flex-shrink-0"></div>
+    <div className="w-full h-screen bg-white flex  overflow-hidden gap-x-20 ">
+      <div className="w-1/20 h-full flex-shrink-0"></div>
 
-      <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center -ml-12">
+      <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center ">
         <div className="pl-0">
           <Link href="/">
             <p className="text-slate-600 mb-8 max-w-xl"></p>
@@ -154,7 +154,7 @@ export default function LoginPage() {
             />
           </Link>
           <h1 className="text-5xl md:text-7xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-indigo-600">
-            {step === "success" ? "로그인 성공" : "LOGIN"}
+            {step === "success" ? "로그인 성공" : "로그인"}
           </h1>
           <p className="text-lg mb-2 text-gray-600">
             재고 관리 플랫폼 Juseyo에 오신 것을 환영합니다.
@@ -167,7 +167,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="w-2/5 h-full flex-shrink-0 flex items-center pl-16 pr-16 overflow-hidden ">
+      <div className="w-1/3 h-full flex-shrink-0 flex items-center soverflow-hidden gap-20 ">
         <div>
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-base">
