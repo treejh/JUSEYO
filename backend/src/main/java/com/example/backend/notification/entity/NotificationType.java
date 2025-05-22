@@ -19,10 +19,12 @@ public enum NotificationType {
     RETURN_DUE_SOON("지정 반납일 임박"),   // 지정 반납일 임박 (사용자 행동 유도)
     SUPPLY_REQUEST_DELAYED("비품 요청 처리 지연"),  // 비품 요청 처리 지연 (사용자 행동 유도)
 
-    // 기타 알림
-    SYSTEM_MAINTENANCE("시스템 점검 알림"),        // 시스템 점검 알림
+    // 매니저 기타 알림
     ADMIN_APPROVAL_ALERT("관리 페이지 승인 알림"), // 관리 페이지 승인 알림 (어드민 -> 이니셜 매니저)
     MANAGER_APPROVAL_ALERT("매니저 승인 알림"),     // 매니저 승인 알림 (이니셜 매니저 -> 새 매니저)
+
+    // 공통 알림
+    SYSTEM_MAINTENANCE("시스템 점검 알림"),        // 시스템 점검 알림
     NEW_CHAT("새로운 채팅 알림");   // 새로운 채팅 알림(회원 -> 회원 / 회원 -> 매니저)
 
     private final String description;

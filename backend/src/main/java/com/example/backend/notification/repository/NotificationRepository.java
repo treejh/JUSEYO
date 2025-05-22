@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
@@ -28,5 +29,20 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             boolean readStatus,
             Pageable pageable
     );
+    Page<Notification> findByUserIdAndNotificationTypeIn(
+            Long userId,
+            Set<NotificationType> types,
+            Pageable pageable
+    );
+
+    Page<Notification> findByUserIdAndReadStatusAndNotificationTypeIn(
+            Long userId,
+            Boolean readStatus,
+            Set<NotificationType> types,
+            Pageable pageable
+    );
+
+    void deleteByUserIdAndReadStatusTrue(Long userId);
+
 
 }

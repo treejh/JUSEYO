@@ -127,6 +127,17 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
+    // 읽은 알림 전체 삭제
+    @DeleteMapping("/deleteAll")
+    @Operation(
+            summary = "읽은 알림 전체 삭제",
+            description = "읽은 알림을 전부 삭제합니다."
+    )
+    public ResponseEntity<Void> deleteAllNotifications() {
+        Long userId = tokenService.getIdFromToken();
+        notificationService.deleteAllReadNotificationsByUserId(userId);
+        return ResponseEntity.noContent().build(); // HTTP 204
+    }
 
     // SSE를 통한 실시간 알림 전송
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -135,6 +146,7 @@ public class NotificationController {
             description = "SSE 연결합니다."
     )
     public SseEmitter streamNotifications() throws IOException {
+
         Long userId = tokenService.getIdFromToken();
         System.out.println("📡 인증된 SSE 요청: userId = " + userId);
         return notificationService.streamNotifications(userId);

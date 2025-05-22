@@ -8,9 +8,48 @@ import { useNotificationStore } from "@/stores/notifications";
 
 type NotificationType =
   | "SUPPLY_REQUEST"
+  | "SUPPLY_RETURN"
+  | "SUPPLY_RETURN_ALERT"
+  | "STOCK_REACHED"
   | "STOCK_SHORTAGE"
-  | "CHAT"
-  | "RETURN_OVERDUE";
+  | "SUPPLY_REQUEST_MODIFIED"
+  | "SUPPLY_REQUEST_APPROVED"
+  | "SUPPLY_REQUEST_REJECTED"
+  | "SUPPLY_REQUEST_DELAYED"
+  | "RETURN_DUE_DATE_EXCEEDED"
+  | "RETURN_DUE_SOON"
+  | "LONG_TERM_UNRETURNED_SUPPLIES"
+  | "USER_SENT_MESSAGE_TO_MANAGER"
+  | "NEW_CHAT"
+  | "SYSTEM_MAINTENANCE"
+  | "ADMIN_APPROVAL_ALERT"
+  | "MANAGER_APPROVAL_ALERT";
+
+const MANAGER_NOTIFICATION_TYPES: NotificationType[] = [
+  "SUPPLY_REQUEST",
+  "SUPPLY_RETURN",
+  "SUPPLY_RETURN_ALERT",
+  "STOCK_REACHED",
+  "STOCK_SHORTAGE",
+  "SUPPLY_REQUEST_MODIFIED",
+  "RETURN_DUE_DATE_EXCEEDED",
+  "LONG_TERM_UNRETURNED_SUPPLIES",
+  "USER_SENT_MESSAGE_TO_MANAGER",
+  "ADMIN_APPROVAL_ALERT",
+  "MANAGER_APPROVAL_ALERT",
+];
+
+const USER_NOTIFICATION_TYPES: NotificationType[] = [
+  "SUPPLY_REQUEST_APPROVED",
+  "SUPPLY_REQUEST_REJECTED",
+  "RETURN_DUE_SOON",
+  "SUPPLY_REQUEST_DELAYED",
+];
+
+const COMMON_NOTIFICATION_TYPES: NotificationType[] = [
+  "SYSTEM_MAINTENANCE",
+  "NEW_CHAT",
+];
 
 interface Notification {
   id: number;
@@ -30,12 +69,58 @@ const NOTIFICATION_TYPE_LABELS: Record<
   NotificationType,
   { label: string; color: string }
 > = {
-  SUPPLY_REQUEST: { label: "재고 요청", color: "bg-blue-100 text-blue-800" },
+  SUPPLY_REQUEST: { label: "비품 요청", color: "bg-blue-100 text-blue-800" },
+  SUPPLY_RETURN: { label: "비품 반납", color: "bg-blue-100 text-blue-800" },
+  SUPPLY_RETURN_ALERT: {
+    label: "비품 반납 알림",
+    color: "bg-blue-100 text-blue-800",
+  },
+  STOCK_REACHED: { label: "재고 도달", color: "bg-blue-100 text-blue-800" },
   STOCK_SHORTAGE: { label: "재고 부족", color: "bg-red-100 text-red-800" },
-  CHAT: { label: "채팅", color: "bg-green-100 text-green-800" },
-  RETURN_OVERDUE: {
-    label: "반납 초과",
+  SUPPLY_REQUEST_MODIFIED: {
+    label: "비품 요청 수정",
+    color: "bg-blue-100 text-blue-800",
+  },
+  SUPPLY_REQUEST_APPROVED: {
+    label: "비품 요청 승인",
+    color: "bg-green-100 text-green-800",
+  },
+  SUPPLY_REQUEST_REJECTED: {
+    label: "비품 요청 반려",
+    color: "bg-red-100 text-red-800",
+  },
+  SUPPLY_REQUEST_DELAYED: {
+    label: "비품 요청 처리 지연",
     color: "bg-yellow-100 text-yellow-800",
+  },
+  RETURN_DUE_DATE_EXCEEDED: {
+    label: "지정 반납일 초과",
+    color: "bg-red-100 text-red-800",
+  },
+  RETURN_DUE_SOON: {
+    label: "지정 반납일 임박",
+    color: "bg-yellow-100 text-yellow-800",
+  },
+  LONG_TERM_UNRETURNED_SUPPLIES: {
+    label: "장기 미반납",
+    color: "bg-red-100 text-red-800",
+  },
+  USER_SENT_MESSAGE_TO_MANAGER: {
+    label: "채팅 알림",
+    color: "bg-green-100 text-green-800",
+  },
+  NEW_CHAT: { label: "새로운 채팅", color: "bg-green-100 text-green-800" },
+  SYSTEM_MAINTENANCE: {
+    label: "시스템 점검",
+    color: "bg-gray-100 text-gray-800",
+  },
+  ADMIN_APPROVAL_ALERT: {
+    label: "관리 페이지 승인",
+    color: "bg-gray-100 text-gray-800",
+  },
+  MANAGER_APPROVAL_ALERT: {
+    label: "매니저 승인",
+    color: "bg-gray-100 text-gray-800",
   },
 };
 
@@ -54,7 +139,17 @@ export default function NotificationsPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pageSize = 10;
+
+  // 사용자 ROLE에 따른 알림 타입 필터링
+  const getFilteredNotificationTypes = () => {
+    const isManager = loginUser.role === "MANAGER";
+    const allowedTypes = isManager
+      ? MANAGER_NOTIFICATION_TYPES
+      : USER_NOTIFICATION_TYPES;
+    return [...allowedTypes, ...COMMON_NOTIFICATION_TYPES];
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -62,7 +157,7 @@ export default function NotificationsPage() {
         page: currentPage.toString(),
         size: pageSize.toString(),
         ...(selectedType !== "ALL" && { type: selectedType }),
-        ...(showUnreadOnly && { unreadOnly: "true" }),
+        ...(showUnreadOnly && { unreadOnly: "false" }),
       });
 
       const response = await fetch(
@@ -122,6 +217,26 @@ export default function NotificationsPage() {
       fetchNotifications();
     } catch (err) {
       setError("알림 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleDeleteAllRead = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/deleteAll`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("읽은 알림 삭제에 실패했습니다.");
+      }
+
+      fetchNotifications();
+    } catch (err) {
+      setError("읽은 알림 삭제 중 오류가 발생했습니다.");
     }
   };
 
@@ -237,6 +352,12 @@ export default function NotificationsPage() {
             >
               전체 읽음 처리
             </button>
+            <button
+              onClick={handleDeleteAllRead}
+              className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+            >
+              읽은 알림 삭제
+            </button>
             {selectedNotifications.length > 0 && (
               <button
                 onClick={handleMarkSelectedAsRead}
@@ -249,34 +370,71 @@ export default function NotificationsPage() {
         </div>
 
         <div className="mb-6 flex flex-col gap-4">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setSelectedType("ALL")}
-              className={`px-3 py-1 rounded-md ${
-                selectedType === "ALL"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              전체
-            </button>
-            {Object.entries(NOTIFICATION_TYPE_LABELS).map(
-              ([type, { label }]) => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedType(type as NotificationType)}
-                  className={`px-3 py-1 rounded-md ${
-                    selectedType === type
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          <div className="flex items-center gap-4">
+            {/* 드롭다운 메뉴 */}
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                <span>
+                  {selectedType === "ALL"
+                    ? "전체"
+                    : NOTIFICATION_TYPE_LABELS[selectedType]?.label}
+                </span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${
+                    isDropdownOpen ? "rotate-180" : ""
                   }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  {label}
-                </button>
-              )
-            )}
-          </div>
-          <div className="flex items-center gap-4 border-t pt-4">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {isDropdownOpen && (
+                <div className="absolute z-10 w-48 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        setSelectedType("ALL");
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                        selectedType === "ALL" ? "bg-blue-50 text-blue-600" : ""
+                      }`}
+                    >
+                      전체
+                    </button>
+                    {getFilteredNotificationTypes().map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => {
+                          setSelectedType(type);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                          selectedType === type
+                            ? "bg-blue-50 text-blue-600"
+                            : ""
+                        }`}
+                      >
+                        {NOTIFICATION_TYPE_LABELS[type].label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 안 읽은 알림만 보기 체크박스 */}
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -289,7 +447,10 @@ export default function NotificationsPage() {
                 안 읽은 알림만 보기
               </label>
             </div>
+
             <div className="flex-1"></div>
+
+            {/* 알림 개수 표시 */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">
                 {notifications.length}개의 알림
