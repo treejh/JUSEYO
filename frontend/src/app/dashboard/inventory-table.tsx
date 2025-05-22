@@ -4,21 +4,10 @@ import React, { useEffect, useState } from 'react';
 import styles from './inventory-table.module.css';
 
 interface Item {
-  id: number;
   name: string;
-  serialNumber: string;
+  categoryName: string;
   minimumQuantity: number;
   totalQuantity: number;
-  availableQuantity: number;
-  purchaseSource: string;
-  location: string;
-  isReturnRequired: boolean;
-  image: string;
-  categoryId: number;
-  managementId: number;
-  createdAt: string;
-  modifiedAt: string;
-  status: 'ACTIVE' | 'INACTIVE';
 }
 
 interface PageResponse {
@@ -137,6 +126,9 @@ export default function InventoryTable() {
                 품목명
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                카테고리
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 재고 수량
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -149,9 +141,12 @@ export default function InventoryTable() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {items?.content.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+              <tr key={item.name} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{item.categoryName}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{item.totalQuantity}</div>
