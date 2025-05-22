@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useNotificationStore } from "@/stores/notifications";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Notification {
   id: number;
@@ -138,8 +140,14 @@ const NOTIFICATION_TYPE_LABELS: Record<
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { notifications, markAsRead, markAllAsRead, fetchNotifications } =
+    useNotificationStore();
   const notificationRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -348,12 +356,13 @@ export function NotificationBell() {
           </div>
 
           <div className="p-3 bg-gray-50 border-t">
-            <a
+            <Link
               href="/notifications"
               className="block text-center text-sm text-blue-600 hover:text-blue-800"
+              onClick={() => setIsOpen(false)}
             >
               모든 알림 보기
-            </a>
+            </Link>
           </div>
         </div>
       )}
