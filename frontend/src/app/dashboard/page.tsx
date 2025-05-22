@@ -181,33 +181,32 @@ export default function DashboardPage() {
         categorySummary: `${API_URL}/api/v1/analysis/category-summary`,
         itemUsage: `${API_URL}/api/v1/analysis/item-usage`,
         monthlySummary: `${API_URL}/api/v1/analysis/monthly-summary`,
-        items: `${API_URL}/api/v1/items?page=0&size=100`,
+        items: `${API_URL}/api/v1/items?page=0&size=5`
       };
 
       // 병렬로 API 호출
-      const [categorySummaryRes, itemUsageRes, monthlySummaryRes, itemsRes] =
-        await Promise.all([
-          fetch(`${API_URL}/api/v1/analysis/category-summary`, {
-            method: "GET",
-            credentials: "include", // 쿠키 포함
-            headers,
-          }),
-          fetch(`${API_URL}/api/v1/analysis/item-usage`, {
-            method: "GET",
-            credentials: "include", // 쿠키 포함
-            headers,
-          }),
-          fetch(`${API_URL}/api/v1/analysis/monthly-summary`, {
-            method: "GET",
-            credentials: "include", // 쿠키 포함
-            headers,
-          }),
-          fetch(`${API_URL}/api/v1/items?page=0&size=100`, {
-            method: "GET",
-            credentials: "include",
-            headers,
-          }),
-        ]);
+      const [categorySummaryRes, itemUsageRes, monthlySummaryRes, itemsRes] = await Promise.all([
+        fetch(`${API_URL}/api/v1/analysis/category-summary`, {
+          method: 'GET',
+          credentials: 'include',  // 쿠키 포함
+          headers
+        }),
+        fetch(`${API_URL}/api/v1/analysis/item-usage`, {
+          method: 'GET',
+          credentials: 'include',  // 쿠키 포함
+          headers
+        }),
+        fetch(`${API_URL}/api/v1/analysis/monthly-summary`, {
+          method: 'GET',
+          credentials: 'include',  // 쿠키 포함
+          headers
+        }),
+        fetch(`${API_URL}/api/v1/items?page=0&size=5`, {
+          method: 'GET',
+          credentials: 'include',
+          headers
+        })
+      ]);
 
       // 응답 상태 코드 확인 및 자세한 에러 메시지 출력
       if (
