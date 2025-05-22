@@ -140,6 +140,7 @@ export default function NotificationsPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const pageSize = 10;
 
   // 사용자 ROLE에 따른 알림 타입 필터링
@@ -157,7 +158,7 @@ export default function NotificationsPage() {
         page: currentPage.toString(),
         size: pageSize.toString(),
         ...(selectedType !== "ALL" && { type: selectedType }),
-        ...(showUnreadOnly && { unreadOnly: "false" }),
+        ...(showUnreadOnly && { unreadOnly: "true" }),
       });
 
       const response = await fetch(
@@ -234,6 +235,7 @@ export default function NotificationsPage() {
         throw new Error("읽은 알림 삭제에 실패했습니다.");
       }
 
+      setShowDeleteConfirm(false);
       fetchNotifications();
     } catch (err) {
       setError("읽은 알림 삭제 중 오류가 발생했습니다.");
@@ -346,28 +348,115 @@ export default function NotificationsPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">알림 목록</h1>
           <div className="flex gap-2">
-            <button
-              onClick={handleMarkAllAsRead}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-            >
-              전체 읽음 처리
-            </button>
-            <button
-              onClick={handleDeleteAllRead}
-              className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-            >
-              읽은 알림 삭제
-            </button>
-            {selectedNotifications.length > 0 && (
-              <button
-                onClick={handleMarkSelectedAsRead}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-              >
-                선택 읽음 처리
-              </button>
+            {selectedNotifications.length > 0 ? (
+              <>
+                <button
+                  onClick={handleMarkSelectedAsRead}
+                  className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  선택 읽음 처리
+                </button>
+                <button
+                  onClick={handleDeleteSelected}
+                  className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  선택 삭제
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  전체 읽음 처리
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  읽은 알림 삭제
+                </button>
+              </>
             )}
           </div>
         </div>
+
+        {/* 삭제 확인 모달 */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                읽은 알림을 모두 삭제하시겠습니까?
+              </h3>
+              <p className="text-gray-600 mb-6">
+                읽은 모든 알림이 영구적으로 삭제됩니다.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleDeleteAllRead}
+                  className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors"
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mb-6 flex flex-col gap-4">
           <div className="flex items-center gap-4">

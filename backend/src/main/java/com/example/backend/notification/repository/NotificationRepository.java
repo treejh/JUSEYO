@@ -42,6 +42,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             Pageable pageable
     );
 
+
     void deleteByUserIdAndReadStatusTrue(Long userId);
 
 

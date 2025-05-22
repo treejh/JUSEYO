@@ -96,12 +96,12 @@ public class NotificationService {
         } else if (type != null && unreadOnly == null) {
             notifications = notificationRepository.findByUserIdAndNotificationType(userId, type, pageable);
         } else if (type == null && unreadOnly != null) {
-            notifications = notificationRepository.findByUserIdAndReadStatusAndNotificationTypeIn(userId, unreadOnly, allowedTypes, pageable);
+            notifications = notificationRepository.findByUserIdAndReadStatusAndNotificationTypeIn(userId, !unreadOnly, allowedTypes, pageable);
         } else {
             notifications = notificationRepository.findByUserIdAndNotificationTypeAndReadStatus(
                     userId,
                     type,
-                    unreadOnly,
+                    !unreadOnly,
                     pageable
             );
         }
