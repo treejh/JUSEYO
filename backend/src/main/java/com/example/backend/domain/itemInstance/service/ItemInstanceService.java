@@ -1,6 +1,6 @@
 package com.example.backend.domain.itemInstance.service;
 
-import com.example.backend.analysis.service.InventoryAnalysisService;
+import com.example.backend.domain.analysis.service.InventoryAnalysisService;
 import com.example.backend.enums.Outbound;
 import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
