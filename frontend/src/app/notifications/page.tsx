@@ -28,28 +28,18 @@ type NotificationType =
 const MANAGER_NOTIFICATION_TYPES: NotificationType[] = [
   "SUPPLY_REQUEST",
   "SUPPLY_RETURN",
-  "SUPPLY_RETURN_ALERT",
-  "STOCK_REACHED",
   "STOCK_SHORTAGE",
-  "SUPPLY_REQUEST_MODIFIED",
-  "RETURN_DUE_DATE_EXCEEDED",
-  "LONG_TERM_UNRETURNED_SUPPLIES",
-  "USER_SENT_MESSAGE_TO_MANAGER",
-  "ADMIN_APPROVAL_ALERT",
-  "MANAGER_APPROVAL_ALERT",
+  "NEW_CHAT",
 ];
 
 const USER_NOTIFICATION_TYPES: NotificationType[] = [
   "SUPPLY_REQUEST_APPROVED",
   "SUPPLY_REQUEST_REJECTED",
   "RETURN_DUE_SOON",
-  "SUPPLY_REQUEST_DELAYED",
-];
-
-const COMMON_NOTIFICATION_TYPES: NotificationType[] = [
-  "SYSTEM_MAINTENANCE",
   "NEW_CHAT",
 ];
+
+const COMMON_NOTIFICATION_TYPES: NotificationType[] = ["SYSTEM_MAINTENANCE"];
 
 interface Notification {
   id: number;
@@ -157,7 +147,7 @@ export default function NotificationsPage() {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         size: pageSize.toString(),
-        ...(selectedType !== "ALL" && { type: selectedType }),
+        ...(selectedType !== "ALL" && { notificationType: selectedType }),
         ...(showUnreadOnly && { unreadOnly: "true" }),
       });
 

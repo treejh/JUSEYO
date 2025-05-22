@@ -22,13 +22,18 @@ public class NotificationPolicy {
                     NotificationType.LONG_TERM_UNRETURNED_SUPPLIES,
                     NotificationType.USER_SENT_MESSAGE_TO_MANAGER,
                     NotificationType.ADMIN_APPROVAL_ALERT,
-                    NotificationType.MANAGER_APPROVAL_ALERT
+                    NotificationType.MANAGER_APPROVAL_ALERT,
+                    NotificationType.NEW_CHAT
+
             );
             case USER -> Arrays.asList(
                     NotificationType.SUPPLY_REQUEST_APPROVED,
                     NotificationType.SUPPLY_REQUEST_REJECTED,
                     NotificationType.RETURN_DUE_SOON,
-                    NotificationType.SUPPLY_REQUEST_DELAYED
+                    NotificationType.SUPPLY_REQUEST_DELAYED,
+                    NotificationType.NEW_CHAT
+
+
             );
             default -> Collections.emptyList();
         };

@@ -363,7 +363,7 @@ const ChatRoomList: React.FC<Props> = ({
         if (roomType === "GROUP") {
           displayName = room.roomName || "";
         } else {
-          displayName = opponentInfo[room.id]?.name || "";
+          displayName = opponentInfo[room.id]?.name ?? "";
         }
 
         // 방어적 검사를 통한 안전한 비교
