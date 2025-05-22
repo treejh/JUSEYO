@@ -140,8 +140,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full h-screen bg-white flex  overflow-hidden gap-x-20 ">
-      <div className="w-1/ h-full flex-shrink-0"></div>
+    <div className="w-full h-screen bg-white flex  overflow-hidden gap-x-11 ">
+      <div className="w-1/11 h-full flex-shrink-0"></div>
 
       <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center ">
         <div className="pl-0">

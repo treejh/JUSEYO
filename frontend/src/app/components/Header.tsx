@@ -41,7 +41,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           ) : (
             <>
               <Link
-                href="/login"
+                href="/login/type"
                 className="text-gray-700 mx-3 text-sm border border-gray-300 px-4 py-1.5 rounded-md hover:bg-gray-50"
               >
                 로그인
