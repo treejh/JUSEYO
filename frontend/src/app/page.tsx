@@ -328,7 +328,7 @@ export default function Home() {
                 <div className="bg-white mb-8 p-6 rounded-xl shadow-lg relative backdrop-blur-lg border border-blue-100">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500 rounded-bl-full rounded-tr-xl -z-10 opacity-10"></div>
                   <h2 className="text-xl font-bold text-blue-800 mb-3">
-                    {loginUser.username}님 환영합니다!
+                    {loginUser.name}님 환영합니다!
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <p className="text-slate-600">
