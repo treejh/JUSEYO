@@ -77,16 +77,32 @@ export default function DashboardPage() {
   
   // 권한 체크
   useEffect(() => {
-    if (!isLogin) {
-      router.push('/login');
-      return;
-    }
-    
-    if (loginUser.role !== 'ROLE_ADMIN' && !loginUser.managementDashboardName) {
-      alert('매니저 권한이 필요합니다.');
-      router.push('/');
-      return;
-    }
+    const checkAuth = async () => {
+      try {
+        // 로그인 체크
+        if (!isLogin) {
+          router.replace('/login');
+          return;
+        }
+        
+        // 권한 체크
+        if (!loginUser.role) {
+          throw new Error('권한 정보가 없습니다.');
+        }
+
+        // 권한이 있는 경우 데이터 로드
+        await fetchDashboardData();
+        await fetchOutboundSummary();
+      } catch (error) {
+        console.error('권한 체크 중 오류 발생:', error);
+        if (error instanceof Error && error.message.includes('Failed to fetch')) {
+          alert('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        }
+        router.replace('/login');
+      }
+    };
+
+    checkAuth();
   }, [isLogin, loginUser, router]);
 
   // 상태 관리
@@ -117,16 +133,31 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-      if (!API_URL) throw new Error('API URL이 설정되지 않았습니다.');
+      if (!API_URL) {
+        throw new Error('API URL이 설정되지 않았습니다.');
+      }
 
+      console.log('API URL:', API_URL); // API URL 로깅
       setIsLoading(true);
       
       // 공통 헤더 설정
       const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        // 쿠키 인증 사용
-        credentials: 'include',
+      };
+
+      const fetchOptions = {
+        method: 'GET',
+        credentials: 'include' as RequestCredentials,
+        headers
+      };
+
+      // API 엔드포인트 목록
+      const endpoints = {
+        categorySummary: `${API_URL}/api/v1/analysis/category-summary`,
+        itemUsage: `${API_URL}/api/v1/analysis/item-usage`,
+        monthlySummary: `${API_URL}/api/v1/analysis/monthly-summary`,
+        items: `${API_URL}/api/v1/items?page=0&size=100`
       };
 
       // 병렬로 API 호출
@@ -228,6 +259,10 @@ export default function DashboardPage() {
       });
 
       if (!response.ok) {
+        if (response.status === 403) {
+          router.replace('/login');
+          throw new Error('로그인이 필요합니다.');
+        }
         throw new Error('데이터를 불러오는데 실패했습니다.');
       }
 
@@ -235,22 +270,17 @@ export default function DashboardPage() {
       setOutboundSummary(data);
     } catch (err) {
       console.error('아웃바운드 통계 로딩 에러:', err);
+      if (err instanceof Error && err.message !== '로그인이 필요합니다.') {
+        setError(err.message);
+      }
     }
   };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
 
   useEffect(() => {
     if (items?.content) {
       calculateStockStatus();
     }
   }, [items]);
-
-  useEffect(() => {
-    fetchOutboundSummary();
-  }, []);
 
   // 차트 데이터 준비
   const monthlyChartData = {

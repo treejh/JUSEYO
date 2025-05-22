@@ -1,5 +1,6 @@
 package com.example.backend.domain.item.repository;
 
+import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemResponseDto;
 import com.example.backend.domain.item.dto.response.ItemSearchProjection;
 import com.example.backend.domain.item.entity.Item;
@@ -54,5 +55,12 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     // ID + 상태 기반 조회
     Optional<Item> findByIdAndStatus(Long id, Status status);
+
+    @Query("SELECT new com.example.backend.domain.item.dto.response.ItemLiteResponseDto(" +
+            "i.name, c.name, i.minimumQuantity, i.totalQuantity) " +
+            "FROM Item i JOIN i.category c " +
+            "WHERE i.status = :status AND i.isReturnRequired = false")
+    Page<ItemLiteResponseDto> findAllAsLiteDto(@Param("status") Status status, Pageable pageable);
+
 }
 

@@ -7,6 +7,7 @@ import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
 import { NotificationBell } from "@/components/Notification/NotificationBell";
 import LoadingScreen from "./components/LoadingScreen";
+import Navigation from "@/components/Navigation/Navigation";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
 
@@ -45,20 +46,43 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   };
 
   useEffect(() => {
-    // 사용자 정보 가져오기
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/token`, {
-      credentials: "include",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const userData = data.data;
-        console.log("사용자 데이터:", userData);
+    const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!API_URL) {
+      console.error('API URL이 설정되지 않았습니다.');
+      return;
+    }
 
-        if (!userData || !userData.id) {
-          console.error("사용자 ID가 없습니다:", userData);
+    console.log('API URL:', API_URL); // API URL 로깅
+
+    // 사용자 정보 가져오기
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/users/token`, {
+          method: 'GET',
+          credentials: "include",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          if (response.status === 403) {
+            setNoLoginUser();
+            return;
+          }
+          throw new Error(`사용자 정보 조회 실패: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data || !data.data || !data.data.id) {
+          console.error("사용자 데이터 형식 오류:", data);
           setNoLoginUser();
           return;
         }
+
+        const userData = data.data;
+        console.log("사용자 데이터:", userData);
 
         setLoginUser({
           id: userData.id,
@@ -67,78 +91,68 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           username: userData.name,
           managementDashboardName: userData.managementDashboardName ?? "",
           departmentName: userData.departmentName ?? "",
-          role: userData.role ?? "user", // Provide a default role if not present
+          role: userData.role ?? "user",
         });
 
-        // SSE 연결
+        // SSE 연결 시도
+        let retryCount = 0;
+        const maxRetries = 3;
+
         const connectSSE = async () => {
+          if (retryCount >= maxRetries) {
+            console.error('SSE 연결 최대 재시도 횟수 초과');
+            return;
+          }
+
           try {
-            const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/stream`,
-              {
-                credentials: "include",
+            console.log('SSE 연결 시도...'); // 연결 시도 로깅
+            const eventSource = new EventSource(`${API_URL}/api/v1/notifications/stream`, {
+              withCredentials: true
+            });
+
+            eventSource.onmessage = (event) => {
+              try {
+                const data = JSON.parse(event.data);
+                console.log(`🔔 [${data.type || "message"}] 알림 수신:`, data);
+
+                useNotificationStore.getState().addNotification({
+                  id: Number(data.id),
+                  message: data.message,
+                  type: data.type,
+                  createdAt: data.createdAt,
+                  read: false,
+                });
+              } catch (e) {
+                console.log(`💬 [message] 텍스트 메시지:`, event.data);
               }
-            );
+            };
 
-            if (!response.ok) {
-              throw new Error(`SSE 연결 실패: ${response.status}`);
-            }
+            eventSource.onerror = (error) => {
+              console.error('SSE 연결 오류:', error);
+              eventSource.close();
+              retryCount++;
+              setTimeout(connectSSE, 3000);
+            };
 
-            const reader = response.body?.getReader();
-            if (!reader) {
-              throw new Error("SSE 스트림을 읽을 수 없습니다.");
-            }
-
-            const decoder = new TextDecoder();
-            let buffer = "";
-
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split("\n");
-              buffer = lines.pop() || "";
-
-              for (const line of lines) {
-                if (line.trim() === "") continue;
-
-                if (line.startsWith("data:")) {
-                  const data = line.slice(5).trim();
-                  try {
-                    const parsed = JSON.parse(data);
-                    console.log(
-                      `🔔 [${parsed.type || "message"}] 알림 수신:`,
-                      parsed
-                    );
-
-                    // 알림 스토어에 추가
-                    useNotificationStore.getState().addNotification({
-                      id: Number(parsed.id),
-                      message: parsed.message,
-                      type: parsed.type,
-                      createdAt: parsed.createdAt,
-                      read: false,
-                    });
-                  } catch (e) {
-                    console.log(`💬 [message] 텍스트 메시지: ${data}`);
-                  }
-                }
-              }
-            }
+            return () => {
+              console.log('SSE 연결 종료');
+              eventSource.close();
+            };
           } catch (error) {
-            console.error("SSE 연결 오류:", error);
-            // 3초 후 재연결 시도
+            console.error('SSE 연결 실패:', error);
+            retryCount++;
             setTimeout(connectSSE, 3000);
           }
         };
 
         connectSSE();
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("사용자 정보 조회 실패:", error);
         setNoLoginUser();
-      });
+      }
+    };
+
+    fetchUserData();
   }, [setLoginUser, setNoLoginUser]);
 
   if (isLoginUserPending) {
@@ -147,15 +161,26 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
-      <div
-        className={`flex flex-col ${isAuthPage ? "h-screen w-screen" : "min-h-screen"
-          } bg-white`}
-      >
+      <div className={`flex flex-col ${isAuthPage ? "h-screen w-screen" : "min-h-screen"} bg-white`}>
         {!isAuthPage && <Header />}
-        <main
-          className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
-        >
-          {children}
+        <main className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}>
+          <div className="flex">
+            {/* 네비게이션 사이드바 */}
+            {!shouldHideNav && (
+              <div className={`juseyo-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+                <Navigation 
+                  userRole={loginUser?.role?.replace('ROLE_', '') as 'ADMIN' | 'MANAGER' | 'USER'}
+                  isSidebarCollapsed={sidebarCollapsed}
+                  onToggleSidebar={toggleSidebar}
+                />
+              </div>
+            )}
+            
+            {/* 메인 콘텐츠 */}
+            <div className={`flex-1 ${!shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''} transition-all duration-300`}>
+              {children}
+            </div>
+          </div>
         </main>
       </div>
     </LoginUserContext.Provider>
