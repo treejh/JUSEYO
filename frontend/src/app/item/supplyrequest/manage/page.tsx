@@ -58,73 +58,155 @@ export default function ManageSupplyRequestsPage() {
   }, []);
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100 py-10">
-      <div className="w-full max-w-full lg:max-w-7xl bg-white shadow-lg rounded-xl p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">
-            대시보드: 비품 요청 승인/거절
-          </h1>
-          <Link
-            href="/item/supplyrequest"
-            className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700"
-          >
-            내 요청서 보기
-          </Link>
+    <main className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* 헤더 섹션 */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                비품 요청 관리
+              </h1>
+              <p className="text-gray-500 mt-1">
+                대기 중인 비품 요청을 승인하거나 거절할 수 있습니다.
+              </p>
+            </div>
+            <Link
+              href="/item/supplyrequest/list"
+              className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              요청 목록으로
+            </Link>
+          </div>
+
+          {/* 통계 섹션 */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-sm text-blue-600">대기 중</p>
+              <p className="text-2xl font-bold text-blue-900">
+                {requests.length}
+              </p>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4">
+              <p className="text-sm text-green-600">오늘의 처리</p>
+              <p className="text-2xl font-bold text-green-900">0</p>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4">
+              <p className="text-sm text-purple-600">전체 요청</p>
+              <p className="text-2xl font-bold text-purple-900">-</p>
+            </div>
+          </div>
         </div>
 
+        {/* 테이블 섹션 */}
         {loading ? (
-          <p className="text-center text-gray-500">Loading...</p>
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <div className="flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <p className="mt-4 text-gray-500">요청 목록을 불러오는 중...</p>
+            </div>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-left border">
-              <thead className="bg-gray-300">
-                <tr>
-                  <th className="px-3 py-2 border">ID</th>
-                  <th className="px-3 py-2 border">상품명</th>
-                  <th className="px-3 py-2 border">수량</th>
-                  <th className="px-3 py-2 border">사유</th>
-                  <th className="px-3 py-2 border">사용일</th>
-                  <th className="px-3 py-2 border">반납일</th>
-                  <th className="px-3 py-2 border">대여여부</th>
-                  <th className="px-3 py-2 border">작성일</th>
-                  <th className="px-3 py-2 border">액션</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map((req) => (
-                  <tr key={req.id} className="border hover:bg-gray-50">
-                    <td className="px-3 py-2 border">{req.id}</td>
-                    <td className="px-3 py-2 border">{req.productName}</td>
-                    <td className="px-3 py-2 border">{req.quantity}</td>
-                    <td className="px-3 py-2 border">{req.purpose}</td>
-                    <td className="px-3 py-2 border">{req.useDate ?? "-"}</td>
-                    <td className="px-3 py-2 border">
-                      {req.returnDate ?? "-"}
-                    </td>
-                    <td className="px-3 py-2 border">
-                      {req.rental ? "대여" : "지급"}
-                    </td>
-                    <td className="px-3 py-2 border">{req.createdAt}</td>
-                    <td className="px-3 py-2 border space-x-2">
-                      <button
-                        onClick={() => updateStatus(req.id, "approve")}
-                        disabled={processingIds.includes(req.id)}
-                        className="px-2 py-1 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {[
+                      "ID",
+                      "상품명",
+                      "수량",
+                      "사유",
+                      "사용일",
+                      "반납일",
+                      "대여여부",
+                      "작성일",
+                      "승인 / 거절",
+                    ].map((header) => (
+                      <th
+                        key={header}
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        승인
-                      </button>
-                      <button
-                        onClick={() => updateStatus(req.id, "reject")}
-                        disabled={processingIds.includes(req.id)}
-                        className="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                      >
-                        거절
-                      </button>
-                    </td>
+                        {header}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {requests.map((req) => (
+                    <tr key={req.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {req.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {req.productName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {req.quantity}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                        {req.purpose}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {req.useDate ?? "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {req.returnDate ?? "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            req.rental
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {req.rental ? "대여" : "지급"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(req.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button
+                          onClick={() => updateStatus(req.id, "approve")}
+                          disabled={processingIds.includes(req.id)}
+                          className="px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 border border-green-200"
+                        >
+                          승인
+                        </button>
+                        <button
+                          onClick={() => updateStatus(req.id, "reject")}
+                          disabled={processingIds.includes(req.id)}
+                          className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 border border-red-200"
+                        >
+                          거절
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {requests.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                처리할 요청이 없습니다.
+              </div>
+            )}
           </div>
         )}
       </div>
