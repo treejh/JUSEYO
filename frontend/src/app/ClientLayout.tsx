@@ -1,23 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation"; // useRouter 추가
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
-import { NotificationBell } from "@/components/Notification/NotificationBell";
-import LoadingScreen from "./components/LoadingScreen";
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
-
+export function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
-  const isRootPage = pathname === "/";
-  const shouldHideNav = isAuthPage || isRootPage;
-
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
+  const router = useRouter(); // 리다이렉트를 위한 useRouter 사용
+  const isAuthPage =
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname.startsWith("/find/");
 
   const {
     loginUser,
@@ -28,11 +23,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     logout,
     logoutAndHome,
   } = useLoginUser();
-
-  // 사이드바 접기/펼치기 토글 함수
-  const toggleSidebar = () => {
-    setSidebarCollapsed(prev => !prev);
-  };
 
   const LoginUserContextValue = {
     loginUser,
@@ -45,6 +35,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   };
 
   useEffect(() => {
+    // 로그인된 사용자가 인증 페이지에 접근하려고 하면 리다이렉트
+    if (isLogin && isAuthPage) {
+      console.warn("로그인된 사용자는 인증 페이지에 접근할 수 없습니다.");
+      router.push("/"); // 리다이렉트 경로 설정 (예: 홈 페이지)
+      return;
+    }
+
     // 사용자 정보 가져오기
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/token`, {
       credentials: "include",
@@ -64,7 +61,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           id: userData.id,
           email: userData.email,
           phoneNumber: userData.phoneNumber,
-          username: userData.name,
+          name: userData.name,
           managementDashboardName: userData.managementDashboardName ?? "",
           departmentName: userData.departmentName ?? "",
           role: userData.role ?? "user", // Provide a default role if not present
@@ -139,17 +136,22 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         console.error("사용자 정보 조회 실패:", error);
         setNoLoginUser();
       });
-  }, [setLoginUser, setNoLoginUser]);
+  }, [isAuthPage, isLogin]); // isAuthPage와 isLogin 상태를 의존성으로 추가
 
   if (isLoginUserPending) {
-    return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
+    return (
+      <div className="flex items-center justify-center h-screen w-screen bg-white text-black">
+        <div>로딩중</div>
+      </div>
+    );
   }
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
       <div
-        className={`flex flex-col ${isAuthPage ? "h-screen w-screen" : "min-h-screen"
-          } bg-white`}
+        className={`flex flex-col ${
+          isAuthPage ? "h-screen w-screen" : "min-h-screen"
+        } bg-white`}
       >
         {!isAuthPage && <Header />}
         <main

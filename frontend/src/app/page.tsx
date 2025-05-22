@@ -327,7 +327,7 @@ export default function Home() {
                 <div className="bg-white mb-8 p-6 rounded-xl shadow-lg relative backdrop-blur-lg border border-blue-100">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500 rounded-bl-full rounded-tr-xl -z-10 opacity-10"></div>
                   <h2 className="text-xl font-bold text-blue-800 mb-3">
-                    {loginUser.username}님 환영합니다!
+                    {loginUser.name}님 환영합니다!
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <p className="text-slate-600">
@@ -373,14 +373,17 @@ export default function Home() {
               <div className="flex flex-wrap gap-4">
                 {isLogin ? (
                   <button
-                    onClick={() =>
-                      !loginUser.managementDashboardName && loginUser.role !== 'ROLE_ADMIN'
-                        ? router.push('/admin/request')  // 관리자 페이지 생성 페이지로 이동
-                        : router.push('/admin/dashboard')  // 기존 대시보드로 이동
+                    onClick={
+                      () =>
+                        !loginUser.managementDashboardName &&
+                        loginUser.role !== "ROLE_ADMIN"
+                          ? router.push("/admin/request") // 관리자 페이지 생성 페이지로 이동
+                          : router.push("/admin/dashboard") // 기존 대시보드로 이동
                     }
                     className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                   >
-                    {!loginUser.managementDashboardName && loginUser.role !== 'ROLE_ADMIN'
+                    {!loginUser.managementDashboardName &&
+                    loginUser.role !== "ROLE_ADMIN"
                       ? "관리자 페이지 생성"
                       : "관리자 페이지 접속"}
                   </button>
