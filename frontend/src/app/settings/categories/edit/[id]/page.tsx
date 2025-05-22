@@ -45,10 +45,6 @@ const CategoryEditPage: FC = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex min-h-screen">
-          <div className="w-64 bg-white border-r border-gray-200">
-            {/* 사이드바 내용은 별도 컴포넌트로 구현 예정 */}
-          </div>
-
           <div className="flex-1 p-12 pt-16 pl-16 bg-white">
             <div className="mb-10">
               <h1 className="text-2xl font-bold text-gray-900">오류</h1>
@@ -69,10 +65,6 @@ const CategoryEditPage: FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex min-h-screen">
-        <div className="w-64 bg-white border-r border-gray-200">
-          {/* 사이드바 내용은 별도 컴포넌트로 구현 예정 */}
-        </div>
-
         <div className="flex-1 p-12 pt-8 pl-16 bg-white">
           <div className="mb-6 mt-6">
             <h1 className="text-2xl font-bold text-gray-900">카테고리 수정</h1>
