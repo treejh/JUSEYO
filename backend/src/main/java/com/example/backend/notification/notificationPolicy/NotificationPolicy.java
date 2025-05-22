@@ -1,7 +1,7 @@
 package com.example.backend.notification.notificationPolicy;
 
 import com.example.backend.enums.RoleType;
-import com.example.backend.notification.entity.NotificationType;
+import com.example.backend.domain.notification.entity.NotificationType;
 
 import java.util.Arrays;
 import java.util.Collections;
