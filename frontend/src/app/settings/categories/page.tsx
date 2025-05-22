@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FC, useState } from "react";
 import { HiArchiveBox } from "react-icons/hi2";
+
 
 interface CategoryItem {
   id: number;
@@ -53,11 +53,6 @@ const CategoryManagementPage: FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* 전체 레이아웃 컨테이너 */}
       <div className="flex min-h-screen">
-        {/* 사이드바 영역 (실제 구현 시 컴포넌트로 대체) */}
-        <div className="w-64 bg-white border-r border-gray-200">
-          {/* 사이드바 내용은 별도 컴포넌트로 구현 예정 */}
-        </div>
-
         {/* 메인 콘텐츠 영역 */}
         <div className="flex-1 p-12 pt-8 pl-16 bg-white">
           <div className="mb-6 mt-6">
@@ -110,9 +105,9 @@ const CategoryManagementPage: FC = () => {
 
             <div className="mt-8">
               <Link href="/settings/categories/add">
-                <Button className="bg-[#0047AB] text-white px-4 py-2 rounded text-base hover:bg-[#003380] transition-colors">
+                <button className="bg-[#0047AB] text-white px-4 py-2 rounded text-base hover:bg-[#003380] transition-colors">
                   + 추가하기
-                </Button>
+                </button>
               </Link>
             </div>
 
