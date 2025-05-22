@@ -1,9 +1,5 @@
 "use client";
 
-// app/items/page.tsx
-// 비품 목록 + 검색 + 페이징 + "비품 요청서" 버튼 + Excel 다운로드 버튼 (정상 동작 버전)
-// 구매처 → purchase_source/purchaseSource, 인스턴스 컬럼 제거, # = 순번
-
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -67,10 +63,29 @@ export default function ItemsPage() {
         throw new Error(`서버 오류: ${msg}`);
       }
       const json: any = await res.json();
-      const list = Array.isArray(json) ? json : json.content ?? [];
+
+      // JSON을 Item[]으로 취급
+      let list: Item[] = Array.isArray(json)
+        ? (json as Item[])
+        : (json.content as Item[]) ?? [];
+
+      // 2) 이름·카테고리 키워드 필터링
+      if (keyword.trim() !== "") {
+        const kw = keyword.trim().toLowerCase();
+        list = list.filter(
+          (item: Item) =>
+            item.name.toLowerCase().includes(kw) ||
+            item.categoryName.toLowerCase().includes(kw)
+        );
+        // (선택) 검색 중에는 페이지네이션 하지 않으려면 totalPages = 1로 고정
+        setTotalPages(1);
+      } else {
+        // 빈 키워드면 서버가 준 totalPages 사용
+        setTotalPages(json.totalPages ?? 1);
+      }
+
       setItems(list);
       setPage(p);
-      setTotalPages(json.totalPages ?? 1);
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -94,13 +109,19 @@ export default function ItemsPage() {
               onClick={downloadExcel}
               className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
             >
-              Excel 다운로드
+              Excel
             </button>
             <Link
               href="/item/supplyrequest"
               className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700"
             >
               비품 요청서
+            </Link>
+            <Link
+              href="/item/purchaserequest"
+              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+            >
+              비품 구매서
             </Link>
           </div>
         </div>
@@ -126,14 +147,14 @@ export default function ItemsPage() {
         {/* 테이블 */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left border">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-300">
               <tr>
                 <th className="px-3 py-2 border text-center">#</th>
                 <th className="px-3 py-2 border">이름</th>
                 <th className="px-3 py-2 border">카테고리</th>
                 <th className="px-3 py-2 border">위치</th>
                 <th className="px-3 py-2 border">구매처</th>
-                <th className="px-3 py-2 border">시리얼</th>
+                <th className="px-3 py-2 border">시리얼넘버</th>
                 <th className="px-3 py-2 border text-center">총수량</th>
                 <th className="px-3 py-2 border text-center">잔여수량</th>
               </tr>

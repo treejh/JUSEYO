@@ -1,0 +1,12 @@
+package com.example.backend.domain.notification.strategy.context;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class SupplyRequestContext {
+    private final String itemName;
+    private final Long requestQuantity;
+    private final String requesterName;
+}
