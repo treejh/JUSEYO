@@ -271,8 +271,8 @@ public class SupplyRequestService {
         return mapToDto(req);
     }
 
-    public Map<ApprovalStatus, Long> getSupplyRequestCountsByApprovalStatus() {
-        List<Object[]> results = repo.countByApprovalStatus();
+    public Map<ApprovalStatus, Long> getSupplyRequestCountsByApprovalStatus(Long userId) {
+        List<Object[]> results = repo.countByApprovalStatusByUserId(userId);
         Map<ApprovalStatus, Long> countMap = new HashMap<>();
         for (Object[] result : results) {
             ApprovalStatus status = (ApprovalStatus) result[0];
@@ -281,6 +281,7 @@ public class SupplyRequestService {
         }
         return countMap;
     }
+
 
     private SupplyRequestResponseDto mapToDto(SupplyRequest e) {
         return SupplyRequestResponseDto.builder()

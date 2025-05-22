@@ -113,10 +113,14 @@ public class SupplyRequestController {
         return ResponseEntity.ok(supplyRequestService.getAllRequests());
     }
 
-    /**  승인 상태별 비품 요청 건수 조회 */
-    @GetMapping("/status-count")
-    @Operation(summary = "승인 상태별 비품 요청 건수 조회", description = "ApprovalStatus(REQUESTED, APPROVED, REJECTED) 별 SupplyRequest의 건수를 반환합니다.")
-    public ResponseEntity<Map<ApprovalStatus, Long>> getApprovalStatusCounts() {
-        return ResponseEntity.ok(supplyRequestService.getSupplyRequestCountsByApprovalStatus());
+    @GetMapping("/status-count/{userId}")
+    @Operation(
+            summary = "유저별 승인 상태별 비품 요청 건수 조회",
+            description = "지정된 userId에 대해 ApprovalStatus(REQUESTED, APPROVED, REJECTED) 별 SupplyRequest의 건수를 반환합니다."
+    )
+    public ResponseEntity<Map<ApprovalStatus, Long>> getApprovalStatusCountsByUser(
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(supplyRequestService.getSupplyRequestCountsByApprovalStatus(userId));
     }
+
 }
