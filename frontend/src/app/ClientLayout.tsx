@@ -106,17 +106,17 @@ export default function ClientLayout({
     fetchUserData();
   }, [isLogin]); // 의존성 배열에서 setLoginUser와 setNoLoginUser 제거
 
-  // 로그인되지 않은 사용자가 접근 시 리다이렉트
-  useEffect(() => {
-    if (!isLogin && !isAuthPage && !isRootPage) {
-      alert("로그인이 필요한 페이지입니다.");
-      router.push("/login/type");
-    }
-  }, [isLogin, isAuthPage, isRootPage, router]);
+  // // 로그인되지 않은 사용자가 접근 시 리다이렉트
+  // useEffect(() => {
+  //   if (!isLogin && !isAuthPage && !isRootPage) {
+  //     alert("로그인이 필요한 페이지입니다.");
+  //     router.push("/login/type");
+  //   }
+  // }, [isLogin, isAuthPage, isRootPage, router]);
 
-  if (isLoginUserPending) {
-    return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
-  }
+  // if (isLoginUserPending) {
+  //   return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
+  // }
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
