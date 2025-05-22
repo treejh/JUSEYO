@@ -5,7 +5,7 @@ type User = {
   id: number;
   email: string;
   phoneNumber: string;
-  username: string;
+  name: string;
   managementDashboardName?: string; // 선택적 필드
   departmentName?: string; // 선택적 필드
   role: string; // 사용자 타입 필드 추가
@@ -32,7 +32,7 @@ function createEmptyUser(): User {
     id: 0,
     email: "",
     phoneNumber: "",
-    username: "",
+    name: "",
     managementDashboardName: "",
     departmentName: "",
     role: "", // 기본값 설정

@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@stomp/stompjs": "^7.1.1",
-    "@types/uuid": "^10.0.0",
     "axios": "^1.9.0",
     "chart.js": "^4.4.9",
     "framer-motion": "^12.12.1",
@@ -32,6 +31,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sockjs-client": "^1.5.4",
+    "@types/uuid": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",
