@@ -79,7 +79,9 @@ public class SupplyRequestService {
                 .returnDate(returnDate)
                 .rental(dto.isRental())
                 .approvalStatus(ApprovalStatus.REQUESTED)
+                .status(Status.ACTIVE)
                 .build();
+        req.setStatus(Status.ACTIVE);
         SupplyRequest saved = repo.save(req);
         return mapToDto(saved);
     }
