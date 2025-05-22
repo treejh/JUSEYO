@@ -1,0 +1,104 @@
+name: Gemini Code Review
+
+on:
+  push:
+    branches: [ feature/gemini ]
+    paths:
+      - 'backend/**'
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+
+      - name: Install GoogleGenerativeAI
+        run: |
+          npm install @google/generative-ai
+
+      # PR 이벤트에서의 변경사항 처리
+      - name: Get git diff for PR
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin "${{ github.event.pull_request.base.ref }}"
+          git fetch origin "${{ github.event.pull_request.head.ref }}"
+          git diff --unified=0 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
+          echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
+
+      # Push 이벤트에서의 변경사항 처리
+      - name: Get git diff for Push
+        if: github.event_name == 'push'
+        run: |
+          git diff --unified=0 HEAD^ HEAD > "diff.txt"
+          echo "EVENT_TYPE=push" >> $GITHUB_ENV
+
+      # Gemini를 사용한 코드 분석
+      - name: Run Gemini-1.5-flash
+        id: gemini_review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const diff_output = fs.readFileSync("diff.txt",'utf8');
+            
+            const { GoogleGenerativeAI } = require("@google/generative-ai");
+            const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+            
+            // PR과 Push에 따라 다른 프롬프트 사용
+            let prompt;
+            if (process.env.EVENT_TYPE === 'pull_request') {
+              prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT"}\] format must be respected.\n<git diff>${diff_output}</git diff>`;
+            } else {
+              prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Provide a detailed review of the code changes, focusing on code quality, readability, performance, and security. Format your response in Markdown with clear headings for each file reviewed.\n<git diff>${diff_output}</git diff>`;
+            }
+            
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            
+            fs.writeFileSync('review_result.txt', text);
+            console.log('Review results saved!');
+
+      # PR 이벤트: 라인별 리뷰 코멘트 추가
+      - name: Format and add PR review comments
+        if: env.EVENT_TYPE == 'pull_request'
+        id: store
+        run: |
+          COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
+          echo "comment=$COMMENT" >> $GITHUB_OUTPUT
+
+      - name: Add Pull Request Review Comment
+        if: env.EVENT_TYPE == 'pull_request'
+        uses: nbaztec/add-pr-review-comment@v1.0.7
+        with:
+          comments: ${{ steps.store.outputs.comment }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token-user-login: 'github-actions[bot]'
+          allow-repeats: false
+
+      # Push 이벤트: 액션 로그에 리뷰 결과 출력 및 아티팩트 업로드
+      - name: Display review results in workflow log
+        if: env.EVENT_TYPE == 'push'
+        run: |
+          echo "===== Gemini Code Review Results ====="
+          cat review_result.txt
+          echo "======================================"
+
+      - name: Upload review results as artifact
+        if: env.EVENT_TYPE == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-code-review
+          path: review_result.txt
