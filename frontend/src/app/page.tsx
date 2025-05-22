@@ -328,7 +328,7 @@ export default function Home() {
                 <div className="bg-white mb-8 p-6 rounded-xl shadow-lg relative backdrop-blur-lg border border-blue-100">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500 rounded-bl-full rounded-tr-xl -z-10 opacity-10"></div>
                   <h2 className="text-xl font-bold text-blue-800 mb-3">
-                    {loginUser.username}님 환영합니다!
+                    {loginUser.name}님 환영합니다!
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <p className="text-slate-600">
@@ -376,8 +376,8 @@ export default function Home() {
                   <button
                     onClick={() =>
                       !loginUser.managementDashboardName
-                        ? router.push('/admin/request')
-                        : router.push('/dashboard')
+                        ? router.push("/admin/request")
+                        : router.push("/dashboard")
                     }
                     className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 group"
                   >
@@ -395,7 +395,7 @@ export default function Home() {
                         d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                       />
                     </svg>
-                    {!loginUser.managementDashboardName 
+                    {!loginUser.managementDashboardName
                       ? "관리자 페이지 생성"
                       : "관리자 페이지 접속"}
                     <svg
