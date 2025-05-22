@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
@@ -15,6 +15,8 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+
   // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
   const isAuthPage =
     pathname.startsWith("/login") ||
@@ -103,6 +105,14 @@ export default function ClientLayout({
 
     fetchUserData();
   }, [isLogin]); // 의존성 배열에서 setLoginUser와 setNoLoginUser 제거
+
+  // 로그인되지 않은 사용자가 접근 시 리다이렉트
+  useEffect(() => {
+    if (!isLogin && !isAuthPage && !isRootPage) {
+      alert("로그인이 필요한 페이지입니다.");
+      router.push("/login/type");
+    }
+  }, [isLogin, isAuthPage, isRootPage, router]);
 
   if (isLoginUserPending) {
     return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
