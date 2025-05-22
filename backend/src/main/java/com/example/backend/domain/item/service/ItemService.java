@@ -3,6 +3,7 @@ package com.example.backend.domain.item.service;
 import com.example.backend.domain.analysis.service.InventoryAnalysisService;
 import com.example.backend.domain.category.entity.Category;
 import com.example.backend.domain.category.repository.CategoryRepository;
+import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemSearchProjection;
 import com.example.backend.domain.item.entity.Item;
 import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
@@ -175,8 +176,8 @@ public class ItemService {
                 .build();
     }
 
-    public Page<ItemResponseDto> getItemsPagedSorted(Pageable pageable) {
-        return repo.findAllAsDto(Status.ACTIVE, pageable);
+    public Page<ItemLiteResponseDto> getItemsPagedSorted(Pageable pageable) {
+        return repo.findAllAsLiteDto(Status.ACTIVE, pageable);
     }
 
     //비품 검색

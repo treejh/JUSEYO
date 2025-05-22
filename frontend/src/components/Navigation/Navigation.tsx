@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import './Navigation.css';
 
 type NavigationProps = {
-  userRole?: 'user' | 'manager';
+  userRole?: 'ADMIN' | 'MANAGER' | 'USER';
   onPageChange?: (page: string) => void;
   isSidebarCollapsed?: boolean;
   onToggleSidebar?: () => void;
@@ -18,13 +18,12 @@ type NotificationCount = {
 };
 
 export default function Navigation({ 
-  userRole = 'user', 
+  userRole = 'USER', 
   onPageChange,
   isSidebarCollapsed = false,
   onToggleSidebar
 }: NavigationProps) {
   const [notifications, setNotifications] = useState<NotificationCount>({ chat: 0, alert: 0 });
-  const [role, setRole] = useState<'user' | 'manager'>(userRole);
   const pathname = usePathname();
   
   // 현재 경로에 따라 활성 메뉴 설정
@@ -43,6 +42,7 @@ export default function Navigation({
     if (pathname.includes('user-management')) return 'user-management';
     if (pathname.includes('request-history')) return 'request-history';
     if (pathname.includes('inventory-view')) return 'inventory-view';
+    if (pathname.includes('return')) return 'return';
     return '';
   };
 
@@ -51,11 +51,6 @@ export default function Navigation({
   // 알림 개수 설정 메서드
   const setNotificationCount = (type: 'chat' | 'alert', count: number) => {
     setNotifications(prev => ({ ...prev, [type]: count }));
-  };
-
-  // 사용자 역할 변경 메서드
-  const changeRole = (newRole: 'user' | 'manager') => {
-    setRole(newRole);
   };
 
   // 사이드바 접기/펼치기 토글 버튼
@@ -131,7 +126,7 @@ export default function Navigation({
     </div>
   );
 
-  // 매니저 메뉴 렌더링
+  // 매니저/관리자 메뉴 렌더링
   const renderManagerMenu = () => (
     <>
       <div className="menu-section">
@@ -155,6 +150,16 @@ export default function Navigation({
             >
               <span className="menu-icon">📝</span>
               <span>비품 요청</span>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <Link 
+              href="/return" 
+              className={`menu-link ${activeMenu === 'return' ? 'active' : ''}`}
+              onClick={() => onPageChange?.('return')}
+            >
+              <span className="menu-icon">↩️</span>
+              <span>비품 반납</span>
             </Link>
           </li>
           <li className="menu-item">
@@ -189,33 +194,33 @@ export default function Navigation({
               className={`menu-link ${activeMenu === 'page-management' ? 'active' : ''}`}
               onClick={() => onPageChange?.('page-management')}
             >
-              <span className="menu-icon">🏢</span>
+              <span className="menu-icon">📄</span>
               <span>페이지 관리</span>
             </Link>
           </li>
           <li className="menu-item submenu-item">
             <Link 
-              href="/department" 
+              href="/settings/departments" 
               className={`menu-link ${activeMenu === 'department' ? 'active' : ''}`}
               onClick={() => onPageChange?.('department')}
             >
-              <span className="menu-icon">🏬</span>
+              <span className="menu-icon">🏗️</span>
               <span>부서 관리</span>
             </Link>
           </li>
           <li className="menu-item submenu-item">
             <Link 
-              href="/category" 
+              href="/settings/categories" 
               className={`menu-link ${activeMenu === 'category' ? 'active' : ''}`}
               onClick={() => onPageChange?.('category')}
             >
-              <span className="menu-icon">🗂️</span>
+              <span className="menu-icon">📁</span>
               <span>카테고리 관리</span>
             </Link>
           </li>
           <li className="menu-item">
             <Link 
-              href="/user-management" 
+              href="/settings/users" 
               className={`menu-link ${activeMenu === 'user-management' ? 'active' : ''}`}
               onClick={() => onPageChange?.('user-management')}
             >
@@ -231,7 +236,7 @@ export default function Navigation({
   // 일반 사용자 메뉴 렌더링
   const renderUserMenu = () => (
     <div className="menu-section">
-      <h3 className="menu-title">비품 사용</h3>
+      <h3 className="menu-title">비품</h3>
       <ul className="menu-list">
         <li className="menu-item">
           <Link 
@@ -250,7 +255,7 @@ export default function Navigation({
             onClick={() => onPageChange?.('request-history')}
           >
             <span className="menu-icon">📋</span>
-            <span>비품 요청 내역</span>
+            <span>요청 내역</span>
           </Link>
         </li>
         <li className="menu-item">
@@ -259,7 +264,7 @@ export default function Navigation({
             className={`menu-link ${activeMenu === 'inventory-view' ? 'active' : ''}`}
             onClick={() => onPageChange?.('inventory-view')}
           >
-            <span className="menu-icon">🔎</span>
+            <span className="menu-icon">🔍</span>
             <span>비품 조회</span>
           </Link>
         </li>
@@ -287,7 +292,7 @@ export default function Navigation({
 
   return (
     <aside className="juseyo-sidebar">
-      <div className="juseyo-menu-container">
+      <div className={`juseyo-menu-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         {/* 사이드바 접기/펼치기 버튼 */}
         {onToggleSidebar && (
           <div className="sidebar-toggle-container">
@@ -296,7 +301,7 @@ export default function Navigation({
         )}
         
         {renderCommonMenu()}
-        {role === 'manager' ? renderManagerMenu() : renderUserMenu()}
+        {(userRole === 'ADMIN' || userRole === 'MANAGER') ? renderManagerMenu() : renderUserMenu()}
         {renderMainLink()}
       </div>
     </aside>
