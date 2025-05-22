@@ -65,8 +65,11 @@ public class ItemService {
         // 2) 연관 엔티티 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
-        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        Long userId = tokenService.getIdFromToken();
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        ManagementDashboard mgmt = user.getManagementDashboard();
 
         // 3) 엔티티 빌드 및 저장
         Item entity = Item.builder()

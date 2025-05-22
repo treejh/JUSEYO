@@ -1,5 +1,14 @@
-module.exports = {
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    domains: ["example-bucket.s3.ap-northeast-2.amazonaws.com"],
+    // 여기에 본인이 실제 쓰는 S3 버킷 호스트명을 모두 나열하세요.
+    domains: [
+      "example-bucket.s3.ap-northeast-2.amazonaws.com",
+      "juseyo.s3.ap-northeast-2.amazonaws.com",
+      // ...(추가 버킷이 있으면 계속)
+    ],
   },
 };
+
+module.exports = nextConfig;

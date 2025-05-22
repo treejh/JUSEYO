@@ -15,7 +15,6 @@ interface FormState {
   minimumQuantity: number;
   totalQuantity: number;
   availableQuantity: number;
-  serialNumber: string;
   purchaseSource: string;
   location: string;
   isReturnRequired: boolean;
@@ -29,7 +28,6 @@ export default function CreateItemPage() {
     minimumQuantity: 0,
     totalQuantity: 0,
     availableQuantity: 0,
-    serialNumber: "",
     purchaseSource: "",
     location: "",
     isReturnRequired: false,
@@ -38,7 +36,19 @@ export default function CreateItemPage() {
   const [preview, setPreview] = useState<string>("");
   const [categories, setCategories] = useState<Category[]>([]);
 
-  // 이미지 미리보기
+  // --- 카테고리 로드 ---
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories`, {
+      credentials: "include",
+    })
+      .then((res) =>
+        res.ok ? res.json() : Promise.reject("카테고리 로드 실패")
+      )
+      .then((data: Category[]) => setCategories(data))
+      .catch(alert);
+  }, []);
+
+  // --- 이미지 미리보기 ---
   useEffect(() => {
     if (!file) {
       setPreview("");
@@ -49,25 +59,12 @@ export default function CreateItemPage() {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  // 카테고리 로드
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories`, {
-      credentials: "include",
-    })
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject("카테고리 로드 실패")
-      )
-      .then((data: Category[]) => setCategories(data))
-      .catch((err) => alert(err));
-  }, []);
-
-  // input / checkbox / file / select 모두 처리
+  // --- input / select / checkbox / file 공통 핸들러 ---
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, type, value, checked, files } = e.target as HTMLInputElement;
+
     if (type === "file") {
       setFile(files?.[0] ?? null);
     } else if (type === "checkbox") {
@@ -76,29 +73,24 @@ export default function CreateItemPage() {
       setForm((f) => ({
         ...f,
         [name]:
-          type === "number"
-            ? Number(value)
-            : name === "categoryId"
-            ? Number(value)
-            : value,
+          type === "number" || name === "categoryId" ? Number(value) : value,
       }));
     }
   };
 
-  // 폼 제출
+  // --- 폼 제출 ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 유효성 검사
+
+    // 간단 검증
     if (form.totalQuantity < form.minimumQuantity) {
-      alert("총수량은 최소수량 이상이어야 합니다.");
-      return;
+      return alert("총수량은 최소수량 이상이어야 합니다.");
     }
     if (form.availableQuantity > form.totalQuantity) {
-      alert("사용가능수량은 총수량 이하여야 합니다.");
-      return;
+      return alert("사용가능수량은 총수량 이하여야 합니다.");
     }
 
-    // multipart/form-data 로 전송
+    // FormData 로 묶기
     const body = new FormData();
     Object.entries(form).forEach(([k, v]) => body.append(k, String(v)));
     if (file) body.append("image", file);
@@ -109,25 +101,29 @@ export default function CreateItemPage() {
         {
           method: "POST",
           credentials: "include",
-          body,
+          body, // Content-Type 헤더는 자동으로 multipart/form-data; boundary=… 로 설정됩니다
         }
       );
       if (!res.ok) {
         const msg = await res.text();
-        alert(`등록 실패: ${msg}`);
-        return;
+        return alert(`등록 실패: ${msg}`);
       }
+
       alert("신규 비품이 성공적으로 등록되었습니다.");
       router.push("/item/manage");
-    } catch (error: any) {
-      alert(`서버 오류: ${error.message}`);
+    } catch (err: any) {
+      alert(`서버 오류: ${err.message}`);
     }
   };
 
   return (
     <main className="p-6 max-w-2xl mx-auto bg-white rounded shadow">
       <h1 className="text-xl mb-4">신규 비품 등록</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+        // 이 `<form>` 태그에 encType 지정 안 해도 fetch 사용 시 FormData 로 전송됩니다
+      >
         {/* 이미지 업로드 */}
         <div>
           <label className="block mb-1">이미지</label>
@@ -181,7 +177,7 @@ export default function CreateItemPage() {
           </select>
         </div>
 
-        {/* 수량 필드 */}
+        {/* 수량 입력 */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block mb-1">최소수량</label>
@@ -190,8 +186,8 @@ export default function CreateItemPage() {
               type="number"
               min={0}
               onChange={handleChange}
-              className="w-full border rounded px-2 py-1"
               value={form.minimumQuantity}
+              className="w-full border rounded px-2 py-1"
             />
           </div>
           <div>
@@ -201,8 +197,8 @@ export default function CreateItemPage() {
               type="number"
               min={0}
               onChange={handleChange}
-              className="w-full border rounded px-2 py-1"
               value={form.totalQuantity}
+              className="w-full border rounded px-2 py-1"
             />
           </div>
           <div>
@@ -212,52 +208,44 @@ export default function CreateItemPage() {
               type="number"
               min={0}
               onChange={handleChange}
-              className="w-full border rounded px-2 py-1"
               value={form.availableQuantity}
-            />
-          </div>
-          <div>
-            <label className="block mb-1">시리얼번호</label>
-            <input
-              name="serialNumber"
-              type="text"
-              onChange={handleChange}
               className="w-full border rounded px-2 py-1"
-              value={form.serialNumber}
             />
           </div>
         </div>
 
-        {/* 구매처, 위치, 반납필수 여부 */}
+        {/* 구매처 */}
         <div>
           <label className="block mb-1">구매처</label>
           <input
             name="purchaseSource"
             type="text"
             onChange={handleChange}
-            className="w-full border rounded px-2 py-1"
             value={form.purchaseSource}
+            className="w-full border rounded px-2 py-1"
           />
         </div>
 
+        {/* 보관 위치 */}
         <div>
           <label className="block mb-1">보관위치</label>
           <input
             name="location"
             type="text"
             onChange={handleChange}
-            className="w-full border rounded px-2 py-1"
             value={form.location}
+            className="w-full border rounded px-2 py-1"
           />
         </div>
 
+        {/* 반납 필수 여부 */}
         <div className="flex items-center">
           <input
             name="isReturnRequired"
             type="checkbox"
             onChange={handleChange}
-            className="mr-2"
             checked={form.isReturnRequired}
+            className="mr-2"
           />
           <label>반납 필수 여부</label>
         </div>
