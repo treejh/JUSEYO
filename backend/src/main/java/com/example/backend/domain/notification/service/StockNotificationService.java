@@ -12,6 +12,7 @@ import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class StockNotificationService {
     private final UserService userService;
     private final RoleService roleService;
 
+    @Transactional
     public void checkAndNotifyLowStock(String serialNumber, String itemName,
     Long currentQuantity, Long minimumQuantity) {
         // STOCK_SHORTAGE 전략을 가져오고

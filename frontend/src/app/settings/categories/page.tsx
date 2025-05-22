@@ -4,7 +4,6 @@ import Link from "next/link";
 import { FC, useState } from "react";
 import { HiArchiveBox } from "react-icons/hi2";
 
-
 interface CategoryItem {
   id: number;
   name: string;

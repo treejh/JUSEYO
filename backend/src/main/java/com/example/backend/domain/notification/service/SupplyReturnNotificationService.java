@@ -12,6 +12,7 @@ import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class SupplyReturnNotificationService {
     private final UserService userService;
     private final RoleService roleService;
 
+    @Transactional
     public void notifySupplyReturn(String itemName, Long itemQuantity, String returnerName) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_RETURN);
 
