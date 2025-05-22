@@ -106,17 +106,21 @@ export default function ClientLayout({
     fetchUserData();
   }, [isLogin]); // 의존성 배열에서 setLoginUser와 setNoLoginUser 제거
 
-  // // 로그인되지 않은 사용자가 접근 시 리다이렉트
-  // useEffect(() => {
-  //   if (!isLogin && !isAuthPage && !isRootPage) {
-  //     alert("로그인이 필요한 페이지입니다.");
-  //     router.push("/login/type");
-  //   }
-  // }, [isLogin, isAuthPage, isRootPage, router]);
+  // 로그인되지 않은 사용자가 접근 시 리다이렉트
+  useEffect(() => {
+    // 로그인 여부 확인 중일 때는 리다이렉트하지 않음
+    if (isLoginUserPending) return;
 
-  // if (isLoginUserPending) {
-  //   return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
-  // }
+    // 로그인되지 않은 사용자가 인증이 필요한 페이지에 접근하려고 할 때 리다이렉트
+    if (!isLogin && !isAuthPage && !isRootPage) {
+      alert("로그인이 필요한 페이지입니다.");
+      router.push("/login/type");
+    }
+  }, [isLogin, isAuthPage, isRootPage, isLoginUserPending, router]);
+
+  if (isLoginUserPending) {
+    return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
+  }
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
@@ -126,23 +130,39 @@ export default function ClientLayout({
         } bg-white`}
       >
         {!isAuthPage && <Header />}
-        <main className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}>
-          <div className="flex relative">
+        <main
+          className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
+        >
+          <div className="flex">
             {/* 네비게이션 사이드바 */}
             {!shouldHideNav && (
-              <Navigation 
-                userRole={loginUser?.role?.replace('ROLE_', '') as 'ADMIN' | 'MANAGER' | 'USER'}
-                isSidebarCollapsed={sidebarCollapsed}
-                onToggleSidebar={toggleSidebar}
-              />
-
+              <div
+                className={`juseyo-sidebar ${
+                  sidebarCollapsed ? "sidebar-collapsed" : ""
+                }`}
+              >
+                <Navigation
+                  userRole={
+                    loginUser?.role?.replace("ROLE_", "") as
+                      | "ADMIN"
+                      | "MANAGER"
+                      | "USER"
+                  }
+                  isSidebarCollapsed={sidebarCollapsed}
+                  onToggleSidebar={toggleSidebar}
+                />
+              </div>
             )}
 
             {/* 메인 콘텐츠 */}
-            <div 
-              className={`flex-1 min-h-screen p-6 transition-all duration-300 ease-in-out ${
-                !shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''
-              }`}
+            <div
+              className={`flex-1 ${
+                !shouldHideNav
+                  ? sidebarCollapsed
+                    ? "ml-[80px]"
+                    : "ml-[280px]"
+                  : ""
+              } transition-all duration-300`}
             >
               {children}
             </div>
