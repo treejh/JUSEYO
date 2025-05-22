@@ -9,6 +9,8 @@ import com.example.backend.domain.inventory.inventoryOut.entity.InventoryOut;
 import com.example.backend.domain.inventory.inventoryOut.repository.InventoryOutRepository;
 import com.example.backend.domain.item.entity.Item;
 import com.example.backend.domain.item.repository.ItemRepository;
+import com.example.backend.domain.itemInstance.repository.ItemInstanceRepository;
+import com.example.backend.enums.Outbound;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -29,6 +31,7 @@ import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 성능 최적화
 public class InventoryAnalysisService {
 
     private final ItemRepository itemRepository;
@@ -36,16 +39,19 @@ public class InventoryAnalysisService {
     private final InventoryInRepository inventoryInRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
+    private final ItemInstanceRepository itemInstanceRepository;
+
     // Redis에 저장할 캐시 키를 상수로 정의합니다.
     private static final String CATEGORY_SUMMARY_KEY = "category_summary"; // 카테고리 분석 결과 캐시 키
     private static final String ITEM_USAGE_KEY = "item_usage_frequency"; // 품목 사용 빈도 저장용 ZSet 키
+    private static final String GLOBAL_OUTBOUND_KEY = "item_instances:outbound_count"; //outbound별 아이템 인스턴스 갯수 결과 키
 
     /**
      * 📊 카테고리별 비품 수량 및 종류 수 계산
      * - Redis에 30분 동안 캐싱됨
      * - 없으면 DB에서 계산 후 캐시에 저장
      */
-    @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 성능 최적화
+
     public Map<String, CategorySummaryDTO> getCategorySummary() {
 
         // Redis에 이미 저장된 캐시가 있는지 확인
@@ -96,7 +102,7 @@ public class InventoryAnalysisService {
      * 📈 품목 사용 빈도 TOP N 조회
      * - 가장 많이 출고된 순서로 상위 품목을 조회
      */
-    @Transactional(readOnly = true)
+
     public List<ItemUsageFrequencyDTO> getItemUsageRanking(int topN) {
         // Redis에서 점수가 높은 순으로 ZSet 항목을 조회
         Set<ZSetOperations.TypedTuple<Object>> zset =
@@ -127,7 +133,7 @@ public class InventoryAnalysisService {
      * 📅 월별 입출고 수량 계산
      * - 연도(year)를 받아 해당 연도의 1월부터 12월까지 입출고 수량을 월별로 집계합니다.
      */
-    @Transactional(readOnly = true)
+
     public List<MonthlyInventoryDTO> getMonthlyInventorySummary(int year) {
 
         // 검색 범위: 해당 연도의 1월 1일 00:00:00 ~ 12월 31일 23:59:59
@@ -160,5 +166,48 @@ public class InventoryAnalysisService {
                             outboundMap.getOrDefault(ym, 0L) // 출고 수량이 없으면 0
                     );
                 }).collect(Collectors.toList());
+    }
+
+    /**
+     * 전체 아이템 인스턴스 Outbound 통계
+     * - 모든 아이템 인스턴스에 대해 Outbound 상태(AVAILABLE, LEND 등)별 개수를 반환합니다. 결과는 Redis 캐시를 사용하며 약 10분간 유지됩니다.
+     */
+    // ✅ Redis 캐시 조회
+    public Map<Outbound, Long> getCachedOutboundSummary() {
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(GLOBAL_OUTBOUND_KEY);
+        if (entries == null || entries.isEmpty()) return null;
+
+        return entries.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> Outbound.valueOf((String) e.getKey()),
+                        e -> Long.parseLong((String) e.getValue())
+                ));
+    }
+
+    // ✅ DB에서 조회 후 Redis 저장
+    public Map<Outbound, Long> loadAndCacheOutboundSummary() {
+        List<Object[]> results = itemInstanceRepository.countAllByOutboundGroup();
+
+        Map<Outbound, Long> mapped = results.stream()
+                .collect(Collectors.toMap(
+                        r -> (Outbound) r[0],
+                        r -> (Long) r[1]
+                ));
+
+        Map<String, String> redisMap = mapped.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> e.getKey().name(),
+                        e -> String.valueOf(e.getValue())
+                ));
+
+        redisTemplate.opsForHash().putAll(GLOBAL_OUTBOUND_KEY, redisMap);
+        redisTemplate.expire(GLOBAL_OUTBOUND_KEY, Duration.ofMinutes(10));
+
+        return mapped;
+    }
+
+    // ✅ 캐시 삭제 (예: 상태 변경 시 호출)
+    public void clearGlobalOutboundCache() {
+        redisTemplate.delete(GLOBAL_OUTBOUND_KEY);
     }
 }

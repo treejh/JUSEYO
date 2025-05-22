@@ -1,6 +1,7 @@
 package com.example.backend.domain.item.controller;
 
 import com.example.backend.domain.item.dto.request.ItemRequestDto;
+import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemResponseDto;
 import com.example.backend.domain.item.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,7 +62,7 @@ public class ItemController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
     @Operation(summary = "비품 페이징 목록 조회", description = "총 수량 기준으로 비품을 정렬하여 페이지 단위로 조회합니다.")
     @GetMapping
-    public ResponseEntity<Page<ItemResponseDto>> getPagedItems(
+    public ResponseEntity<Page<ItemLiteResponseDto>> getPagedItems(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "asc") String sort) {

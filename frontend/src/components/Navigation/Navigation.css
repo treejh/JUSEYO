@@ -1,0 +1,408 @@
+/* navigation.css - Juseyo 네비게이션 컴포넌트 스타일 */
+
+/* 사이드바 접기/펼치기 버튼 컨테이너 */
+.sidebar-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 1.25rem 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.collapse-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    width: 32px;
+    height: 32px;
+    background-color: #f1f5f9;
+    color: #6b7280;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.collapse-button:hover {
+    background-color: #e2e8f0;
+    color: #4c6ef5;
+}
+
+.sidebar-collapsed .collapse-button {
+    padding: 0.5rem;
+    justify-content: center;
+    background-color: rgba(236, 240, 253, 0.8);
+    color: #4c6ef5;
+    border-radius: 8px;
+    margin: 0 auto;
+}
+
+.sidebar-collapsed .sidebar-toggle-container {
+    justify-content: center;
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+}
+
+.sidebar-collapsed .collapse-button span {
+    display: none;
+}
+
+.juseyo-sidebar {
+    width: 280px;
+    background-color: #f8f9fb;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px);
+    position: fixed;
+    top: 60px;
+    left: 0;
+    transition: width 0.3s ease;
+    overflow: hidden;
+    z-index: 50;
+}
+
+/* 메뉴 스크롤 영역을 제어하기 위한 컨테이너 */
+.juseyo-menu-container {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 24px 0 20px 0;
+}
+
+/* Chrome, Safari, Opera에서 스크롤바 숨기기 */
+.juseyo-menu-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* 네비게이션 섹션 */
+.menu-section {
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+/* 마지막 메뉴 섹션은 아래 여백 없애기 */
+.menu-section:last-child {
+    margin-bottom: 0;
+}
+
+.menu-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #8c919b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 1rem 0.75rem;
+}
+
+.menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-item {
+    margin-bottom: 4px;
+}
+
+/* 하위 메뉴 스타일 */
+.submenu-item {
+    margin-left: 1.5rem;
+    position: relative;
+}
+
+.submenu-item::before {
+    content: '';
+    position: absolute;
+    left: -0.85rem;
+    top: 50%;
+    width: 0.6rem;
+    height: 1px;
+    background-color: #d1d5db;
+}
+
+.menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    text-decoration: none;
+    color: #4b5563;
+    font-weight: 500;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.menu-link:hover {
+    background-color: #edf2ff;
+    color: #4c6ef5;
+}
+
+.menu-link.active {
+    background-color: #edf2ff;
+    color: #4c6ef5;
+    font-weight: 600;
+}
+
+.menu-icon {
+    margin-right: 1rem;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+.menu-link.active .menu-icon {
+    opacity: 1;
+}
+
+/* 알림 배지 */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-left: auto;
+}
+
+.badge-red {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.badge-blue {
+    background-color: #eef2ff;
+    color: #4c6ef5;
+}
+
+/* 메인으로 돌아가기 링크 스타일 */
+.main-link-section {
+    margin-top: auto;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f8f9fb;
+    padding: 1rem;
+}
+
+.main-link-section .menu-list {
+    display: flex;
+    justify-content: center;
+}
+
+.main-link-section .menu-item {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.main-link-section .menu-link {
+    padding: 0.8rem;
+    color: #333;
+    font-weight: 500;
+    border-radius: 8px;
+    background-color: rgba(249, 115, 22, 0.05);
+    transition: all 0.15s ease;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+}
+
+.main-link-section .menu-link:hover {
+    background-color: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+}
+
+.main-link-section .menu-icon {
+    color: #f97316;
+    margin-right: 0.75rem;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 반응형 레이아웃 */
+@media (max-width: 768px) {
+    .juseyo-sidebar {
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        height: auto;
+        z-index: 100;
+        flex-direction: row;
+        overflow-x: auto;
+        border-right: none;
+        border-top: 1px solid #e5e7eb;
+        background-color: rgba(248, 249, 251, 0.95);
+        backdrop-filter: blur(8px);
+    }
+    
+    .menu-section {
+        padding: 0.9rem;
+    }
+    
+    .menu-title {
+        display: none;
+    }
+    
+    .menu-list {
+        display: flex;
+    }
+    
+    .menu-item {
+        margin-bottom: 0;
+        margin-right: 0.7rem;
+    }
+    
+    .menu-link {
+        flex-direction: column;
+        padding: 0.6rem;
+        min-width: 64px;
+        text-align: center;
+    }
+    
+    .menu-icon {
+        margin-right: 0;
+        margin-bottom: 0.4rem;
+        width: 24px;
+        height: 24px;
+        font-size: 1.1rem;
+    }
+    
+    .badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: translate(40%, -40%);
+        font-weight: 700;
+    }
+
+    /* 모바일 접힌 모드에서는 사이드바 접기 버튼 숨김 */
+    .sidebar-toggle-container {
+        display: none;
+    }
+
+    .main-link-section {
+        position: static;
+        box-shadow: none;
+        width: auto;
+        border-top: none;
+        border-left: 1px solid #e5e7eb;
+        padding: 0.6rem;
+        margin-top: 0;
+    }
+    
+    .main-link-section .menu-link {
+        padding: 0.6rem;
+        color: #222;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 0.8rem;
+        min-width: 64px;
+    }
+    
+    .main-link-section .menu-icon {
+        color: #f97316;
+        margin-right: 0;
+        margin-bottom: 0.4rem;
+        width: 24px;
+        height: 24px;
+        font-size: 1.1rem;
+    }
+}
+
+/* 접힌 모드용 스타일 */
+.sidebar-collapsed .juseyo-sidebar {
+    width: 80px;
+}
+
+.sidebar-collapsed .menu-title {
+    display: none;
+}
+
+.sidebar-collapsed .menu-link {
+    padding: 0.7rem;
+    justify-content: center;
+}
+
+.sidebar-collapsed .menu-link span:not(.menu-icon) {
+    display: none;
+}
+
+.sidebar-collapsed .menu-icon {
+    margin-right: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.sidebar-collapsed .badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(30%, -30%);
+    padding: 0.15rem 0.4rem;
+    font-size: 0.7rem;
+}
+
+.sidebar-collapsed .menu-link.active {
+    background-color: #edf2ff;
+}
+
+/* 접힌 상태에서 하위메뉴 스타일 제거 */
+.sidebar-collapsed .submenu-item {
+    margin-left: 0;
+}
+
+.sidebar-collapsed .submenu-item::before {
+    display: none;
+}
+
+/* 접힌 상태에서 메인 링크 섹션 스타일 */
+.sidebar-collapsed .main-link-section {
+    padding: 0.5rem;
+}
+
+.sidebar-collapsed .main-link-section .menu-link {
+    padding: 0.7rem;
+    justify-content: center;
+}
+
+.sidebar-collapsed .main-link-section .menu-icon {
+    margin-right: 0;
+}
+
+/* 호버 시 툴팁 스타일 */
+.sidebar-collapsed .menu-link {
+    position: relative;
+}
+
+.sidebar-collapsed .menu-link:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    margin-left: 10px;
+    z-index: 100;
+} 
