@@ -127,7 +127,7 @@ export default function ClientLayout({
 
             {/* 메인 콘텐츠 */}
             <div 
-              className={`flex-1 min-h-screen p-6 transition-all duration-300 ease-in-out ${
+              className={`flex-1 min-h-screen transition-all duration-300 ease-in-out ${
                 !shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''
               }`}
             >
