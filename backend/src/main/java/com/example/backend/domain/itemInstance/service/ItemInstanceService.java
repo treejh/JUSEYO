@@ -1,5 +1,6 @@
 package com.example.backend.domain.itemInstance.service;
 
+import com.example.backend.analysis.service.InventoryAnalysisService;
 import com.example.backend.enums.Outbound;
 import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
@@ -36,6 +37,7 @@ public class ItemInstanceService {
     private final ItemInstanceRepository instanceRepo;
     private final UserRepository userRepo;
     private final TokenService tokenService;
+    private final InventoryAnalysisService inventoryAnalysisService;
 
     @Transactional
     public ItemInstanceResponseDto createInstance(CreateItemInstanceRequestDto dto) {
@@ -80,7 +82,9 @@ public class ItemInstanceService {
                 .build();
 
         ItemInstance saved = instanceRepo.save(inst);
+        inventoryAnalysisService.clearGlobalOutboundCache();
         return map(saved);
+
     }
 
     @Transactional(readOnly = true)
@@ -122,6 +126,7 @@ public class ItemInstanceService {
         inst.setOutbound(dto.getOutbound());
         inst.setFinalImage(dto.getFinalImage());
         ItemInstance saved = instanceRepo.save(inst);
+        inventoryAnalysisService.clearGlobalOutboundCache();
         return map(saved);
     }
 
