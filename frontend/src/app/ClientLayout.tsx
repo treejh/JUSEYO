@@ -54,9 +54,6 @@ export default function ClientLayout({
       return;
     }
 
-    console.log("API URL:", API_URL); // API URL 로깅
-
-    // 사용자 정보 가져오기
     const fetchUserData = async () => {
       try {
         const response = await fetch(`${API_URL}/api/v1/users/token`, {
@@ -95,62 +92,6 @@ export default function ClientLayout({
           departmentName: userData.departmentName ?? "",
           role: userData.role ?? "user",
         });
-
-        // SSE 연결 시도
-        let retryCount = 0;
-        const maxRetries = 3;
-
-        const connectSSE = async () => {
-          if (retryCount >= maxRetries) {
-            console.error("SSE 연결 최대 재시도 횟수 초과");
-            return;
-          }
-
-          try {
-            console.log("SSE 연결 시도..."); // 연결 시도 로깅
-            const eventSource = new EventSource(
-              `${API_URL}/api/v1/notifications/stream`,
-              {
-                withCredentials: true,
-              }
-            );
-
-            eventSource.onmessage = (event) => {
-              try {
-                const data = JSON.parse(event.data);
-                console.log(`🔔 [${data.type || "message"}] 알림 수신:`, data);
-
-                useNotificationStore.getState().addNotification({
-                  id: Number(data.id),
-                  message: data.message,
-                  type: data.type,
-                  createdAt: data.createdAt,
-                  read: false,
-                });
-              } catch (e) {
-                console.log(`💬 [message] 텍스트 메시지:`, event.data);
-              }
-            };
-
-            eventSource.onerror = (error) => {
-              console.error("SSE 연결 오류:", error);
-              eventSource.close();
-              retryCount++;
-              setTimeout(connectSSE, 3000);
-            };
-
-            return () => {
-              console.log("SSE 연결 종료");
-              eventSource.close();
-            };
-          } catch (error) {
-            console.error("SSE 연결 실패:", error);
-            retryCount++;
-            setTimeout(connectSSE, 3000);
-          }
-        };
-
-        connectSSE();
       } catch (error) {
         console.error("사용자 정보 조회 실패:", error);
         setNoLoginUser();
@@ -158,7 +99,7 @@ export default function ClientLayout({
     };
 
     fetchUserData();
-  }, [setLoginUser, setNoLoginUser]);
+  }, [isLogin]); // 의존성 배열에서 setLoginUser와 setNoLoginUser 제거
 
   if (isLoginUserPending) {
     return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
