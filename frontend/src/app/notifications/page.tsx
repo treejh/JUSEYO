@@ -155,6 +155,26 @@ export default function NotificationsPage() {
     }
   };
 
+  const handleDeleteNotification = async (notificationId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/delete?notificationId=${notificationId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("알림 삭제에 실패했습니다.");
+      }
+
+      fetchNotifications();
+    } catch (err) {
+      setError("알림 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   const filteredNotifications = notifications.filter((notification) => {
     if (showUnreadOnly && notification.readStatus) return false;
     if (
@@ -208,20 +228,12 @@ export default function NotificationsPage() {
               전체 읽음 처리
             </button>
             {selectedNotifications.length > 0 && (
-              <>
-                <button
-                  onClick={handleMarkSelectedAsRead}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                >
-                  선택 읽음 처리
-                </button>
-                <button
-                  onClick={handleDeleteSelected}
-                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                >
-                  선택 삭제 ({selectedNotifications.length})
-                </button>
-              </>
+              <button
+                onClick={handleMarkSelectedAsRead}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
+                선택 읽음 처리
+              </button>
             )}
           </div>
         </div>
@@ -309,14 +321,12 @@ export default function NotificationsPage() {
                             className={`px-2 py-1 rounded text-sm ${
                               NOTIFICATION_TYPE_LABELS[
                                 notification.notificationType
-                              ].color
+                              ]?.color || "bg-gray-100 text-gray-800"
                             }`}
                           >
-                            {
-                              NOTIFICATION_TYPE_LABELS[
-                                notification.notificationType
-                              ].label
-                            }
+                            {NOTIFICATION_TYPE_LABELS[
+                              notification.notificationType
+                            ]?.label || "알림"}
                           </span>
                           {!notification.readStatus && (
                             <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
@@ -340,8 +350,10 @@ export default function NotificationsPage() {
                         </p>
                       </div>
                       <button
-                        onClick={() => handleCheckboxChange(notification.id)}
-                        className="text-gray-400 hover:text-gray-600"
+                        onClick={() =>
+                          handleDeleteNotification(notification.id)
+                        }
+                        className="text-gray-400 hover:text-red-600 transition-colors"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
