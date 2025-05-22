@@ -164,20 +164,22 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <div className={`flex flex-col ${isAuthPage ? "h-screen w-screen" : "min-h-screen"} bg-white`}>
         {!isAuthPage && <Header />}
         <main className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}>
-          <div className="flex">
+          <div className="flex relative">
             {/* 네비게이션 사이드바 */}
             {!shouldHideNav && (
-              <div className={`juseyo-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-                <Navigation 
-                  userRole={loginUser?.role?.replace('ROLE_', '') as 'ADMIN' | 'MANAGER' | 'USER'}
-                  isSidebarCollapsed={sidebarCollapsed}
-                  onToggleSidebar={toggleSidebar}
-                />
-              </div>
+              <Navigation 
+                userRole={loginUser?.role?.replace('ROLE_', '') as 'ADMIN' | 'MANAGER' | 'USER'}
+                isSidebarCollapsed={sidebarCollapsed}
+                onToggleSidebar={toggleSidebar}
+              />
             )}
             
             {/* 메인 콘텐츠 */}
-            <div className={`flex-1 ${!shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''} transition-all duration-300`}>
+            <div 
+              className={`flex-1 min-h-screen p-6 transition-all duration-300 ease-in-out ${
+                !shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''
+              }`}
+            >
               {children}
             </div>
           </div>
