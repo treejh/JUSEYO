@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Footer } from "@/components/Footer";
 
 // particles.js의 타입 선언 추가
 declare global {
@@ -305,9 +306,9 @@ export default function Home() {
       )}
 
       {/* 메인 컨텐츠 */}
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-col min-h-screen">
         {/* 상단 섹션 - 비대칭 레이아웃 */}
-        <section className="min-h-screen flex flex-col md:flex-row items-center relative">
+        <section className="flex-grow flex flex-col md:flex-row items-center relative">
           {/* 왼쪽 콘텐츠 - 비대칭 디자인 */}
           <div className="w-full md:w-2/3 px-8 py-16 md:py-0 md:pl-20 md:pr-12 flex flex-col justify-center min-h-[50vh] md:min-h-screen z-10">
             <motion.div
@@ -348,7 +349,7 @@ export default function Home() {
                     </p>
                     <p className="text-slate-600">
                       <span className="font-medium text-slate-800">
-                        대시보드:
+                        관리자 페이지:
                       </span>{" "}
                       {loginUser.managementDashboardName || "없음"}
                     </p>
@@ -374,15 +375,43 @@ export default function Home() {
                 {isLogin ? (
                   <button
                     onClick={() =>
-                      !loginUser.managementDashboardName && loginUser.role !== 'ROLE_ADMIN'
-                        ? router.push('/admin/request')  // 관리자 페이지 생성 페이지로 이동
-                        : router.push('/admin/dashboard')  // 기존 대시보드로 이동
+                      !loginUser.managementDashboardName
+                        ? router.push('/admin/request')
+                        : router.push('/dashboard')
                     }
-                    className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 group"
                   >
-                    {!loginUser.managementDashboardName && loginUser.role !== 'ROLE_ADMIN'
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      />
+                    </svg>
+                    {!loginUser.managementDashboardName 
                       ? "관리자 페이지 생성"
                       : "관리자 페이지 접속"}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 ml-2 transform transition-transform group-hover:translate-x-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </button>
                 ) : (
                   <div className="flex flex-wrap gap-4">
@@ -539,6 +568,7 @@ export default function Home() {
             </button>
           </div>
         </section>
+        <Footer />
       </div>
     </div>
   );
