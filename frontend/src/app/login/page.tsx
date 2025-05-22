@@ -58,7 +58,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full h-screen bg-white flex items-center justify-center">
+    <div className="w-full h-screen bg-white flex items-center justify-center gap-x-50">
       {/* 왼쪽 콘텐츠 */}
       <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center ">
         <div className="pl-0">
