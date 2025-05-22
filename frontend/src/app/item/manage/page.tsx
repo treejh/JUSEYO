@@ -102,6 +102,12 @@ export default function AllItemsPage() {
               >
                 돌아가기
               </Link>
+              <Link
+                href="/item/manage/create"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                비품 생성
+              </Link>
             </div>
           </div>
         </div>
