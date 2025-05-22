@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
-// User type
+// 로그인 유저 타입
 interface CustomUser {
   username: string;
   departmentName: string;
   [key: string]: any;
 }
 
+// 자동완성용 아이템 타입
 interface Item {
   id: number;
   name: string;
@@ -21,41 +22,44 @@ export default function SupplyRequestCreatePage() {
   const router = useRouter();
   const { loginUser, isLogin } = useGlobalLoginUser();
 
-  // 로그인 여부 확인 후 리디렉션
+  // 로그인 체크 및 리디렉트
   useEffect(() => {
     if (!isLogin) router.push("/login");
   }, [isLogin, router]);
   if (!isLogin) return null;
 
-  const user = loginUser as unknown as CustomUser;
-  const today = new Date().toISOString().slice(0, 10);
+  const user = loginUser as CustomUser;
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
   // 폼 상태
   const [productName, setProductName] = useState<string>("");
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [rental, setRental] = useState<boolean>(false);
-  const [useDate, setUseDate] = useState<string>(today);
-  const [returnDate, setReturnDate] = useState<string>(today);
+  const [useDate, setUseDate] = useState<string>(
+    new Date().toISOString().slice(0, 10)
+  );
+  const [returnDate, setReturnDate] = useState<string>(
+    new Date().toISOString().slice(0, 10)
+  );
   const [purpose, setPurpose] = useState<string>("");
 
   // 자동완성 상태
   const [items, setItems] = useState<Item[]>([]);
-  const [filtered, setFiltered] = useState<string[]>([]);
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // 아이템 목록 로드
   useEffect(() => {
-    fetch(`${API_BASE}/api/v1/items`, { credentials: "include" })
+    fetch(`${API_BASE}/api/v1/items?status=AVAILABLE&page=0&size=100`, {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((data) => {
-        const list = Array.isArray(data) ? data : data.content ?? [];
+        const list: any[] = Array.isArray(data) ? data : data.content ?? [];
         setItems(
-          list.map((i: any) => ({
-            id: i.id,
-            name: i.name || i.productName,
-          }))
+          list.map((i) => ({ id: i.id, name: i.name || i.productName }))
         );
       })
       .catch(() => setItems([]));
@@ -63,7 +67,7 @@ export default function SupplyRequestCreatePage() {
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
+    const onClick = (e: MouseEvent) => {
       if (
         wrapperRef.current &&
         !wrapperRef.current.contains(e.target as Node)
@@ -71,32 +75,32 @@ export default function SupplyRequestCreatePage() {
         setShowDropdown(false);
       }
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const changeQuantity = (delta: number) =>
-    setQuantity((prev) => Math.max(1, prev + delta));
-
+  // 자동완성 입력 핸들러
   const handleProductChange = (val: string) => {
     setProductName(val);
-    if (val.trim()) {
-      const f = items.filter((i) =>
-        i.name.toLowerCase().includes(val.toLowerCase())
-      );
-      setFiltered(f.map((i) => i.name));
-      setShowDropdown(f.length > 0);
-    } else {
-      setFiltered([]);
+    setSelectedItemId(null);
+    if (!val.trim()) {
+      setFilteredItems([]);
       setShowDropdown(false);
+      return;
     }
+    const filtered = items.filter((i) =>
+      i.name.toLowerCase().includes(val.toLowerCase())
+    );
+    setFilteredItems(filtered);
+    setShowDropdown(filtered.length > 0);
   };
 
+  // 제출 핸들러
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     // 유효성 검사
-    if (!productName.trim()) {
+    if (selectedItemId === null) {
       alert("비품을 선택하세요.");
       return;
     }
@@ -109,35 +113,30 @@ export default function SupplyRequestCreatePage() {
       return;
     }
 
-    // API 요청 payload 구성
     const payload = {
-      itemId: items.find((i) => i.name === productName)?.id, // 아이템 ID 찾기
+      itemId: selectedItemId,
       quantity,
       rental,
-      returnDate: rental ? returnDate : undefined,
+      useDate: `${useDate}T00:00:00`,
+      returnDate: rental ? `${returnDate}T00:00:00` : undefined,
       purpose: purpose.trim(),
     };
-
-    console.log("POST", payload);
 
     try {
       const res = await fetch(`${API_BASE}/api/v1/supply-requests`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!res.ok) {
-        const txt = await res.text();
-        console.error("요청 실패", res.status, txt);
-        throw new Error(txt || "요청 실패");
+        const text = await res.text();
+        throw new Error(text || `요청 실패 (${res.status})`);
       }
-
       alert("비품 요청이 등록되었습니다.");
       router.push("/item/supplyrequest/list");
-    } catch (err) {
-      alert((err as Error).message);
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
@@ -166,26 +165,9 @@ export default function SupplyRequestCreatePage() {
                   className="w-full px-4 py-2 border rounded-lg bg-gray-50"
                 />
               </div>
-              <div>
-                <label className="block mb-2 text-gray-700">요청 일자</label>
-                <input
-                  type="date"
-                  value={useDate}
-                  onChange={(e) => setUseDate(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block mb-2 text-gray-700">요청 유형</label>
-                <input
-                  type="text"
-                  value="신규 요청"
-                  disabled
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-50"
-                />
-              </div>
             </div>
           </section>
+
           {/* 비품 정보 */}
           <section ref={wrapperRef}>
             <h2 className="text-xl font-semibold mb-4">비품 정보</h2>
@@ -201,27 +183,29 @@ export default function SupplyRequestCreatePage() {
                 />
                 {showDropdown && (
                   <ul className="absolute w-full bg-white border rounded-lg max-h-48 overflow-auto z-10 p-0 mt-1">
-                    {filtered.map((i) => (
+                    {filteredItems.map((item) => (
                       <li
-                        key={i}
+                        key={item.id}
                         className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                         onClick={() => {
-                          setProductName(i);
+                          setProductName(item.name);
+                          setSelectedItemId(item.id);
                           setShowDropdown(false);
                         }}
                       >
-                        {i}
+                        {item.name}
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
+
               <div>
                 <label className="block mb-2 text-gray-700">수량</label>
                 <div className="inline-flex items-center space-x-2">
                   <button
                     type="button"
-                    onClick={() => changeQuantity(-1)}
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     className="w-10 h-10 border rounded-lg"
                   >
                     -
@@ -237,16 +221,17 @@ export default function SupplyRequestCreatePage() {
                   />
                   <button
                     type="button"
-                    onClick={() => changeQuantity(1)}
+                    onClick={() => setQuantity((q) => q + 1)}
                     className="w-10 h-10 border rounded-lg"
                   >
                     +
                   </button>
                 </div>
               </div>
+
               <div>
                 <label className="block mb-2 text-gray-700">대여 여부</label>
-                <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-4">
                   <label>
                     <input
                       type="radio"
@@ -267,6 +252,7 @@ export default function SupplyRequestCreatePage() {
                   </label>
                 </div>
               </div>
+
               {rental && (
                 <div>
                   <label className="block mb-2 text-gray-700">반납 일자</label>
@@ -280,6 +266,7 @@ export default function SupplyRequestCreatePage() {
               )}
             </div>
           </section>
+
           {/* 요청 사유 */}
           <section>
             <h2 className="text-xl font-semibold mb-4">요청 사유</h2>
@@ -290,6 +277,7 @@ export default function SupplyRequestCreatePage() {
               className="w-full px-4 py-3 h-40 border rounded-lg resize-none"
             />
           </section>
+
           <div className="text-center">
             <button
               type="submit"
