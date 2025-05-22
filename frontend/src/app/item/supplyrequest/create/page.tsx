@@ -5,13 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
-// CSRF response type
-interface CsrfResponse {
-  token: string;
-  parameterName: string;
-  headerName: string;
-}
-
 // User type
 interface CustomUser {
   username: string;
@@ -19,11 +12,16 @@ interface CustomUser {
   [key: string]: any;
 }
 
+interface Item {
+  id: number;
+  name: string;
+}
+
 export default function SupplyRequestCreatePage() {
   const router = useRouter();
   const { loginUser, isLogin } = useGlobalLoginUser();
 
-  // Redirect if not logged in
+  // 로그인 여부 확인 후 리디렉션
   useEffect(() => {
     if (!isLogin) router.push("/login");
   }, [isLogin, router]);
@@ -33,7 +31,7 @@ export default function SupplyRequestCreatePage() {
   const today = new Date().toISOString().slice(0, 10);
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-  // Form state
+  // 폼 상태
   const [productName, setProductName] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
   const [rental, setRental] = useState<boolean>(false);
@@ -41,24 +39,29 @@ export default function SupplyRequestCreatePage() {
   const [returnDate, setReturnDate] = useState<string>(today);
   const [purpose, setPurpose] = useState<string>("");
 
-  // Autocomplete state
-  const [items, setItems] = useState<string[]>([]);
+  // 자동완성 상태
+  const [items, setItems] = useState<Item[]>([]);
   const [filtered, setFiltered] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Load items for autocomplete
+  // 아이템 목록 로드
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/items`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         const list = Array.isArray(data) ? data : data.content ?? [];
-        setItems(list.map((i: any) => i.name || i.productName));
+        setItems(
+          list.map((i: any) => ({
+            id: i.id,
+            name: i.name || i.productName,
+          }))
+        );
       })
       .catch(() => setItems([]));
   }, [API_BASE]);
 
-  // Close dropdown on outside click
+  // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (
@@ -79,9 +82,9 @@ export default function SupplyRequestCreatePage() {
     setProductName(val);
     if (val.trim()) {
       const f = items.filter((i) =>
-        i.toLowerCase().includes(val.toLowerCase())
+        i.name.toLowerCase().includes(val.toLowerCase())
       );
-      setFiltered(f);
+      setFiltered(f.map((i) => i.name));
       setShowDropdown(f.length > 0);
     } else {
       setFiltered([]);
@@ -89,42 +92,52 @@ export default function SupplyRequestCreatePage() {
     }
   };
 
-  // Fetch CSRF token from backend
-  const fetchCsrfToken = async (): Promise<CsrfResponse> => {
-    const res = await fetch(`${API_BASE}/csrf`, { credentials: "include" });
-    if (!res.ok) throw new Error("CSRF 토큰을 가져오지 못했습니다.");
-    return res.json();
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    // 유효성 검사
+    if (!productName.trim()) {
+      alert("비품을 선택하세요.");
+      return;
+    }
+    if (rental && !returnDate) {
+      alert("대여 시 반납 날짜를 입력하세요.");
+      return;
+    }
+    if (!purpose.trim()) {
+      alert("사유를 입력하세요.");
+      return;
+    }
+
+    // API 요청 payload 구성
     const payload = {
-      productName,
+      itemId: items.find((i) => i.name === productName)?.id, // 아이템 ID 찾기
       quantity,
       rental,
-      useDate,
-      returnDate: rental ? returnDate : null,
-      purpose,
+      returnDate: rental ? returnDate : undefined,
+      purpose: purpose.trim(),
     };
+
+    console.log("POST", payload);
+
     try {
-      const { token, headerName } = await fetchCsrfToken();
       const res = await fetch(`${API_BASE}/api/v1/supply-requests`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          [headerName]: token,
-        },
         body: JSON.stringify(payload),
       });
+
       if (!res.ok) {
         const txt = await res.text();
-        throw new Error(`생성 실패 (${res.status}): ${txt.trim()}`);
+        console.error("요청 실패", res.status, txt);
+        throw new Error(txt || "요청 실패");
       }
+
+      alert("비품 요청이 등록되었습니다.");
       router.push("/item/supplyrequest/list");
-    } catch (err: any) {
-      console.error("Submit error:", err);
-      alert(err.message || "오류 발생");
+    } catch (err) {
+      alert((err as Error).message);
     }
   };
 
