@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
+// 비품 아이템 타입에 반환 요구 여부 필드 추가
 interface Item {
   id: number;
   name: string;
+  isReturnRequired: boolean;
 }
 
 export default function SupplyRequestCreatePage() {
@@ -15,17 +17,17 @@ export default function SupplyRequestCreatePage() {
   const { loginUser, isLogin } = useGlobalLoginUser();
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  // Ensure user is logged in
+  // 로그인 보장
   useEffect(() => {
     if (!isLogin) router.push("/login");
   }, [isLogin, router]);
 
   if (!isLogin || !loginUser) return null;
-
   const user = loginUser as any;
 
+  // 상태
   const [items, setItems] = useState<Item[]>([]);
-  const [search, setSearch] = useState<string>("");
+  const [search, setSearch] = useState("");
   const [filtered, setFiltered] = useState<Item[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -39,27 +41,24 @@ export default function SupplyRequestCreatePage() {
   );
   const [purpose, setPurpose] = useState("");
 
+  // 전체 ACTIVE 품목 로드
   useEffect(() => {
-    // load items
     fetch(`${API_BASE}/api/v1/items/active`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setItems(data.content || data))
       .catch(() => setItems([]));
   }, [API_BASE]);
 
+  // 검색어 변경 시 필터링 (대여 여부 무관)
   useEffect(() => {
-    if (search.trim() === "") {
-      setFiltered([]);
-      setShowDropdown(false);
-      return;
-    }
-    const f = items.filter((i) =>
-      i.name.toLowerCase().includes(search.toLowerCase())
+    const f = items.filter((item) =>
+      item.name.toLowerCase().includes(search.toLowerCase())
     );
     setFiltered(f);
-    setShowDropdown(f.length > 0);
-  }, [search, items]);
+    setShowDropdown(f.length > 0 && search.trim() !== "");
+  }, [items, search]);
 
+  // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (
@@ -78,6 +77,11 @@ export default function SupplyRequestCreatePage() {
     if (!selectedItem) return alert("항목을 선택해주세요.");
     if (quantity < 1) return alert("수량을 확인해주세요.");
     if (!purpose.trim()) return alert("목적을 입력해주세요.");
+
+    // 대여 여부에 따른 필수 반환 요구 체크
+    if (rental && !selectedItem.isReturnRequired) {
+      return alert("대여 비품이 아닙니다");
+    }
 
     const payload = {
       itemId: selectedItem.id,
@@ -98,7 +102,6 @@ export default function SupplyRequestCreatePage() {
       const msg = await res.text();
       return alert(`등록 실패: ${msg}`);
     }
-
     router.push("/item/supplyrequest/list");
   };
 
@@ -169,7 +172,7 @@ export default function SupplyRequestCreatePage() {
                     checked={rental}
                     onChange={() => setRental(true)}
                     className="mr-2"
-                  />{" "}
+                  />
                   예
                 </label>
                 <label className="flex items-center">
@@ -178,7 +181,7 @@ export default function SupplyRequestCreatePage() {
                     checked={!rental}
                     onChange={() => setRental(false)}
                     className="mr-2"
-                  />{" "}
+                  />
                   아니요
                 </label>
               </div>
