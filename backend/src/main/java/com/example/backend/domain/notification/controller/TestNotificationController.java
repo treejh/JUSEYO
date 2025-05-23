@@ -1,5 +1,7 @@
 package com.example.backend.domain.notification.controller;
 
+import com.example.backend.domain.inventory.inventoryOut.dto.request.InventoryOutRequestDto;
+import com.example.backend.domain.inventory.inventoryOut.service.InventoryOutService;
 import com.example.backend.domain.item.entity.Item;
 import com.example.backend.domain.item.repository.ItemRepository;
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
@@ -34,6 +36,7 @@ public class TestNotificationController {
     private final TokenService tokenService;
     private final UserService userService;
     private final SupplyRequestService supplyRequestService;
+    private final InventoryOutService inventoryOutService;
 
 
     // 테스트용 알림 보내기 API
@@ -52,20 +55,24 @@ public class TestNotificationController {
         return notificationService.createNotification(testRequest);
     }
 
-    // 재고 알림 테스트용
+    // 재고 부족 알림 테스트용
     @PostMapping("/stockDown")
     @Operation(
             summary = "재고 부족 테스트 알림",
             description = "재고 부족 테스트 알림을 보냅니다."
     )
     public void stockDownAlertTest() {
-        Item pen = itemRepo.findByName("볼펜").get();
-        pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
-        itemRepo.save(pen);
-        eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
+        InventoryOutRequestDto inventoryOutRequestDto = new InventoryOutRequestDto();
+        inventoryOutRequestDto.setSupplyRequestId(1L);
+        inventoryOutRequestDto.setItemId(2L);
+        inventoryOutRequestDto.setCategoryId(1L);
+        inventoryOutRequestDto.setManagementId(1L);
+        inventoryOutRequestDto.setQuantity(2L);
+        inventoryOutRequestDto.setOutbound("AVAILABLE");
+        inventoryOutService.removeOutbound(inventoryOutRequestDto);
     }
 
-    //
+    // 비품 요청 테스트 알림
     @PostMapping("/newSupplyRequest")
     @Operation(
             summary = "비품 요청 테스트",
@@ -73,14 +80,27 @@ public class TestNotificationController {
     )
     public void sendNewSupplyRequest() {
         Item pen = itemRepo.findByName("볼펜").get();
-        Long userId = tokenService.getIdFromToken();
-        User user = userService.findById(userId);
         SupplyRequestRequestDto dto = new SupplyRequestRequestDto();
         dto.setItemId(pen.getId());
         dto.setQuantity(1L);
         dto.setPurpose("테스트용 요청");
         dto.setRental(false);
         supplyRequestService.createRequest(dto);
+    }
 
+    // 비품 반납 테스트 알림
+    @PostMapping("/newSupplyReturn")
+    @Operation(
+            summary = "비품 요청 테스트",
+            description = "비품 요청 테스트 알림을 보냅니다."
+    )
+    public void sendNewSupplyReturn() {
+        Item pen = itemRepo.findByName("볼펜").get();
+        SupplyRequestRequestDto dto = new SupplyRequestRequestDto();
+        dto.setItemId(pen.getId());
+        dto.setQuantity(1L);
+        dto.setPurpose("테스트용 요청");
+        dto.setRental(false);
+        supplyRequestService.createRequest(dto);
     }
 }
