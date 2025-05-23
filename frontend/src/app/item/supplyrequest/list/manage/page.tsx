@@ -25,7 +25,7 @@ interface PageInfo {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-export default function SupplyRequestListPage() {
+export default function SupplyRequestManageListPage() {
   const { loginUser, isLogin } = useGlobalLoginUser();
   const isManager = isLogin && loginUser?.role === "MANAGER";
 
@@ -45,7 +45,7 @@ export default function SupplyRequestListPage() {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/supply-requests/me`, {
+      const res = await fetch(`${API_BASE}/api/v1/supply-requests`, {
         credentials: "include",
       });
       if (!res.ok) {
@@ -90,23 +90,29 @@ export default function SupplyRequestListPage() {
   };
 
   // 필터링
-  const filteredRequests = requests.filter((req) => {
-    const matchesKeyword = req.productName
-      .toLowerCase()
-      .includes(searchKeyword.toLowerCase());
-    if (!matchesKeyword) return false;
+  const filteredRequests = requests
+    .filter((req) => {
+      const matchesKeyword = req.productName
+        .toLowerCase()
+        .includes(searchKeyword.toLowerCase());
+      if (!matchesKeyword) return false;
 
-    if (startDate || endDate) {
-      const reqDate = new Date(req.createdAt);
-      if (startDate && new Date(startDate) > reqDate) return false;
-      if (endDate) {
-        const endDt = new Date(endDate);
-        endDt.setHours(23, 59, 59);
-        if (endDt < reqDate) return false;
+      if (startDate || endDate) {
+        const reqDate = new Date(req.createdAt);
+        if (startDate && new Date(startDate) > reqDate) return false;
+        if (endDate) {
+          const endDt = new Date(endDate);
+          endDt.setHours(23, 59, 59);
+          if (endDt < reqDate) return false;
+        }
       }
-    }
-    return true;
-  });
+      return true;
+    })
+    // 최신순 정렬 추가
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
   // 페이징 계산
   const totalPages = Math.ceil(filteredRequests.length / pageSize);
@@ -249,7 +255,7 @@ export default function SupplyRequestListPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ID
+                    순번
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     상품명
@@ -269,10 +275,11 @@ export default function SupplyRequestListPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedRequests.map((req) => (
+                {paginatedRequests.map((req, index) => (
                   <tr key={req.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {req.id}
+                      {startIdx + index + 1}{" "}
+                      {/* 현재 페이지의 시작 인덱스 + 현재 행 인덱스 + 1 */}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {req.productName}
