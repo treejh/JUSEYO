@@ -64,7 +64,7 @@ public class InventoryOutController {
 
     /** 내 출고내역 조회 (일반회원) */
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
     public ResponseEntity<Page<InventoryOutResponseDto>> getMyOutbound(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
