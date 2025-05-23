@@ -228,11 +228,53 @@ export default function InboundPage() {
     }
   };
 
+  // 엑셀 다운로드 함수 추가
+  const handleExcelDownload = async () => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const response = await fetch(`${baseUrl}/api/v1/inventory-in/excel`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/vnd.ms-excel',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('엑셀 다운로드에 실패했습니다.');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `입고내역_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Excel download error:', error);
+      setError('엑셀 다운로드에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
+  };
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">입고 내역</h1>
-        <p className="text-gray-500">비품의 입고 현황을 확인할 수 있습니다.</p>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">입고 내역</h1>
+          <p className="text-gray-500">비품의 입고 현황을 확인할 수 있습니다.</p>
+        </div>
+        <button
+          onClick={handleExcelDownload}
+          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          </svg>
+          엑셀 다운로드
+        </button>
       </div>
 
       {/* 통계 카드 */}
@@ -345,7 +387,7 @@ export default function InboundPage() {
           <div className="flex gap-3 items-center ml-auto">
             <input
               type="text"
-              placeholder="검색어를 입력하세요"
+              placeholder="품목명, 카테고리, ID 검색"
               className="border border-gray-200 rounded-lg px-4 py-2 w-80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
