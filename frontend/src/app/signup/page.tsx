@@ -15,11 +15,9 @@ export default function SignupTypePage() {
   };
 
   return (
-    <div className="min-h-screen h-screen bg-white flex overflow-hidden">
-      <div className="w-1/2 h-screen"></div>
-
-      <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center ">
-        <div className="pl-0">
+    <div className="min-h-screen h-screen bg-white flex overflow-hidden gap-x-11">
+      <div className=" w-2/6 h-full flex-shrink-0 flex flex-col justify-center pl-30">
+        <div>
           <Link href="/">
             <p className="text-slate-600 mb-8 max-w-xl"></p>
             <img
@@ -39,7 +37,8 @@ export default function SignupTypePage() {
           </p>
         </div>
       </div>
-      <div className="w-3/1 h-screen flex items-center pl-12 pr-12 overflow-hidden">
+      {/**/}
+      <div className="w-2/3 h-screen flex items-center  pr-12 overflow-hidden">
         <div className="shadow-xl rounded-2xl overflow-hidden w-3/4 mx-auto">
           <div className="bg-[#0047AB] text-white px-8 py-6 text-center">
             <h2 className="text-2xl font-bold">회원 유형 선택</h2>
@@ -138,7 +137,7 @@ export default function SignupTypePage() {
             </button>
           </div>
 
-          <div className="bg-gray-50 px-8 py-4 text-center">
+          <div className="bg-gray-50 px-8 py-4 text-center flex justify-center space-x-6">
             <Link
               href="/"
               className="inline-flex items-center justify-center text-[#0047AB] font-medium hover:underline text-base"
@@ -152,6 +151,20 @@ export default function SignupTypePage() {
                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
               </svg>
               홈으로 돌아가기
+            </Link>
+            <Link
+              href="/login/type"
+              className="inline-flex items-center justify-center text-[#0047AB] font-medium hover:underline text-base"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+              </svg>
+              로그인 하기
             </Link>
           </div>
         </div>

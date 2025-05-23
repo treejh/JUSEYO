@@ -227,7 +227,7 @@ export default function InitialSignupPage() {
       <div className="w-full h-full flex items-center justify-center">
         <form
           onSubmit={handleSubmit}
-          className="shadow-lg rounded-xl overflow-y-auto w-full max-w-[600px] bg-white h-[90%]" // 스크롤 가능하도록 설정
+          className="shadow-lg rounded-xl overflow-y-auto w-full max-w-[600px] bg-white h-[95%]" // 스크롤 가능하도록 설정
         >
           <div className="bg-[#0047AB] text-white px-6 py-4 text-center">
             <h2 className="text-xl font-bold">회원가입</h2>
@@ -462,8 +462,9 @@ export default function InitialSignupPage() {
                 </svg>
                 홈으로 돌아가기
               </Link>
-              <button
-                onClick={() => router.push("/login/type")}
+
+              <Link
+                href="/login/type"
                 className="inline-flex items-center justify-center text-[#0047AB] font-medium hover:underline text-base"
               >
                 <svg
@@ -475,7 +476,7 @@ export default function InitialSignupPage() {
                   <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
                 </svg>
                 로그인 하기
-              </button>
+              </Link>
             </div>
           </div>
         </form>
