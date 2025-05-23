@@ -150,30 +150,4 @@ public class NotificationController {
         return notificationService.streamNotifications(userId);
     }
 
-
-    // 테스트용 알림 보내기 API
-    @PostMapping("/test/{userId}")
-    @Operation(
-            summary = "재고 요청 테스트 알림",
-            description = "재고 요청 테스트 알림을 보냅니다."
-    )
-    public Notification sendTestNotification(@PathVariable Long userId) {
-        NotificationRequestDTO testRequest = new NotificationRequestDTO(
-                NotificationType.SUPPLY_REQUEST,
-                "🔔 테스트 알림입니다!",
-                userId
-        );
-
-        return notificationService.createNotification(testRequest);
-    }
-
-    // 재고 알림 테스트용
-    @PostMapping("/test/stockDown")
-    @Operation(
-            summary = "재고 부족 테스트 알림",
-            description = "재고 부족 테스트 알림을 보냅니다."
-    )
-    public void stockDownAlertTest() {
-        inventoryOutService.stockdown();
-    }
 }

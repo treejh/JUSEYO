@@ -276,12 +276,4 @@ public class InventoryOutService {
                 .build();
     }
 
-    @Transactional
-    // 재고 부족 알림 테스트용 메서드
-    public void stockdown() {
-        Item pen = itemRepo.findByName("볼펜").get();
-        pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
-        itemRepo.save(pen);
-        eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
-    }
 }

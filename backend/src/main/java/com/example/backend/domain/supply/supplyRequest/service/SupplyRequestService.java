@@ -2,6 +2,7 @@ package com.example.backend.domain.supply.supplyRequest.service;
 
 import com.example.backend.domain.chaseItem.dto.request.ChaseItemRequestDto;
 import com.example.backend.domain.chaseItem.service.ChaseItemService;
+import com.example.backend.domain.notification.event.SupplyRequestCreatedEvent;
 import com.example.backend.domain.supply.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
@@ -27,6 +28,7 @@ import com.example.backend.domain.managementDashboard.entity.ManagementDashboard
 import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.domain.supply.supplyRequest.dto.response.SupplyRequestResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +51,7 @@ public class SupplyRequestService {
     private final ItemInstanceRepository instanceRepo;
     private final ItemInstanceService instanceService;
     private final ChaseItemService chaseItemService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public SupplyRequestResponseDto createRequest(SupplyRequestRequestDto dto) {
@@ -85,6 +88,7 @@ public class SupplyRequestService {
                 .build();
         req.setStatus(Status.ACTIVE);
         SupplyRequest saved = repo.save(req);
+        eventPublisher.publishEvent(new SupplyRequestCreatedEvent(saved.getProductName(), saved.getQuantity(), saved.getUser().getName()));
         return mapToDto(saved);
     }
 

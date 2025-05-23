@@ -395,11 +395,6 @@ export function NotificationBell() {
                                   ]?.color || "bg-gray-100 text-gray-800"
                                 }`}
                               >
-                                {
-                                  NOTIFICATION_TYPE_LABELS[
-                                    notification.notificationType
-                                  ]?.icon
-                                }
                                 {NOTIFICATION_TYPE_LABELS[
                                   notification.notificationType
                                 ]?.label || "알림"}

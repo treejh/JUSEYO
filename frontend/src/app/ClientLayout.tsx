@@ -144,7 +144,7 @@ export default function ClientLayout({
                     useNotificationStore.getState().addNotification({
                       id: Number(parsed.id),
                       message: parsed.message,
-                      type: parsed.type,
+                      notificationType: parsed.notificationType,
                       createdAt: parsed.createdAt,
                       readStatus: false,
                     });
@@ -220,9 +220,13 @@ export default function ClientLayout({
             )}
 
             {/* 메인 콘텐츠 */}
-            <div 
+            <div
               className={`flex-1 min-h-screen transition-all duration-300 ease-in-out ${
-                !shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''
+                !shouldHideNav
+                  ? sidebarCollapsed
+                    ? "ml-[80px]"
+                    : "ml-[280px]"
+                  : ""
               }`}
             >
               {children}
