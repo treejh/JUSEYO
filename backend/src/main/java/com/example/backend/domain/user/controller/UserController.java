@@ -89,6 +89,7 @@ public class UserController {
     )
     public ResponseEntity duplicationEmail(@Valid @RequestBody EmailRequestDto emailRequestDto) {
         boolean response = userService.isValidEmail(emailRequestDto);
+        log.info("이메일 중복확인 " + response);
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "이메일 중복 확인 성공", response),
                 HttpStatus.OK
@@ -102,14 +103,12 @@ public class UserController {
             summary = "핸드폰 중복 확인",
             description = "이미 존재하는 핸드폰 번호인지 확인합니다. true = 존재, false = 존재 안함 "
     )
-    public ResponseEntity duplicationEmail(@Valid @RequestBody PhoneRequestDto phoneRequestDto) {
-        boolean response = userService.isValidPhone(phoneRequestDto);
+    public ResponseEntity duplicationEmail(@Valid @RequestBody SmsRequestDto smsRequestDto) {
+        boolean response = userService.isValidPhone(smsRequestDto);
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "핸드폰 중복 확인 성공", response),
                 HttpStatus.OK
         );
-
-
     }
 
 

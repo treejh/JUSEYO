@@ -12,6 +12,7 @@ import com.example.backend.domain.user.dto.response.ApproveUserListForManagerRes
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.email.entity.EmailMessage;
 import com.example.backend.domain.user.email.service.EmailService;
+import com.example.backend.domain.user.sms.dto.SmsRequestDto;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;
 import com.example.backend.enums.Status;
@@ -407,8 +408,8 @@ public class UserService {
         return userRepository.findByEmail(emailRequestDto.getEmail()).isPresent();
     }
 
-    public boolean isValidPhone(PhoneRequestDto phoneRequestDto){
-        return userRepository.findByPhoneNumber(phoneRequestDto.getPhoneNumber()).isPresent();
+    public boolean isValidPhone(SmsRequestDto smsRequestDto){
+        return userRepository.findByPhoneNumber(smsRequestDto.getPhoneNumber()).isPresent();
     }
 
 

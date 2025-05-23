@@ -7,6 +7,11 @@ import {
   sendAuthCode,
   verifyAuthCode,
 } from "@/utils/emailValidation";
+import {
+  checkPhoneDuplication,
+  sendPhoneAuthCode,
+  verifyPhoneAuthCode,
+} from "@/utils/phoneValidation";
 
 export default function InitialSignupPage() {
   const [formData, setFormData] = useState({
@@ -23,6 +28,13 @@ export default function InitialSignupPage() {
   const [isEmailVerified, setIsEmailVerified] = useState(false); // 인증 완료 여부
   const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(0);
+
+  const [phoneAuthCode, setPhoneAuthCode] = useState("");
+  const [isPhoneChecked, setIsPhoneChecked] = useState(false); // 중복 확인 완료 여부
+  const [isPhoneDuplicated, setIsPhoneDuplicated] = useState(false); // 중복 여부
+  const [phoneAuthCodeSent, setPhoneAuthCodeSent] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false); // 인증 완료 여부
+  const [phoneTimer, setPhoneTimer] = useState(0);
 
   // 이메일 형식 검증
   const isValidEmailFormat = (email: string) =>
@@ -43,6 +55,22 @@ export default function InitialSignupPage() {
 
     return () => clearInterval(interval);
   }, [authCodeSent, timer]);
+
+  // 전화번호 타이머 관리
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (phoneAuthCodeSent && phoneTimer > 0) {
+      interval = setInterval(() => {
+        setPhoneTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (phoneTimer === 0) {
+      clearInterval(interval);
+      setPhoneAuthCodeSent(false);
+    }
+
+    return () => clearInterval(interval);
+  }, [phoneAuthCodeSent, phoneTimer]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -111,6 +139,61 @@ export default function InitialSignupPage() {
     }
   };
 
+  const handlePhoneCheck = async () => {
+    if (!formData.phoneNumber) return alert("전화번호를 입력해주세요.");
+
+    try {
+      const isDuplicated = await checkPhoneDuplication(formData.phoneNumber);
+      setIsPhoneChecked(true);
+      setIsPhoneDuplicated(isDuplicated);
+      if (!isDuplicated) {
+        alert("사용 가능한 전화번호입니다. 인증번호를 발급받아주세요.");
+      } else {
+        alert("이미 사용 중인 전화번호입니다.");
+      }
+    } catch (error) {
+      alert("전화번호 중복 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleSendPhoneAuthCode = async () => {
+    if (!formData.phoneNumber) return alert("전화번호를 입력해주세요.");
+
+    try {
+      setIsLoading(true);
+      const isSent = await sendPhoneAuthCode(formData.phoneNumber);
+      if (isSent) {
+        setPhoneAuthCodeSent(true);
+        setPhoneTimer(120);
+        alert("인증번호가 발송되었습니다. 2분 내에 입력해주세요.");
+      } else {
+        alert("인증번호 발급 실패. 다시 시도해주세요.");
+      }
+    } catch (err) {
+      alert("인증번호 발급 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyPhoneAuthCode = async () => {
+    try {
+      const isVerified = await verifyPhoneAuthCode(
+        formData.phoneNumber,
+        phoneAuthCode
+      );
+      if (isVerified) {
+        alert("전화번호 인증이 완료되었습니다.");
+        setIsPhoneVerified(true);
+        setPhoneAuthCodeSent(false);
+      } else {
+        alert("인증번호가 일치하지 않습니다.");
+      }
+    } catch (err) {
+      alert("인증번호 확인 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -157,6 +240,20 @@ export default function InitialSignupPage() {
         </div>
 
         <div className="px-8 py-8">
+          {/* 이름 */}
+          <div className="mb-5">
+            <label className="block text-base font-medium text-gray-700 mb-2">
+              이름
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+              placeholder="이름을 입력하세요"
+            />
+          </div>
           {/* 이메일 */}
           <label className="block text-base font-medium text-gray-700 mb-2">
             이메일
@@ -230,19 +327,81 @@ export default function InitialSignupPage() {
             </p>
           )}
 
-          {/* 기타 입력 */}
+          {/* 전화번호 */}
           <div className="mb-5">
             <label className="block text-base font-medium text-gray-700 mb-2">
-              이름
+              전화번호
             </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
-              placeholder="이름을 입력하세요"
-            />
+            <div className="mb-5 flex items-center">
+              <input
+                type="text"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                disabled={isPhoneVerified}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                placeholder="전화번호를 입력하세요"
+              />
+              <button
+                type="button"
+                onClick={handlePhoneCheck}
+                disabled={isPhoneVerified}
+                className={`ml-4 px-4 py-2 rounded-lg text-white w-32 ${
+                  isPhoneVerified
+                    ? "bg-gray-400"
+                    : "bg-[#0047AB] hover:bg-blue-800"
+                }`}
+              >
+                {isPhoneVerified ? "완료됨" : "중복 확인"}
+              </button>
+            </div>
+
+            {/* 인증번호 입력 */}
+            {isPhoneChecked && !isPhoneDuplicated && !isPhoneVerified && (
+              <div className="mb-5">
+                <label className="block text-base font-medium text-gray-700 mb-2">
+                  전화번호 인증
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    value={phoneAuthCode}
+                    onChange={(e) => setPhoneAuthCode(e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                    placeholder="인증번호를 입력하세요"
+                    disabled={phoneTimer === 0 && !phoneAuthCodeSent}
+                  />
+                  <button
+                    type="button"
+                    onClick={
+                      phoneAuthCodeSent
+                        ? handleVerifyPhoneAuthCode
+                        : handleSendPhoneAuthCode
+                    }
+                    className="w-64 ml-4 px-4 py-2 rounded-lg text-white bg-[#0047AB]"
+                  >
+                    {phoneAuthCodeSent
+                      ? "인증"
+                      : isLoading
+                      ? "로딩중..."
+                      : "인증번호 받기"}
+                  </button>
+                </div>
+                {phoneAuthCodeSent && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    남은 시간: {Math.floor(phoneTimer / 60)}:
+                    {String(phoneTimer % 60).padStart(2, "0")}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* 인증 완료 메시지 */}
+            {isPhoneVerified && (
+              <p className="text-sm text-green-600 mt-2">
+                전화번호 인증이 완료되었습니다.
+              </p>
+            )}
           </div>
 
           <div className="mb-5">
@@ -270,20 +429,6 @@ export default function InitialSignupPage() {
               onChange={handleChange}
               className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
               placeholder="비밀번호를 다시 입력하세요"
-            />
-          </div>
-
-          <div className="mb-5">
-            <label className="block text-base font-medium text-gray-700 mb-2">
-              전화번호
-            </label>
-            <input
-              type="text"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
-              placeholder="전화번호를 입력하세요"
             />
           </div>
 
