@@ -248,7 +248,7 @@ export default function NotificationsPage() {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         size: pageSize.toString(),
-        ...(selectedType !== "ALL" && { notificationType: selectedType }),
+        ...(selectedType !== "ALL" && { type: selectedType }),
         ...(showUnreadOnly && { unreadOnly: "true" }),
       });
 
