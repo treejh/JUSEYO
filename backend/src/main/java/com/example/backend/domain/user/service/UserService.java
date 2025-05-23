@@ -5,11 +5,14 @@ package com.example.backend.domain.user.service;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.department.service.DepartmentService;
+import com.example.backend.domain.user.dto.request.EmailRequestDto;
+import com.example.backend.domain.user.dto.request.PhoneRequestDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForManagerResponseDto;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.email.entity.EmailMessage;
 import com.example.backend.domain.user.email.service.EmailService;
+import com.example.backend.domain.user.sms.dto.SmsRequestDto;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;
 import com.example.backend.enums.Status;
@@ -91,6 +94,8 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
+
 
 
     @Transactional
@@ -399,6 +404,15 @@ public class UserService {
         }
     }
 
+    public boolean isValidEmail(EmailRequestDto emailRequestDto){
+        return userRepository.findByEmail(emailRequestDto.getEmail()).isPresent();
+    }
+
+    public boolean isValidPhone(SmsRequestDto smsRequestDto){
+        return userRepository.findByPhoneNumber(smsRequestDto.getPhoneNumber()).isPresent();
+    }
+
+
 
 
 
@@ -534,7 +548,6 @@ public class UserService {
 
     @Transactional
     public void verifyEmailCode(EmailVerificationRequest emailVerificationRequest){
-        //이메일 중복 회원가입 불가
         validateEmail(emailVerificationRequest.getEmail());
         if(!emailService.verifiedCode(emailVerificationRequest.getEmail(),emailVerificationRequest.getAuthCode())){
             throw new BusinessLogicException(ExceptionCode.EMAIL_VERIFICATION_FAILED);

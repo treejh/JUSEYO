@@ -1,23 +1,27 @@
 "use client";
-
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default function SignupTypePage() {
+export default function ManagementSelectPage() {
   const router = useRouter();
 
-  const handleTypeSelect = (type: "manager" | "regular") => {
-    if (type === "regular") {
-      router.push("/signup/member"); // 일반 회원 가입 페이지로 이동
+  const handleManagementSelect = (hasManagementPage: boolean) => {
+    if (hasManagementPage) {
+      router.push("/signup/manager"); // 관리 페이지가 있는 경우
     } else {
-      router.push("/signup/select"); // 관리 페이지 설정으로 이동
+      router.push("/signup/initial"); // 관리 페이지가 없는 경우
     }
+  };
+  const handleBackToSelection = () => {
+    router.push("/signup"); // 회원 유형 선택 페이지로 이동
   };
 
   return (
-    <div className="min-h-screen h-screen bg-white flex overflow-hidden gap-x-11">
-      <div className=" w-2/6 h-full flex-shrink-0 flex flex-col justify-center pl-30">
-        <div>
+    <div className="min-h-screen h-screen bg-white flex overflow-hidden">
+      <div className="w-1/2 h-screen"></div>
+
+      <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center ">
+        <div className="pl-0">
           <Link href="/">
             <p className="text-slate-600 mb-8 max-w-xl"></p>
             <img
@@ -37,20 +41,19 @@ export default function SignupTypePage() {
           </p>
         </div>
       </div>
-      {/**/}
-      <div className="w-2/3 h-screen flex items-center  pr-12 overflow-hidden">
+      <div className="w-3/1 h-screen flex items-center pl-12 pr-12 overflow-hidden">
         <div className="shadow-xl rounded-2xl overflow-hidden w-3/4 mx-auto">
           <div className="bg-[#0047AB] text-white px-8 py-6 text-center">
-            <h2 className="text-2xl font-bold">회원 유형 선택</h2>
+            <h2 className="text-2xl font-bold">조직 관리 페이지 설정</h2>
             <p className="text-base mt-2 opacity-80">
-              어떤 유형의 계정으로 가입하시겠습니까?
+              현재 조직의 관리 페이지 상태를 선택해주세요.
             </p>
           </div>
 
           <div className="bg-white p-8 grid grid-cols-2 gap-6">
             <button
               className="flex flex-col items-center justify-center py-8 px-6 border-2 border-gray-100 rounded-xl bg-white hover:border-[#0047AB] hover:shadow-md transition-all group"
-              onClick={() => handleTypeSelect("manager")}
+              onClick={() => handleManagementSelect(true)}
             >
               <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
                 <svg
@@ -69,10 +72,10 @@ export default function SignupTypePage() {
                 </svg>
               </div>
               <h2 className="text-xl font-bold text-[#0047AB] mb-2">
-                매니저 계정
+                관리 페이지 있음
               </h2>
-              <p className="text-base text-gray-500 text-center whitespace-nowrap">
-                재고 및 사용자 관리를 위한 권한
+              <p className="text-base text-gray-500 text-center">
+                이미 조직에 관리 페이지가 있습니다.
               </p>
               <div className="text-[#0047AB] mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 <svg
@@ -94,7 +97,7 @@ export default function SignupTypePage() {
 
             <button
               className="flex flex-col items-center justify-center py-8 px-6 border-2 border-gray-100 rounded-xl bg-white hover:border-[#0047AB] hover:shadow-md transition-all group"
-              onClick={() => handleTypeSelect("regular")}
+              onClick={() => handleManagementSelect(false)}
             >
               <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
                 <svg
@@ -108,15 +111,15 @@ export default function SignupTypePage() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
               </div>
               <h2 className="text-xl font-bold text-[#0047AB] mb-2">
-                일반 회원
+                관리 페이지 없음
               </h2>
-              <p className="text-base text-gray-500 text-center whitespace-nowrap">
-                재고 조회 및 요청을 위한 접근
+              <p className="text-base text-gray-500 text-center">
+                새로운 관리 페이지를 생성합니다.
               </p>
               <div className="text-[#0047AB] mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 <svg
@@ -137,9 +140,9 @@ export default function SignupTypePage() {
             </button>
           </div>
 
-          <div className="bg-gray-50 px-8 py-4 text-center flex justify-center space-x-6">
-            <Link
-              href="/"
+          <div className="bg-gray-50 px-8 py-4 text-center">
+            <button
+              onClick={handleBackToSelection}
               className="inline-flex items-center justify-center text-[#0047AB] font-medium hover:underline text-base"
             >
               <svg
@@ -148,24 +151,14 @@ export default function SignupTypePage() {
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                <path
+                  fillRule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
               </svg>
-              홈으로 돌아가기
-            </Link>
-            <Link
-              href="/login/type"
-              className="inline-flex items-center justify-center text-[#0047AB] font-medium hover:underline text-base"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-1"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-              </svg>
-              로그인 하기
-            </Link>
+              회원 유형 선택으로 돌아가기
+            </button>
           </div>
         </div>
       </div>
