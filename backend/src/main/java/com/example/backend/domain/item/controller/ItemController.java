@@ -17,7 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/items")
@@ -80,5 +82,12 @@ public class ItemController {
         Pageable pageable = PageRequest.of(page, size, sorting);
 
         return ResponseEntity.ok(service.getItemsPagedSorted(pageable));
+    }
+
+    /** 비품명 중복 여부 체크 */
+    @GetMapping("/exists")
+    public Map<String, Boolean> existsByName(@RequestParam String name) {
+        boolean exists = service.existsActiveName(name);
+        return Collections.singletonMap("exists", exists);
     }
 }

@@ -50,6 +50,7 @@ public class ItemService {
 
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
+
         // 1) 시리얼 결정: 빈 값이면 비품명-순번-랜덤8 로 생성
         String serial = null;
 
@@ -198,5 +199,11 @@ public class ItemService {
 
         // 검색 로직 실행 (Projection 활용)
         return repo.searchItemsWithCategory(managementDashboardId, keyword, pageable);
+    }
+
+    /** 프론트 중복체크용 */
+    @Transactional(readOnly = true)
+    public boolean existsActiveName(String name) {
+        return repo.findByNameAndStatus(name, Status.ACTIVE).isPresent();
     }
 }

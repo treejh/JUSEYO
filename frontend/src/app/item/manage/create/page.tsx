@@ -22,6 +22,7 @@ interface FormState {
 
 export default function CreateItemPage() {
   const router = useRouter();
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
   const [form, setForm] = useState<FormState>({
     name: "",
     categoryId: 0,
@@ -33,38 +34,33 @@ export default function CreateItemPage() {
     isReturnRequired: false,
   });
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>("");
+  const [preview, setPreview] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
+  const [nameExists, setNameExists] = useState(false);
 
-  // --- 카테고리 로드 ---
+  // 1) 카테고리 로드
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories`, {
-      credentials: "include",
-    })
+    fetch(`${API_BASE}/api/v1/categories`, { credentials: "include" })
       .then((res) =>
         res.ok ? res.json() : Promise.reject("카테고리 로드 실패")
       )
       .then((data: Category[]) => setCategories(data))
       .catch(alert);
-  }, []);
+  }, [API_BASE]);
 
-  // --- 이미지 미리보기 ---
+  // 2) 이미지 미리보기
   useEffect(() => {
-    if (!file) {
-      setPreview("");
-      return;
-    }
+    if (!file) return setPreview("");
     const url = URL.createObjectURL(file);
     setPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  // --- input / select / checkbox / file 공통 핸들러 ---
+  // 3) 공통 변경 핸들러
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, type, value, checked, files } = e.target as HTMLInputElement;
-
     if (type === "file") {
       setFile(files?.[0] ?? null);
     } else if (type === "checkbox") {
@@ -78,37 +74,53 @@ export default function CreateItemPage() {
     }
   };
 
-  // --- 폼 제출 ---
+  // 4) 상품명 중복 확인 (onBlur)
+  const checkName = async () => {
+    if (!form.name.trim()) return;
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/v1/items/exists?name=${encodeURIComponent(form.name)}`,
+        { credentials: "include" }
+      );
+      if (!res.ok) throw new Error("중복 체크 실패");
+      const { exists } = (await res.json()) as { exists: boolean };
+      setNameExists(exists);
+    } catch {
+      // 실패해도 폼 자체는 막지 않음
+    }
+  };
+
+  // 5) 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 간단 검증
+    // 5.1) 중복 방지
+    if (nameExists) {
+      return alert("이미 등록된 이름입니다. 다른 이름을 입력하세요.");
+    }
+    // 5.2) 로직 검증
     if (form.totalQuantity < form.minimumQuantity) {
       return alert("총수량은 최소수량 이상이어야 합니다.");
     }
     if (form.availableQuantity > form.totalQuantity) {
-      return alert("사용가능수량은 총수량 이하여야 합니다.");
+      return alert("사용 가능 수량은 총수량 이하여야 합니다.");
     }
 
-    // FormData 로 묶기
+    // 5.3) FormData
     const body = new FormData();
     Object.entries(form).forEach(([k, v]) => body.append(k, String(v)));
     if (file) body.append("image", file);
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/items`,
-        {
-          method: "POST",
-          credentials: "include",
-          body, // Content-Type 헤더는 자동으로 multipart/form-data; boundary=… 로 설정됩니다
-        }
-      );
+      const res = await fetch(`${API_BASE}/api/v1/items`, {
+        method: "POST",
+        credentials: "include",
+        body,
+      });
       if (!res.ok) {
         const msg = await res.text();
-        return alert(`등록 실패: ${msg}`);
+        throw new Error(msg || "등록 실패");
       }
-
       alert("신규 비품이 성공적으로 등록되었습니다.");
       router.push("/item/manage");
     } catch (err: any) {
@@ -119,12 +131,9 @@ export default function CreateItemPage() {
   return (
     <main className="p-6 max-w-2xl mx-auto bg-white rounded shadow">
       <h1 className="text-xl mb-4">신규 비품 등록</h1>
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4"
-        // 이 `<form>` 태그에 encType 지정 안 해도 fetch 사용 시 FormData 로 전송됩니다
-      >
-        {/* 이미지 업로드 */}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* 이미지 */}
         <div>
           <label className="block mb-1">이미지</label>
           <input
@@ -152,10 +161,18 @@ export default function CreateItemPage() {
             name="name"
             type="text"
             onChange={handleChange}
-            required
-            className="w-full border rounded px-2 py-1"
+            onBlur={checkName}
             value={form.name}
+            required
+            className={`w-full border rounded px-2 py-1 ${
+              nameExists ? "border-red-500" : ""
+            }`}
           />
+          {nameExists && (
+            <p className="mt-1 text-sm text-red-600">
+              동일한 이름의 비품이 이미 존재합니다.
+            </p>
+          )}
         </div>
 
         {/* 카테고리 */}
@@ -164,9 +181,9 @@ export default function CreateItemPage() {
           <select
             name="categoryId"
             onChange={handleChange}
+            value={form.categoryId}
             required
             className="w-full border rounded px-2 py-1"
-            value={form.categoryId}
           >
             <option value={0}>선택하세요</option>
             {categories.map((cat) => (
@@ -177,7 +194,7 @@ export default function CreateItemPage() {
           </select>
         </div>
 
-        {/* 수량 입력 */}
+        {/* 수량 */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block mb-1">최소수량</label>
@@ -185,8 +202,8 @@ export default function CreateItemPage() {
               name="minimumQuantity"
               type="number"
               min={0}
-              onChange={handleChange}
               value={form.minimumQuantity}
+              onChange={handleChange}
               className="w-full border rounded px-2 py-1"
             />
           </div>
@@ -196,8 +213,8 @@ export default function CreateItemPage() {
               name="totalQuantity"
               type="number"
               min={0}
-              onChange={handleChange}
               value={form.totalQuantity}
+              onChange={handleChange}
               className="w-full border rounded px-2 py-1"
             />
           </div>
@@ -207,44 +224,40 @@ export default function CreateItemPage() {
               name="availableQuantity"
               type="number"
               min={0}
-              onChange={handleChange}
               value={form.availableQuantity}
+              onChange={handleChange}
               className="w-full border rounded px-2 py-1"
             />
           </div>
         </div>
 
-        {/* 구매처 */}
+        {/* 구매처/위치/반납 */}
         <div>
           <label className="block mb-1">구매처</label>
           <input
             name="purchaseSource"
             type="text"
-            onChange={handleChange}
             value={form.purchaseSource}
+            onChange={handleChange}
             className="w-full border rounded px-2 py-1"
           />
         </div>
-
-        {/* 보관 위치 */}
         <div>
-          <label className="block mb-1">보관위치</label>
+          <label className="block mb-1">보관 위치</label>
           <input
             name="location"
             type="text"
-            onChange={handleChange}
             value={form.location}
+            onChange={handleChange}
             className="w-full border rounded px-2 py-1"
           />
         </div>
-
-        {/* 반납 필수 여부 */}
         <div className="flex items-center">
           <input
             name="isReturnRequired"
             type="checkbox"
-            onChange={handleChange}
             checked={form.isReturnRequired}
+            onChange={handleChange}
             className="mr-2"
           />
           <label>반납 필수 여부</label>
