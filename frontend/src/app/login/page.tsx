@@ -71,7 +71,7 @@ export default function LoginPage() {
             />
           </Link>
           <h1 className="text-5xl md:text-7xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-indigo-600">
-            LOGIN
+            로그인
           </h1>
           <p className="text-lg mb-2 text-gray-600">
             재고 관리 플랫폼 Juseyo에 오신 것을 환영합니다.

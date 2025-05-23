@@ -36,18 +36,20 @@ export default function InitialSignupPage() {
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [phoneTimer, setPhoneTimer] = useState(0);
 
-  const isValidEmailFormat = (email) =>
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [isPhoneLoading, setIsPhoneLoading] = useState(false);
+
+  const isValidEmailFormat = (email: string): boolean =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidPhoneNumberFormat = (phoneNumber) =>
+  const isValidPhoneNumberFormat = (phoneNumber: string) =>
     /^010-\d{4}-\d{4}$/.test(phoneNumber);
 
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout | undefined;
     if (authCodeSent && timer > 0) {
       interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
-    } else if (timer === 0) {
-      clearInterval(interval);
-      setAuthCodeSent(false);
+    } else if (timer === 0 && authCodeSent) {
+      setAuthCodeSent(false); // 타이머가 0일 때만 상태 변경
     }
     return () => clearInterval(interval);
   }, [authCodeSent, timer]);
@@ -56,9 +58,8 @@ export default function InitialSignupPage() {
     let interval;
     if (phoneAuthCodeSent && phoneTimer > 0) {
       interval = setInterval(() => setPhoneTimer((prev) => prev - 1), 1000);
-    } else if (phoneTimer === 0) {
-      clearInterval(interval);
-      setPhoneAuthCodeSent(false);
+    } else if (phoneTimer === 0 && phoneAuthCodeSent) {
+      setPhoneAuthCodeSent(false); // 타이머가 0일 때만 상태 변경
     }
     return () => clearInterval(interval);
   }, [phoneAuthCodeSent, phoneTimer]);
@@ -91,7 +92,7 @@ export default function InitialSignupPage() {
     if (!isValidEmailFormat(formData.email))
       return alert("유효한 이메일 형식이 아닙니다.");
     try {
-      setIsLoading(true);
+      setIsEmailLoading(true);
       const isSent = await sendAuthCode(formData.email);
       if (isSent) {
         setAuthCodeSent(true);
@@ -103,7 +104,7 @@ export default function InitialSignupPage() {
     } catch {
       alert("인증번호 발급 중 오류가 발생했습니다.");
     } finally {
-      setIsLoading(false);
+      setIsEmailLoading(false);
     }
   };
 
@@ -145,7 +146,7 @@ export default function InitialSignupPage() {
     if (!isValidPhoneNumberFormat(formData.phoneNumber))
       return alert("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
     try {
-      setIsLoading(true);
+      setIsPhoneLoading(true);
       const isSent = await sendPhoneAuthCode(formData.phoneNumber);
       if (isSent) {
         setPhoneAuthCodeSent(true);
@@ -157,7 +158,7 @@ export default function InitialSignupPage() {
     } catch {
       alert("인증번호 발급 중 오류가 발생했습니다.");
     } finally {
-      setIsLoading(false);
+      setIsPhoneLoading(false);
     }
   };
 
@@ -179,7 +180,17 @@ export default function InitialSignupPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  interface FormData {
+    email: string;
+    password: string;
+    confirmPassword: string;
+    name: string;
+    phoneNumber: string;
+  }
+
+  interface HandleSubmitEvent extends React.FormEvent<HTMLFormElement> {}
+
+  const handleSubmit = (e: HandleSubmitEvent): void => {
     e.preventDefault();
     if (!isEmailChecked || isEmailDuplicated || !isEmailVerified)
       return alert("이메일 인증이 완료되지 않았습니다.");
@@ -190,7 +201,7 @@ export default function InitialSignupPage() {
   };
 
   return (
-    <div className="w-full h-screen bg-white flex items-center justify-center gap-x-50">
+    <div className="w-full h-screen bg-white flex items-center justify-center gap-x-40">
       <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center">
         <div className="pl-0">
           <Link href="/">
@@ -214,7 +225,7 @@ export default function InitialSignupPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="shadow-xl rounded-2xl overflow-hidden w-full max-w-[500px] bg-white"
+        className="shadow-xl rounded-2xl overflow-hidden w-full max-w-[800px] bg-white"
       >
         <div className="bg-[#0047AB] text-white px-8 py-5 text-center">
           <h2 className="text-2xl font-bold">회원가입</h2>
@@ -310,7 +321,7 @@ export default function InitialSignupPage() {
 
           {/* 인증 완료 메시지 */}
           {isEmailVerified && (
-            <p className="text-sm text-green-600 mt-2">
+            <p className="text-sm mt-2" style={{ color: "#0047AB" }}>
               이메일 인증이 완료되었습니다.
             </p>
           )}
@@ -390,7 +401,7 @@ export default function InitialSignupPage() {
 
             {/* 인증 완료 메시지 */}
             {isPhoneVerified && (
-              <p className="text-sm text-green-600 mt-2">
+              <p className="text-sm mt-2" style={{ color: "#0047AB" }}>
                 전화번호 인증이 완료되었습니다.
               </p>
             )}
