@@ -97,6 +97,71 @@ export default function ClientLayout({
           departmentName: userData.departmentName ?? "",
           role: userData.role ?? "user",
         });
+
+        // SSE 연결
+        const connectSSE = async () => {
+          try {
+            const response = await fetch(
+              `${API_URL}/api/v1/notifications/stream`,
+              {
+                credentials: "include",
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(`SSE 연결 실패: ${response.status}`);
+            }
+
+            const reader = response.body?.getReader();
+            if (!reader) {
+              throw new Error("SSE 스트림을 읽을 수 없습니다.");
+            }
+
+            const decoder = new TextDecoder();
+            let buffer = "";
+
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
+
+              for (const line of lines) {
+                if (line.trim() === "") continue;
+
+                if (line.startsWith("data:")) {
+                  const data = line.slice(5).trim();
+                  try {
+                    const parsed = JSON.parse(data);
+                    console.log(
+                      `🔔 [${parsed.type || "message"}] 알림 수신:`,
+                      parsed
+                    );
+
+                    // 알림 스토어에 추가
+                    useNotificationStore.getState().addNotification({
+                      id: Number(parsed.id),
+                      message: parsed.message,
+                      type: parsed.type,
+                      createdAt: parsed.createdAt,
+                      readStatus: false,
+                    });
+                  } catch (e) {
+                    console.log(`💬 [message] 텍스트 메시지: ${data}`);
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error("SSE 연결 오류:", error);
+            // 3초 후 재연결 시도
+            setTimeout(connectSSE, 3000);
+          }
+        };
+
+        connectSSE();
       } catch (error) {
         console.error("사용자 정보 조회 실패:", error);
         setNoLoginUser();

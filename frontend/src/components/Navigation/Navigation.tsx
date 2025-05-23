@@ -37,8 +37,8 @@ export default function Navigation({
     if (pathname.includes("search")) return "search";
     if (pathname.includes("inventory")) return "inventory";
     if (pathname.includes("request")) return "request";
-    if (pathname.includes("incoming")) return "incoming";
-    if (pathname.includes("outgoing")) return "outgoing";
+    if (pathname.includes("inbound")) return "inbound";
+    if (pathname.includes("outbound")) return "outbound";
     if (pathname.includes("page-management")) return "page-management";
     if (pathname.includes("department")) return "department";
     if (pathname.includes("category")) return "category";
@@ -199,9 +199,9 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/incoming"
+              href="/inbound"
               className={`menu-link ${
-                activeMenu === "incoming" ? "active" : ""
+                activeMenu === "inbound" ? "active" : ""
               }`}
               onClick={() => onPageChange?.("incoming")}
             >
@@ -211,9 +211,9 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/outgoing"
+              href="/outbound"
               className={`menu-link ${
-                activeMenu === "outgoing" ? "active" : ""
+                activeMenu === "outbound" ? "active" : ""
               }`}
               onClick={() => onPageChange?.("outgoing")}
             >
