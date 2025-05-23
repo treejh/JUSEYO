@@ -5,6 +5,8 @@ package com.example.backend.domain.user.service;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.department.service.DepartmentService;
+import com.example.backend.domain.user.dto.request.EmailRequestDto;
+import com.example.backend.domain.user.dto.request.PhoneRequestDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForManagerResponseDto;
 import com.example.backend.domain.user.entity.User;
@@ -91,6 +93,8 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
+
 
 
     @Transactional
@@ -399,6 +403,15 @@ public class UserService {
         }
     }
 
+    public boolean isValidEmail(EmailRequestDto emailRequestDto){
+        return userRepository.findByEmail(emailRequestDto.getEmail()).isPresent();
+    }
+
+    public boolean isValidPhone(PhoneRequestDto phoneRequestDto){
+        return userRepository.findByPhoneNumber(phoneRequestDto.getPhoneNumber()).isPresent();
+    }
+
+
 
 
 
@@ -534,7 +547,6 @@ public class UserService {
 
     @Transactional
     public void verifyEmailCode(EmailVerificationRequest emailVerificationRequest){
-        //이메일 중복 회원가입 불가
         validateEmail(emailVerificationRequest.getEmail());
         if(!emailService.verifiedCode(emailVerificationRequest.getEmail(),emailVerificationRequest.getAuthCode())){
             throw new BusinessLogicException(ExceptionCode.EMAIL_VERIFICATION_FAILED);

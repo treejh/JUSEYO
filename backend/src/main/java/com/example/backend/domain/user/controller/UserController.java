@@ -6,6 +6,7 @@ import com.example.backend.domain.user.dto.request.EmailRequestDto;
 import com.example.backend.domain.user.dto.request.EmailVerificationRequest;
 import com.example.backend.domain.user.dto.request.InitialManagerSignupRequestDto;
 import com.example.backend.domain.user.dto.request.ManagerSignupRequestDto;
+import com.example.backend.domain.user.dto.request.PhoneRequestDto;
 import com.example.backend.domain.user.dto.request.UserLoginRequestDto;
 import com.example.backend.domain.user.dto.request.UserPatchRequestDto;
 import com.example.backend.domain.user.dto.request.UserSignRequestDto;
@@ -14,6 +15,7 @@ import com.example.backend.domain.user.dto.response.UserListResponseDto;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.service.UserService;
 import com.example.backend.domain.role.entity.Role;
+import com.example.backend.domain.user.sms.dto.PhoneVerificationRequest;
 import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.domain.user.sms.dto.SmsRequestDto;
 import com.example.backend.domain.user.dto.response.UserProfileResponseDto;
@@ -67,7 +69,6 @@ public class UserController {
         userService.createInitialManager(initialManagerSignupRequestDto);
         return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
 
-
     }
 
     //Manager signup
@@ -79,8 +80,38 @@ public class UserController {
     public ResponseEntity signupManager(@Valid @RequestBody ManagerSignupRequestDto managerSignupRequestDto) {
         userService.createManager(managerSignupRequestDto);
         return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
+    }
+
+    @PostMapping("/duplication/email")
+    @Operation(
+            summary = "이메일 중복 확인",
+            description = "이미 존재하는 이메일인지 확인합니다. true = 존재, false = 존재 안함 "
+    )
+    public ResponseEntity duplicationEmail(@Valid @RequestBody EmailRequestDto emailRequestDto) {
+        boolean response = userService.isValidEmail(emailRequestDto);
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "이메일 중복 확인 성공", response),
+                HttpStatus.OK
+        );
+
 
     }
+
+    @PostMapping("/duplication/phone")
+    @Operation(
+            summary = "핸드폰 중복 확인",
+            description = "이미 존재하는 핸드폰 번호인지 확인합니다. true = 존재, false = 존재 안함 "
+    )
+    public ResponseEntity duplicationEmail(@Valid @RequestBody PhoneRequestDto phoneRequestDto) {
+        boolean response = userService.isValidPhone(phoneRequestDto);
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "핸드폰 중복 확인 성공", response),
+                HttpStatus.OK
+        );
+
+
+    }
+
 
     @PatchMapping("/name")
     @Operation(
@@ -386,7 +417,7 @@ public class UserController {
             description = "사용자가 입력한 인증코드를 확인하여 이메일 인증을 진행합니다. 인증번호가 유효한 경우 인증이 완료됩니다."
     )
     public ResponseEntity sendCertificationNumberValid(@Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
-        //userService.verifyEmailCode(emailVerificationRequest);
+        userService.verifyEmailCode(emailVerificationRequest);
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "이메일 인증 성공 (인증 번호 인증 성공) "),
@@ -472,8 +503,7 @@ public class UserController {
     }
 
 
-
-    @DeleteMapping()
+    @DeleteMapping
     @Operation(
             summary = "유저 삭제(manager, user)  구현  ",
             description = "유저 삭제(manager, user)를 삭제할 수 있습니다.  "

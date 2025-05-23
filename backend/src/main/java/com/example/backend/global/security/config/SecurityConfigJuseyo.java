@@ -49,7 +49,7 @@ public class SecurityConfigJuseyo {
                         //채팅
                         .requestMatchers( "/api/v1/users/chat/list/**","/api/v1/users/chat/**").hasAnyRole("MANAGER", "USER","ADMIN")
                         //회원
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**","/api/v1/users/duplication/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request","/api/v1/users/approve/**","/api/v1/users/reject/**")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
                         //비품
