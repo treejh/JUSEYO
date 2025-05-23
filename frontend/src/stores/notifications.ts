@@ -14,6 +14,7 @@ interface NotificationStore {
   markAsRead: (id: number) => void;
   markAllAsRead: () => void;
   clearNotifications: () => void;
+  fetchNotifications: () => Promise<void>;
 }
 
 export const useNotificationStore = create<NotificationStore>((set) => ({
@@ -22,6 +23,25 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
     set((state) => ({
       notifications: [notification, ...state.notifications],
     })),
+  fetchNotifications: async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications?page=0&size=10`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch notifications");
+      }
+
+      const data = await response.json();
+      set({ notifications: data.notifications });
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  },
   markAsRead: async (id) => {
     try {
       const response = await fetch(

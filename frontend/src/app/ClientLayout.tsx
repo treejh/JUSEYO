@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
@@ -15,8 +15,13 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+
   // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const isAuthPage =
+    pathname.startsWith("/login") ||
+    pathname === "/signup" ||
+    pathname.startsWith("/find/");
   const isRootPage = pathname === "/";
   const shouldHideNav = isAuthPage || isRootPage;
 
@@ -101,6 +106,18 @@ export default function ClientLayout({
     fetchUserData();
   }, [isLogin]); // 의존성 배열에서 setLoginUser와 setNoLoginUser 제거
 
+  // 로그인되지 않은 사용자가 접근 시 리다이렉트
+  useEffect(() => {
+    // 로그인 여부 확인 중일 때는 리다이렉트하지 않음
+    if (isLoginUserPending) return;
+
+    // 로그인되지 않은 사용자가 인증이 필요한 페이지에 접근하려고 할 때 리다이렉트
+    if (!isLogin && !isAuthPage && !isRootPage) {
+      alert("로그인이 필요한 페이지입니다.");
+      router.push("/login/type");
+    }
+  }, [isLogin, isAuthPage, isRootPage, isLoginUserPending, router]);
+
   if (isLoginUserPending) {
     return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
   }
@@ -113,16 +130,28 @@ export default function ClientLayout({
         } bg-white`}
       >
         {!isAuthPage && <Header />}
-        <main className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}>
-          <div className="flex relative">
+        <main
+          className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
+        >
+          <div className="flex">
             {/* 네비게이션 사이드바 */}
             {!shouldHideNav && (
-              <Navigation 
-                userRole={loginUser?.role?.replace('ROLE_', '') as 'ADMIN' | 'MANAGER' | 'USER'}
-                isSidebarCollapsed={sidebarCollapsed}
-                onToggleSidebar={toggleSidebar}
-              />
-
+              <div
+                className={`juseyo-sidebar ${
+                  sidebarCollapsed ? "sidebar-collapsed" : ""
+                }`}
+              >
+                <Navigation
+                  userRole={
+                    loginUser?.role?.replace("ROLE_", "") as
+                      | "ADMIN"
+                      | "MANAGER"
+                      | "USER"
+                  }
+                  isSidebarCollapsed={sidebarCollapsed}
+                  onToggleSidebar={toggleSidebar}
+                />
+              </div>
             )}
 
             {/* 메인 콘텐츠 */}

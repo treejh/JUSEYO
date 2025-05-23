@@ -98,10 +98,12 @@ public class CategoryService {
     public List<CategoryResponseDTO> findAllCategories(User user) {
         Long dashboardId = getDashboardId(user);
         List<Category> categories = categoryRepository.findByManagementDashboardId(dashboardId);
+
         return categories.stream()
                 .map(CategoryResponseDTO::fromEntity)
                 .toList();
     }
+
 
     public CategoryResponseDTO findCategoryById(Long id, User user) {
         Long dashboardId = getDashboardId(user);
@@ -115,4 +117,8 @@ public class CategoryService {
 
         return CategoryResponseDTO.fromEntity(category);
     }
+
+
+
+
 }
