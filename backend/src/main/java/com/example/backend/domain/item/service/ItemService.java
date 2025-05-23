@@ -201,6 +201,30 @@ public class ItemService {
         return repo.searchItemsWithCategory(managementDashboardId, keyword, pageable);
     }
 
+    /**
+     * 로그인한 사용자의 관리페이지에 속한 ACTIVE 품목 전체 조회
+     */
+    @Transactional(readOnly = true)
+    public List<ItemResponseDto> getAllActiveItems() {
+        // (Optional) 관리페이지 필터까지 적용하고 싶다면 아래처럼:
+        Long userId = tokenService.getIdFromToken();
+        Long mgmtId = userRepo.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        // ① 전체 ACTIVE 아이템 가져오기
+        List<Item> items = repo.findAllByStatus(Status.ACTIVE);
+
+        // ② 필요하다면 관리페이지로 한번더 필터
+        items = items.stream()
+                .filter(i -> i.getManagementDashboard().getId().equals(mgmtId))
+                .toList();
+
+        return items.stream()
+                .map(this::mapToDto)  // 기존 mapToDto 사용
+                .toList();
+    }
+
     /** 프론트 중복체크용 */
     @Transactional(readOnly = true)
     public boolean existsActiveName(String name) {
