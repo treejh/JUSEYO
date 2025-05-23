@@ -12,11 +12,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/items")
@@ -28,15 +31,27 @@ public class ItemController {
 
     @Operation(summary = "비품 등록", description = "새로운 비품을 등록합니다. (매니저 권한 필요)")
     @PreAuthorize("hasRole('MANAGER')")
-    @PostMapping
-    public ItemResponseDto create(@RequestBody ItemRequestDto dto) {
+    @PostMapping(
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ItemResponseDto create(
+            @ModelAttribute ItemRequestDto dto   // ← @RequestBody → @ModelAttribute
+    ) {
         return service.createItem(dto);
     }
 
     @Operation(summary = "비품 수정", description = "비품 정보를 수정합니다. (매니저 권한 필요)")
     @PreAuthorize("hasRole('MANAGER')")
-    @PutMapping("/{id}")
-    public ItemResponseDto update(@PathVariable Long id, @RequestBody ItemRequestDto dto) {
+    @PutMapping(
+            value = "/{id}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ItemResponseDto update(
+            @PathVariable Long id,
+            @ModelAttribute ItemRequestDto dto   // ← @RequestBody → @ModelAttribute 로 변경
+    ) {
         return service.updateItem(id, dto);
     }
 
@@ -74,5 +89,12 @@ public class ItemController {
         Pageable pageable = PageRequest.of(page, size, sorting);
 
         return ResponseEntity.ok(service.getItemsPagedSorted(pageable));
+    }
+
+    /** 비품명 중복 여부 체크 */
+    @GetMapping("/exists")
+    public Map<String, Boolean> existsByName(@RequestParam String name) {
+        boolean exists = service.existsActiveName(name);
+        return Collections.singletonMap("exists", exists);
     }
 }
