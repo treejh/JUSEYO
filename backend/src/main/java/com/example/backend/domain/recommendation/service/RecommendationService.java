@@ -33,7 +33,7 @@ public class RecommendationService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<List<OutHistoryDto>> request = new HttpEntity<>(history, headers);
-        String url = flaskUrl + userId;
+        String url = flaskUrl +"recommend?userId=" + userId;
 
         // 3. Flask 서버에 POST 요청
         ResponseEntity<List> response = restTemplate.exchange(

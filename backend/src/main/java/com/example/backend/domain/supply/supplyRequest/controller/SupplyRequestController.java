@@ -1,15 +1,21 @@
 package com.example.backend.domain.supply.supplyRequest.controller;
 
 import com.example.backend.domain.supply.supplyRequest.dto.request.SupplyRequestRequestDto;
+import com.example.backend.domain.supply.supplyRequest.dto.response.LentItemDto;
 import com.example.backend.domain.supply.supplyRequest.service.SupplyRequestService;
 import com.example.backend.domain.user.service.UserService;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.domain.supply.supplyRequest.dto.response.SupplyRequestResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -122,5 +128,19 @@ public class SupplyRequestController {
             @PathVariable Long userId) {
         return ResponseEntity.ok(supplyRequestService.getSupplyRequestCountsByApprovalStatus(userId));
     }
+    @GetMapping("/{userId}/lent-items")
+    @Operation(summary = "사용자의 대여 물품 조회", description = "특정 사용자가 대여 중인 물품 목록을 조회합니다.")
+    public Page<LentItemDto> getLentItems(
+            @PathVariable Long userId,
+            @Parameter(description = "페이지 번호 (1부터 시작)", example = "1")
+            @RequestParam(defaultValue = "1") int page,
+
+            @Parameter(description = "페이지 크기", example = "10")
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return supplyRequestService.getLentItems(userId, pageable);
+    }
+
 
 }

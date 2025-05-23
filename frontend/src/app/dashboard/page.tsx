@@ -98,11 +98,10 @@ interface StatusCount {
 }
 
 interface RentalItem {
-  id: number;
   itemName: string;
-  rentalDate: string;
-  expectedReturnDate: string;
-  status: 'RENTED' | 'OVERDUE' | 'RETURNED';
+  useDate: string;
+  returnDate: string;
+  rentStatus: 'RENTING' | 'OVERDUE' | 'RETURNED';
 }
 
 export default function DashboardPage() {
@@ -820,6 +819,8 @@ export default function DashboardPage() {
   // 일반 사용자 대시보드 뷰
   const UserDashboard = () => {
     const [userRequests, setUserRequests] = useState<SupplyRequest[]>([]);
+    const [recommendedItems, setRecommendedItems] = useState<Array<{id: number, name: string, emoji: string}>>([]);
+    const [rentalItems, setRentalItems] = useState<RentalItem[]>([]);
     const [statusCounts, setStatusCounts] = useState<StatusCount>({
       REQUESTED: 0,
       APPROVED: 0,
@@ -827,32 +828,10 @@ export default function DashboardPage() {
       RETURN_PENDING: 0,
       RETURNED: 0
     });
-    const [rentalItems, setRentalItems] = useState<RentalItem[]>([
-      {
-        id: 1,
-        itemName: "노트북",
-        rentalDate: "2024-03-15",
-        expectedReturnDate: "2024-03-22",
-        status: "RENTED"
-      },
-      {
-        id: 2,
-        itemName: "태블릿",
-        rentalDate: "2024-03-10",
-        expectedReturnDate: "2024-03-17",
-        status: "OVERDUE"
-      },
-      {
-        id: 3,
-        itemName: "프로젝터",
-        rentalDate: "2024-03-01",
-        expectedReturnDate: "2024-03-08",
-        status: "RETURNED"
-      }
-    ]);
-
-    // 데이터 로딩 상태 추가
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const pageSize = 5;
 
     useEffect(() => {
       let isMounted = true;
@@ -862,6 +841,82 @@ export default function DashboardPage() {
           setIsLoading(true);
           const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
           if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
+
+          // 대여 물품 API 호출
+          const rentalResponse = await fetch(
+            `${API_URL}/api/v1/supply-requests/${loginUser?.id}/lent-items?page=${currentPage}&size=${pageSize}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              credentials: "include",
+            }
+          );
+
+          if (!rentalResponse.ok) {
+            throw new Error("대여 물품을 불러오는데 실패했습니다.");
+          }
+
+          const rentalData = await rentalResponse.json();
+          
+          if (isMounted) {
+            setRentalItems(rentalData.content.map((item: any) => ({
+              itemName: item.itemName,
+              useDate: item.useDate,
+              returnDate: item.returnDate,
+              rentStatus: item.rentStatus
+            })));
+            setTotalPages(rentalData.totalPages);
+          }
+
+          // 추천 비품 API 호출 추가
+          const recommendResponse = await fetch(`${API_URL}/api/v1/recommend?userId=${loginUser?.id}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            credentials: "include",
+          });
+
+          if (!recommendResponse.ok) {
+            throw new Error("추천 비품을 불러오는데 실패했습니다.");
+          }
+
+          const recommendData = await recommendResponse.json();
+          
+          // 이모지 매핑 함수
+          const getEmoji = (itemName: string) => {
+            const emojiMap: { [key: string]: string } = {
+              '용지': '📄',
+              '볼펜': '��️',
+              '포스트잇': '📊',
+              '프린터': '🖨️',
+              '클립': '🖇️',
+              '멀티탭': '🔌',
+              '마우스': '🖱️',
+              '키보드': '⌨️',
+              '모니터': '🖥️',
+              '노트북': '💻',
+              '의자': '🪑',
+              '책상': '🪑',
+            };
+
+            const matchedKey = Object.keys(emojiMap).find(key => itemName.toLowerCase().includes(key.toLowerCase()));
+            return matchedKey ? emojiMap[matchedKey] : '📦';
+          };
+
+          if (isMounted) {
+            setRecommendedItems(
+              recommendData.map((item: any) => ({
+                id: item.id,
+                name: item.name,
+                emoji: getEmoji(item.name)
+              }))
+            );
+          }
 
           // 두 API 호출을 병렬로 처리
           const [statusResponse, requestsResponse] = await Promise.all([
@@ -936,7 +991,46 @@ export default function DashboardPage() {
       return () => {
         isMounted = false;
       };
-    }, [loginUser?.id, router]); // 의존성 배열 최적화
+    }, [loginUser?.id, router, currentPage]); // currentPage 의존성 추가
+
+    // 페이지 변경 핸들러
+    const handlePageChange = (page: number) => {
+      setCurrentPage(page);
+    };
+
+    // 대여 상태에 따른 스타일과 텍스트
+    const getRentalStatusStyle = (status: RentalItem['rentStatus']) => {
+      switch (status) {
+        case 'RENTING':
+          return {
+            bgColor: 'bg-blue-50',
+            textColor: 'text-blue-700',
+            hoverBg: 'group-hover:bg-blue-100',
+            text: '대여중'
+          };
+        case 'OVERDUE':
+          return {
+            bgColor: 'bg-red-50',
+            textColor: 'text-red-700',
+            hoverBg: 'group-hover:bg-red-100',
+            text: '연체'
+          };
+        case 'RETURNED':
+          return {
+            bgColor: 'bg-green-50',
+            textColor: 'text-green-700',
+            hoverBg: 'group-hover:bg-green-100',
+            text: '반납완료'
+          };
+        default:
+          return {
+            bgColor: 'bg-gray-50',
+            textColor: 'text-gray-700',
+            hoverBg: 'group-hover:bg-gray-100',
+            text: '알 수 없음'
+          };
+      }
+    };
 
     // 날짜 포맷 함수
     const formatDate = (dateString: string) => {
@@ -973,7 +1067,17 @@ export default function DashboardPage() {
 
     return (
       <div className="max-w-[1536px] mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-8">대시보드</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold">대시보드</h1>
+          <button
+            onClick={() => router.push('/item/supplyrequest/create')}
+            className="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2"
+          >
+            <span className="text-lg">+</span>
+            새 물품 요청하기
+          </button>
+        </div>
+
         {/* 비품 요청 현황 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-lg p-6 shadow-sm col-span-full">
@@ -1066,35 +1170,32 @@ export default function DashboardPage() {
           {/* 자주 요청하는 비품 */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4">사용자 맞춤 추천 비품</h2>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="bg-gray-50 p-3 rounded-lg text-center cursor-pointer hover:bg-gray-100">
-                <span className="text-2xl mb-2 block">📄</span>
-                <span className="text-sm">A4 용지</span>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg text-center cursor-pointer hover:bg-gray-100">
-                <span className="text-2xl mb-2 block">🖊️</span>
-                <span className="text-sm">볼펜</span>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg text-center cursor-pointer hover:bg-gray-100">
-                <span className="text-2xl mb-2 block">📊</span>
-                <span className="text-sm">포스트잇</span>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg text-center cursor-pointer hover:bg-gray-100">
-                <span className="text-2xl mb-2 block">🖨️</span>
-                <span className="text-sm">프린터</span>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg text-center cursor-pointer hover:bg-gray-100">
-                <span className="text-2xl mb-2 block">🖥️</span>
-                <span className="text-sm">클립</span>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg text-center cursor-pointer hover:bg-gray-100">
-                <span className="text-2xl mb-2 block">📌</span>
-                <span className="text-sm">멀티탭</span>
-              </div>
+            <div className="grid grid-cols-3 gap-4">
+              {isLoading ? (
+                // 로딩 상태 표시
+                Array(6).fill(null).map((_, index) => (
+                  <div key={index} className="bg-gray-50 p-3 rounded-lg text-center animate-pulse">
+                    <div className="w-12 h-12 mx-auto mb-2 bg-gray-200 rounded-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+                  </div>
+                ))
+              ) : recommendedItems.length > 0 ? (
+                recommendedItems.slice(0, 6).map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => router.push(`/item/supplyrequest/create?itemId=${item.id}`)}
+                    className="bg-gray-50 p-3 rounded-lg text-center cursor-pointer hover:bg-gray-100 transition-all duration-300"
+                  >
+                    <span className="text-2xl mb-2 block">{item.emoji}</span>
+                    <span className="text-sm line-clamp-1">{item.name}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-3 text-center py-8 text-gray-500">
+                  <p>추천 비품이 없습니다.</p>
+                </div>
+              )}
             </div>
-            <button className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors">
-              새 물품 요청하기
-            </button>
           </div>
 
           {/* 사용자 정보 */}
@@ -1205,43 +1306,57 @@ export default function DashboardPage() {
               </div>
             </div>
             
-            {rentalItems.length > 0 ? (
-              <div className="space-y-5">
-                {rentalItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="group flex items-center justify-between p-5 rounded-xl border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all duration-300 ease-in-out"
-                  >
+            {isLoading ? (
+              <div className="space-y-4">
+                {Array(3).fill(null).map((_, index) => (
+                  <div key={index} className="animate-pulse flex items-center justify-between p-5 rounded-xl border border-gray-100">
                     <div className="flex items-center space-x-6">
-                      <div className="flex-shrink-0">
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center shadow-sm group-hover:from-purple-100 group-hover:to-purple-200 transition-all duration-300">
-                          <span className="text-2xl">📦</span>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-purple-700 transition-colors duration-300">
-                          {item.itemName}
-                        </h3>
-                        <div className="flex space-x-4 text-sm text-gray-500">
-                          <span>대여일: {formatDate(item.rentalDate)}</span>
-                          <span>반납예정일: {formatDate(item.expectedReturnDate)}</span>
-                        </div>
+                      <div className="w-14 h-14 bg-gray-200 rounded-xl"></div>
+                      <div className="space-y-3">
+                        <div className="h-4 bg-gray-200 rounded w-48"></div>
+                        <div className="h-3 bg-gray-200 rounded w-32"></div>
                       </div>
                     </div>
-                    <div className="flex items-center">
-                      <span className={`
-                        px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300
-                        ${item.status === 'RENTED' 
-                          ? 'bg-blue-50 text-blue-700 group-hover:bg-blue-100' 
-                          : item.status === 'OVERDUE' 
-                          ? 'bg-red-50 text-red-700 group-hover:bg-red-100' 
-                          : 'bg-green-50 text-green-700 group-hover:bg-green-100'}
-                      `}>
-                        {item.status === 'RENTED' ? '대여중' : item.status === 'OVERDUE' ? '연체' : '반납완료'}
-                      </span>
-                    </div>
+                    <div className="w-20 h-8 bg-gray-200 rounded-lg"></div>
                   </div>
                 ))}
+              </div>
+            ) : rentalItems.length > 0 ? (
+              <div className="space-y-4">
+                {rentalItems.map((item, index) => {
+                  const status = getRentalStatusStyle(item.rentStatus);
+                  return (
+                    <div
+                      key={index}
+                      className="group flex items-center justify-between p-5 rounded-xl border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all duration-300 ease-in-out"
+                    >
+                      <div className="flex items-center space-x-6">
+                        <div className="flex-shrink-0">
+                          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center shadow-sm group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300">
+                            <span className="text-2xl">📦</span>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-blue-700 transition-colors duration-300">
+                            {item.itemName}
+                          </h3>
+                          <div className="flex space-x-4 text-sm text-gray-500">
+                            <span>대여일: {formatDate(item.useDate)}</span>
+                            <span>반납예정일: {formatDate(item.returnDate)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <span className={`
+                          px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300
+                          ${status.bgColor} ${status.textColor} ${status.hoverBg}
+                        `}>
+                          {status.text}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
@@ -1252,6 +1367,27 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-lg font-medium">대여중인 물품이 없습니다</p>
                 <p className="text-sm text-gray-400 mt-1">새로운 물품을 대여해보세요</p>
+              </div>
+            )}
+
+            {/* 페이지네이션 */}
+            {!isLoading && rentalItems.length > 0 && totalPages > 1 && (
+              <div className="flex justify-center mt-6 gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`
+                      px-3 py-1 rounded-md text-sm font-medium transition-colors
+                      ${currentPage === page
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                      }
+                    `}
+                  >
+                    {page}
+                  </button>
+                ))}
               </div>
             )}
           </div>
