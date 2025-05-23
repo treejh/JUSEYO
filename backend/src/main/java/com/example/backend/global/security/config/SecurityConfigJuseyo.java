@@ -82,6 +82,10 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.GET, "/api/v1/search/items").hasAnyRole("MANAGER", "USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/search/users").hasAnyRole("MANAGER", "USER", "ADMIN")
 
+                        // 비품 요청
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/supply-requests/**").hasAnyRole("USER","MANAGER","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/supply-requests").hasAnyRole("USER","MANAGER","ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가

@@ -62,5 +62,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "WHERE i.status = :status AND i.isReturnRequired = false")
     Page<ItemLiteResponseDto> findAllAsLiteDto(@Param("status") Status status, Pageable pageable);
 
+    // 상태가 ACTIVE인 아이템 가져오기
+    List<Item> findAllByStatus(Status status);
+
 }
 

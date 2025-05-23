@@ -91,6 +91,13 @@ public class ItemController {
         return ResponseEntity.ok(service.getItemsPagedSorted(pageable));
     }
 
+    /** 기존 /all 과 별개로, isReturnRequired 필터 없이 ACTIVE 품목을 모두 내려줌 */
+    @Operation(summary = "활성 품목 전체 조회 (대여 여부 무관)")
+    @GetMapping("/active")
+    public List<ItemResponseDto> listAllActive() {
+        return service.getAllActiveItems();
+    }
+
     /** 비품명 중복 여부 체크 */
     @GetMapping("/exists")
     public Map<String, Boolean> existsByName(@RequestParam String name) {
