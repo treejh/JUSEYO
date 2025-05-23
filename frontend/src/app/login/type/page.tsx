@@ -15,7 +15,7 @@ export default function LoginTypePage() {
   };
 
   return (
-    <div className="w-full h-screen bg-white flex align-start justify-center pt-14">
+    <div className="w-full h-screen bg-white flex  overflow-hidden gap-x-11">
       <div className="w-1/11 h-full flex-shrink-0"></div>
 
       <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center ">
