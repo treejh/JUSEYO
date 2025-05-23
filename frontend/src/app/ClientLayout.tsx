@@ -21,7 +21,7 @@ export default function ClientLayout({
   const isAuthPage =
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
-    pathname.startsWith("/find/");
+    pathname.startsWith("/find");
   const isRootPage = pathname === "/";
   const shouldHideNav = isAuthPage || isRootPage;
 

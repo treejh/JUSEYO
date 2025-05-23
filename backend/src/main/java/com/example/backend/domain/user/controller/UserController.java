@@ -502,6 +502,7 @@ public class UserController {
     }
 
 
+
     @DeleteMapping
     @Operation(
             summary = "유저 삭제(manager, user)  구현  ",
