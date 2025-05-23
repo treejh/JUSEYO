@@ -174,9 +174,13 @@ export default function LoginPage() {
           >
             {isLoading ? "로그인 중..." : "로그인"}
           </button>
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-right">
             <a href="#" className="text-[#0047AB] hover:underline">
-              비밀번호를 잊으셨나요?
+              이메일 찾기
+            </a>
+            /
+            <a href="#" className="text-[#0047AB] hover:underline">
+              비밀번호 찾기
             </a>
           </div>
         </div>
