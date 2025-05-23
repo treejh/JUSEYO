@@ -20,7 +20,7 @@ export default function ClientLayout({
   // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
   const isAuthPage =
     pathname.startsWith("/login") ||
-    pathname === "/signup" ||
+    pathname.startsWith("/signup") ||
     pathname.startsWith("/find/");
   const isRootPage = pathname === "/";
   const shouldHideNav = isAuthPage || isRootPage;
