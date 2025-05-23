@@ -43,8 +43,15 @@ public class ItemController {
 
     @Operation(summary = "비품 수정", description = "비품 정보를 수정합니다. (매니저 권한 필요)")
     @PreAuthorize("hasRole('MANAGER')")
-    @PutMapping("/{id}")
-    public ItemResponseDto update(@PathVariable Long id, @RequestBody ItemRequestDto dto) {
+    @PutMapping(
+            value = "/{id}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ItemResponseDto update(
+            @PathVariable Long id,
+            @ModelAttribute ItemRequestDto dto   // ← @RequestBody → @ModelAttribute 로 변경
+    ) {
         return service.updateItem(id, dto);
     }
 
