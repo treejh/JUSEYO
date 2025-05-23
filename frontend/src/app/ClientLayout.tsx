@@ -129,7 +129,7 @@ export default function ClientLayout({
           isAuthPage ? "h-screen w-screen" : "min-h-screen"
         } bg-white`}
       >
-        {!isAuthPage && <Header />}
+        {<Header />}
         <main
           className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
         >
