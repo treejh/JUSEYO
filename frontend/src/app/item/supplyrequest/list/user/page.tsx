@@ -25,7 +25,7 @@ interface PageInfo {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-export default function SupplyRequestListPage() {
+export default function SupplyRequestUserListPage() {
   const { loginUser, isLogin } = useGlobalLoginUser();
   const isManager = isLogin && loginUser?.role === "MANAGER";
 
@@ -141,14 +141,6 @@ export default function SupplyRequestListPage() {
               >
                 <span className="text-lg">+</span> 신규 요청
               </Link>
-              {isManager && (
-                <Link
-                  href="/item/supplyrequest/manage"
-                  className="px-4 py-2 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"
-                >
-                  요청 관리
-                </Link>
-              )}
             </div>
           </div>
           {/* 통계 */}

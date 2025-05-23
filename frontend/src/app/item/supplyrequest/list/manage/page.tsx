@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
@@ -16,38 +17,47 @@ interface SupplyRequest {
   createdAt: string;
 }
 
-interface PageInfo {
-  totalElements: number;
-  totalPages: number;
-  currentPage: number;
-  size: number;
-}
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-
 export default function SupplyRequestManageListPage() {
+  const router = useRouter();
   const { loginUser, isLogin } = useGlobalLoginUser();
   const isManager = isLogin && loginUser?.role === "MANAGER";
 
   const [requests, setRequests] = useState<SupplyRequest[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // 검색 및 필터 상태
   const [searchKeyword, setSearchKeyword] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // 페이징 상태
-  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 20;
 
-  // 요청 데이터 불러오기
+  // 권한 체크: 로그인 안 됐거나 관리자가 아니면 리다이렉트
+  useEffect(() => {
+    if (!isLogin) {
+      router.push("/login");
+    } else if (!isManager) {
+      router.push("/");
+    }
+  }, [isLogin, isManager, router]);
+
+  // 관리자만 접근할 때까지 로딩 표시
+  if (!isLogin || !isManager) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">접근 권한이 없습니다.</div>
+      </div>
+    );
+  }
+
+  // 전체 요청 조회
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/supply-requests`, {
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/supply-requests`,
+        { credentials: "include" }
+      );
       if (!res.ok) {
         const msg = await res.text();
         throw new Error(`서버 오류: ${msg}`);
@@ -65,12 +75,12 @@ export default function SupplyRequestManageListPage() {
     fetchRequests();
   }, []);
 
-  // 검색/필터 변경 시 페이지 초기화
+  // 필터와 검색 바뀔 때 페이지 리셋
   useEffect(() => {
     setCurrentPage(0);
   }, [searchKeyword, startDate, endDate]);
 
-  // 상태 컬러
+  // 상태별 색상
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case "REQUESTED":
@@ -84,37 +94,35 @@ export default function SupplyRequestManageListPage() {
     }
   };
 
+  // 날짜 포맷팅
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString();
   };
 
-  // 필터링
+  // 필터링 & 검색
   const filteredRequests = requests
     .filter((req) => {
-      const matchesKeyword = req.productName
-        .toLowerCase()
-        .includes(searchKeyword.toLowerCase());
-      if (!matchesKeyword) return false;
-
-      if (startDate || endDate) {
-        const reqDate = new Date(req.createdAt);
-        if (startDate && new Date(startDate) > reqDate) return false;
-        if (endDate) {
-          const endDt = new Date(endDate);
-          endDt.setHours(23, 59, 59);
-          if (endDt < reqDate) return false;
-        }
+      if (
+        !req.productName.toLowerCase().includes(searchKeyword.toLowerCase())
+      ) {
+        return false;
+      }
+      const reqDate = new Date(req.createdAt);
+      if (startDate && new Date(startDate) > reqDate) return false;
+      if (endDate) {
+        const endDt = new Date(endDate);
+        endDt.setHours(23, 59, 59);
+        if (endDt < reqDate) return false;
       }
       return true;
     })
-    // 최신순 정렬 추가
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-  // 페이징 계산
+  // 페이징
   const totalPages = Math.ceil(filteredRequests.length / pageSize);
   const startIdx = currentPage * pageSize;
   const paginatedRequests = filteredRequests.slice(
@@ -141,14 +149,12 @@ export default function SupplyRequestManageListPage() {
               >
                 <span className="text-lg">+</span> 신규 요청
               </Link>
-              {isManager && (
-                <Link
-                  href="/item/supplyrequest/manage"
-                  className="px-4 py-2 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"
-                >
-                  요청 관리
-                </Link>
-              )}
+              <Link
+                href="/item/supplyrequest/manage"
+                className="px-4 py-2 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"
+              >
+                요청 관리
+              </Link>
             </div>
           </div>
           {/* 통계 */}
@@ -191,7 +197,8 @@ export default function SupplyRequestManageListPage() {
             </div>
           </div>
         </div>
-        {/* 검색 */}
+
+        {/* 검색/필터 */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[300px] relative">
@@ -243,6 +250,7 @@ export default function SupplyRequestManageListPage() {
             </div>
           </div>
         </div>
+
         {/* 테이블 */}
         {loading ? (
           <div className="text-center py-12">
@@ -275,11 +283,10 @@ export default function SupplyRequestManageListPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedRequests.map((req, index) => (
+                {paginatedRequests.map((req, idx) => (
                   <tr key={req.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {startIdx + index + 1}{" "}
-                      {/* 현재 페이지의 시작 인덱스 + 현재 행 인덱스 + 1 */}
+                      {startIdx + idx + 1}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {req.productName}
@@ -306,7 +313,8 @@ export default function SupplyRequestManageListPage() {
                 ))}
               </tbody>
             </table>
-            {/* 페이징 컨트롤 */}
+
+            {/* 페이징 */}
             <div className="flex justify-end items-center space-x-2 p-4">
               <button
                 disabled={currentPage === 0}
