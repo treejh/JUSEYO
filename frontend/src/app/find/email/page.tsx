@@ -17,13 +17,16 @@ export default function FindEmailPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
   const [isPhoneDuplicate, setIsPhoneDuplicate] = useState<boolean | null>(
     null
   ); // 핸드폰 번호 중복 여부
+  const [isPhoneConfirmed, setIsPhoneConfirmed] = useState(false); // 핸드폰 번호 확인 완료 여부
 
   // 핸드폰 번호 중복 확인
   const handleCheckPhoneDuplication = async () => {
-    setError("");
+    setError(""); // 에러 메시지 초기화
     if (!/^010-\d{4}-\d{4}$/.test(phoneNumber)) {
       setError("유효한 핸드폰 번호 형식을 입력해주세요. (예: 010-1234-5678)");
       return;
@@ -32,10 +35,10 @@ export default function FindEmailPage() {
     try {
       setIsLoading(true);
       const isDuplicate = await checkPhoneDuplication(phoneNumber);
-      setIsPhoneDuplicate(isDuplicate);
+      setIsPhoneDuplicate(isDuplicate); // 중복 여부 상태 업데이트
 
-      if (!isDuplicate) {
-        setError("존재하지 않는 핸드폰 번호입니다.");
+      if (isDuplicate) {
+        setIsPhoneConfirmed(true); // 핸드폰 번호 확인 완료
       }
     } catch (error) {
       setError("핸드폰 번호 확인 중 오류가 발생했습니다.");
@@ -80,6 +83,7 @@ export default function FindEmailPage() {
 
       if (success) {
         setIsPhoneVerified(true);
+        await fetchEmailByPhone(); // 인증 성공 후 이메일 가져오기
       } else {
         setError("인증번호 확인에 실패했습니다.");
       }
@@ -87,6 +91,31 @@ export default function FindEmailPage() {
       setError("인증번호 확인 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 핸드폰 번호로 이메일 가져오기
+  const fetchEmailByPhone = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/emails/phone`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phoneNumber }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("이메일 조회에 실패했습니다.");
+      }
+
+      const data = await response.json();
+      setEmail(data.data); // 서버에서 반환된 이메일 설정
+      setShowModal(true);
+    } catch (error) {
+      setError("이메일 조회 중 오류가 발생했습니다.");
     }
   };
 
@@ -104,42 +133,10 @@ export default function FindEmailPage() {
     }, 1000);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setEmail("");
-
-    if (!isPhoneVerified) {
-      setError("전화번호 인증이 완료되지 않았습니다.");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const response = await fetch(`${API_URL}/api/v1/users/find-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber }),
-      });
-
-      if (!response.ok) {
-        throw new Error("이메일 찾기에 실패했습니다.");
-      }
-
-      const data = await response.json();
-      setEmail(data.email);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "오류가 발생했습니다.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center px-4 relative">
       <form
-        onSubmit={handleSubmit}
+        onSubmit={(e) => e.preventDefault()}
         className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6"
       >
         <div className="text-center">
@@ -155,9 +152,29 @@ export default function FindEmailPage() {
           </div>
         )}
 
-        {email && (
-          <div className="bg-green-50 text-green-700 border border-green-300 px-4 py-2 rounded-lg text-sm">
-            찾은 이메일: <strong>{email}</strong>
+        {showModal && email && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+            <div className="bg-white text-gray-800 rounded-2xl shadow-2xl w-[90%] max-w-sm px-6 py-6 text-center animate-fadeIn">
+              <h3 className="text-xl font-semibold text-[#0047AB] mb-2">
+                🎉 이메일 찾기 완료
+              </h3>
+              <p className="text-gray-600 text-sm mb-4">
+                입력하신 정보로 찾은 이메일은 다음과 같습니다:
+              </p>
+              <p className="text-2xl font-bold text-[#0047AB] break-words">
+                {email}
+              </p>
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setEmail("");
+                  window.location.reload(); // ✅ 이렇게만 하면 새로고침 돼요
+                }}
+                className="mt-6 inline-block bg-[#0047AB] text-white px-5 py-2 rounded-full hover:bg-blue-800 transition"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         )}
 
@@ -171,14 +188,23 @@ export default function FindEmailPage() {
             onChange={(e) => setPhoneNumber(e.target.value)}
             placeholder="예: 010-1234-5678"
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isPhoneConfirmed} // 핸드폰 번호 확인 완료 시 비활성화
           />
           <button
             type="button"
             onClick={handleCheckPhoneDuplication}
-            className="w-full mt-2 py-2 bg-[#0047AB] text-white font-semibold rounded-xl hover:bg-blue-800 transition-all disabled:opacity-60"
-            disabled={isLoading}
+            className={`w-full mt-2 py-2 ${
+              isPhoneConfirmed
+                ? "bg-gray-500 text-white"
+                : "bg-[#0047AB] text-white"
+            } font-semibold rounded-xl hover:bg-blue-800 transition-all disabled:opacity-60`}
+            disabled={isLoading || isPhoneConfirmed} // 확인 완료 시 버튼 비활성화
           >
-            {isLoading ? "확인 중..." : "핸드폰 번호 확인"}
+            {isPhoneConfirmed
+              ? "확인 완료"
+              : isLoading
+              ? "확인 중..."
+              : "핸드폰 번호 확인"}
           </button>
         </div>
 
@@ -225,54 +251,17 @@ export default function FindEmailPage() {
                 type="button"
                 onClick={handleSendPhoneAuthCode}
                 className="w-full py-3 bg-[#0047AB] text-white font-semibold rounded-xl hover:bg-blue-800 transition-all disabled:opacity-60"
-                disabled={isLoading || phoneAuthCodeSent}
+                disabled={isLoading || (phoneAuthCodeSent && phoneTimer > 0)}
               >
-                {isLoading ? "전송 중..." : "인증번호 받기"}
+                {isLoading
+                  ? "전송 중..."
+                  : phoneTimer === 0
+                  ? "다시 인증번호 받기"
+                  : "인증번호 받기"}
               </button>
             )}
           </>
         )}
-
-        <button
-          type="submit"
-          className="w-full py-3 bg-[#0047AB] text-white font-semibold rounded-xl hover:bg-blue-800 transition-all disabled:opacity-60"
-          disabled={isLoading || !isPhoneVerified}
-        >
-          {isLoading ? "찾는 중..." : "이메일 찾기"}
-        </button>
-        <div className="bg-gray-50 px-8 py-4 text-center">
-          <div className="flex justify-center space-x-6">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center text-[#0047AB] font-medium hover:underline text-base mr-4"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-1"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-              </svg>
-              홈으로 돌아가기
-            </Link>
-
-            <Link
-              href="/login/type"
-              className="inline-flex items-center justify-center text-[#0047AB] font-medium hover:underline text-base"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-1"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-              </svg>
-              로그인 하기
-            </Link>
-          </div>
-        </div>
       </form>
     </div>
   );
