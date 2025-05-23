@@ -416,7 +416,7 @@ export default function Home() {
                 ) : (
                   <div className="flex flex-wrap gap-4">
                     <button
-                      onClick={() => router.push("/login")}
+                      onClick={() => router.push("/login/type")}
                       className="px-8 py-3 bg-gradient-to-r from-blue-700 to-indigo-600 text-white rounded-full font-medium shadow-lg hover:shadow-indigo-200 transition-all flex items-center gap-2 group"
                     >
                       <span>로그인</span>

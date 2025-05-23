@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -111,4 +112,15 @@ public class SupplyRequestController {
     public ResponseEntity<List<SupplyRequestResponseDto>> getAllRequests() {
         return ResponseEntity.ok(supplyRequestService.getAllRequests());
     }
+
+    @GetMapping("/status-count/{userId}")
+    @Operation(
+            summary = "유저별 승인 상태별 비품 요청 건수 조회",
+            description = "지정된 userId에 대해 ApprovalStatus(REQUESTED, APPROVED, REJECTED) 별 SupplyRequest의 건수를 반환합니다."
+    )
+    public ResponseEntity<Map<ApprovalStatus, Long>> getApprovalStatusCountsByUser(
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(supplyRequestService.getSupplyRequestCountsByApprovalStatus(userId));
+    }
+
 }

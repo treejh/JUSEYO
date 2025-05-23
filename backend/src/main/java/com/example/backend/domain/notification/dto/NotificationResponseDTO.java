@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class NotificationResponseDTO {
 
     private Long id;
-    private NotificationType type;
+    private NotificationType notificationType;
     private String message;
     private boolean readStatus;
     private LocalDateTime createdAt;
@@ -21,7 +21,7 @@ public class NotificationResponseDTO {
     public static NotificationResponseDTO from(Notification notification) {
         return NotificationResponseDTO.builder()
                 .id(notification.getId())
-                .type(notification.getNotificationType())
+                .notificationType(notification.getNotificationType())
                 .message(notification.getMessage())
                 .readStatus(notification.isReadStatus())
                 .createdAt(notification.getCreatedAt())

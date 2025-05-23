@@ -31,7 +31,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -268,6 +270,18 @@ public class SupplyRequestService {
         req.setReRequest(repo.existsByUserIdAndItemId(userId, req.getItem().getId()));
         return mapToDto(req);
     }
+
+    public Map<ApprovalStatus, Long> getSupplyRequestCountsByApprovalStatus(Long userId) {
+        List<Object[]> results = repo.countByApprovalStatusByUserId(userId);
+        Map<ApprovalStatus, Long> countMap = new HashMap<>();
+        for (Object[] result : results) {
+            ApprovalStatus status = (ApprovalStatus) result[0];
+            Long count = (Long) result[1];
+            countMap.put(status, count);
+        }
+        return countMap;
+    }
+
 
     private SupplyRequestResponseDto mapToDto(SupplyRequest e) {
         return SupplyRequestResponseDto.builder()

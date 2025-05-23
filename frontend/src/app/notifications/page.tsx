@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useEffect, useState } from "react";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { formatDistanceToNow, format } from "date-fns";
@@ -57,60 +58,160 @@ interface NotificationPageResponse {
 
 const NOTIFICATION_TYPE_LABELS: Record<
   NotificationType,
-  { label: string; color: string }
+  { label: string; color: string; icon: React.ReactElement }
 > = {
-  SUPPLY_REQUEST: { label: "비품 요청", color: "bg-blue-100 text-blue-800" },
-  SUPPLY_RETURN: { label: "비품 반납", color: "bg-blue-100 text-blue-800" },
+  SUPPLY_REQUEST: {
+    label: "비품 요청",
+    color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  SUPPLY_RETURN: {
+    label: "비품 반납",
+    color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
   SUPPLY_RETURN_ALERT: {
     label: "비품 반납 알림",
     color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
-  STOCK_REACHED: { label: "재고 도달", color: "bg-blue-100 text-blue-800" },
-  STOCK_SHORTAGE: { label: "재고 부족", color: "bg-red-100 text-red-800" },
+  STOCK_REACHED: {
+    label: "재고 도달",
+    color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  STOCK_SHORTAGE: {
+    label: "재고 부족",
+    color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
   SUPPLY_REQUEST_MODIFIED: {
     label: "비품 요청 수정",
     color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   SUPPLY_REQUEST_APPROVED: {
     label: "비품 요청 승인",
     color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   SUPPLY_REQUEST_REJECTED: {
     label: "비품 요청 반려",
     color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   SUPPLY_REQUEST_DELAYED: {
     label: "비품 요청 처리 지연",
     color: "bg-yellow-100 text-yellow-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   RETURN_DUE_DATE_EXCEEDED: {
     label: "지정 반납일 초과",
     color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   RETURN_DUE_SOON: {
     label: "지정 반납일 임박",
     color: "bg-yellow-100 text-yellow-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   LONG_TERM_UNRETURNED_SUPPLIES: {
     label: "장기 미반납",
     color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   USER_SENT_MESSAGE_TO_MANAGER: {
     label: "채팅 알림",
     color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
-  NEW_CHAT: { label: "새로운 채팅", color: "bg-green-100 text-green-800" },
+  NEW_CHAT: {
+    label: "새로운 채팅",
+    color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
   SYSTEM_MAINTENANCE: {
     label: "시스템 점검",
     color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   ADMIN_APPROVAL_ALERT: {
     label: "관리 페이지 승인",
     color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   MANAGER_APPROVAL_ALERT: {
     label: "매니저 승인",
     color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
 };
 
@@ -147,7 +248,7 @@ export default function NotificationsPage() {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         size: pageSize.toString(),
-        ...(selectedType !== "ALL" && { notificationType: selectedType }),
+        ...(selectedType !== "ALL" && { type: selectedType }),
         ...(showUnreadOnly && { unreadOnly: "true" }),
       });
 
@@ -175,7 +276,7 @@ export default function NotificationsPage() {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (loginUser.id) {
       fetchNotifications();
     }
@@ -569,15 +670,17 @@ export default function NotificationsPage() {
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <span
-                              className={`px-2 py-1 rounded text-sm ${
+                              className={`px-3 py-1 rounded-full inline-flex items-center gap-2 ${
                                 NOTIFICATION_TYPE_LABELS[
                                   notification.notificationType
                                 ]?.color || "bg-gray-100 text-gray-800"
                               }`}
                             >
-                              {NOTIFICATION_TYPE_LABELS[
-                                notification.notificationType
-                              ]?.label || "알림"}
+                              <span className="text-sm font-medium">
+                                {NOTIFICATION_TYPE_LABELS[
+                                  notification.notificationType
+                                ]?.label || "알림"}
+                              </span>
                             </span>
                             {!notification.readStatus && (
                               <span className="w-2 h-2 bg-blue-500 rounded-full"></span>

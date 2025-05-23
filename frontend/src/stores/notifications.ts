@@ -3,9 +3,9 @@ import { create } from "zustand";
 interface Notification {
   id: number;
   message: string;
-  type: string;
+  notificationType: string;
   createdAt: string;
-  read: boolean;
+  readStatus: boolean;
 }
 
 interface NotificationStore {
@@ -14,14 +14,41 @@ interface NotificationStore {
   markAsRead: (id: number) => void;
   markAllAsRead: () => void;
   clearNotifications: () => void;
+  fetchNotifications: () => Promise<void>;
 }
 
 export const useNotificationStore = create<NotificationStore>((set) => ({
   notifications: [],
   addNotification: (notification) =>
-    set((state) => ({
-      notifications: [notification, ...state.notifications],
-    })),
+    set((state) => {
+      // 이미 존재하는 알림인지 확인
+      const exists = state.notifications.some((n) => n.id === notification.id);
+      if (exists) {
+        return state; // 이미 존재하면 상태 변경하지 않음
+      }
+      return {
+        notifications: [notification, ...state.notifications],
+      };
+    }),
+  fetchNotifications: async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications?page=0&size=10`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch notifications");
+      }
+
+      const data = await response.json();
+      set({ notifications: data.notifications });
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  },
   markAsRead: async (id) => {
     try {
       const response = await fetch(
@@ -37,7 +64,9 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
       }
 
       set((state) => ({
-        notifications: state.notifications.filter((n) => n.id !== id),
+        notifications: state.notifications.map((n) =>
+          n.id === id ? { ...n, readStatus: true } : n
+        ),
       }));
     } catch (error) {
       console.error("Error marking notification as read:", error);
@@ -57,7 +86,12 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
         throw new Error("Failed to mark all notifications as read");
       }
 
-      set({ notifications: [] });
+      set((state) => ({
+        notifications: state.notifications.map((n) => ({
+          ...n,
+          readStatus: true,
+        })),
+      }));
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
     }
