@@ -22,80 +22,66 @@ export default function InitialSignupPage() {
     phoneNumber: "",
   });
   const [authCode, setAuthCode] = useState("");
-  const [isEmailChecked, setIsEmailChecked] = useState(false); // 중복 확인 완료 여부
-  const [isEmailDuplicated, setIsEmailDuplicated] = useState(false); // 중복 여부 (true면 중복된 것)
+  const [isEmailChecked, setIsEmailChecked] = useState(false);
+  const [isEmailDuplicated, setIsEmailDuplicated] = useState(false);
   const [authCodeSent, setAuthCodeSent] = useState(false);
-  const [isEmailVerified, setIsEmailVerified] = useState(false); // 인증 완료 여부
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(0);
 
   const [phoneAuthCode, setPhoneAuthCode] = useState("");
-  const [isPhoneChecked, setIsPhoneChecked] = useState(false); // 중복 확인 완료 여부
-  const [isPhoneDuplicated, setIsPhoneDuplicated] = useState(false); // 중복 여부
+  const [isPhoneChecked, setIsPhoneChecked] = useState(false);
+  const [isPhoneDuplicated, setIsPhoneDuplicated] = useState(false);
   const [phoneAuthCodeSent, setPhoneAuthCodeSent] = useState(false);
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false); // 인증 완료 여부
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [phoneTimer, setPhoneTimer] = useState(0);
 
-  // 이메일 형식 검증
-  const isValidEmailFormat = (email: string) =>
+  const isValidEmailFormat = (email) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidPhoneNumberFormat = (phoneNumber) =>
+    /^010-\d{4}-\d{4}$/.test(phoneNumber);
 
-  // 타이머 관리
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-
+    let interval;
     if (authCodeSent && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
+      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
     } else if (timer === 0) {
       clearInterval(interval);
       setAuthCodeSent(false);
     }
-
     return () => clearInterval(interval);
   }, [authCodeSent, timer]);
 
-  // 전화번호 타이머 관리
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-
+    let interval;
     if (phoneAuthCodeSent && phoneTimer > 0) {
-      interval = setInterval(() => {
-        setPhoneTimer((prev) => prev - 1);
-      }, 1000);
+      interval = setInterval(() => setPhoneTimer((prev) => prev - 1), 1000);
     } else if (phoneTimer === 0) {
       clearInterval(interval);
       setPhoneAuthCodeSent(false);
     }
-
     return () => clearInterval(interval);
   }, [phoneAuthCodeSent, phoneTimer]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEmailCheck = async () => {
     if (!formData.email) return alert("이메일을 입력해주세요.");
     if (!isValidEmailFormat(formData.email))
       return alert("유효한 이메일 형식이 아닙니다.");
-
     try {
       const isDuplicated = await checkEmailDuplication(formData.email);
       setIsEmailChecked(true);
       setIsEmailDuplicated(isDuplicated);
-      if (!isDuplicated) {
-        alert("사용 가능한 이메일입니다. 인증번호를 발급받아주세요.");
-      } else {
-        alert("이미 사용 중인 이메일입니다.");
-      }
-    } catch (error) {
-      console.error(error);
+      alert(
+        isDuplicated
+          ? "이미 사용 중인 이메일입니다."
+          : "사용 가능한 이메일입니다. 인증번호를 발급받아주세요."
+      );
+    } catch {
       alert("중복 확인 중 오류가 발생했습니다.");
     }
   };
@@ -104,7 +90,6 @@ export default function InitialSignupPage() {
     if (!formData.email) return alert("이메일을 입력해주세요.");
     if (!isValidEmailFormat(formData.email))
       return alert("유효한 이메일 형식이 아닙니다.");
-
     try {
       setIsLoading(true);
       const isSent = await sendAuthCode(formData.email);
@@ -115,8 +100,7 @@ export default function InitialSignupPage() {
       } else {
         alert("인증번호 발급 실패. 다시 시도해주세요.");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("인증번호 발급 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
@@ -133,32 +117,33 @@ export default function InitialSignupPage() {
       } else {
         alert("인증번호가 일치하지 않습니다.");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("인증번호 확인 중 오류가 발생했습니다.");
     }
   };
 
   const handlePhoneCheck = async () => {
     if (!formData.phoneNumber) return alert("전화번호를 입력해주세요.");
-
+    if (!isValidPhoneNumberFormat(formData.phoneNumber))
+      return alert("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
     try {
       const isDuplicated = await checkPhoneDuplication(formData.phoneNumber);
       setIsPhoneChecked(true);
       setIsPhoneDuplicated(isDuplicated);
-      if (!isDuplicated) {
-        alert("사용 가능한 전화번호입니다. 인증번호를 발급받아주세요.");
-      } else {
-        alert("이미 사용 중인 전화번호입니다.");
-      }
-    } catch (error) {
+      alert(
+        isDuplicated
+          ? "이미 사용 중인 전화번호입니다."
+          : "사용 가능한 전화번호입니다. 인증번호를 발급받아주세요."
+      );
+    } catch {
       alert("전화번호 중복 확인 중 오류가 발생했습니다.");
     }
   };
 
   const handleSendPhoneAuthCode = async () => {
     if (!formData.phoneNumber) return alert("전화번호를 입력해주세요.");
-
+    if (!isValidPhoneNumberFormat(formData.phoneNumber))
+      return alert("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
     try {
       setIsLoading(true);
       const isSent = await sendPhoneAuthCode(formData.phoneNumber);
@@ -169,7 +154,7 @@ export default function InitialSignupPage() {
       } else {
         alert("인증번호 발급 실패. 다시 시도해주세요.");
       }
-    } catch (err) {
+    } catch {
       alert("인증번호 발급 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
@@ -189,18 +174,17 @@ export default function InitialSignupPage() {
       } else {
         alert("인증번호가 일치하지 않습니다.");
       }
-    } catch (err) {
+    } catch {
       alert("인증번호 확인 중 오류가 발생했습니다.");
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!isEmailChecked || isEmailDuplicated || !isEmailVerified) {
+    if (!isEmailChecked || isEmailDuplicated || !isEmailVerified)
       return alert("이메일 인증이 완료되지 않았습니다.");
-    }
-
+    if (!isPhoneChecked || isPhoneDuplicated || !isPhoneVerified)
+      return alert("핸드폰 인증이 완료되지 않았습니다.");
     console.log("회원가입 요청:", formData);
     // 회원가입 API 호출 로직
   };
@@ -271,14 +255,18 @@ export default function InitialSignupPage() {
             <button
               type="button"
               onClick={handleEmailCheck}
-              disabled={isEmailVerified}
+              disabled={isEmailVerified || isEmailChecked}
               className={`ml-4 px-4 py-2 rounded-lg text-white w-32 ${
-                isEmailVerified
+                isEmailVerified || isEmailChecked
                   ? "bg-gray-400"
                   : "bg-[#0047AB] hover:bg-blue-800"
               }`}
             >
-              {isEmailVerified ? "완료됨" : "중복 확인"}
+              {isEmailVerified
+                ? "완료됨"
+                : isEmailChecked
+                ? "중복 확인 완료"
+                : "중복 확인"}
             </button>
           </div>
 
@@ -338,21 +326,25 @@ export default function InitialSignupPage() {
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                disabled={isPhoneVerified}
+                disabled={isPhoneVerified || isPhoneChecked} // 중복 확인 완료 시 비활성화
                 className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
                 placeholder="전화번호를 입력하세요"
               />
               <button
                 type="button"
                 onClick={handlePhoneCheck}
-                disabled={isPhoneVerified}
+                disabled={isPhoneVerified || isPhoneChecked}
                 className={`ml-4 px-4 py-2 rounded-lg text-white w-32 ${
-                  isPhoneVerified
+                  isPhoneVerified || isPhoneChecked
                     ? "bg-gray-400"
                     : "bg-[#0047AB] hover:bg-blue-800"
                 }`}
               >
-                {isPhoneVerified ? "완료됨" : "중복 확인"}
+                {isPhoneVerified
+                  ? "완료됨"
+                  : isPhoneChecked
+                  ? "중복 확인 완료"
+                  : "중복 확인"}
               </button>
             </div>
 

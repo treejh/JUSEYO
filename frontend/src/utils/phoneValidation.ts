@@ -37,14 +37,16 @@ export const checkPhoneDuplication = async (
   }
 };
 
-export const sendAuthCode = async (email: string): Promise<boolean> => {
+export const sendPhoneAuthCode = async (
+  phoneNumber: string
+): Promise<boolean> => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/sms/certificationNumber`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ phoneNumber }),
       }
     );
 
@@ -60,7 +62,7 @@ export const sendAuthCode = async (email: string): Promise<boolean> => {
   }
 };
 
-export const verifyAuthCode = async (
+export const verifyPhoneAuthCode = async (
   phoneNumber: string,
   authCode: string
 ): Promise<boolean> => {
