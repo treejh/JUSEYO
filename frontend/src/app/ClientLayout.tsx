@@ -155,14 +155,10 @@ export default function ClientLayout({
             )}
 
             {/* 메인 콘텐츠 */}
-            <div
-              className={`flex-1 ${
-                !shouldHideNav
-                  ? sidebarCollapsed
-                    ? "ml-[80px]"
-                    : "ml-[280px]"
-                  : ""
-              } transition-all duration-300`}
+            <div 
+              className={`flex-1 min-h-screen transition-all duration-300 ease-in-out ${
+                !shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''
+              }`}
             >
               {children}
             </div>
