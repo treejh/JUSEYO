@@ -8,6 +8,11 @@ import com.example.backend.domain.notification.entity.NotificationType;
 import com.example.backend.domain.notification.event.StockShortageEvent;
 import com.example.backend.domain.notification.event.SupplyRequestCreatedEvent;
 import com.example.backend.domain.notification.service.NotificationService;
+import com.example.backend.domain.supply.supplyRequest.dto.request.SupplyRequestRequestDto;
+import com.example.backend.domain.supply.supplyRequest.service.SupplyRequestService;
+import com.example.backend.domain.user.entity.User;
+import com.example.backend.domain.user.service.UserService;
+import com.example.backend.global.security.jwt.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +31,10 @@ public class TestNotificationController {
     private final NotificationService notificationService;
     private final ItemRepository itemRepo;
     private final ApplicationEventPublisher eventPublisher;
+    private final TokenService tokenService;
+    private final UserService userService;
+    private final SupplyRequestService supplyRequestService;
+
 
     // 테스트용 알림 보내기 API
     @PostMapping("/{userId}")
@@ -63,6 +72,15 @@ public class TestNotificationController {
             description = "비품 요청 테스트 알림을 보냅니다."
     )
     public void sendNewSupplyRequest() {
-        eventPublisher.publishEvent(new SupplyRequestCreatedEvent());
+        Item pen = itemRepo.findByName("볼펜").get();
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
+        SupplyRequestRequestDto dto = new SupplyRequestRequestDto();
+        dto.setItemId(pen.getId());
+        dto.setQuantity(1L);
+        dto.setPurpose("테스트용 요청");
+        dto.setRental(false);
+        supplyRequestService.createRequest(dto);
+
     }
 }

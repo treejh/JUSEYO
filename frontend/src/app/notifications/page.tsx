@@ -633,7 +633,8 @@ export default function NotificationsPage() {
             {/* 알림 개수 표시 */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">
-                {notifications.length}개의 알림
+                {notifications.filter((n) => !n.readStatus).length}개의 안 읽은
+                알림
               </span>
               {selectedNotifications.length > 0 && (
                 <span className="text-sm text-blue-600">
@@ -651,80 +652,99 @@ export default function NotificationsPage() {
         ) : (
           <>
             <div className="space-y-4">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`bg-white rounded-lg shadow p-4 ${
-                    !notification.readStatus ? "border-l-4 border-blue-500" : ""
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedNotifications.includes(notification.id)}
-                      onChange={() => handleCheckboxChange(notification.id)}
-                      className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                    />
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span
-                              className={`px-3 py-1 rounded-full inline-flex items-center gap-2 ${
-                                NOTIFICATION_TYPE_LABELS[
-                                  notification.notificationType
-                                ]?.color || "bg-gray-100 text-gray-800"
+              {notifications
+                .sort((a, b) => {
+                  // 안 읽은 알림을 먼저 표시
+                  if (a.readStatus !== b.readStatus) {
+                    return a.readStatus ? 1 : -1;
+                  }
+                  // 같은 읽음 상태 내에서는 최신순으로 정렬
+                  return (
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+                  );
+                })
+                .map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`bg-white rounded-lg shadow p-4 cursor-pointer ${
+                      !notification.readStatus
+                        ? "border-l-4 border-blue-500"
+                        : ""
+                    }`}
+                    onClick={() => handleCheckboxChange(notification.id)}
+                  >
+                    <div className="flex items-start gap-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedNotifications.includes(
+                          notification.id
+                        )}
+                        onChange={() => handleCheckboxChange(notification.id)}
+                        className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span
+                                className={`px-3 py-1 rounded-full inline-flex items-center gap-2 ${
+                                  NOTIFICATION_TYPE_LABELS[
+                                    notification.notificationType
+                                  ]?.color || "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                <span className="text-sm font-medium">
+                                  {NOTIFICATION_TYPE_LABELS[
+                                    notification.notificationType
+                                  ]?.label || "알림"}
+                                </span>
+                              </span>
+                              {!notification.readStatus && (
+                                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                              )}
+                            </div>
+                            <p
+                              className={`text-gray-800 ${
+                                !notification.readStatus ? "font-semibold" : ""
                               }`}
                             >
-                              <span className="text-sm font-medium">
-                                {NOTIFICATION_TYPE_LABELS[
-                                  notification.notificationType
-                                ]?.label || "알림"}
-                              </span>
-                            </span>
-                            {!notification.readStatus && (
-                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                            )}
+                              {notification.message}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {format(
+                                new Date(notification.createdAt),
+                                "yyyy년 MM월 dd일 HH:mm",
+                                { locale: ko }
+                              )}
+                            </p>
                           </div>
-                          <p
-                            className={`text-gray-800 ${
-                              !notification.readStatus ? "font-semibold" : ""
-                            }`}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteNotification(notification.id);
+                            }}
+                            className="text-gray-400 hover:text-red-600 transition-colors"
                           >
-                            {notification.message}
-                          </p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {format(
-                              new Date(notification.createdAt),
-                              "yyyy년 MM월 dd일 HH:mm",
-                              { locale: ko }
-                            )}
-                          </p>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
                         </div>
-                        <button
-                          onClick={() =>
-                            handleDeleteNotification(notification.id)
-                          }
-                          className="text-gray-400 hover:text-red-600 transition-colors"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </button>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
 
             {/* 페이지네이션 */}

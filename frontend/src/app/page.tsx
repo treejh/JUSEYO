@@ -154,27 +154,6 @@ export default function Home() {
     }
   };
 
-  // 재고 부족 알림 테스트 핸들러
-  const handleStockAlertTest = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/test/stockDown`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
-      if (response.ok) {
-        alert("재고 부족 알림 테스트가 실행되었습니다.");
-      } else {
-        alert("알림 테스트 실행에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("알림 테스트 실행 중 오류가 발생했습니다.");
-    }
-  };
-
   // 페이지 로딩 시 파티클 애니메이션 효과 - 최적화 버전
   useEffect(() => {
     // 채팅 페이지에서는 파티클 로드 안함
@@ -442,24 +421,6 @@ export default function Home() {
                       회원가입
                     </button>
                   </div>
-                )}
-
-                {/* 재고 부족 알림 테스트 버튼 - 고유한 디자인 */}
-                {isLogin && (
-                  <button
-                    onClick={handleStockAlertTest}
-                    className="px-6 py-3 bg-white border border-indigo-300 text-indigo-700 rounded-full font-medium shadow hover:shadow-md transition-all flex items-center gap-2"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-indigo-700"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                    </svg>
-                    재고 부족 알림 테스트
-                  </button>
                 )}
               </div>
             </motion.div>
