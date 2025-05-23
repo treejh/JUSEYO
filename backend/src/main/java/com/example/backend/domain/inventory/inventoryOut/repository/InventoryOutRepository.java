@@ -28,4 +28,6 @@ public interface InventoryOutRepository extends JpaRepository<InventoryOut, Inte
     List<InventoryOut> findAllByManagementDashboardId(Long managementDashboardId);
 
     List<InventoryOut> findAllBySupplyRequest_User_Id(Long userId);
+
+    List<InventoryOut> findByCreatedAtBetweenAndManagementDashboardId(LocalDateTime start, LocalDateTime end, Long managementId);
 }

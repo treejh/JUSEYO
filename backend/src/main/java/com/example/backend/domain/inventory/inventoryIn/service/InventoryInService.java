@@ -1,13 +1,17 @@
 package com.example.backend.domain.inventory.inventoryIn.service;
 
+import com.example.backend.domain.category.repository.CategoryRepository;
 import com.example.backend.domain.inventory.inventoryIn.dto.request.InventoryInRequestDto;
 import com.example.backend.domain.inventory.inventoryIn.entity.InventoryIn;
 import com.example.backend.domain.inventory.inventoryIn.repository.InventoryInRepository;
+import com.example.backend.domain.user.entity.User;
+import com.example.backend.domain.user.repository.UserRepository;
 import com.example.backend.enums.Inbound;
 import com.example.backend.enums.Outbound;
 import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
+import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.global.utils.service.ImageService;
 import com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInExcelResponseDto;
 import com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInResponseDto;
@@ -42,6 +46,9 @@ public class InventoryInService {
     private final ItemInstanceService instanceService;
     private final ImageService imageService;
     private final ItemInstanceRepository instanceRepo;
+    private final CategoryRepository categoryRepository;
+    private final TokenService tokenService;
+    private final UserRepository userRepository;
 
 
     // 입고 생성
@@ -110,6 +117,7 @@ public class InventoryInService {
                 .quantity(savedInbound.getQuantity())
                 .inbound(savedInbound.getInbound())
                 .createdAt(savedInbound.getCreatedAt())
+                .categoryName(savedInbound.getCategory().getName())
                 .build();
     }
 
@@ -134,10 +142,12 @@ public class InventoryInService {
 
     //입고 내역 목록 조회
     public Page<InventoryInResponseDto> getInventoryIns(Pageable pageable,Inbound inbound) {
+        Long id=tokenService.getIdFromToken();
+        User user=userRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
         if (inbound != null) {
-            return inRepo.getInventoryInsByInbound(inbound, pageable);
+            return inRepo.getInventoryInsByInboundAndManagementId(inbound,user.getManagementDashboard().getId(), pageable);
         } else {
-            return inRepo.getInventoryIns(pageable);
+            return inRepo.getInventoryInsByManagementId(user.getManagementDashboard().getId(),pageable);
         }
 
     }
@@ -157,6 +167,7 @@ public class InventoryInService {
                 .inbound(inventoryIn.getInbound())
                 .createdAt(inventoryIn.getCreatedAt())
                 .image(inventoryIn.getImage())
+                .categoryName(categoryRepository.findById(inventoryIn.getCategory().getId()).orElseThrow(()->new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND)).getName())
                 .build();
         return inventoryInResponseDto;
     }

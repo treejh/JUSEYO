@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface RegisterItemRepository extends JpaRepository<RegisterItem, Long> {
 
@@ -23,7 +24,12 @@ public interface RegisterItemRepository extends JpaRepository<RegisterItem, Long
             "r.inbound, " +
             "r.status) " +
             "FROM RegisterItem r " +
-            "WHERE (:status IS NULL OR r.status = :status)")
-    Page<RegisterItemResponseDto> findByStatus(Status status, Pageable pageable);
+            "WHERE (:status IS NULL OR r.status = :status) " +
+            "AND (:managementId IS NULL OR r.managementDashboard.id = :managementId)")
+    Page<RegisterItemResponseDto> findByStatusAndManagement(
+            @Param("status") Status status,
+            @Param("managementId") Long managementId,
+            Pageable pageable);
+
 
 }

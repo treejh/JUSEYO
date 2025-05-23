@@ -20,6 +20,7 @@ import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnRe
 import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnStatusUpdateRequestDto;
 import com.example.backend.domain.supply.supplyReturn.dto.response.SupplyReturnResponseDto;
 import com.example.backend.domain.supply.supplyReturn.repository.SupplyReturnRepository;
+import com.example.backend.global.security.jwt.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -41,6 +42,7 @@ public class SupplyReturnService {
     private final ItemRepository itemRepository;
     private final InventoryInService inventoryInService;
     private final ApplicationEventPublisher eventPublisher;
+    private final TokenService tokenService;
 
     //비품 반납 요청 생성
     @Transactional
@@ -84,10 +86,12 @@ public class SupplyReturnService {
 
     //비품 반납서 목록 조회
     public Page<SupplyReturnResponseDto> getSupplyReturns(Pageable pageable,ApprovalStatus approvalStatus) {
+        Long id=tokenService.getIdFromToken();
+        User user = userRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
         if(approvalStatus==null){
-            return supplyReturnRepository.findAllSupplyReturn(pageable);
+            return supplyReturnRepository.findAllSupplyReturn(user.getManagementDashboard().getId(),pageable);
         }else{
-            return supplyReturnRepository.findAllSupplyRequestByApprovalStatus(approvalStatus,pageable);
+            return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),pageable);
         }
     }
 

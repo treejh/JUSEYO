@@ -266,6 +266,8 @@ public class InventoryOutService {
 
     /** DTO 매핑 공통 메서드 */
     private InventoryOutResponseDto mapToDto(InventoryOut o) {
+        String categoryName=categoryRepo.findById(o.getCategory().getId()).orElseThrow(()-> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND)).getName();
+        String itemName=itemRepo.findById(o.getItem().getId()).orElseThrow(()-> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND)).getName();
         return InventoryOutResponseDto.builder()
                 .id(o.getId())
                 .supplyRequestId(o.getSupplyRequest().getId())
@@ -274,6 +276,8 @@ public class InventoryOutService {
                 .managementId(o.getManagementDashboard().getId())
                 .quantity(o.getQuantity())
                 .outbound(o.getOutbound().name())
+                .categoryName(categoryName)
+                .itemName(itemName)
                 .createdAt(o.getCreatedAt())
                 .modifiedAt(o.getModifiedAt())
                 .build();

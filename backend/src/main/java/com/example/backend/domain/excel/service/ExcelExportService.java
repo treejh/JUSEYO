@@ -93,18 +93,45 @@ public class ExcelExportService {
     public void exportItems(List<ItemResponseDto> items, HttpServletResponse response) throws Exception {
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("Items");
-            createHeader(sheet, new String[]{"ID","Name","Serial","AvailableQty","CategoryId","MgmtId","CreatedAt"});
-            int r = 1;
+            createHeader(sheet, new String[]{
+                    "ID",
+                    "Name",
+                    "CategoryName",
+                    "SerialNumber",
+                    "MinimumQty",
+                    "TotalQty",
+                    "AvailableQty",
+                    "PurchaseSource",
+                    "Location",
+                    "IsReturnRequired",
+                    "CategoryId",
+                    "ManagementId",
+                    "CreatedAt",
+                    "ModifiedAt",
+                    "Status"
+            });
+
+            int rowIdx = 1;
             for (ItemResponseDto dto : items) {
-                Row row = sheet.createRow(r++);
+                Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(dto.getId());
                 row.createCell(1).setCellValue(dto.getName());
-                row.createCell(2).setCellValue(dto.getSerialNumber());
-                row.createCell(3).setCellValue(dto.getAvailableQuantity());
-                row.createCell(4).setCellValue(dto.getCategoryId());
-                row.createCell(5).setCellValue(dto.getManagementId());
-                row.createCell(6).setCellValue(dto.getCreatedAt().toString());
+                row.createCell(2).setCellValue(dto.getCategoryName());
+                row.createCell(3).setCellValue(dto.getSerialNumber());
+                row.createCell(4).setCellValue(dto.getMinimumQuantity());
+                row.createCell(5).setCellValue(dto.getTotalQuantity());
+                row.createCell(6).setCellValue(dto.getAvailableQuantity());
+                row.createCell(7).setCellValue(dto.getPurchaseSource() != null ? dto.getPurchaseSource() : "");
+                row.createCell(8).setCellValue(dto.getLocation() != null ? dto.getLocation() : "");
+                row.createCell(9).setCellValue(dto.getIsReturnRequired());
+                row.createCell(10).setCellValue(dto.getCategoryId());
+                row.createCell(11).setCellValue(dto.getManagementId());
+                row.createCell(12).setCellValue(dto.getCreatedAt().toString());
+                row.createCell(13).setCellValue(dto.getModifiedAt().toString());
+                row.createCell(14).setCellValue(dto.getStatus().name());
             }
+
+            // 파일명도 구분되게 변경
             writeToResponse(wb, response, "items.xlsx");
         }
     }

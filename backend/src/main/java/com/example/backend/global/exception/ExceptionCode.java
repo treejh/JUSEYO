@@ -24,6 +24,7 @@ public enum ExceptionCode {
     INVALID_RETURN_DATE(400, "대여 시 반납 날짜를 반드시 입력해야 합니다."),
     REGISTER_ITEM_NOT_FOUND(404, "비품 구매서를 찾을 수 없습니다."),
     INVALID_INBOUND_TYPE(404, "적합하지 않은 입고 유형입니다"),
+    ITEM_NAME_EXISTS(400,"이미 동일한 이름의 비품이 존재합니다."),
 
     //채팅 예외처리
     INVALID_CHAT_ROOM_TYPE(403,"지원하지 않는 채팅방 타입입니다."),

@@ -7,10 +7,13 @@ import com.example.backend.domain.registerItem.dto.request.UpdateRegisterItemDto
 import com.example.backend.domain.registerItem.dto.response.RegisterItemResponseDto;
 import com.example.backend.domain.registerItem.entity.RegisterItem;
 import com.example.backend.domain.registerItem.repository.RegisterItemRepository;
+import com.example.backend.domain.user.entity.User;
+import com.example.backend.domain.user.repository.UserRepository;
 import com.example.backend.enums.Inbound;
 import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
+import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.global.utils.service.ImageService;
 import com.example.backend.domain.inventory.inventoryIn.dto.request.InventoryInRequestDto;
 import com.example.backend.domain.inventory.inventoryIn.service.InventoryInService;
@@ -44,6 +47,8 @@ public class RegisterItemService {
     private final CategoryRepository categoryRepo;
     private final RegisterItemRepository registerItemRepository;
     private final ItemInstanceService itemInstanceService;
+    private final TokenService tokenService;
+    private final UserRepository userRepository;
 
 
     // 제품 구매 등록
@@ -147,7 +152,9 @@ public class RegisterItemService {
 
     //비품 목록 조회
     public Page<RegisterItemResponseDto> getAllRegisterItems(Pageable pageable,Status status){
-        return registerItemRepository.findByStatus(status,pageable);
+        Long id=tokenService.getIdFromToken();
+        User user = userRepository.findById(id).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        return registerItemRepository.findByStatusAndManagement(status,user.getManagementDashboard().getId(),pageable);
     }
 
     //비품 구매 수정

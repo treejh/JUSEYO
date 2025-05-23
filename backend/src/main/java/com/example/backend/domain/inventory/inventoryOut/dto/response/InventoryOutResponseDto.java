@@ -17,4 +17,7 @@ public class InventoryOutResponseDto {
     private String outbound;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private String categoryName;
+    private String itemName;
+
 }
