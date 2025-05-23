@@ -88,7 +88,10 @@ public class SupplyRequestService {
                 .build();
         req.setStatus(Status.ACTIVE);
         SupplyRequest saved = repo.save(req);
+
+        // 비품 요청 알림 발생
         eventPublisher.publishEvent(new SupplyRequestCreatedEvent(saved.getProductName(), saved.getQuantity(), saved.getUser().getName()));
+
         return mapToDto(saved);
     }
 

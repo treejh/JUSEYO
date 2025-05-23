@@ -11,9 +11,14 @@ import com.example.backend.domain.notification.event.StockShortageEvent;
 import com.example.backend.domain.notification.event.SupplyRequestCreatedEvent;
 import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.domain.supply.supplyRequest.dto.request.SupplyRequestRequestDto;
+import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.service.SupplyRequestService;
+import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnRequestDto;
+import com.example.backend.domain.supply.supplyReturn.entity.SupplyReturn;
+import com.example.backend.domain.supply.supplyReturn.service.SupplyReturnService;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.service.UserService;
+import com.example.backend.enums.Outbound;
 import com.example.backend.global.security.jwt.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +28,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/v1/notifications/test")
@@ -37,6 +44,7 @@ public class TestNotificationController {
     private final UserService userService;
     private final SupplyRequestService supplyRequestService;
     private final InventoryOutService inventoryOutService;
+    private final SupplyReturnService supplyReturnService;
 
 
     // 테스트용 알림 보내기 API
@@ -96,11 +104,18 @@ public class TestNotificationController {
     )
     public void sendNewSupplyReturn() {
         Item pen = itemRepo.findByName("볼펜").get();
-        SupplyRequestRequestDto dto = new SupplyRequestRequestDto();
+        Long userId = tokenService.getIdFromToken();
+        SupplyReturnRequestDto dto = new SupplyReturnRequestDto();
+        dto.setRequestId(1L);
+        dto.setUserId(userId);
+        dto.setManagementId(1L);
         dto.setItemId(pen.getId());
-        dto.setQuantity(1L);
-        dto.setPurpose("테스트용 요청");
-        dto.setRental(false);
-        supplyRequestService.createRequest(dto);
+        dto.setSerialNumber(pen.getSerialNumber());
+        dto.setProductName(pen.getName());
+        dto.setQuantity(2L);
+        dto.setReturnDate(LocalDateTime.now());
+        dto.setOutbound(Outbound.AVAILABLE);
+
+        supplyReturnService.addSupplyReturn(dto);
     }
 }

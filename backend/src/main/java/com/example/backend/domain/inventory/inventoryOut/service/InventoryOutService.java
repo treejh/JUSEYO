@@ -114,6 +114,7 @@ public class InventoryOutService {
         // 4) 아이템 재고 차감
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());
 
+        // 재고 부족 알림 발생
         eventPublisher.publishEvent(new StockShortageEvent(item.getSerialNumber(), item.getName(), item.getAvailableQuantity(), item.getMinimumQuantity()));
 
         // 5) **대여(LEND) 케이스에만** 개별자산단위 상태 변경 (AVAILABLE → LEND)
