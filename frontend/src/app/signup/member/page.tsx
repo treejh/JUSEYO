@@ -1,8 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  checkEmailDuplication,
+  sendAuthCode,
+  verifyAuthCode,
+} from "@/utils/emailValidation";
+import {
+  checkPhoneDuplication,
+  sendPhoneAuthCode,
+  verifyPhoneAuthCode,
+} from "@/utils/phoneValidation";
 
-export default function MemberSignupPage() {
+export default function InitialSignupPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -10,47 +21,381 @@ export default function MemberSignupPage() {
     name: "",
     phoneNumber: "",
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [authCode, setAuthCode] = useState("");
+  const [isEmailChecked, setIsEmailChecked] = useState(false);
+  const [isEmailDuplicated, setIsEmailDuplicated] = useState(false);
+  const [authCodeSent, setAuthCodeSent] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [timer, setTimer] = useState(0);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [phoneAuthCode, setPhoneAuthCode] = useState("");
+  const [isPhoneChecked, setIsPhoneChecked] = useState(false);
+  const [isPhoneDuplicated, setIsPhoneDuplicated] = useState(false);
+  const [phoneAuthCodeSent, setPhoneAuthCodeSent] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [phoneTimer, setPhoneTimer] = useState(0);
+
+  const isValidEmailFormat = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidPhoneNumberFormat = (phoneNumber) =>
+    /^010-\d{4}-\d{4}$/.test(phoneNumber);
+
+  useEffect(() => {
+    let interval;
+    if (authCodeSent && timer > 0) {
+      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    } else if (timer === 0) {
+      clearInterval(interval);
+      setAuthCodeSent(false);
+    }
+    return () => clearInterval(interval);
+  }, [authCodeSent, timer]);
+
+  useEffect(() => {
+    let interval;
+    if (phoneAuthCodeSent && phoneTimer > 0) {
+      interval = setInterval(() => setPhoneTimer((prev) => prev - 1), 1000);
+    } else if (phoneTimer === 0) {
+      clearInterval(interval);
+      setPhoneAuthCodeSent(false);
+    }
+    return () => clearInterval(interval);
+  }, [phoneAuthCodeSent, phoneTimer]);
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEmailCheck = async () => {
+    if (!formData.email) return alert("이메일을 입력해주세요.");
+    if (!isValidEmailFormat(formData.email))
+      return alert("유효한 이메일 형식이 아닙니다.");
+    try {
+      const isDuplicated = await checkEmailDuplication(formData.email);
+      setIsEmailChecked(true);
+      setIsEmailDuplicated(isDuplicated);
+      alert(
+        isDuplicated
+          ? "이미 사용 중인 이메일입니다."
+          : "사용 가능한 이메일입니다. 인증번호를 발급받아주세요."
+      );
+    } catch {
+      alert("중복 확인 중 오류가 발생했습니다.");
+    }
+  };
 
-    // 유효성 검사 및 회원가입 처리 로직
-    console.log("회원가입 데이터:", formData);
+  const handleSendAuthCode = async () => {
+    if (!formData.email) return alert("이메일을 입력해주세요.");
+    if (!isValidEmailFormat(formData.email))
+      return alert("유효한 이메일 형식이 아닙니다.");
+    try {
+      setIsLoading(true);
+      const isSent = await sendAuthCode(formData.email);
+      if (isSent) {
+        setAuthCodeSent(true);
+        setTimer(120);
+        alert("인증번호가 발송되었습니다. 2분 내에 입력해주세요.");
+      } else {
+        alert("인증번호 발급 실패. 다시 시도해주세요.");
+      }
+    } catch {
+      alert("인증번호 발급 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyAuthCode = async () => {
+    try {
+      const isVerified = await verifyAuthCode(formData.email, authCode);
+      if (isVerified) {
+        alert("이메일 인증이 완료되었습니다.");
+        setIsEmailVerified(true);
+        setAuthCodeSent(false);
+      } else {
+        alert("인증번호가 일치하지 않습니다.");
+      }
+    } catch {
+      alert("인증번호 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handlePhoneCheck = async () => {
+    if (!formData.phoneNumber) return alert("전화번호를 입력해주세요.");
+    if (!isValidPhoneNumberFormat(formData.phoneNumber))
+      return alert("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
+    try {
+      const isDuplicated = await checkPhoneDuplication(formData.phoneNumber);
+      setIsPhoneChecked(true);
+      setIsPhoneDuplicated(isDuplicated);
+      alert(
+        isDuplicated
+          ? "이미 사용 중인 전화번호입니다."
+          : "사용 가능한 전화번호입니다. 인증번호를 발급받아주세요."
+      );
+    } catch {
+      alert("전화번호 중복 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleSendPhoneAuthCode = async () => {
+    if (!formData.phoneNumber) return alert("전화번호를 입력해주세요.");
+    if (!isValidPhoneNumberFormat(formData.phoneNumber))
+      return alert("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
+    try {
+      setIsLoading(true);
+      const isSent = await sendPhoneAuthCode(formData.phoneNumber);
+      if (isSent) {
+        setPhoneAuthCodeSent(true);
+        setPhoneTimer(120);
+        alert("인증번호가 발송되었습니다. 2분 내에 입력해주세요.");
+      } else {
+        alert("인증번호 발급 실패. 다시 시도해주세요.");
+      }
+    } catch {
+      alert("인증번호 발급 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyPhoneAuthCode = async () => {
+    try {
+      const isVerified = await verifyPhoneAuthCode(
+        formData.phoneNumber,
+        phoneAuthCode
+      );
+      if (isVerified) {
+        alert("전화번호 인증이 완료되었습니다.");
+        setIsPhoneVerified(true);
+        setPhoneAuthCodeSent(false);
+      } else {
+        alert("인증번호가 일치하지 않습니다.");
+      }
+    } catch {
+      alert("인증번호 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!isEmailChecked || isEmailDuplicated || !isEmailVerified)
+      return alert("이메일 인증이 완료되지 않았습니다.");
+    if (!isPhoneChecked || isPhoneDuplicated || !isPhoneVerified)
+      return alert("핸드폰 인증이 완료되지 않았습니다.");
+    console.log("회원가입 요청:", formData);
+    // 회원가입 API 호출 로직
   };
 
   return (
-    <div className="w-full h-screen bg-white flex items-center justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="shadow-xl rounded-2xl overflow-hidden w-full max-w-md bg-white"
-      >
-        <div className="bg-[#0047AB] text-white px-8 py-6 text-center">
-          <h2 className="text-2xl font-bold">일반 회원 가입</h2>
-          <p className="text-base mt-2 opacity-80">
-            일반 회원으로 가입하여 재고를 효율적으로 관리하세요.
+    <div className="w-full h-screen bg-white flex items-center justify-center gap-x-50">
+      <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center">
+        <div className="pl-0">
+          <Link href="/">
+            <img
+              src="/logo.png"
+              alt="Juseyo 로고"
+              className="h-10 mb-8 rounded-xl shadow-md"
+            />
+          </Link>
+          <h1 className="text-5xl md:text-7xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-indigo-600">
+            회원가입
+          </h1>
+          <p className="text-lg mb-2 text-gray-600">
+            재고 관리 플랫폼 Juseyo에 오신 것을 환영합니다.
+          </p>
+          <p className="text-base text-gray-500 mb-6">
+            계정에 로그인하여 재고를 효율적으로 관리하세요.
           </p>
         </div>
+      </div>
+
+      <form
+        onSubmit={handleSubmit}
+        className="shadow-xl rounded-2xl overflow-hidden w-full max-w-[500px] bg-white"
+      >
+        <div className="bg-[#0047AB] text-white px-8 py-5 text-center">
+          <h2 className="text-2xl font-bold">회원가입</h2>
+          <p className="text-base mt-2 opacity-80">
+            새로운 관리 페이지를 생성하고 회원가입을 완료하세요.
+          </p>
+        </div>
+
         <div className="px-8 py-8">
+          {/* 이름 */}
           <div className="mb-5">
             <label className="block text-base font-medium text-gray-700 mb-2">
-              이메일
+              이름
             </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+              placeholder="이름을 입력하세요"
+            />
+          </div>
+          {/* 이메일 */}
+          <label className="block text-base font-medium text-gray-700 mb-2">
+            이메일
+          </label>
+          <div className="mb-5 flex items-center">
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+              disabled={isEmailVerified}
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
               placeholder="이메일을 입력하세요"
             />
+            <button
+              type="button"
+              onClick={handleEmailCheck}
+              disabled={isEmailVerified || isEmailChecked}
+              className={`ml-4 px-4 py-2 rounded-lg text-white w-32 ${
+                isEmailVerified || isEmailChecked
+                  ? "bg-gray-400"
+                  : "bg-[#0047AB] hover:bg-blue-800"
+              }`}
+            >
+              {isEmailVerified
+                ? "완료됨"
+                : isEmailChecked
+                ? "중복 확인 완료"
+                : "중복 확인"}
+            </button>
           </div>
+
+          {/* 인증번호 입력 */}
+          {isEmailChecked && !isEmailDuplicated && !isEmailVerified && (
+            <div className="mb-5">
+              <label className="block text-base font-medium text-gray-700 mb-2">
+                이메일 인증
+              </label>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={authCode}
+                  onChange={(e) => setAuthCode(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                  placeholder="인증번호를 입력하세요"
+                  disabled={timer === 0 && !authCodeSent}
+                />
+                <button
+                  type="button"
+                  onClick={
+                    authCodeSent ? handleVerifyAuthCode : handleSendAuthCode
+                  }
+                  className="w-64 ml-4 px-4 py-2 rounded-lg text-white bg-[#0047AB]"
+                >
+                  {authCodeSent
+                    ? "인증"
+                    : isLoading
+                    ? "로딩중..."
+                    : "인증번호 받기"}
+                </button>
+              </div>
+              {authCodeSent && (
+                <p className="text-sm text-gray-500 mt-2">
+                  남은 시간: {Math.floor(timer / 60)}:
+                  {String(timer % 60).padStart(2, "0")}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* 인증 완료 메시지 */}
+          {isEmailVerified && (
+            <p className="text-sm text-green-600 mt-2">
+              이메일 인증이 완료되었습니다.
+            </p>
+          )}
+
+          {/* 전화번호 */}
+          <div className="mb-5">
+            <label className="block text-base font-medium text-gray-700 mb-2">
+              전화번호
+            </label>
+            <div className="mb-5 flex items-center">
+              <input
+                type="text"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                disabled={isPhoneVerified || isPhoneChecked} // 중복 확인 완료 시 비활성화
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                placeholder="전화번호를 입력하세요"
+              />
+              <button
+                type="button"
+                onClick={handlePhoneCheck}
+                disabled={isPhoneVerified || isPhoneChecked}
+                className={`ml-4 px-4 py-2 rounded-lg text-white w-32 ${
+                  isPhoneVerified || isPhoneChecked
+                    ? "bg-gray-400"
+                    : "bg-[#0047AB] hover:bg-blue-800"
+                }`}
+              >
+                {isPhoneVerified
+                  ? "완료됨"
+                  : isPhoneChecked
+                  ? "중복 확인 완료"
+                  : "중복 확인"}
+              </button>
+            </div>
+
+            {/* 인증번호 입력 */}
+            {isPhoneChecked && !isPhoneDuplicated && !isPhoneVerified && (
+              <div className="mb-5">
+                <label className="block text-base font-medium text-gray-700 mb-2">
+                  전화번호 인증
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    value={phoneAuthCode}
+                    onChange={(e) => setPhoneAuthCode(e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                    placeholder="인증번호를 입력하세요"
+                    disabled={phoneTimer === 0 && !phoneAuthCodeSent}
+                  />
+                  <button
+                    type="button"
+                    onClick={
+                      phoneAuthCodeSent
+                        ? handleVerifyPhoneAuthCode
+                        : handleSendPhoneAuthCode
+                    }
+                    className="w-64 ml-4 px-4 py-2 rounded-lg text-white bg-[#0047AB]"
+                  >
+                    {phoneAuthCodeSent
+                      ? "인증"
+                      : isLoading
+                      ? "로딩중..."
+                      : "인증번호 받기"}
+                  </button>
+                </div>
+                {phoneAuthCodeSent && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    남은 시간: {Math.floor(phoneTimer / 60)}:
+                    {String(phoneTimer % 60).padStart(2, "0")}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* 인증 완료 메시지 */}
+            {isPhoneVerified && (
+              <p className="text-sm text-green-600 mt-2">
+                전화번호 인증이 완료되었습니다.
+              </p>
+            )}
+          </div>
+
           <div className="mb-5">
             <label className="block text-base font-medium text-gray-700 mb-2">
               비밀번호
@@ -60,10 +405,11 @@ export default function MemberSignupPage() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
               placeholder="비밀번호를 입력하세요"
             />
           </div>
+
           <div className="mb-5">
             <label className="block text-base font-medium text-gray-700 mb-2">
               비밀번호 확인
@@ -73,13 +419,14 @@ export default function MemberSignupPage() {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
               placeholder="비밀번호를 다시 입력하세요"
             />
           </div>
+
           <button
             type="submit"
-            className="w-full bg-[#0047AB] text-white py-3 rounded-lg font-medium hover:bg-blue-800 transition-colors"
+            className="w-full bg-[#0047AB] text-white py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
             disabled={isLoading}
           >
             {isLoading ? "처리 중..." : "회원가입"}
