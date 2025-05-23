@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useEffect, useState } from "react";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { formatDistanceToNow, format } from "date-fns";
@@ -57,7 +58,7 @@ interface NotificationPageResponse {
 
 const NOTIFICATION_TYPE_LABELS: Record<
   NotificationType,
-  { label: string; color: string; icon: JSX.Element }
+  { label: string; color: string; icon: React.ReactElement }
 > = {
   SUPPLY_REQUEST: {
     label: "비품 요청",
@@ -275,7 +276,7 @@ export default function NotificationsPage() {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (loginUser.id) {
       fetchNotifications();
     }
@@ -675,11 +676,6 @@ export default function NotificationsPage() {
                                 ]?.color || "bg-gray-100 text-gray-800"
                               }`}
                             >
-                              {
-                                NOTIFICATION_TYPE_LABELS[
-                                  notification.notificationType
-                                ]?.icon
-                              }
                               <span className="text-sm font-medium">
                                 {NOTIFICATION_TYPE_LABELS[
                                   notification.notificationType

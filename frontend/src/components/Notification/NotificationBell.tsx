@@ -8,9 +8,9 @@ import Link from "next/link";
 interface Notification {
   id: number;
   message: string;
-  type: string;
+  notificationType: string;
   createdAt: string;
-  read: boolean;
+  readStatus: boolean;
 }
 
 type NotificationType =
@@ -81,73 +81,168 @@ const NOTIFICATION_CATEGORIES: Record<string, NotificationCategory> = {
 
 const NOTIFICATION_TYPE_LABELS: Record<
   string,
-  { label: string; color: string }
+  { label: string; color: string; icon: React.ReactElement }
 > = {
-  SUPPLY_REQUEST: { label: "비품 요청", color: "bg-blue-100 text-blue-800" },
-  SUPPLY_RETURN: { label: "비품 반납", color: "bg-blue-100 text-blue-800" },
+  SUPPLY_REQUEST: {
+    label: "비품 요청",
+    color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  SUPPLY_RETURN: {
+    label: "비품 반납",
+    color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
   SUPPLY_RETURN_ALERT: {
     label: "비품 반납 알림",
     color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
-  STOCK_REACHED: { label: "재고 도달", color: "bg-blue-100 text-blue-800" },
-  STOCK_SHORTAGE: { label: "재고 부족", color: "bg-red-100 text-red-800" },
+  STOCK_REACHED: {
+    label: "재고 도달",
+    color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  STOCK_SHORTAGE: {
+    label: "재고 부족",
+    color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
   SUPPLY_REQUEST_MODIFIED: {
     label: "비품 요청 수정",
     color: "bg-blue-100 text-blue-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   SUPPLY_REQUEST_APPROVED: {
     label: "비품 요청 승인",
     color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   SUPPLY_REQUEST_REJECTED: {
     label: "비품 요청 반려",
     color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   SUPPLY_REQUEST_DELAYED: {
     label: "비품 요청 처리 지연",
     color: "bg-yellow-100 text-yellow-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   RETURN_DUE_DATE_EXCEEDED: {
     label: "지정 반납일 초과",
     color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   RETURN_DUE_SOON: {
     label: "지정 반납일 임박",
     color: "bg-yellow-100 text-yellow-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   LONG_TERM_UNRETURNED_SUPPLIES: {
     label: "장기 미반납",
     color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   USER_SENT_MESSAGE_TO_MANAGER: {
     label: "채팅 알림",
     color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
-  NEW_CHAT: { label: "새로운 채팅", color: "bg-green-100 text-green-800" },
+  NEW_CHAT: {
+    label: "새로운 채팅",
+    color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
   SYSTEM_MAINTENANCE: {
     label: "시스템 점검",
     color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   ADMIN_APPROVAL_ALERT: {
     label: "관리 페이지 승인",
     color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
   MANAGER_APPROVAL_ALERT: {
     label: "매니저 승인",
     color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
   },
 };
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, markAsRead, markAllAsRead, fetchNotifications } =
-    useNotificationStore();
+  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
   const notificationRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -205,7 +300,7 @@ export function NotificationBell() {
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.readStatus).length;
 
   const getNotificationCategory = (type: string) => {
     return Object.entries(NOTIFICATION_CATEGORIES).find(([_, category]) =>
@@ -220,10 +315,11 @@ export function NotificationBell() {
         className="relative p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
       >
         <svg
-          className="w-6 h-6"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6"
           fill="none"
-          stroke="currentColor"
           viewBox="0 0 24 24"
+          stroke="currentColor"
         >
           <path
             strokeLinecap="round"
@@ -275,57 +371,58 @@ export function NotificationBell() {
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {notifications.filter((n) => !n.readStatus).length === 0 ? (
               <div className="p-4 text-center text-gray-500">
                 새로운 알림이 없습니다
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {notifications.map((notification) => {
-                  const category = getNotificationCategory(notification.type);
-                  return (
-                    <div
-                      key={notification.id}
-                      className={`p-4 hover:bg-gray-50 transition-colors ${
-                        !notification.read ? "bg-blue-50" : ""
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span
-                              className={`px-2 py-1 rounded text-xs bg-${category?.color}-100 text-${category?.color}-800`}
-                            >
-                              {category?.label}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {
-                                NOTIFICATION_TYPE_LABELS[notification.type]
-                                  ?.label
-                              }
-                            </span>
-                            {!notification.read && (
-                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                            )}
+                {notifications
+                  .filter((n) => !n.readStatus)
+                  .map((notification) => {
+                    return (
+                      <div
+                        key={notification.id}
+                        className="p-4 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
+                                  NOTIFICATION_TYPE_LABELS[
+                                    notification.notificationType
+                                  ]?.color || "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {
+                                  NOTIFICATION_TYPE_LABELS[
+                                    notification.notificationType
+                                  ]?.icon
+                                }
+                                {NOTIFICATION_TYPE_LABELS[
+                                  notification.notificationType
+                                ]?.label || "알림"}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-900 mb-1">
+                              {notification.message}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {(() => {
+                                const distance = formatDistanceToNow(
+                                  new Date(notification.createdAt),
+                                  {
+                                    addSuffix: true,
+                                    locale: ko,
+                                  }
+                                );
+                                return distance === "1분 미만 전"
+                                  ? "방금 전"
+                                  : distance;
+                              })()}
+                            </p>
                           </div>
-                          <p
-                            className={`text-sm ${
-                              !notification.read ? "font-semibold" : ""
-                            }`}
-                          >
-                            {notification.message}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {formatDistanceToNow(
-                              new Date(notification.createdAt),
-                              {
-                                addSuffix: true,
-                                locale: ko,
-                              }
-                            )}
-                          </p>
-                        </div>
-                        {!notification.read && (
                           <div className="flex items-end mt-2">
                             <button
                               onClick={() => handleMarkAsRead(notification.id)}
@@ -346,11 +443,10 @@ export function NotificationBell() {
                               확인
                             </button>
                           </div>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             )}
           </div>

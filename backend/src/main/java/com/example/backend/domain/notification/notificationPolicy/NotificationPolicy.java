@@ -1,4 +1,4 @@
-package com.example.backend.notification.notificationPolicy;
+package com.example.backend.domain.notification.notificationPolicy;
 
 import com.example.backend.enums.RoleType;
 import com.example.backend.domain.notification.entity.NotificationType;
