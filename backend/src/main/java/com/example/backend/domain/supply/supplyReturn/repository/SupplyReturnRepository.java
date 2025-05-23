@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface SupplyReturnRepository extends JpaRepository<SupplyReturn, Long> {
 
     @Query("SELECT new com.example.backend.domain.supply.supplyReturn.dto.response.SupplyReturnResponseDto "+
@@ -24,5 +26,7 @@ public interface SupplyReturnRepository extends JpaRepository<SupplyReturn, Long
     Page<SupplyReturnResponseDto> findAllSupplyRequestByApprovalStatus(@Param("approvalStatus") ApprovalStatus approvalStatus, Pageable pageable);
 
     boolean existsBySupplyRequest(SupplyRequest request);
+
+    List<SupplyReturn> findBySupplyRequest(SupplyRequest request);
 
 }
