@@ -11,7 +11,7 @@ import com.example.backend.global.exception.ExceptionCode;
 import com.example.backend.domain.notification.repository.NotificationRepository;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.repository.UserRepository;
-import com.example.backend.notification.notificationPolicy.NotificationPolicy;
+import com.example.backend.domain.notification.notificationPolicy.NotificationPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +21,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.example.backend.domain.notification.dto.NotificationPageResponseDTO;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

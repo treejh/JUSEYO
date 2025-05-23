@@ -50,6 +50,7 @@ public class ItemService {
 
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
+
         // 1) 시리얼 결정: 빈 값이면 비품명-순번-랜덤8 로 생성
         String serial = null;
 
@@ -65,8 +66,11 @@ public class ItemService {
         // 2) 연관 엔티티 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
-        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        Long userId = tokenService.getIdFromToken();
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        ManagementDashboard mgmt = user.getManagementDashboard();
 
         // 3) 엔티티 빌드 및 저장
         Item entity = Item.builder()
@@ -195,5 +199,11 @@ public class ItemService {
 
         // 검색 로직 실행 (Projection 활용)
         return repo.searchItemsWithCategory(managementDashboardId, keyword, pageable);
+    }
+
+    /** 프론트 중복체크용 */
+    @Transactional(readOnly = true)
+    public boolean existsActiveName(String name) {
+        return repo.findByNameAndStatus(name, Status.ACTIVE).isPresent();
     }
 }
