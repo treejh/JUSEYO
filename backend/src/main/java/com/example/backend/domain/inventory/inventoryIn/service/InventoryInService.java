@@ -1,5 +1,6 @@
 package com.example.backend.domain.inventory.inventoryIn.service;
 
+import com.example.backend.domain.category.repository.CategoryRepository;
 import com.example.backend.domain.inventory.inventoryIn.dto.request.InventoryInRequestDto;
 import com.example.backend.domain.inventory.inventoryIn.entity.InventoryIn;
 import com.example.backend.domain.inventory.inventoryIn.repository.InventoryInRepository;
@@ -42,6 +43,7 @@ public class InventoryInService {
     private final ItemInstanceService instanceService;
     private final ImageService imageService;
     private final ItemInstanceRepository instanceRepo;
+    private final CategoryRepository categoryRepository;
 
 
     // 입고 생성
@@ -110,6 +112,7 @@ public class InventoryInService {
                 .quantity(savedInbound.getQuantity())
                 .inbound(savedInbound.getInbound())
                 .createdAt(savedInbound.getCreatedAt())
+                .categoryName(savedInbound.getCategory().getName())
                 .build();
     }
 
@@ -157,6 +160,7 @@ public class InventoryInService {
                 .inbound(inventoryIn.getInbound())
                 .createdAt(inventoryIn.getCreatedAt())
                 .image(inventoryIn.getImage())
+                .categoryName(categoryRepository.findById(inventoryIn.getCategory().getId()).orElseThrow(()->new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND)).getName())
                 .build();
         return inventoryInResponseDto;
     }

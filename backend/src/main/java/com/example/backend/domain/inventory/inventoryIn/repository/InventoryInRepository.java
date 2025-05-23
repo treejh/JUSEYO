@@ -18,11 +18,11 @@ import java.util.List;
 public interface InventoryInRepository extends JpaRepository<InventoryIn, Long> {
 
     @Query("select new com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInResponseDto " +
-            "(i.id,i.item.id, i.item.name, i.quantity, i.inbound, i.createdAt,i.image) from InventoryIn i")
+            "(i.id,i.item.id, i.item.name, i.quantity, i.inbound, i.createdAt,i.image,i.category.name) from InventoryIn i")
     Page<InventoryInResponseDto> getInventoryIns(Pageable pageable);
 
     @Query("select new com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInResponseDto " +
-            "(i.id, i.item.id, i.item.name, i.quantity, i.inbound, i.createdAt,i.image) " +
+            "(i.id, i.item.id, i.item.name, i.quantity, i.inbound, i.createdAt,i.image,i.category.name) " +
             "from InventoryIn i " +
             "where i.inbound = :inbound")
     Page<InventoryInResponseDto> getInventoryInsByInbound(@Param("inbound") Inbound inbound, Pageable pageable);

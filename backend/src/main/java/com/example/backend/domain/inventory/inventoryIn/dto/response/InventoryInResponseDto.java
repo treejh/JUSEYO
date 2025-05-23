@@ -33,4 +33,7 @@ public class InventoryInResponseDto {
 
     @Schema(description = "비품 입고 이미지")
     private String image;
+
+    @Schema(description = "카테고리명")
+    private String categoryName;
 }
