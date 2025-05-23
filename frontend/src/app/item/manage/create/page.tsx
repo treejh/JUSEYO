@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Category {
   id: number;
@@ -133,25 +134,74 @@ export default function CreateItemPage() {
       <h1 className="text-xl mb-4">신규 비품 등록</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* 이미지 */}
-        <div>
-          <label className="block mb-1">이미지</label>
-          <input
-            name="image"
-            type="file"
-            accept="image/*"
-            onChange={handleChange}
-            className="block"
-          />
-          {preview && (
-            <Image
-              src={preview}
-              alt="Preview"
-              width={128}
-              height={128}
-              className="mt-2 rounded"
-            />
-          )}
+        {/* 이미지 업로드 영역 수정 */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            이미지
+          </label>
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0">
+              {preview ? (
+                <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-200">
+                  <Image
+                    src={preview}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-gray-50">
+                  <svg
+                    className="w-8 h-8 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <p className="mt-1 text-xs text-gray-500">이미지 없음</p>
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg
+                  className="w-5 h-5 mr-2 -ml-1 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                이미지 업로드
+              </label>
+              <input
+                id="file-upload"
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleChange}
+                className="sr-only"
+              />
+              <p className="mt-2 text-xs text-gray-500">
+                PNG, JPG, GIF 최대 10MB
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* 상품명 */}
@@ -263,12 +313,21 @@ export default function CreateItemPage() {
           <label>반납 필수 여부</label>
         </div>
 
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          등록하기
-        </button>
+        {/* 버튼 영역 수정 */}
+        <div className="flex justify-end gap-4 pt-4">
+          <Link
+            href="/item/manage"
+            className="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50"
+          >
+            돌아가기
+          </Link>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            등록하기
+          </button>
+        </div>
       </form>
     </main>
   );
