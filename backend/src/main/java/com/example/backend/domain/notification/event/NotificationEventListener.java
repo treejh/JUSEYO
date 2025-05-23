@@ -44,13 +44,13 @@ public class NotificationEventListener {
     // 비품 요청 승인 알림
     @EventListener
     public void handleSupplyRequestApproved(SupplyRequestApprovedEvent event) {
-        supplyRequestApprovedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity(), event.getApprovalStatus());
+        supplyRequestApprovedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
     }
 
     // 비품 요청 반려 알림
     @EventListener
     public void handleSupplyRequestRejected(SupplyRequestApprovedEvent event) {
-        supplyRequestRejectedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity(), event.getApprovalStatus());
+        supplyRequestRejectedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
     }
 
     // 기타

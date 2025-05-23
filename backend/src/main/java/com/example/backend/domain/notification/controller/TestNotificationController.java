@@ -12,18 +12,21 @@ import com.example.backend.domain.notification.event.SupplyRequestCreatedEvent;
 import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.domain.supply.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
+import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.domain.supply.supplyRequest.service.SupplyRequestService;
 import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnRequestDto;
 import com.example.backend.domain.supply.supplyReturn.entity.SupplyReturn;
 import com.example.backend.domain.supply.supplyReturn.service.SupplyReturnService;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.service.UserService;
+import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Outbound;
 import com.example.backend.global.security.jwt.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +48,7 @@ public class TestNotificationController {
     private final SupplyRequestService supplyRequestService;
     private final InventoryOutService inventoryOutService;
     private final SupplyReturnService supplyReturnService;
+    private final SupplyRequestRepository supplyRequestRepository;
 
 
     // 테스트용 알림 보내기 API
@@ -63,7 +67,9 @@ public class TestNotificationController {
         return notificationService.createNotification(testRequest);
     }
 
-    // 재고 부족 알림 테스트용
+    // ======================================================================
+    // 매니저
+    // 재고 부족 알림 테스트
     @PostMapping("/stockDown")
     @Operation(
             summary = "재고 부족 테스트 알림",
@@ -80,7 +86,8 @@ public class TestNotificationController {
         inventoryOutService.removeOutbound(inventoryOutRequestDto);
     }
 
-    // 비품 요청 테스트 알림
+
+    // 비품 요청 알림 테스트
     @PostMapping("/newSupplyRequest")
     @Operation(
             summary = "비품 요청 테스트",
@@ -96,11 +103,11 @@ public class TestNotificationController {
         supplyRequestService.createRequest(dto);
     }
 
-    // 비품 반납 테스트 알림
+    // 비품 반납 알림 테스트
     @PostMapping("/newSupplyReturn")
     @Operation(
-            summary = "비품 요청 테스트",
-            description = "비품 요청 테스트 알림을 보냅니다."
+            summary = "비품 반납 테스트",
+            description = "비품 반납 테스트 알림을 보냅니다."
     )
     public void sendNewSupplyReturn() {
         Item pen = itemRepo.findByName("볼펜").get();
@@ -117,5 +124,40 @@ public class TestNotificationController {
         dto.setOutbound(Outbound.AVAILABLE);
 
         supplyReturnService.addSupplyReturn(dto);
+    }
+
+    // =========================================================================
+    // 회원
+    // 비품 요청 승인
+    @PostMapping("/supplyRequestApproved")
+    @Operation(
+            summary = "비품 요청 승인 테스트",
+            description = "비품 요청 승인 테스트 알림을 보냅니다."
+    )
+    public void sendSupplyRequestApproved() {
+        SupplyRequest request = supplyRequestRepository.findById(1L).get();
+        if (!request.getApprovalStatus().equals(ApprovalStatus.REQUESTED)) {
+            request.setApprovalStatus(ApprovalStatus.REQUESTED);
+
+        }
+        supplyRequestService.approveRequest(1L);
+        return;
+
+    }
+
+    @PostMapping("/supplyRequestRejected")
+    @Operation(
+            summary = "비품 요청 반려 테스트",
+            description = "비품 요청 반려 테스트 알림을 보냅니다."
+    )
+    public void sendSupplyRequestRejected() {
+        SupplyRequest request = supplyRequestRepository.findById(2L).get();
+        if(!request.getApprovalStatus().equals(ApprovalStatus.REQUESTED)) {
+            request.setApprovalStatus(ApprovalStatus.REQUESTED);
+
+        }
+        supplyRequestService.rejectRequest(2L);
+        return;
+
     }
 }

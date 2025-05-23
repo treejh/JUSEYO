@@ -1,4 +1,4 @@
-package com.example.backend.domain.notification.strategy;
+package com.example.backend.domain.notification.strategy.strategy;
 
 import com.example.backend.domain.notification.strategy.context.SupplyRequestContext;
 

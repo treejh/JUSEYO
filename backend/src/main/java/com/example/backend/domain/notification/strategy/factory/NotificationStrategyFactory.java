@@ -2,15 +2,15 @@ package com.example.backend.domain.notification.strategy.factory;
 
 
 import com.example.backend.domain.notification.entity.NotificationType;
-import com.example.backend.domain.notification.strategy.NewChatStrategy;
-import com.example.backend.domain.notification.strategy.NotificationStrategy;
-import com.example.backend.domain.notification.strategy.ReturnDueDateExceededStrategy;
-import com.example.backend.domain.notification.strategy.ReturnDueSoonStrategy;
-import com.example.backend.domain.notification.strategy.StockShortageStrategy;
-import com.example.backend.domain.notification.strategy.SupplyRequestApprovedStrategy;
-import com.example.backend.domain.notification.strategy.SupplyRequestRejectedStrategy;
-import com.example.backend.domain.notification.strategy.SupplyRequestStrategy;
-import com.example.backend.domain.notification.strategy.SupplyReturnStrategy;
+import com.example.backend.domain.notification.strategy.strategy.NewChatStrategy;
+import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
+import com.example.backend.domain.notification.strategy.strategy.ReturnDueDateExceededStrategy;
+import com.example.backend.domain.notification.strategy.strategy.ReturnDueSoonStrategy;
+import com.example.backend.domain.notification.strategy.strategy.StockShortageStrategy;
+import com.example.backend.domain.notification.strategy.strategy.SupplyRequestApprovedStrategy;
+import com.example.backend.domain.notification.strategy.strategy.SupplyRequestRejectedStrategy;
+import com.example.backend.domain.notification.strategy.strategy.SupplyRequestStrategy;
+import com.example.backend.domain.notification.strategy.strategy.SupplyReturnStrategy;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 

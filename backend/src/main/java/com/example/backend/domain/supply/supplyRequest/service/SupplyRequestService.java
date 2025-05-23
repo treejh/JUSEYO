@@ -2,7 +2,9 @@ package com.example.backend.domain.supply.supplyRequest.service;
 
 import com.example.backend.domain.chaseItem.dto.request.ChaseItemRequestDto;
 import com.example.backend.domain.chaseItem.service.ChaseItemService;
+import com.example.backend.domain.notification.event.SupplyRequestApprovedEvent;
 import com.example.backend.domain.notification.event.SupplyRequestCreatedEvent;
+import com.example.backend.domain.notification.event.SupplyRequestRejectedEvent;
 import com.example.backend.domain.supply.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
@@ -123,12 +125,21 @@ public class SupplyRequestService {
                 .build();
         chaseItemService.addChaseItem(chaseDto);
 
+        // 요청 승인 알림 발생
+        eventPublisher.publishEvent(new SupplyRequestApprovedEvent(req.getUser().getId(), req.getItem().getName(), req.getQuantity()));
+
         // 3) DTO 반환
         return mapToDto(req);
     }
 
     @Transactional
     public SupplyRequestResponseDto rejectRequest(Long requestId) {
+
+        // 요청 반려 알림 발생
+        SupplyRequest req = repo.findById(requestId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
+        eventPublisher.publishEvent(new SupplyRequestRejectedEvent(req.getUser().getId(), req.getItem().getName(), req.getQuantity()));
+
         return updateRequestStatus(requestId, ApprovalStatus.REJECTED);
     }
 

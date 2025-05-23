@@ -1,11 +1,11 @@
-package com.example.backend.domain.notification.strategy;
+package com.example.backend.domain.notification.strategy.strategy;
 
 import com.example.backend.domain.notification.strategy.context.NewChatContext;
 import com.example.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class NewChatStrategy implements NotificationStrategy {
+public class ManagementCreatedApprovedStrategy implements NotificationStrategy {
     UserService userService;
 
     @Override
@@ -22,3 +22,4 @@ public class NewChatStrategy implements NotificationStrategy {
         return true;
     }
 }
+

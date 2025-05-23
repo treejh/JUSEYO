@@ -4,7 +4,7 @@ import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.NotificationType;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.enums.RoleType;
-import com.example.backend.domain.notification.strategy.NotificationStrategy;
+import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
 import com.example.backend.domain.notification.strategy.context.NewChatContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
