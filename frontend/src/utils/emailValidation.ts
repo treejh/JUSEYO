@@ -24,15 +24,12 @@ export const checkEmailDuplication = async (
     console.log("이메일 중복 확인 결과:", isDuplicate);
 
     if (isDuplicate) {
-      alert("이미 존재하는 이메일입니다.");
       return true;
     } else {
-      alert("사용 가능한 이메일입니다.");
       return false;
     }
   } catch (error) {
     console.error("이메일 중복 확인 실패:", error);
-
     return false;
   }
 };
@@ -55,7 +52,6 @@ export const sendAuthCode = async (email: string): Promise<boolean> => {
     }
   } catch (error) {
     console.error("인증번호 발송 실패:", error);
-    alert("인증번호 발송 중 오류가 발생했습니다.");
     return false;
   }
 };
@@ -83,10 +79,8 @@ export const verifyAuthCode = async (
 
     // ResponseEntity 구조에서 status 필드 확인
     if (responseData.statusCode === 200) {
-      alert("이메일 인증이 완료되었습니다.");
       return true;
     } else {
-      alert("인증번호가 올바르지 않습니다.");
       return false;
     }
   } catch (error) {

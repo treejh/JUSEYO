@@ -24,15 +24,12 @@ export const checkPhoneDuplication = async (
     console.log("핸드폰 중복 확인 결과:", isDuplicate);
 
     if (isDuplicate) {
-      alert("이미 존재하는 핸드폰 번호입니다.");
       return true;
     } else {
-      alert("사용 가능한 핸드폰 번호입니다.");
       return false;
     }
   } catch (error) {
     console.error("핸드폰 중복 확인 실패:", error);
-    alert("이메일 중복 확인 중 오류가 발생했습니다.");
     return false;
   }
 };
@@ -57,7 +54,6 @@ export const sendPhoneAuthCode = async (
     }
   } catch (error) {
     console.error("인증번호 발송 실패:", error);
-    alert("인증번호 발송 중 오류가 발생했습니다.");
     return false;
   }
 };
@@ -85,10 +81,8 @@ export const verifyPhoneAuthCode = async (
 
     // ResponseEntity 구조에서 status 필드 확인
     if (responseData.statusCode === 200) {
-      alert("핸드폰 인증이 완료되었습니다.");
       return true;
     } else {
-      alert("인증번호가 올바르지 않습니다.");
       return false;
     }
   } catch (error) {
