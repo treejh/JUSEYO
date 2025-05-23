@@ -36,36 +36,37 @@ export default function InitialSignupPage() {
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [phoneTimer, setPhoneTimer] = useState(0);
 
-  const isValidEmailFormat = (email) =>
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [isPhoneLoading, setIsPhoneLoading] = useState(false);
+
+  const isValidEmailFormat = (email: string): boolean =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidPhoneNumberFormat = (phoneNumber) =>
+  const isValidPhoneNumberFormat = (phoneNumber: string) =>
     /^010-\d{4}-\d{4}$/.test(phoneNumber);
 
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout | undefined;
     if (authCodeSent && timer > 0) {
       interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
-    } else if (timer === 0) {
-      clearInterval(interval);
-      setAuthCodeSent(false);
+    } else if (timer === 0 && authCodeSent) {
+      setAuthCodeSent(false); // 타이머가 0일 때만 상태 변경
     }
     return () => clearInterval(interval);
   }, [authCodeSent, timer]);
 
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout | undefined;
     if (phoneAuthCodeSent && phoneTimer > 0) {
       interval = setInterval(() => setPhoneTimer((prev) => prev - 1), 1000);
-    } else if (phoneTimer === 0) {
-      clearInterval(interval);
-      setPhoneAuthCodeSent(false);
+    } else if (phoneTimer === 0 && phoneAuthCodeSent) {
+      setPhoneAuthCodeSent(false); // 타이머가 0일 때만 상태 변경
     }
     return () => clearInterval(interval);
   }, [phoneAuthCodeSent, phoneTimer]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev: FormData) => ({ ...prev, [name]: value }));
   };
 
   const handleEmailCheck = async () => {
@@ -91,7 +92,7 @@ export default function InitialSignupPage() {
     if (!isValidEmailFormat(formData.email))
       return alert("유효한 이메일 형식이 아닙니다.");
     try {
-      setIsLoading(true);
+      setIsEmailLoading(true);
       const isSent = await sendAuthCode(formData.email);
       if (isSent) {
         setAuthCodeSent(true);
@@ -103,7 +104,7 @@ export default function InitialSignupPage() {
     } catch {
       alert("인증번호 발급 중 오류가 발생했습니다.");
     } finally {
-      setIsLoading(false);
+      setIsEmailLoading(false);
     }
   };
 
@@ -145,7 +146,7 @@ export default function InitialSignupPage() {
     if (!isValidPhoneNumberFormat(formData.phoneNumber))
       return alert("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
     try {
-      setIsLoading(true);
+      setIsPhoneLoading(true);
       const isSent = await sendPhoneAuthCode(formData.phoneNumber);
       if (isSent) {
         setPhoneAuthCodeSent(true);
@@ -157,7 +158,7 @@ export default function InitialSignupPage() {
     } catch {
       alert("인증번호 발급 중 오류가 발생했습니다.");
     } finally {
-      setIsLoading(false);
+      setIsPhoneLoading(false);
     }
   };
 
@@ -179,7 +180,17 @@ export default function InitialSignupPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  interface FormData {
+    email: string;
+    password: string;
+    confirmPassword: string;
+    name: string;
+    phoneNumber: string;
+  }
+
+  interface HandleSubmitEvent extends React.FormEvent<HTMLFormElement> {}
+
+  const handleSubmit = (e: HandleSubmitEvent): void => {
     e.preventDefault();
     if (!isEmailChecked || isEmailDuplicated || !isEmailVerified)
       return alert("이메일 인증이 완료되지 않았습니다.");
@@ -190,249 +201,251 @@ export default function InitialSignupPage() {
   };
 
   return (
-    <div className="w-full h-screen bg-white flex items-center justify-center gap-x-50">
-      <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center">
-        <div className="pl-0">
+    <div className="w-full h-screen bg-white flex align-start justify-center pt-14">
+      <div className="w-2/6 h-full flex-shrink-0 flex flex-col justify-center">
+        <div className="pl-50">
           <Link href="/">
             <img
               src="/logo.png"
               alt="Juseyo 로고"
-              className="h-10 mb-8 rounded-xl shadow-md"
+              className="h-8 mb-6 rounded-xl shadow-md"
             />
           </Link>
-          <h1 className="text-5xl md:text-7xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-indigo-600">
+          <h1 className="text-4xl md:text-6xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-indigo-600">
             회원가입
           </h1>
-          <p className="text-lg mb-2 text-gray-600">
+          <p className="text-base mb-2 text-gray-600">
             재고 관리 플랫폼 Juseyo에 오신 것을 환영합니다.
           </p>
-          <p className="text-base text-gray-500 mb-6">
+          <p className="text-sm text-gray-500 mb-4">
             계정에 로그인하여 재고를 효율적으로 관리하세요.
           </p>
         </div>
       </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="shadow-xl rounded-2xl overflow-hidden w-full max-w-[500px] bg-white"
-      >
-        <div className="bg-[#0047AB] text-white px-8 py-5 text-center">
-          <h2 className="text-2xl font-bold">회원가입</h2>
-          <p className="text-base mt-2 opacity-80">
-            새로운 관리 페이지를 생성하고 회원가입을 완료하세요.
-          </p>
-        </div>
-
-        <div className="px-8 py-8">
-          {/* 이름 */}
-          <div className="mb-5">
-            <label className="block text-base font-medium text-gray-700 mb-2">
-              이름
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
-              placeholder="이름을 입력하세요"
-            />
-          </div>
-          {/* 이메일 */}
-          <label className="block text-base font-medium text-gray-700 mb-2">
-            이메일
-          </label>
-          <div className="mb-5 flex items-center">
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              disabled={isEmailVerified}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
-              placeholder="이메일을 입력하세요"
-            />
-            <button
-              type="button"
-              onClick={handleEmailCheck}
-              disabled={isEmailVerified || isEmailChecked}
-              className={`ml-4 px-4 py-2 rounded-lg text-white w-32 ${
-                isEmailVerified || isEmailChecked
-                  ? "bg-gray-400"
-                  : "bg-[#0047AB] hover:bg-blue-800"
-              }`}
-            >
-              {isEmailVerified
-                ? "완료됨"
-                : isEmailChecked
-                ? "중복 확인 완료"
-                : "중복 확인"}
-            </button>
-          </div>
-
-          {/* 인증번호 입력 */}
-          {isEmailChecked && !isEmailDuplicated && !isEmailVerified && (
-            <div className="mb-5">
-              <label className="block text-base font-medium text-gray-700 mb-2">
-                이메일 인증
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="text"
-                  value={authCode}
-                  onChange={(e) => setAuthCode(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
-                  placeholder="인증번호를 입력하세요"
-                  disabled={timer === 0 && !authCodeSent}
-                />
-                <button
-                  type="button"
-                  onClick={
-                    authCodeSent ? handleVerifyAuthCode : handleSendAuthCode
-                  }
-                  className="w-64 ml-4 px-4 py-2 rounded-lg text-white bg-[#0047AB]"
-                >
-                  {authCodeSent
-                    ? "인증"
-                    : isLoading
-                    ? "로딩중..."
-                    : "인증번호 받기"}
-                </button>
-              </div>
-              {authCodeSent && (
-                <p className="text-sm text-gray-500 mt-2">
-                  남은 시간: {Math.floor(timer / 60)}:
-                  {String(timer % 60).padStart(2, "0")}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* 인증 완료 메시지 */}
-          {isEmailVerified && (
-            <p className="text-sm text-green-600 mt-2">
-              이메일 인증이 완료되었습니다.
+      <div className="w-full h-full flex items-center justify-center">
+        <form
+          onSubmit={handleSubmit}
+          className="shadow-lg rounded-xl overflow-y-auto w-full max-w-[600px] bg-white h-[90%]" // 스크롤 가능하도록 설정
+        >
+          <div className="bg-[#0047AB] text-white px-6 py-4 text-center">
+            <h2 className="text-xl font-bold">회원가입</h2>
+            <p className="text-sm mt-1 opacity-80">
+              새로운 관리 페이지를 생성하고 회원가입을 완료하세요.
             </p>
-          )}
+          </div>
 
-          {/* 전화번호 */}
-          <div className="mb-5">
-            <label className="block text-base font-medium text-gray-700 mb-2">
-              전화번호
-            </label>
-            <div className="mb-5 flex items-center">
+          <div className="px-6 py-6">
+            {/* 이름 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                이름
+              </label>
               <input
                 type="text"
-                name="phoneNumber"
-                value={formData.phoneNumber}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                disabled={isPhoneVerified || isPhoneChecked} // 중복 확인 완료 시 비활성화
-                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
-                placeholder="전화번호를 입력하세요"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                placeholder="이름을 입력하세요"
+              />
+            </div>
+
+            {/* 이메일 */}
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              이메일
+            </label>
+            <div className="mb-4 flex items-center">
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                disabled={isEmailVerified}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                placeholder="이메일을 입력하세요"
               />
               <button
                 type="button"
-                onClick={handlePhoneCheck}
-                disabled={isPhoneVerified || isPhoneChecked}
-                className={`ml-4 px-4 py-2 rounded-lg text-white w-32 ${
-                  isPhoneVerified || isPhoneChecked
+                onClick={handleEmailCheck}
+                disabled={isEmailVerified || isEmailChecked}
+                className={`ml-3 px-7 py-2.5 rounded-lg text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center ${
+                  isEmailVerified || isEmailChecked
                     ? "bg-gray-400"
                     : "bg-[#0047AB] hover:bg-blue-800"
                 }`}
               >
-                {isPhoneVerified
+                {isEmailVerified
                   ? "완료됨"
-                  : isPhoneChecked
+                  : isEmailChecked
                   ? "중복 확인 완료"
                   : "중복 확인"}
               </button>
             </div>
 
             {/* 인증번호 입력 */}
-            {isPhoneChecked && !isPhoneDuplicated && !isPhoneVerified && (
-              <div className="mb-5">
-                <label className="block text-base font-medium text-gray-700 mb-2">
-                  전화번호 인증
+            {isEmailChecked && !isEmailDuplicated && !isEmailVerified && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  이메일 인증
                 </label>
                 <div className="flex items-center">
                   <input
                     type="text"
-                    value={phoneAuthCode}
-                    onChange={(e) => setPhoneAuthCode(e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                    value={authCode}
+                    onChange={(e) => setAuthCode(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
                     placeholder="인증번호를 입력하세요"
-                    disabled={phoneTimer === 0 && !phoneAuthCodeSent}
+                    disabled={timer === 0 && !authCodeSent}
                   />
                   <button
                     type="button"
                     onClick={
-                      phoneAuthCodeSent
-                        ? handleVerifyPhoneAuthCode
-                        : handleSendPhoneAuthCode
+                      authCodeSent ? handleVerifyAuthCode : handleSendAuthCode
                     }
-                    className="w-64 ml-4 px-4 py-2 rounded-lg text-white bg-[#0047AB]"
+                    className="ml-3 px-7 py-2.5 rounded-lg text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center"
                   >
-                    {phoneAuthCodeSent
+                    {authCodeSent
                       ? "인증"
                       : isLoading
                       ? "로딩중..."
                       : "인증번호 받기"}
                   </button>
                 </div>
-                {phoneAuthCodeSent && (
-                  <p className="text-sm text-gray-500 mt-2">
-                    남은 시간: {Math.floor(phoneTimer / 60)}:
-                    {String(phoneTimer % 60).padStart(2, "0")}
+                {authCodeSent && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    남은 시간: {Math.floor(timer / 60)}:
+                    {String(timer % 60).padStart(2, "0")}
                   </p>
                 )}
               </div>
             )}
 
             {/* 인증 완료 메시지 */}
-            {isPhoneVerified && (
-              <p className="text-sm text-green-600 mt-2">
-                전화번호 인증이 완료되었습니다.
+            {isEmailVerified && (
+              <p className="text-sm mt-2" style={{ color: "#0047AB" }}>
+                이메일 인증이 완료되었습니다.
               </p>
             )}
-          </div>
 
-          <div className="mb-5">
-            <label className="block text-base font-medium text-gray-700 mb-2">
-              비밀번호
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
-              placeholder="비밀번호를 입력하세요"
-            />
-          </div>
+            {/* 전화번호 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                전화번호
+              </label>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  disabled={isPhoneVerified || isPhoneChecked} // 중복 확인 완료 시 비활성화
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                  placeholder="전화번호를 입력하세요"
+                />
+                <button
+                  type="button"
+                  onClick={handlePhoneCheck}
+                  disabled={isPhoneVerified || isPhoneChecked}
+                  className={`ml-3 px-7 py-2.5 rounded-lg text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center ${
+                    isPhoneVerified || isPhoneChecked
+                      ? "bg-gray-400"
+                      : "bg-[#0047AB] hover:bg-blue-800"
+                  }`}
+                >
+                  {isPhoneVerified
+                    ? "완료됨"
+                    : isPhoneChecked
+                    ? "중복 확인 완료"
+                    : "중복 확인"}
+                </button>
+              </div>
 
-          <div className="mb-5">
-            <label className="block text-base font-medium text-gray-700 mb-2">
-              비밀번호 확인
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0047AB] focus:outline-none"
-              placeholder="비밀번호를 다시 입력하세요"
-            />
-          </div>
+              {/* 인증번호 입력 */}
+              {isPhoneChecked && !isPhoneDuplicated && !isPhoneVerified && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    전화번호 인증
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      type="text"
+                      value={phoneAuthCode}
+                      onChange={(e) => setPhoneAuthCode(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                      placeholder="인증번호를 입력하세요"
+                      disabled={phoneTimer === 0 && !phoneAuthCodeSent}
+                    />
+                    <button
+                      type="button"
+                      onClick={
+                        phoneAuthCodeSent
+                          ? handleVerifyPhoneAuthCode
+                          : handleSendPhoneAuthCode
+                      }
+                      className="ml-3 px-3 py-3 rounded-lg text-white text-sm bg-[#0047AB] hover:bg-blue-800 flex min-w-[100px] whitespace-nowrap items-center justify-center"
+                    >
+                      {phoneAuthCodeSent
+                        ? "인증"
+                        : isLoading
+                        ? "로딩중..."
+                        : "인증번호 받기"}
+                    </button>
+                  </div>
+                  {phoneAuthCodeSent && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      남은 시간: {Math.floor(phoneTimer / 60)}:
+                      {String(phoneTimer % 60).padStart(2, "0")}
+                    </p>
+                  )}
+                </div>
+              )}
 
-          <button
-            type="submit"
-            className="w-full bg-[#0047AB] text-white py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
-            disabled={isLoading}
-          >
-            {isLoading ? "처리 중..." : "회원가입"}
-          </button>
-        </div>
-      </form>
+              {/* 인증 완료 메시지 */}
+              {isPhoneVerified && (
+                <p className="text-sm mt-2" style={{ color: "#0047AB" }}>
+                  전화번호 인증이 완료되었습니다.
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                비밀번호
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                placeholder="비밀번호를 입력하세요"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                비밀번호 확인
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                placeholder="비밀번호를 다시 입력하세요"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-[#0047AB] text-white py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
+              disabled={isLoading}
+            >
+              {isLoading ? "처리 중..." : "회원가입"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
