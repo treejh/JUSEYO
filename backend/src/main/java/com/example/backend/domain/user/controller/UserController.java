@@ -438,7 +438,7 @@ public class UserController {
         );
     }
 
-    @GetMapping("/email/phone")
+    @PostMapping("/emails/phone")
     @Operation(
             summary = "핸드폰 번호로 이메일 조회하기",
             description = "핸드폰 번호로 이메일 조회, 핸드폰 번호로 인증된 사용자만 사용 가능"
@@ -451,8 +451,6 @@ public class UserController {
                 HttpStatus.OK
         );
     }
-
-
 
 
 
@@ -500,6 +498,7 @@ public class UserController {
         );
 
     }
+
 
 
     @DeleteMapping

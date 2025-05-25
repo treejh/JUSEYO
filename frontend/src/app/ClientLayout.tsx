@@ -21,7 +21,7 @@ export default function ClientLayout({
   const isAuthPage =
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
-    pathname.startsWith("/find/");
+    pathname.startsWith("/find");
   const isRootPage = pathname === "/";
   const shouldHideNav = isAuthPage || isRootPage;
 
@@ -176,6 +176,11 @@ export default function ClientLayout({
     // 로그인 여부 확인 중일 때는 리다이렉트하지 않음
     if (isLoginUserPending) return;
 
+    if (isLogin && isAuthPage) {
+      alert("이미 로그인된 사용자 입니다.");
+      router.push("/");
+    }
+
     // 로그인되지 않은 사용자가 인증이 필요한 페이지에 접근하려고 할 때 리다이렉트
     if (!isLogin && !isAuthPage && !isRootPage) {
       alert("로그인이 필요한 페이지입니다.");
@@ -220,9 +225,13 @@ export default function ClientLayout({
             )}
 
             {/* 메인 콘텐츠 */}
-            <div 
+            <div
               className={`flex-1 min-h-screen transition-all duration-300 ease-in-out ${
-                !shouldHideNav ? (sidebarCollapsed ? 'ml-[80px]' : 'ml-[280px]') : ''
+                !shouldHideNav
+                  ? sidebarCollapsed
+                    ? "ml-[80px]"
+                    : "ml-[280px]"
+                  : ""
               }`}
             >
               {children}
