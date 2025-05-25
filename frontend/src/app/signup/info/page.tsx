@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function ManagementPage() {
@@ -12,6 +12,12 @@ export default function ManagementPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // 페이지 로드 시 로컬 스토리지 값 제거
+  useEffect(() => {
+    localStorage.removeItem("managementPageName");
+    localStorage.removeItem("departmentName");
+  }, []);
 
   // 관리 페이지 검증 및 부서 조회
   const validateManagementPage = async () => {
