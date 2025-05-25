@@ -21,6 +21,8 @@ export default function InitialSignupPage() {
     confirmPassword: "",
     name: "",
     phoneNumber: "",
+    managementPageName: "",
+    departmentName: "",
   });
   const router = useRouter();
   const [authCode, setAuthCode] = useState("");
@@ -66,9 +68,21 @@ export default function InitialSignupPage() {
     return () => clearInterval(interval);
   }, [phoneAuthCodeSent, phoneTimer]);
 
+  useEffect(() => {
+    // 로컬 스토리지에서 관리 페이지 이름과 부서 이름 가져오기
+    const managementPageName = localStorage.getItem("managementPageName") || "";
+    const departmentName = localStorage.getItem("departmentName") || "";
+
+    setFormData((prev) => ({
+      ...prev,
+      managementPageName,
+      departmentName,
+    }));
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
-    setFormData((prev: FormData) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEmailCheck = async () => {
@@ -192,14 +206,52 @@ export default function InitialSignupPage() {
 
   interface HandleSubmitEvent extends React.FormEvent<HTMLFormElement> {}
 
-  const handleSubmit = (e: HandleSubmitEvent): void => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isEmailChecked || isEmailDuplicated || !isEmailVerified)
       return alert("이메일 인증이 완료되지 않았습니다.");
     if (!isPhoneChecked || isPhoneDuplicated || !isPhoneVerified)
       return alert("핸드폰 인증이 완료되지 않았습니다.");
-    console.log("회원가입 요청:", formData);
-    // 회원가입 API 호출 로직
+
+    if (
+      !formData.email ||
+      !formData.password ||
+      !formData.name ||
+      !formData.phoneNumber
+    ) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const response = await fetch(`${API_URL}/api/v1/users/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error("회원가입에 실패했습니다.");
+      }
+
+      alert("회원가입이 완료되었습니다.");
+      router.push("/");
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "회원가입 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -304,7 +356,7 @@ export default function InitialSignupPage() {
                     onClick={
                       authCodeSent ? handleVerifyAuthCode : handleSendAuthCode
                     }
-                    className="ml-3 px-7 py-2.5 rounded-lg text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center"
+                    className="ml-3 px-7 py-2.5 rounded-lg bg-[#0047AB] text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center"
                   >
                     {authCodeSent
                       ? "인증"

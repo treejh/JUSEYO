@@ -113,7 +113,7 @@ public class DepartmentController {
         return ResponseEntity.noContent().build();  // 204 No Content 상태 반환
     }
 
-    @GetMapping("/g")
+    @GetMapping("/management")
     @Operation(
             summary = "관리 페이지에 속한 부서 페이지 조회",
             description = "회원가입 시, 관리페이지에 존재하는 부서를 조회할때 사용."
