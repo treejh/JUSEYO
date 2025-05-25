@@ -27,7 +27,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -531,6 +533,39 @@ public class UserController {
         boolean result = userService.isInitialManagerValid();
         return ResponseEntity.ok(ApiResponse.of(200, "최초 매니저 여부 확인 성공", result));
     }
+
+    @GetMapping("/search")
+    @Operation(
+            summary = "회원 이름으로 검색",
+            description = "특정 관리 페이지 내에서 이름을 포함한 회원을 검색합니다."
+    )
+    public ResponseEntity<ApiResponse<?>> searchMembersByName(
+            @RequestParam String username,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<?> result = userService.searchMembersByName( username, pageable);
+        return ResponseEntity.ok(ApiResponse.of(200, "회원 검색 성공", result));
+    }
+
+
+    @GetMapping("/search/manager")
+    @Operation(
+            summary = "매니저 이름으로 검색",
+            description = "특정 관리 페이지 내에서 이름을 포함한 매니저를 검색합니다."
+    )
+    public ResponseEntity<ApiResponse<?>> searchManagersByName(
+            @RequestParam String username,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<?> result = userService.searchManagerByName( username, pageable);
+        return ResponseEntity.ok(ApiResponse.of(200, "매니저 검색 성공", result));
+    }
+
+
 
 
 }

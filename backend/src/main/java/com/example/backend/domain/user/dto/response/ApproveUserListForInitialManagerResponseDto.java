@@ -27,15 +27,23 @@ public class ApproveUserListForInitialManagerResponseDto {
 
     ApprovalStatus approvalStatus;
 
+    String departmentName;
+
 
 
     public ApproveUserListForInitialManagerResponseDto(User user){
-        this.userId=user.getId();
+        this.userId = user.getId();
         this.name = user.getName();
         this.email = user.getEmail();
         this.phoneNumber = user.getPhoneNumber();
         this.requestDate = user.getCreatedAt();
-        this.approvalStatus=user.getApprovalStatus();
+        this.approvalStatus = user.getApprovalStatus();
+
+        if (user.getDepartment() == null || user.getDepartment().getName() == null) {
+            this.departmentName = "매니저";
+        } else {
+            this.departmentName = user.getDepartment().getName();
+        }
     }
 
 }

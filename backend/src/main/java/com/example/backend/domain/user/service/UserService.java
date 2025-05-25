@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -682,6 +683,7 @@ public class UserService {
         }
     }
 
+
     public List<User> findByManagerList(ManagementDashboard managementDashboard){
 
         Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
@@ -746,5 +748,58 @@ public class UserService {
         // 실제 검색 실행 (승인된 사용자만 조회)
         return userRepository.searchBasicUsers(managementDashboardId, searchKeyword, RoleType.USER, ApprovalStatus.APPROVED, pageable);
     }
+
+
+
+    public Page<?> searchMembersByName(String username, Pageable pageable) {
+        Role role = roleService.findRoleByRoleType(RoleType.USER);
+        User user = findById(tokenService.getIdFromToken());
+        validManager();
+
+        // 2. 관리 페이지 엔티티 조회
+        ManagementDashboard dashboard = managementDashboardRepository.findById(user.getManagementDashboard().getId())
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        // 3. 해당 관리 페이지 소속인지 확인
+        validateManagementDashboardUser(dashboard);
+        Page<User> users = userRepository.findByNameContainingAndManagementDashboardAndRole(
+                username,
+                dashboard,
+                role,
+                pageable
+        );
+
+        if (validInitialManager(dashboard)) {
+            return users.map(ApproveUserListForInitialManagerResponseDto::new);
+        } else {
+            return users.map(ApproveUserListForManagerResponseDto::new);
+        }
+    }
+
+    public Page<?> searchManagerByName(String username, Pageable pageable) {
+        Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
+        User user = findById(tokenService.getIdFromToken());
+
+        ManagementDashboard dashboard = managementDashboardRepository.findById(user.getManagementDashboard().getId())
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        isInitialManagerValid();
+        Page<User> users = userRepository.findByNameContainingAndManagementDashboardAndRole(
+                username,
+                dashboard,
+                role,
+                pageable
+        );
+
+        if (validInitialManager(dashboard)) {
+            return users.map(ApproveUserListForInitialManagerResponseDto::new);
+        } else {
+            return users.map(ApproveUserListForManagerResponseDto::new);
+        }
+    }
+
+
+
+
 
 }
