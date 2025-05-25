@@ -96,22 +96,36 @@ const UserProfilePage = () => {
     }
   };
 
-  const handleSave = async (field: string, value: string) => {
+  const handleSavePhoneNumber = async () => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+    // 유효성 검사
+    if (!userInfo.phoneNumber.trim()) {
+      alert("핸드폰 번호를 입력해주세요.");
+      return;
+    }
+    const phoneRegex = /^010-\d{4}-\d{4}$/;
+    if (!phoneRegex.test(userInfo.phoneNumber)) {
+      alert("전화번호 형식은 010-1234-5678이어야 합니다.");
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/v1/user/${field}`, {
+      const response = await fetch(`${API_BASE}/api/v1/users/phoneNumber`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ [field]: value }),
+        body: JSON.stringify({ phoneNumber: userInfo.phoneNumber }),
       });
 
-      if (!response.ok) throw new Error("정보를 업데이트할 수 없습니다.");
+      if (!response.ok) throw new Error("핸드폰 번호를 수정할 수 없습니다.");
 
-      alert(`${field}이(가) 성공적으로 수정되었습니다.`);
-      setUserInfo((prev) => ({ ...prev, [field]: value }));
-      setIsEditing((prev) => ({ ...prev, [field]: false }));
+      const data = await response.json();
+      alert("핸드폰 번호가 성공적으로 수정되었습니다.");
+      setUserInfo((prev) => ({ ...prev, phoneNumber: data.data.phoneNumber }));
+      setIsEditing((prev) => ({ ...prev, phoneNumber: false }));
     } catch (error) {
       alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
     }
@@ -280,7 +294,7 @@ const UserProfilePage = () => {
               placeholder="010-1234-5678"
             />
             <button
-              onClick={() => handleSave("phoneNumber", userInfo.phoneNumber)}
+              onClick={handleSavePhoneNumber}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg"
             >
               저장
