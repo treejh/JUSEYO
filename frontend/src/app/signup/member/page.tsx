@@ -360,7 +360,7 @@ export default function InitialSignupPage() {
                   >
                     {authCodeSent
                       ? "인증"
-                      : isLoading
+                      : isEmailLoading
                       ? "로딩중..."
                       : "인증번호 받기"}
                   </button>
