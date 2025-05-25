@@ -61,6 +61,41 @@ const UserProfilePage = () => {
     }
   };
 
+  const handleSaveEmail = async () => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+    // 유효성 검사
+    if (!userInfo.email.trim()) {
+      alert("이메일을 입력해주세요.");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userInfo.email)) {
+      alert("유효한 이메일 형식이 아닙니다.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/v1/users/email`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email: userInfo.email }),
+      });
+
+      if (!response.ok) throw new Error("이메일을 수정할 수 없습니다.");
+
+      const data = await response.json();
+      alert("이메일이 성공적으로 수정되었습니다.");
+      setUserInfo((prev) => ({ ...prev, email: data.data.email }));
+      setIsEditing((prev) => ({ ...prev, email: false }));
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+    }
+  };
+
   const handleSave = async (field: string, value: string) => {
     try {
       const response = await fetch(`/api/v1/user/${field}`, {
@@ -197,7 +232,7 @@ const UserProfilePage = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             />
             <button
-              onClick={() => handleSave("email", userInfo.email)}
+              onClick={handleSaveEmail}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg"
             >
               저장
