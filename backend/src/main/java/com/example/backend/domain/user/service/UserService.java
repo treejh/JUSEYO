@@ -386,6 +386,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public User updatePassword(UserPatchRequestDto.changePassword changePasswordDto){
         User user = findById(tokenService.getIdFromToken());
 
@@ -394,6 +395,7 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(changePasswordDto.getChangePassword()));
         user.setModifiedAt(LocalDateTime.now());
+
         return userRepository.save(user);
     }
 
