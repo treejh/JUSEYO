@@ -21,6 +21,8 @@ const UserProfilePage = () => {
   });
 
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
 
   const handleSaveName = async () => {
     const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -132,25 +134,55 @@ const UserProfilePage = () => {
   };
 
   const handlePasswordChange = async () => {
-    if (!newPassword) {
-      alert("새 비밀번호를 입력해주세요.");
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+    // 유효성 검사
+    if (
+      !newPassword.trim() ||
+      !confirmPassword.trim() ||
+      !currentPassword.trim()
+    ) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*\W).{8,20}$/;
+    if (!passwordRegex.test(newPassword)) {
+      alert("비밀번호는 영문자, 숫자, 특수문자를 포함한 8~20자리여야 합니다.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("새 비밀번호가 일치하지 않습니다.");
       return;
     }
 
     try {
-      const response = await fetch(`/api/v1/user/password`, {
+      const response = await fetch(`${API_BASE}/api/v1/users/password`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ password: newPassword }),
+        credentials: "include",
+        body: JSON.stringify({
+          beforePassword: currentPassword,
+          changePassword: newPassword,
+        }),
       });
 
-      if (!response.ok) throw new Error("비밀번호를 변경할 수 없습니다.");
+      if (!response.ok) {
+        if (response.status === 400) {
+          alert("이전 비밀번호가 틀립니다.");
+        } else {
+          throw new Error("비밀번호를 변경할 수 없습니다.");
+        }
+        return;
+      }
 
       alert("비밀번호가 성공적으로 변경되었습니다.");
       setNewPassword("");
+      setConfirmPassword("");
+      setCurrentPassword("");
     } catch (error) {
       alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
     }
@@ -330,14 +362,28 @@ const UserProfilePage = () => {
       {/* 비밀번호 변경 */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700">
-          비밀번호
+          비밀번호 변경
         </label>
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4">
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            placeholder="현재 비밀번호"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+          />
           <input
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="새 비밀번호 입력"
+            placeholder="새 비밀번호"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+          />
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="새 비밀번호 확인"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg"
           />
           <button
