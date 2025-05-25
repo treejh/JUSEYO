@@ -36,6 +36,7 @@ const UserProfilePage = () => {
     name: false,
     email: false,
     phoneNumber: false,
+    password: false,
   });
 
   const [newPassword, setNewPassword] = useState("");
@@ -573,35 +574,62 @@ const UserProfilePage = () => {
         {/* 비밀번호 변경 */}
         <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
           <h3 className="text-sm font-medium text-gray-500">비밀번호 변경</h3>
-          <div className="flex flex-col gap-4 mt-2">
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="현재 비밀번호"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-            />
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="새 비밀번호"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-            />
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="새 비밀번호 확인"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-            />
-            <button
-              onClick={handlePasswordChange}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-            >
-              변경
-            </button>
-          </div>
+          {isEditing.password ? (
+            <div className="flex flex-col gap-4 mt-2">
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="현재 비밀번호"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              />
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="새 비밀번호"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              />
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="새 비밀번호 확인"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePasswordChange}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                >
+                  변경
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditing((prev) => ({ ...prev, password: false })); // 수정 모드 종료
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-lg font-semibold text-gray-800">********</p>
+              <button
+                onClick={() =>
+                  setIsEditing((prev) => ({ ...prev, password: true }))
+                }
+                className="text-blue-500"
+              >
+                수정
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
