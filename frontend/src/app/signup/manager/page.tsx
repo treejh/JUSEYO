@@ -21,6 +21,8 @@ export default function InitialSignupPage() {
     confirmPassword: "",
     name: "",
     phoneNumber: "",
+    managementPageName: "",
+    departmentName: "",
   });
   const router = useRouter();
   const [authCode, setAuthCode] = useState("");
@@ -66,9 +68,21 @@ export default function InitialSignupPage() {
     return () => clearInterval(interval);
   }, [phoneAuthCodeSent, phoneTimer]);
 
+  useEffect(() => {
+    // 로컬 스토리지에서 관리 페이지 이름과 부서 이름 가져오기
+    const managementPageName = localStorage.getItem("managementPageName") || "";
+    const departmentName = localStorage.getItem("departmentName") || "";
+
+    setFormData((prev) => ({
+      ...prev,
+      managementPageName,
+      departmentName,
+    }));
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
-    setFormData((prev: FormData) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEmailCheck = async () => {
@@ -79,11 +93,13 @@ export default function InitialSignupPage() {
       const isDuplicated = await checkEmailDuplication(formData.email);
       setIsEmailChecked(true);
       setIsEmailDuplicated(isDuplicated);
-      alert(
-        isDuplicated
-          ? "이미 사용 중인 이메일입니다."
-          : "사용 가능한 이메일입니다. 인증번호를 발급받아주세요."
-      );
+
+      if (isDuplicated) {
+        alert("이미 사용 중인 이메일입니다. 다시 확인해주세요.");
+        setIsEmailChecked(false); // 다시 중복 확인 가능하도록 상태 초기화
+      } else {
+        alert("사용 가능한 이메일입니다. 인증번호를 발급받아주세요.");
+      }
     } catch {
       alert("중복 확인 중 오류가 발생했습니다.");
     }
@@ -133,11 +149,12 @@ export default function InitialSignupPage() {
       const isDuplicated = await checkPhoneDuplication(formData.phoneNumber);
       setIsPhoneChecked(true);
       setIsPhoneDuplicated(isDuplicated);
-      alert(
-        isDuplicated
-          ? "이미 사용 중인 전화번호입니다."
-          : "사용 가능한 전화번호입니다. 인증번호를 발급받아주세요."
-      );
+      if (isDuplicated) {
+        alert("이미 사용 중인 전화번호입니다. 다시 확인해주세요.");
+        setIsPhoneChecked(false); // 다시 중복 확인 가능하도록 상태 초기화
+      } else {
+        alert("사용 가능한 전화번호입니다. 인증번호를 발급받아주세요.");
+      }
     } catch {
       alert("전화번호 중복 확인 중 오류가 발생했습니다.");
     }
@@ -192,14 +209,52 @@ export default function InitialSignupPage() {
 
   interface HandleSubmitEvent extends React.FormEvent<HTMLFormElement> {}
 
-  const handleSubmit = (e: HandleSubmitEvent): void => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isEmailChecked || isEmailDuplicated || !isEmailVerified)
       return alert("이메일 인증이 완료되지 않았습니다.");
     if (!isPhoneChecked || isPhoneDuplicated || !isPhoneVerified)
       return alert("핸드폰 인증이 완료되지 않았습니다.");
-    console.log("회원가입 요청:", formData);
-    // 회원가입 API 호출 로직
+
+    if (
+      !formData.email ||
+      !formData.password ||
+      !formData.name ||
+      !formData.phoneNumber
+    ) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const response = await fetch(`${API_URL}/api/v1/users/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error("회원가입에 실패했습니다.");
+      }
+
+      alert("회원가입이 완료되었습니다.");
+      router.push("/");
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "회원가입 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -256,32 +311,41 @@ export default function InitialSignupPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               이메일
             </label>
-            <div className="mb-4 flex items-center">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                disabled={isEmailVerified}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
-                placeholder="이메일을 입력하세요"
-              />
-              <button
-                type="button"
-                onClick={handleEmailCheck}
-                disabled={isEmailVerified || isEmailChecked}
-                className={`ml-3 px-7 py-2.5 rounded-lg text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center ${
-                  isEmailVerified || isEmailChecked
-                    ? "bg-gray-400"
-                    : "bg-[#0047AB] hover:bg-blue-800"
-                }`}
-              >
-                {isEmailVerified
-                  ? "완료됨"
-                  : isEmailChecked
-                  ? "중복 확인 완료"
-                  : "중복 확인"}
-              </button>
+            <div className="mb-4 w-full">
+              <div className="flex items-center">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={isEmailVerified || isEmailChecked} // 중복 확인 완료 시 비활성화
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                  placeholder="이메일을 입력하세요"
+                />
+                <button
+                  type="button"
+                  onClick={handleEmailCheck}
+                  disabled={isEmailVerified || isEmailChecked}
+                  className={`ml-3 px-7 py-2.5 rounded-lg text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center ${
+                    isEmailVerified || isEmailChecked
+                      ? "bg-gray-400"
+                      : "bg-[#0047AB] hover:bg-blue-800"
+                  }`}
+                >
+                  {isEmailVerified
+                    ? "완료됨"
+                    : isEmailChecked
+                    ? "중복 확인 완료"
+                    : "중복 확인"}
+                </button>
+              </div>
+
+              {/* ✅ input 바로 아래 메시지 (margin-top만 살짝 줌) */}
+              {isEmailVerified && (
+                <p className="text-sm mt-1 text-[#0047AB]">
+                  이메일 인증이 완료되었습니다.
+                </p>
+              )}
             </div>
 
             {/* 인증번호 입력 */}
@@ -304,11 +368,11 @@ export default function InitialSignupPage() {
                     onClick={
                       authCodeSent ? handleVerifyAuthCode : handleSendAuthCode
                     }
-                    className="ml-3 px-7 py-2.5 rounded-lg text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center"
+                    className="ml-3 px-7 py-2.5 rounded-lg bg-[#0047AB] text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center"
                   >
                     {authCodeSent
                       ? "인증"
-                      : isLoading
+                      : isEmailLoading
                       ? "로딩중..."
                       : "인증번호 받기"}
                   </button>
@@ -320,13 +384,6 @@ export default function InitialSignupPage() {
                   </p>
                 )}
               </div>
-            )}
-
-            {/* 인증 완료 메시지 */}
-            {isEmailVerified && (
-              <p className="text-sm mt-2" style={{ color: "#0047AB" }}>
-                이메일 인증이 완료되었습니다.
-              </p>
             )}
 
             {/* 전화번호 */}
@@ -362,6 +419,13 @@ export default function InitialSignupPage() {
                 </button>
               </div>
 
+              {/* ✅ 전화번호 인증 완료 메시지 - input 바로 아래에 오도록 */}
+              {isPhoneVerified && (
+                <p className="text-sm mt-1 text-[#0047AB]">
+                  전화번호 인증이 완료되었습니다.
+                </p>
+              )}
+
               {/* 인증번호 입력 */}
               {isPhoneChecked && !isPhoneDuplicated && !isPhoneVerified && (
                 <div className="mt-4">
@@ -388,7 +452,7 @@ export default function InitialSignupPage() {
                     >
                       {phoneAuthCodeSent
                         ? "인증"
-                        : isLoading
+                        : isPhoneLoading
                         ? "로딩중..."
                         : "인증번호 받기"}
                     </button>
@@ -400,13 +464,6 @@ export default function InitialSignupPage() {
                     </p>
                   )}
                 </div>
-              )}
-
-              {/* 인증 완료 메시지 */}
-              {isPhoneVerified && (
-                <p className="text-sm mt-2" style={{ color: "#0047AB" }}>
-                  전화번호 인증이 완료되었습니다.
-                </p>
               )}
             </div>
 

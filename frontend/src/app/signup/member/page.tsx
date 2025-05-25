@@ -93,11 +93,13 @@ export default function InitialSignupPage() {
       const isDuplicated = await checkEmailDuplication(formData.email);
       setIsEmailChecked(true);
       setIsEmailDuplicated(isDuplicated);
-      alert(
-        isDuplicated
-          ? "이미 사용 중인 이메일입니다."
-          : "사용 가능한 이메일입니다. 인증번호를 발급받아주세요."
-      );
+
+      if (isDuplicated) {
+        alert("이미 사용 중인 이메일입니다. 다시 확인해주세요.");
+        setIsEmailChecked(false); // 다시 중복 확인 가능하도록 상태 초기화
+      } else {
+        alert("사용 가능한 이메일입니다. 인증번호를 발급받아주세요.");
+      }
     } catch {
       alert("중복 확인 중 오류가 발생했습니다.");
     }
@@ -147,11 +149,12 @@ export default function InitialSignupPage() {
       const isDuplicated = await checkPhoneDuplication(formData.phoneNumber);
       setIsPhoneChecked(true);
       setIsPhoneDuplicated(isDuplicated);
-      alert(
-        isDuplicated
-          ? "이미 사용 중인 전화번호입니다."
-          : "사용 가능한 전화번호입니다. 인증번호를 발급받아주세요."
-      );
+      if (isDuplicated) {
+        alert("이미 사용 중인 전화번호입니다. 다시 확인해주세요.");
+        setIsPhoneChecked(false); // 다시 중복 확인 가능하도록 상태 초기화
+      } else {
+        alert("사용 가능한 전화번호입니다. 인증번호를 발급받아주세요.");
+      }
     } catch {
       alert("전화번호 중복 확인 중 오류가 발생했습니다.");
     }
@@ -308,32 +311,41 @@ export default function InitialSignupPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               이메일
             </label>
-            <div className="mb-4 flex items-center">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                disabled={isEmailVerified}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
-                placeholder="이메일을 입력하세요"
-              />
-              <button
-                type="button"
-                onClick={handleEmailCheck}
-                disabled={isEmailVerified || isEmailChecked}
-                className={`ml-3 px-7 py-2.5 rounded-lg text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center ${
-                  isEmailVerified || isEmailChecked
-                    ? "bg-gray-400"
-                    : "bg-[#0047AB] hover:bg-blue-800"
-                }`}
-              >
-                {isEmailVerified
-                  ? "완료됨"
-                  : isEmailChecked
-                  ? "중복 확인 완료"
-                  : "중복 확인"}
-              </button>
+            <div className="mb-4 w-full">
+              <div className="flex items-center">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={isEmailVerified || isEmailChecked} // 중복 확인 완료 시 비활성화
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0047AB] focus:outline-none"
+                  placeholder="이메일을 입력하세요"
+                />
+                <button
+                  type="button"
+                  onClick={handleEmailCheck}
+                  disabled={isEmailVerified || isEmailChecked}
+                  className={`ml-3 px-7 py-2.5 rounded-lg text-white text-sm min-w-[100px] whitespace-nowrap flex items-center justify-center ${
+                    isEmailVerified || isEmailChecked
+                      ? "bg-gray-400"
+                      : "bg-[#0047AB] hover:bg-blue-800"
+                  }`}
+                >
+                  {isEmailVerified
+                    ? "완료됨"
+                    : isEmailChecked
+                    ? "중복 확인 완료"
+                    : "중복 확인"}
+                </button>
+              </div>
+
+              {/* ✅ input 바로 아래 메시지 (margin-top만 살짝 줌) */}
+              {isEmailVerified && (
+                <p className="text-sm mt-1 text-[#0047AB]">
+                  이메일 인증이 완료되었습니다.
+                </p>
+              )}
             </div>
 
             {/* 인증번호 입력 */}
@@ -374,13 +386,6 @@ export default function InitialSignupPage() {
               </div>
             )}
 
-            {/* 인증 완료 메시지 */}
-            {isEmailVerified && (
-              <p className="text-sm mt-2" style={{ color: "#0047AB" }}>
-                이메일 인증이 완료되었습니다.
-              </p>
-            )}
-
             {/* 전화번호 */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -414,6 +419,13 @@ export default function InitialSignupPage() {
                 </button>
               </div>
 
+              {/* ✅ 전화번호 인증 완료 메시지 - input 바로 아래에 오도록 */}
+              {isPhoneVerified && (
+                <p className="text-sm mt-1 text-[#0047AB]">
+                  전화번호 인증이 완료되었습니다.
+                </p>
+              )}
+
               {/* 인증번호 입력 */}
               {isPhoneChecked && !isPhoneDuplicated && !isPhoneVerified && (
                 <div className="mt-4">
@@ -440,7 +452,7 @@ export default function InitialSignupPage() {
                     >
                       {phoneAuthCodeSent
                         ? "인증"
-                        : isLoading
+                        : isPhoneLoading
                         ? "로딩중..."
                         : "인증번호 받기"}
                     </button>
@@ -452,13 +464,6 @@ export default function InitialSignupPage() {
                     </p>
                   )}
                 </div>
-              )}
-
-              {/* 인증 완료 메시지 */}
-              {isPhoneVerified && (
-                <p className="text-sm mt-2" style={{ color: "#0047AB" }}>
-                  전화번호 인증이 완료되었습니다.
-                </p>
               )}
             </div>
 
