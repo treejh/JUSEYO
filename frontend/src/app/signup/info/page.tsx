@@ -173,7 +173,7 @@ export default function ManagementPage() {
             </button>
           </>
         )}
-        <div className="bg-gray-50 px-8 py-4 text-center border-t border-gray-200">
+        <div className="bg-gray-50 mt-15 px-8 py-3 text-center border-t border-gray-200">
           <div className="flex justify-center space-x-6">
             <Link
               href="/"
