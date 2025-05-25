@@ -10,6 +10,8 @@ import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
 import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +74,20 @@ public class DepartmentService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_NOT_FOUND));
 
         departmentRepository.delete(department);
+    }
+
+
+    public Page<Department> findAllDepartmentsByManagement(String name, Pageable pageable) {
+        ManagementDashboard managementDashboard = managementDashboardRepository.findByName(name)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        Page<Department> departments = departmentRepository.findByManagementDashboard(managementDashboard, pageable);
+
+        if (departments.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.DEPARTMENT_NOT_FOUND);
+        }
+
+        return departments;
     }
 
 

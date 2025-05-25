@@ -55,10 +55,16 @@ public class SecurityConfigJuseyo {
                         //비품
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
                         //부서
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/departments/management/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/departments/**").hasAnyRole("MANAGER", "USER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/**").hasRole("MANAGER")
+
+
+                        //관리 페이지
+                        .requestMatchers(HttpMethod.POST,"/api/v1/management/validation/**").permitAll()
+
 
                         // 알림 관련 설정
                         .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").authenticated()

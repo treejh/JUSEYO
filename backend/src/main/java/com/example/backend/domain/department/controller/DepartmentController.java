@@ -18,11 +18,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import retrofit2.http.Path;
 
 
 @RestController
@@ -107,5 +112,24 @@ public class DepartmentController {
         departmentService.deleteDepartment(id);
         return ResponseEntity.noContent().build();  // 204 No Content 상태 반환
     }
+
+    @GetMapping("/management")
+    @Operation(
+            summary = "관리 페이지에 속한 부서 페이지 조회",
+            description = "회원가입 시, 관리페이지에 존재하는 부서를 조회할때 사용."
+    )
+    public ResponseEntity<Page<DepartmentResponseDTO>> getAllDepartmentsByManagement(
+            @RequestParam String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Page<Department> departments = departmentService.findAllDepartmentsByManagement(name, pageable);
+
+        Page<DepartmentResponseDTO> response = departments.map(DepartmentResponseDTO::fromEntity);
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }
