@@ -1,19 +1,27 @@
 export const fetchUsersByStatus = async (
   status: "approve" | "reject" | "request",
+  role: "회원" | "매니저", // 역할 추가
   managementDashboardName: string,
   page: number = 1,
   size: number = 10
 ) => {
   const endpoints = {
-    approve: "/api/v1/users/approve",
-    reject: "/api/v1/users/reject",
-    request: "/api/v1/users/request",
+    회원: {
+      approve: "/api/v1/users/approve",
+      reject: "/api/v1/users/reject",
+      request: "/api/v1/users/request",
+    },
+    매니저: {
+      approve: "/api/v1/users/approve/manager",
+      reject: "/api/v1/users/reject/manager",
+      request: "/api/v1/users/request/manager",
+    },
   };
 
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const url = `${baseUrl}${
-    endpoints[status]
+    endpoints[role][status]
   }?managementDashboardName=${encodeURIComponent(
     managementDashboardName
   )}&page=${page}&size=${size}`;
@@ -28,7 +36,6 @@ export const fetchUsersByStatus = async (
   }
 
   const data = await response.json();
-  console.log("받은 API 응답:", data); // 어떤 데이터가 오는지 확인해봐!
 
   // ✨ 여기서 data.data에 바로 접근하도록 수정! ✨
   if (

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchUsersByStatus } from "@/utils/statusUserList"; // 유저 상태별 데이터 가져오기 함수
-import { useGlobalLoginUser } from "@/stores/auth/loginMember"; // 로그인 유저 정보 가져오기
+import { fetchUsersByStatus } from "@/utils/statusUserList";
+import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
 export default function ApprovePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const { loginUser } = useGlobalLoginUser(); // 로그인 유저 정보
-  const managementDashboardName = loginUser.managementDashboardName; // 관리 페이지 이름 가져오기
+  const { loginUser } = useGlobalLoginUser();
+  const managementDashboardName = loginUser.managementDashboardName;
   const [isInitialManager, setIsInitialManager] = useState(false);
   const [selectedRole, setSelectedRole] = useState<"회원" | "매니저">("회원");
   const [users, setUsers] = useState([]);
@@ -17,14 +17,13 @@ export default function ApprovePage() {
   >("approve");
 
   useEffect(() => {
-    // 최초 매니저 여부 확인 (예시: /validation/initialManager API 호출)
     const checkInitialManager = async () => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/validation/initialManager`,
-        { credentials: "include" } // 쿠키 포함
+        { credentials: "include" }
       );
-      const data = await response.json();
-      setIsInitialManager(data.isInitialManager);
+      const result = await response.json();
+      setIsInitialManager(result.data);
     };
 
     checkInitialManager();
@@ -37,14 +36,10 @@ export default function ApprovePage() {
     }
 
     const fetchUsers = async () => {
-      if (!managementDashboardName) {
-        console.error("관리 페이지 이름이 없습니다.");
-        return;
-      }
-
       try {
         const usersData = await fetchUsersByStatus(
           filterStatus,
+          selectedRole, // 역할에 따라 API 호출
           managementDashboardName,
           currentPage,
           10
@@ -56,7 +51,7 @@ export default function ApprovePage() {
     };
 
     fetchUsers();
-  }, [filterStatus, managementDashboardName, currentPage]);
+  }, [filterStatus, selectedRole, managementDashboardName, currentPage]);
 
   const handleApprove = (email: string) => {
     alert(`${email} 승인되었습니다.`);
@@ -69,7 +64,7 @@ export default function ApprovePage() {
   return (
     <div className="p-6 bg-white">
       <h1 className="text-2xl font-bold text-[#0047AB] mb-6">
-        승인 대기 요청 승인
+        {selectedRole === "회원" ? "사용자 관리" : "매니저 관리"}
       </h1>
 
       {isInitialManager && (
@@ -147,7 +142,6 @@ export default function ApprovePage() {
                 {user.phoneNumber}
               </td>
               <td className="border border-gray-200 px-4 py-2">
-                {/* 요청일을 날짜와 시간만 표시 */}
                 {new Date(user.requestDate).toLocaleString("ko-KR", {
                   year: "numeric",
                   month: "2-digit",
