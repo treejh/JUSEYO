@@ -167,7 +167,7 @@ export default function ManagementPage() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-[#0047AB] text-white font-semibold rounded-xl hover:bg-blue-800 transition-all"
+              className="w-full py-2 bg-[#0047AB] text-white font-semibold rounded-xl hover:bg-blue-800 transition-all disabled:opacity-60"
             >
               다음
             </button>
@@ -202,7 +202,7 @@ export default function ManagementPage() {
               >
                 <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
               </svg>
-              회원가입
+              회원가입하기
             </button>
           </div>
         </div>
