@@ -18,7 +18,12 @@ public class UserLoginRequestDto {
     private String email;
 
     @NotEmpty
+    @Pattern(
+            regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,20}$",
+            message = "비밀번호는 영문자, 숫자, 특수문자를 포함한 8~20자리."
+    )
     private String password;
+
 
 
 }
