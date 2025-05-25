@@ -1,68 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchUsersByStatus } from "@/utils/statusUserList"; // 유저 상태별 데이터 가져오기 함수
+import { useGlobalLoginUser } from "@/stores/auth/loginMember"; // 로그인 유저 정보 가져오기
 
 export default function ApprovePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const { loginUser } = useGlobalLoginUser(); // 로그인 유저 정보
+  const managementDashboardName = loginUser.managementDashboardName; // 관리 페이지 이름 가져오기
+  const [isInitialManager, setIsInitialManager] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"회원" | "매니저">("회원");
+  const [users, setUsers] = useState([]);
+  const [filterStatus, setFilterStatus] = useState<
+    "approve" | "reject" | "request"
+  >("approve");
 
-  // 샘플 데이터
-  const users: {
-    pageName: string;
-    email: string;
-    name: string;
-    phone: string;
-    requestDate: string;
-    status: keyof typeof statusStyles;
-  }[] = [
-    {
-      pageName: "카페 주세요",
-      email: "kim@example.com",
-      name: "김주세요",
-      phone: "010-1234-5678",
-      requestDate: "2023-08-15",
-      status: "대기중",
-    },
-    {
-      pageName: "레스토랑 주세요",
-      email: "park@example.com",
-      name: "박맛있는",
-      phone: "010-9876-5432",
-      requestDate: "2023-08-14",
-      status: "대기중",
-    },
-    {
-      pageName: "미용실 주세요",
-      email: "lee@example.com",
-      name: "이발사",
-      phone: "010-5555-7777",
-      requestDate: "2023-08-12",
-      status: "승인됨",
-    },
-    {
-      pageName: "꽃집 주세요",
-      email: "choi@example.com",
-      name: "최꽃집",
-      phone: "010-3333-4444",
-      requestDate: "2023-08-10",
-      status: "거절됨",
-    },
-    {
-      pageName: "서점 주세요",
-      email: "jung@example.com",
-      name: "정책방",
-      phone: "010-2222-8888",
-      requestDate: "2023-08-09",
-      status: "대기중",
-    },
-  ];
+  useEffect(() => {
+    // 최초 매니저 여부 확인 (예시: /validation/initialManager API 호출)
+    const checkInitialManager = async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/validation/initialManager`,
+        { credentials: "include" } // 쿠키 포함
+      );
+      const data = await response.json();
+      setIsInitialManager(data.isInitialManager);
+    };
 
-  // 상태별 스타일
-  const statusStyles = {
-    대기중: "bg-yellow-100 text-yellow-600",
-    승인됨: "bg-green-100 text-green-600",
-    거절됨: "bg-red-100 text-red-600",
-  };
+    checkInitialManager();
+  }, []);
+
+  useEffect(() => {
+    if (!managementDashboardName) {
+      console.error("관리 페이지 이름이 없습니다.");
+      return;
+    }
+
+    const fetchUsers = async () => {
+      if (!managementDashboardName) {
+        console.error("관리 페이지 이름이 없습니다.");
+        return;
+      }
+
+      try {
+        const usersData = await fetchUsersByStatus(
+          filterStatus,
+          managementDashboardName,
+          currentPage,
+          10
+        );
+        setUsers(usersData.users);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchUsers();
+  }, [filterStatus, managementDashboardName, currentPage]);
 
   const handleApprove = (email: string) => {
     alert(`${email} 승인되었습니다.`);
@@ -78,33 +72,61 @@ export default function ApprovePage() {
         승인 대기 요청 승인
       </h1>
 
-      {/* 검색 필드 */}
-      <div className="mb-4 flex items-center">
-        <input
-          type="text"
-          placeholder="이름, 이메일, 페이지명으로 검색..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0047AB]"
-        />
-        <button className="ml-2 px-4 py-2 bg-[#0047AB] text-white rounded-lg hover:bg-blue-800">
-          검색
+      {isInitialManager && (
+        <div className="mb-4">
+          <label className="mr-4 font-bold">역할 선택:</label>
+          <select
+            value={selectedRole}
+            onChange={(e) =>
+              setSelectedRole(e.target.value as "회원" | "매니저")
+            }
+            className="px-4 py-2 border border-gray-300 rounded-lg"
+          >
+            <option value="회원">회원</option>
+            <option value="매니저">매니저</option>
+          </select>
+        </div>
+      )}
+
+      <div className="mb-4 flex space-x-4">
+        <button
+          onClick={() => setFilterStatus("approve")}
+          className={`px-4 py-2 rounded-lg ${
+            filterStatus === "approve"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200"
+          }`}
+        >
+          승인된 유저
+        </button>
+        <button
+          onClick={() => setFilterStatus("reject")}
+          className={`px-4 py-2 rounded-lg ${
+            filterStatus === "reject" ? "bg-blue-500 text-white" : "bg-gray-200"
+          }`}
+        >
+          거절된 유저
+        </button>
+        <button
+          onClick={() => setFilterStatus("request")}
+          className={`px-4 py-2 rounded-lg ${
+            filterStatus === "request"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200"
+          }`}
+        >
+          요청된 유저
         </button>
       </div>
 
-      {/* 테이블 */}
       <table className="w-full border-collapse border border-gray-200">
         <thead>
           <tr className="bg-gray-100">
+            <th className="border border-gray-200 px-4 py-2 text-left">번호</th>
             <th className="border border-gray-200 px-4 py-2 text-left">
-              페이지 이름
+              이메일
             </th>
-            <th className="border border-gray-200 px-4 py-2 text-left">
-              요청자 이메일
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left">
-              요청자 이름
-            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left">이름</th>
             <th className="border border-gray-200 px-4 py-2 text-left">
               핸드폰 번호
             </th>
@@ -116,26 +138,29 @@ export default function ApprovePage() {
           </tr>
         </thead>
         <tbody>
-          {users.map((user, index) => (
+          {users.map((user: any, index: number) => (
             <tr key={index} className="hover:bg-gray-50">
-              <td className="border border-gray-200 px-4 py-2">
-                {user.pageName}
-              </td>
+              <td className="border border-gray-200 px-4 py-2">{index + 1}</td>
               <td className="border border-gray-200 px-4 py-2">{user.email}</td>
               <td className="border border-gray-200 px-4 py-2">{user.name}</td>
-              <td className="border border-gray-200 px-4 py-2">{user.phone}</td>
               <td className="border border-gray-200 px-4 py-2">
-                {user.requestDate}
+                {user.phoneNumber}
               </td>
-              <td
-                className={`border border-gray-200 px-4 py-2 rounded-lg text-center ${
-                  statusStyles[user.status as keyof typeof statusStyles]
-                }`}
-              >
-                {user.status}
+              <td className="border border-gray-200 px-4 py-2">
+                {/* 요청일을 날짜와 시간만 표시 */}
+                {new Date(user.requestDate).toLocaleString("ko-KR", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </td>
+              <td className="border border-gray-200 px-4 py-2">
+                {user.approvalStatus}
               </td>
               <td className="border border-gray-200 px-4 py-2 flex space-x-2">
-                {user.status === "대기중" && (
+                {user.approvalStatus === "대기중" && (
                   <>
                     <button
                       onClick={() => handleApprove(user.email)}
@@ -151,40 +176,11 @@ export default function ApprovePage() {
                     </button>
                   </>
                 )}
-                {user.status === "승인됨" && (
-                  <span className="px-4 py-2 bg-blue-500 text-white rounded-lg">
-                    승인됨
-                  </span>
-                )}
-                {user.status === "거절됨" && (
-                  <span className="px-4 py-2 bg-red-500 text-white rounded-lg">
-                    거절됨
-                  </span>
-                )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      {/* 페이지네이션 */}
-      <div className="flex justify-center items-center mt-4 space-x-2">
-        <button className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300">
-          이전
-        </button>
-        <button className="px-3 py-1 bg-blue-500 text-white rounded-lg">
-          1
-        </button>
-        <button className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300">
-          2
-        </button>
-        <button className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300">
-          3
-        </button>
-        <button className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300">
-          다음
-        </button>
-      </div>
     </div>
   );
 }
