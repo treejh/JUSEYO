@@ -13,6 +13,11 @@ import {
   sendAuthCode,
   verifyAuthCode,
 } from "@/utils/emailValidation";
+import {
+  checkPhoneDuplication,
+  sendPhoneAuthCode,
+  verifyPhoneAuthCode,
+} from "@/utils/phoneValidation";
 
 const UserProfilePage = () => {
   const { loginUser } = useGlobalLoginUser(); // 현재 로그인한 유저 정보
@@ -42,6 +47,12 @@ const UserProfilePage = () => {
   const [isEmailChecked, setIsEmailChecked] = useState(false);
   const [authCodeSent, setAuthCodeSent] = useState(false);
   const [timer, setTimer] = useState(300); // 5분 타이머
+
+  const [isPhoneChecked, setIsPhoneChecked] = useState(false); // 핸드폰 중복 확인 상태
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false); // 핸드폰 인증 상태
+  const [phoneAuthCode, setPhoneAuthCode] = useState(""); // 핸드폰 인증 코드
+  const [isPhoneAuthLoading, setIsPhoneAuthLoading] = useState(false); // 로딩 상태
+  const [phoneTimer, setPhoneTimer] = useState(120); // 2분 타이머
 
   const handleSaveName = async () => {
     try {
@@ -141,6 +152,74 @@ const UserProfilePage = () => {
       setNewPassword("");
       setConfirmPassword("");
       setCurrentPassword("");
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+    }
+  };
+
+  const handleVerifyPhoneNumber = async () => {
+    if (
+      !userInfo.phoneNumber ||
+      !/^\d{3}-\d{4}-\d{4}$/.test(userInfo.phoneNumber)
+    ) {
+      alert("올바른 핸드폰 번호 형식을 입력해주세요. (예: 010-1234-5678)");
+      return;
+    }
+
+    try {
+      setIsPhoneAuthLoading(true);
+      await checkPhoneDuplication(userInfo.phoneNumber);
+      alert("사용 가능한 핸드폰 번호입니다.");
+      setIsPhoneChecked(true);
+
+      await sendPhoneAuthCode(userInfo.phoneNumber);
+      alert("인증 코드가 발송되었습니다.");
+      setPhoneTimer(120); // 2분 타이머 시작
+      const timerInterval = setInterval(() => {
+        setPhoneTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerInterval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      setIsPhoneChecked(false); // 실패 시 재확인 가능하게
+    } finally {
+      setIsPhoneAuthLoading(false);
+    }
+  };
+
+  const handleConfirmPhoneCode = async () => {
+    try {
+      // 핸드폰 인증 코드 확인
+      await verifyPhoneAuthCode(userInfo.phoneNumber, phoneAuthCode);
+      alert("핸드폰 인증이 완료되었습니다.");
+      setIsPhoneVerified(true);
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "인증 코드가 올바르지 않습니다."
+      );
+    }
+  };
+
+  const handleSavePhone = async () => {
+    if (!isPhoneVerified) {
+      alert("핸드폰 인증을 완료해주세요.");
+      return;
+    }
+
+    try {
+      const data = await updateUserPhoneNumber(userInfo.phoneNumber);
+      alert("핸드폰 번호가 성공적으로 수정되었습니다.");
+      setUserInfo((prev) => ({ ...prev, phoneNumber: data.data.phoneNumber }));
+      setIsEditing((prev) => ({ ...prev, phoneNumber: false }));
+      setIsPhoneVerified(false); // 인증 상태 초기화
+      setIsPhoneChecked(false); // 핸드폰 중복 확인 상태 초기화
     } catch (error) {
       alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
     }
@@ -365,37 +444,114 @@ const UserProfilePage = () => {
         <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
           <h3 className="text-sm font-medium text-gray-500">핸드폰 번호</h3>
           {isEditing.phoneNumber ? (
-            <div className="flex gap-2 mt-2">
-              <input
-                type="text"
-                value={userInfo.phoneNumber}
-                onChange={(e) =>
-                  setUserInfo((prev) => ({
-                    ...prev,
-                    phoneNumber: e.target.value,
-                  }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="010-1234-5678"
-              />
-              <button
-                onClick={handleSavePhoneNumber}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-              >
-                저장
-              </button>
-              <button
-                onClick={() => {
-                  setUserInfo((prev) => ({
-                    ...prev,
-                    phoneNumber: loginUser.phoneNumber,
-                  })); // 초기 값으로 복원
-                  setIsEditing((prev) => ({ ...prev, phoneNumber: false })); // 수정 모드 종료
-                }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg"
-              >
-                취소
-              </button>
+            <div className="flex flex-col gap-4 mt-2">
+              {/* 핸드폰 번호 입력 */}
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={userInfo.phoneNumber}
+                  onChange={(e) =>
+                    setUserInfo((prev) => ({
+                      ...prev,
+                      phoneNumber: e.target.value,
+                    }))
+                  }
+                  disabled={isPhoneChecked || isPhoneVerified} // 중복 확인 완료 시 비활성화
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                  placeholder="010-1234-5678"
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyPhoneNumber}
+                  disabled={
+                    isPhoneChecked || isPhoneVerified || isPhoneAuthLoading
+                  }
+                  className={`ml-3 px-4 py-2 rounded-lg text-white text-sm min-w-[100px] ${
+                    isPhoneChecked || isPhoneVerified || isPhoneAuthLoading
+                      ? "bg-gray-400"
+                      : "bg-blue-500 hover:bg-blue-600"
+                  }`}
+                >
+                  {isPhoneAuthLoading
+                    ? "로딩중..."
+                    : isPhoneVerified
+                    ? "완료됨"
+                    : isPhoneChecked
+                    ? "중복 확인 완료"
+                    : "중복 확인"}
+                </button>
+              </div>
+              {isPhoneVerified && (
+                <p className="text-sm mt-1 text-blue-500">
+                  핸드폰 인증이 완료되었습니다.
+                </p>
+              )}
+
+              {/* 인증번호 입력 */}
+              {isPhoneChecked && !isPhoneVerified && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                    핸드폰 인증
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      type="text"
+                      value={phoneAuthCode}
+                      onChange={(e) => setPhoneAuthCode(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                      placeholder="인증번호를 입력하세요"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleConfirmPhoneCode}
+                      className="ml-3 px-4 py-2 rounded-lg bg-blue-500 text-white text-sm min-w-[100px] hover:bg-blue-600"
+                    >
+                      인증
+                    </button>
+                  </div>
+                  {phoneTimer > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      남은 시간: {Math.floor(phoneTimer / 60)}:
+                      {String(phoneTimer % 60).padStart(2, "0")}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* 저장 및 취소 버튼 */}
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => {
+                    if (!isPhoneChecked) {
+                      alert("핸드폰 중복 확인이 완료되지 않았습니다.");
+                      return;
+                    }
+                    if (!isPhoneVerified) {
+                      alert("핸드폰 인증이 완료되지 않았습니다.");
+                      return;
+                    }
+                    handleSavePhoneNumber();
+                  }}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                  disabled={!isPhoneChecked || !isPhoneVerified} // 버튼 비활성화 조건 추가
+                >
+                  저장
+                </button>
+                <button
+                  onClick={() => {
+                    setUserInfo((prev) => ({
+                      ...prev,
+                      phoneNumber: loginUser.phoneNumber,
+                    })); // 초기 값으로 복원
+                    setIsEditing((prev) => ({ ...prev, phoneNumber: false })); // 수정 모드 종료
+                    setIsPhoneChecked(false); // 중복 확인 상태 초기화
+                    setIsPhoneVerified(false); // 인증 상태 초기화
+                  }}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg"
+                >
+                  취소
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex justify-between items-center mt-2">
