@@ -126,7 +126,7 @@ export default function FindPasswordPage() {
           <div className="mb-4">
             <button
               onClick={sendPasswordByEmail}
-              className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all disabled:opacity-60"
+              className="w-full py-3 bg-[#0047AB] text-white font-semibold rounded-xl hover:bg-blue-700 transition-all disabled:opacity-60"
               disabled={isSendingPassword}
             >
               {isSendingPassword ? "비밀번호 전송 중..." : "임시 비밀번호 받기"}
