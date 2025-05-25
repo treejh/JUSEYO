@@ -242,8 +242,8 @@ public class UserController {
 
     @GetMapping("/chat/list")
     @Operation(
-            summary = "관리페이지에 속한 유저 리스트를 볼 수 있습니다. ",
-            description = "승인된 유저 리스트를 조회합니다."
+            summary = "채팅 가능한 승인 유저 리스트 조회",
+            description = "특정 관리 페이지(managementDashboardName)에 속한 승인된 유저 목록을 조회합니다. 채팅에 사용됩니다. "
     )
     public ResponseEntity<?> getChatUsers(@RequestParam String managementDashboardName,
                                               @RequestParam(defaultValue = "1") int page,
