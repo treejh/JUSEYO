@@ -179,4 +179,8 @@ public class ManagementDashboardService {
                 .map(UserSearchResponseDto::fromEntity)
                 .toList();
     }
+
+    public boolean isValidName(String name){
+        return managementRepository.findByName(name).isPresent();
+    }
 }
