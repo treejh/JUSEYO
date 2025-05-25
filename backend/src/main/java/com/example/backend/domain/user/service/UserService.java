@@ -319,6 +319,22 @@ public class UserService {
         userRepository.save(requestUser);
     }
 
+    public boolean isInitialManagerValid(){
+        User user = findById(tokenService.getIdFromToken());
+
+        // 1. 매니저 권한인지 확인
+        validManager();
+
+        // 2. 관리 페이지 엔티티 조회
+        ManagementDashboard dashboard = managementDashboardRepository.findById(user.getManagementDashboard().getId())
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        // 3. 해당 관리 페이지 소속인지 확인
+        validateManagementDashboardUser(dashboard);
+
+        // 4. 최초 매니저 여부 확인
+        return validInitialManager(dashboard);
+    }
     // 매니저 승인 처리
     @Transactional
     public void approveManager(Long userId) {

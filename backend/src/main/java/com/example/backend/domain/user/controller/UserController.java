@@ -46,7 +46,6 @@ public class UserController {
     private final ManagementDashboardService managementDashboardService;
 
 
-
     @PostMapping("/signup")
     @Operation(
             summary = "회원 가입 (일반 사용자)",
@@ -55,7 +54,7 @@ public class UserController {
     public ResponseEntity signupUser(@Valid @RequestBody UserSignRequestDto userSignRequestDto) {
         userService.createUser(userSignRequestDto);
 
-        return new ResponseEntity<>("일반 회원 생성 성공",HttpStatus.CREATED);
+        return new ResponseEntity<>("일반 회원 생성 성공", HttpStatus.CREATED);
     }
 
 
@@ -65,7 +64,8 @@ public class UserController {
             summary = "회원 가입 (최초 매니저)",
             description = "최초 매니저(Initial Manager)의 회원가입을 처리합니다."
     )
-    public ResponseEntity signupInitialManager(@Valid @RequestBody InitialManagerSignupRequestDto initialManagerSignupRequestDto) {
+    public ResponseEntity signupInitialManager(
+            @Valid @RequestBody InitialManagerSignupRequestDto initialManagerSignupRequestDto) {
         userService.createInitialManager(initialManagerSignupRequestDto);
         return new ResponseEntity<>("매니저 생성 성공", HttpStatus.CREATED);
 
@@ -118,7 +118,8 @@ public class UserController {
             description = "로그인한 유저의 이름을 수정할 수 있습니다. "
     )
     public ResponseEntity updateName(@Valid @RequestBody UserPatchRequestDto.changeName changeNameDto) {
-        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserName(changeNameDto));
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(
+                userService.updateUserName(changeNameDto));
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), " 이름 수정 성공 ", userProfileResponseDto),
                 HttpStatus.OK
@@ -131,7 +132,8 @@ public class UserController {
             description = "로그인한 유저의 이메일을 수정할 수 있습니다. "
     )
     public ResponseEntity updateEmail(@Valid @RequestBody UserPatchRequestDto.changeEmail changeEmailDto) {
-        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserEmail(changeEmailDto));
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(
+                userService.updateUserEmail(changeEmailDto));
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), " 이메일 수정 성공 ", userProfileResponseDto),
                 HttpStatus.OK
@@ -144,10 +146,11 @@ public class UserController {
             description = "로그인한 유저의 비밀번호를 수정할 수 있습니다. "
     )
     public ResponseEntity updatePassword(@Valid @RequestBody UserPatchRequestDto.changePassword changePassword) {
-        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updatePassword(changePassword));
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(
+                userService.updatePassword(changePassword));
 
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), " 비밀번호 수정 성공 ",userProfileResponseDto),
+                ApiResponse.of(HttpStatus.OK.value(), " 비밀번호 수정 성공 ", userProfileResponseDto),
                 HttpStatus.OK
         );
     }
@@ -157,9 +160,11 @@ public class UserController {
             summary = "유저 핸드폰 번호 수정  ",
             description = "로그인한 유저의 핸드폰 번호를 수정할 수 있습니다. "
     )
-    public ResponseEntity updatePhoneNumber(@Valid @RequestBody UserPatchRequestDto.changePhoneNumber changePhoneNumberDto) {
+    public ResponseEntity updatePhoneNumber(
+            @Valid @RequestBody UserPatchRequestDto.changePhoneNumber changePhoneNumberDto) {
 
-        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserPhoneNumber(changePhoneNumberDto));
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(
+                userService.updateUserPhoneNumber(changePhoneNumberDto));
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호 수정 성공", userProfileResponseDto),
@@ -173,9 +178,10 @@ public class UserController {
             summary = "유저 부서 수정  ",
             description = "로그인한 유저의 부서를 수정할 수 있습니다. "
     )
-    public ResponseEntity updateDepartment(@PathVariable Long departmentId ) {
+    public ResponseEntity updateDepartment(@PathVariable Long departmentId) {
 
-        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(userService.updateUserDepartment(departmentId));
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto(
+                userService.updateUserDepartment(departmentId));
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호 수정 성공", userProfileResponseDto),
@@ -183,8 +189,6 @@ public class UserController {
         );
 
     }
-
-
 
 
     @GetMapping("/approve")
@@ -246,11 +250,10 @@ public class UserController {
             description = "승인된 유저 리스트를 조회합니다."
     )
     public ResponseEntity<?> getChatUsers(@RequestParam String managementDashboardName,
-                                              @RequestParam(defaultValue = "1") int page,
-                                              @RequestParam(defaultValue = "10") int size) {
+                                          @RequestParam(defaultValue = "1") int page,
+                                          @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        Page<User> approveUser = userService.getUserListForChat(managementDashboardName,pageRequest)
-;
+        Page<User> approveUser = userService.getUserListForChat(managementDashboardName, pageRequest);
         Page<UserListResponseDto> userListResponse = approveUser.map(UserListResponseDto::new);
         return ResponseEntity.ok(ApiResponse.of(200, "승인된 유저 리스트 조회 성공", userListResponse));
     }
@@ -321,13 +324,15 @@ public class UserController {
             description = "해당 관리 페이지 사용이 거부된 매니저 리스트를 조회할 수 있습니다."
     )
     public ResponseEntity<?> getRejectManager(@RequestParam String managementDashboardName
-            ,@RequestParam(name = "page", defaultValue = "1") int page,
-                                           @RequestParam(name="size", defaultValue = "10") int size) {
+            , @RequestParam(name = "page", defaultValue = "1") int page,
+                                              @RequestParam(name = "size", defaultValue = "10") int size) {
 
         Page<User> approveUserList = userService.getRejectManagerList(managementDashboardName,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+                PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
 
-        Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);;
+        Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(
+                ApproveUserListForInitialManagerResponseDto::new);
+        ;
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "사용이 거부된 매니저 리스트 조회 성공", responseList),
@@ -342,13 +347,15 @@ public class UserController {
             description = "해당 관리 페이지 사용이 승인된 매니저 리스트를 조회할 수 있습니다."
     )
     public ResponseEntity<?> getApproveManager(@RequestParam String managementDashboardName
-            ,@RequestParam(name = "page", defaultValue = "1") int page,
-                                              @RequestParam(name="size", defaultValue = "10") int size) {
+            , @RequestParam(name = "page", defaultValue = "1") int page,
+                                               @RequestParam(name = "size", defaultValue = "10") int size) {
 
         Page<User> approveUserList = userService.getApprovedManagerList(managementDashboardName,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+                PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
 
-        Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);;
+        Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(
+                ApproveUserListForInitialManagerResponseDto::new);
+        ;
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "사용이 승인된 매니저 리스트 조회 성공", responseList),
@@ -363,13 +370,15 @@ public class UserController {
             description = "해당 관리 페이지 사용을 요청한 매니저 리스트를 조회할 수 있습니다."
     )
     public ResponseEntity<?> getRequestManager(@RequestParam String managementDashboardName
-            ,@RequestParam(name = "page", defaultValue = "1") int page,
-                                               @RequestParam(name="size", defaultValue = "10") int size) {
+            , @RequestParam(name = "page", defaultValue = "1") int page,
+                                               @RequestParam(name = "size", defaultValue = "10") int size) {
 
         Page<User> approveUserList = userService.getRequestManagerList(managementDashboardName,
-                PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+                PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
 
-        Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(ApproveUserListForInitialManagerResponseDto::new);;
+        Page<ApproveUserListForInitialManagerResponseDto> responseList = approveUserList.map(
+                ApproveUserListForInitialManagerResponseDto::new);
+        ;
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "사용을 요청한 매니저 리스트 조회 성공", responseList),
@@ -379,8 +388,6 @@ public class UserController {
     }
 
 
-
-
     @PostMapping("/emails/findPassword")
     @Operation(
             summary = "비밀번호 찾기",
@@ -388,7 +395,7 @@ public class UserController {
     )
     public ResponseEntity<?> findPassword(@Valid @RequestBody EmailRequestDto emailRequestDto) {
         // 비밀번호 찾기 로직을 수행하고, 해당 결과를 response로 반환
-       userService.findPasswordByEmail(emailRequestDto.getEmail());
+        userService.findPasswordByEmail(emailRequestDto.getEmail());
 
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "임시 비밀번호 이메일 전송 완료"),
@@ -415,7 +422,8 @@ public class UserController {
             summary = "이메일 인증 확인",
             description = "사용자가 입력한 인증코드를 확인하여 이메일 인증을 진행합니다. 인증번호가 유효한 경우 인증이 완료됩니다."
     )
-    public ResponseEntity sendCertificationNumberValid(@Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
+    public ResponseEntity sendCertificationNumberValid(
+            @Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
         userService.verifyEmailCode(emailVerificationRequest);
 
         return new ResponseEntity<>(
@@ -433,7 +441,7 @@ public class UserController {
     public ResponseEntity sendCertificationNumberValid() {
         UserProfileResponseDto responseDto = new UserProfileResponseDto(userService.findUserByToken());
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "토큰으로 사용자 조회 성공 ",responseDto),
+                ApiResponse.of(HttpStatus.OK.value(), "토큰으로 사용자 조회 성공 ", responseDto),
                 HttpStatus.OK
         );
     }
@@ -447,11 +455,10 @@ public class UserController {
         String response = userService.findEmailByPhone(
                 smsRequestDto.getPhoneNumber());
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호로 이메일 조회 성공 ",response),
+                ApiResponse.of(HttpStatus.OK.value(), "핸드폰 번호로 이메일 조회 성공 ", response),
                 HttpStatus.OK
         );
     }
-
 
 
     @PostMapping("/login")
@@ -459,7 +466,7 @@ public class UserController {
             summary = "로그인",
             description = "로그인을 처리합니다."
     )
-    public ResponseEntity login(@RequestBody UserLoginRequestDto userLoginRequestDto){
+    public ResponseEntity login(@RequestBody UserLoginRequestDto userLoginRequestDto) {
         User user = userService.findByEmail(userLoginRequestDto.getEmail());
         //비밀번호 일치하는지 확인
         userService.validPassword(userLoginRequestDto.getPassword(), user.getPassword());
@@ -473,7 +480,7 @@ public class UserController {
             summary = "로그아웃",
             description = "로그아웃을 처리합니다."
     )
-    public ResponseEntity login(){
+    public ResponseEntity login() {
 
         Role role = tokenService.getRoleFromToken();
         String name = role.getRole().name();
@@ -488,7 +495,7 @@ public class UserController {
             summary = "admin 유저 삭제 구현  ",
             description = "admin 유저를 삭제할 수 있습니다.  "
     )
-    public ResponseEntity deleteAdmin( ) {
+    public ResponseEntity deleteAdmin() {
 
         userService.deleteAdmin();
 
@@ -500,13 +507,12 @@ public class UserController {
     }
 
 
-
     @DeleteMapping
     @Operation(
             summary = "유저 삭제(manager, user)  구현  ",
             description = "유저 삭제(manager, user)를 삭제할 수 있습니다.  "
     )
-    public ResponseEntity updateDepartment( ) {
+    public ResponseEntity updateDepartment() {
 
         userService.deleteUser();
 
@@ -515,4 +521,16 @@ public class UserController {
                 HttpStatus.OK
         );
     }
+
+    @GetMapping("/validation/initialManager")
+    @Operation(
+            summary = "현재 로그인된 매니저가 최초매니저인지 확인  ",
+            description = "현재 로그인된 매니저가 최초매니저인지 확인할 수 있습니다. true = 최초 매니저, false = 최초 매니저 아님"
+    )
+    public ResponseEntity isInitialManager() {
+        boolean result = userService.isInitialManagerValid();
+        return ResponseEntity.ok(ApiResponse.of(200, "최초 매니저 여부 확인 성공", result));
+    }
+
+
 }
