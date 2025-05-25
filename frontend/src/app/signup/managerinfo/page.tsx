@@ -69,14 +69,13 @@ export default function ManagementPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!managementPageName.trim() || !departmentName.trim()) {
+    if (!managementPageName.trim()) {
       alert("모든 필드를 입력해주세요.");
       return;
     }
 
     // 로컬 스토리지에 저장
     localStorage.setItem("managementPageName", managementPageName);
-    localStorage.setItem("departmentName", departmentName);
 
     // 회원가입 페이지로 이동
     router.push("/signup/manager");
