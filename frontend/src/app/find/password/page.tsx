@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { checkEmailDuplication } from "@/utils/emailValidation";
+import Link from "next/link";
 
 export default function FindPasswordPage() {
   const [email, setEmail] = useState("");
@@ -132,6 +133,40 @@ export default function FindPasswordPage() {
             </button>
           </div>
         )}
+
+        <div className="bg-gray-50 px-8 py-4 text-center">
+          <div className="flex justify-center space-x-6">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center text-[#0047AB] font-medium hover:underline text-base mr-4"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+              </svg>
+              홈으로 돌아가기
+            </Link>
+
+            <Link
+              href="/login/type"
+              className="inline-flex items-center justify-center text-[#0047AB] font-medium hover:underline text-base"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+              </svg>
+              로그인 하기
+            </Link>
+          </div>
+        </div>
       </form>
 
       {showNotification && (
