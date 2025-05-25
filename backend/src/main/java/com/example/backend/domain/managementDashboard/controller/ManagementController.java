@@ -115,14 +115,14 @@ public class ManagementController {
             summary = "관리 페이지 존재하는지 검증 ",
             description = "관리 페이지 이름을 입력으로 받고, 검증할 수 있습니다."
     )
-    @PostMapping("/validation/{name}")
-    public ResponseEntity<ApiResponse<Boolean>> validationName(@RequestParam @Valid String name){
+    @PostMapping("/validation")
+    public ResponseEntity<ApiResponse<Boolean>> validationName(@RequestParam @Valid String name) {
         boolean response = managementDashboardService.isValidName(name);
-
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), "관리 페이지 검증 성공", response),
                 HttpStatus.OK
         );
     }
+
 
 }
