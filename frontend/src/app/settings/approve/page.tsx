@@ -126,6 +126,10 @@ export default function ApprovePage() {
               핸드폰 번호
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left">
+              부서 이름
+            </th>
+            {/* 부서 이름 추가 */}
+            <th className="border border-gray-200 px-4 py-2 text-left">
               요청일
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left">상태</th>
@@ -141,6 +145,10 @@ export default function ApprovePage() {
               <td className="border border-gray-200 px-4 py-2">
                 {user.phoneNumber}
               </td>
+              <td className="border border-gray-200 px-4 py-2">
+                {user.departmentName || "N/A"}
+              </td>{" "}
+              {/* 부서 이름 추가 */}
               <td className="border border-gray-200 px-4 py-2">
                 {new Date(user.requestDate).toLocaleString("ko-KR", {
                   year: "numeric",
