@@ -7,6 +7,7 @@ import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.department.service.DepartmentService;
 import com.example.backend.domain.user.dto.request.EmailRequestDto;
 import com.example.backend.domain.user.dto.request.PhoneRequestDto;
+import com.example.backend.domain.user.dto.request.ValidPasswordRequestDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForManagerResponseDto;
 import com.example.backend.domain.user.entity.User;
@@ -61,6 +62,8 @@ public class UserService {
     private final RoleService roleService;
     private final DepartmentService departmentService;
     private final EmailService emailService;
+
+    private static final String WITHDRAWN_USER_PREFIX = "withdrawn_user_";
 
 
 
@@ -522,13 +525,27 @@ public class UserService {
         userRepository.delete(adminUser);
     }
 
+    public void verifyPassword(ValidPasswordRequestDto validPasswordRequestDto){
+        User user = findById(tokenService.getIdFromToken());
+        validPassword(user.getPassword(), validPasswordRequestDto.getPassword());
+
+    }
+
 
     @Transactional
     public void deleteUser(){
         User loginUser = findById(tokenService.getIdFromToken());
         loginUser.setStatus(Status.STOP);
+        loginUser.setName("탈퇴한 유저");
+        loginUser.setManagementDashboard(null);
+        loginUser.setDepartment(null);
+        loginUser.setEmail(WITHDRAWN_USER_PREFIX+loginUser.getId());
+        loginUser.setPhoneNumber(WITHDRAWN_USER_PREFIX+loginUser.getId());
+        loginUser.setApprovalStatus(ApprovalStatus.REJECTED);
+        loginUser.setModifiedAt(LocalDateTime.now());
         userRepository.save(loginUser);
     }
+
 
 
     public User verifiedUser(long projectId) {
