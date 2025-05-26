@@ -54,6 +54,8 @@ public class SecurityConfigJuseyo {
                         ).hasAnyRole("MANAGER", "USER","ADMIN")
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/users/delete/**").hasAnyRole("MANAGER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**","/api/v1/users/duplication/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/users/name","/api/v1/users/email","/api/v1/users/password","/api/v1/users/phoneNumber","/api/v1/users/validation/password/**").hasAnyRole("MANAGER", "USER","ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/api/v1/users/delete").hasAnyRole("MANAGER", "USER","ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request",
                                 "/api/v1/users/approve/**","/api/v1/users/reject/**"
                         ,"/api/v1/users/validation/initialManager/**",

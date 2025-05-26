@@ -630,6 +630,13 @@ const UserProfilePage = () => {
               </button>
             </div>
           )}
+          {/* 오른쪽 하단 회원 탈퇴 버튼 */}
+          <button
+            onClick={() => (window.location.href = "/withdraw")}
+            className="fixed bottom-8 right-8 px-4 py-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 z-50"
+          >
+            회원 탈퇴
+          </button>
         </div>
       </div>
     </div>
