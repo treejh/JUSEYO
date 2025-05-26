@@ -86,22 +86,22 @@ interface SupplyRequest {
   productName: string;
   quantity: number;
   useDate: string;
-  approvalStatus: 'REQUESTED' | 'APPROVED' | 'REJECTED';
+  approvalStatus: "REQUESTED" | "APPROVED" | "REJECTED";
 }
 
 interface StatusCount {
   REQUESTED: number;
   APPROVED: number;
   REJECTED: number;
-  RETURN_PENDING: number;  // 반납 대기
-  RETURNED: number;       // 반납 완료
+  RETURN_PENDING: number; // 반납 대기
+  RETURNED: number; // 반납 완료
 }
 
 interface RentalItem {
   itemName: string;
   useDate: string;
   returnDate: string;
-  rentStatus: 'RENTING' | 'OVERDUE' | 'RETURNED';
+  rentStatus: "RENTING" | "OVERDUE" | "RETURNED";
 }
 
 export default function DashboardPage() {
@@ -164,8 +164,8 @@ export default function DashboardPage() {
     REQUESTED: 0,
     APPROVED: 0,
     REJECTED: 0,
-    RETURN_PENDING: 0,  // 반납 대기
-    RETURNED: 0         // 반납 완료
+    RETURN_PENDING: 0, // 반납 대기
+    RETURNED: 0, // 반납 완료
   });
 
   // 사용 가능한 년도 목록 계산
@@ -211,32 +211,33 @@ export default function DashboardPage() {
         categorySummary: `${API_URL}/api/v1/analysis/category-summary`,
         itemUsage: `${API_URL}/api/v1/analysis/item-usage`,
         monthlySummary: `${API_URL}/api/v1/analysis/monthly-summary`,
-        items: `${API_URL}/api/v1/items?page=0&size=5`
+        items: `${API_URL}/api/v1/items?page=0&size=5`,
       };
 
       // 병렬로 API 호출
-      const [categorySummaryRes, itemUsageRes, monthlySummaryRes, itemsRes] = await Promise.all([
-        fetch(`${API_URL}/api/v1/analysis/category-summary`, {
-          method: 'GET',
-          credentials: 'include',  // 쿠키 포함
-          headers
-        }),
-        fetch(`${API_URL}/api/v1/analysis/item-usage`, {
-          method: 'GET',
-          credentials: 'include',  // 쿠키 포함
-          headers
-        }),
-        fetch(`${API_URL}/api/v1/analysis/monthly-summary`, {
-          method: 'GET',
-          credentials: 'include',  // 쿠키 포함
-          headers
-        }),
-        fetch(`${API_URL}/api/v1/items?page=0&size=5`, {
-          method: 'GET',
-          credentials: 'include',
-          headers
-        })
-      ]);
+      const [categorySummaryRes, itemUsageRes, monthlySummaryRes, itemsRes] =
+        await Promise.all([
+          fetch(`${API_URL}/api/v1/analysis/category-summary`, {
+            method: "GET",
+            credentials: "include", // 쿠키 포함
+            headers,
+          }),
+          fetch(`${API_URL}/api/v1/analysis/item-usage`, {
+            method: "GET",
+            credentials: "include", // 쿠키 포함
+            headers,
+          }),
+          fetch(`${API_URL}/api/v1/analysis/monthly-summary`, {
+            method: "GET",
+            credentials: "include", // 쿠키 포함
+            headers,
+          }),
+          fetch(`${API_URL}/api/v1/items?page=0&size=5`, {
+            method: "GET",
+            credentials: "include",
+            headers,
+          }),
+        ]);
 
       // 응답 상태 코드 확인 및 자세한 에러 메시지 출력
       if (
@@ -259,7 +260,7 @@ export default function DashboardPage() {
           monthlySummaryRes.status === 403 ||
           itemsRes.status === 403
         ) {
-          window.location.href = "/login"; // 또는 router.push('/login')
+          window.location.href = "/"; // 또는 router.push('/login')
           throw new Error("로그인이 필요합니다.");
         }
 
@@ -463,7 +464,7 @@ export default function DashboardPage() {
   };
 
   // 승인 상태에 따른 배지 스타일
-  const getStatusBadgeStyle = (status: SupplyRequest['approvalStatus']) => {
+  const getStatusBadgeStyle = (status: SupplyRequest["approvalStatus"]) => {
     switch (status) {
       case "REQUESTED":
         return "bg-orange-500";
@@ -477,7 +478,7 @@ export default function DashboardPage() {
   };
 
   // 승인 상태 한글 변환
-  const getStatusText = (status: SupplyRequest['approvalStatus']) => {
+  const getStatusText = (status: SupplyRequest["approvalStatus"]) => {
     switch (status) {
       case "REQUESTED":
         return "승인 대기중";
@@ -819,14 +820,16 @@ export default function DashboardPage() {
   // 일반 사용자 대시보드 뷰
   const UserDashboard = () => {
     const [userRequests, setUserRequests] = useState<SupplyRequest[]>([]);
-    const [recommendedItems, setRecommendedItems] = useState<Array<{id: number, name: string, emoji: string}>>([]);
+    const [recommendedItems, setRecommendedItems] = useState<
+      Array<{ id: number; name: string; emoji: string }>
+    >([]);
     const [rentalItems, setRentalItems] = useState<RentalItem[]>([]);
     const [statusCounts, setStatusCounts] = useState<StatusCount>({
       REQUESTED: 0,
       APPROVED: 0,
       REJECTED: 0,
       RETURN_PENDING: 0,
-      RETURNED: 0
+      RETURNED: 0,
     });
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
@@ -860,52 +863,59 @@ export default function DashboardPage() {
           }
 
           const rentalData = await rentalResponse.json();
-          
+
           if (isMounted) {
-            setRentalItems(rentalData.content.map((item: any) => ({
-              itemName: item.itemName,
-              useDate: item.useDate,
-              returnDate: item.returnDate,
-              rentStatus: item.rentStatus
-            })));
+            setRentalItems(
+              rentalData.content.map((item: any) => ({
+                itemName: item.itemName,
+                useDate: item.useDate,
+                returnDate: item.returnDate,
+                rentStatus: item.rentStatus,
+              }))
+            );
             setTotalPages(rentalData.totalPages);
           }
 
           // 추천 비품 API 호출 추가
-          const recommendResponse = await fetch(`${API_URL}/api/v1/recommend?userId=${loginUser?.id}`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            credentials: "include",
-          });
+          const recommendResponse = await fetch(
+            `${API_URL}/api/v1/recommend?userId=${loginUser?.id}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              credentials: "include",
+            }
+          );
 
           if (!recommendResponse.ok) {
             throw new Error("추천 비품을 불러오는데 실패했습니다.");
           }
 
           const recommendData = await recommendResponse.json();
-          
+
           // 이모지 매핑 함수
           const getEmoji = (itemName: string) => {
             const emojiMap: { [key: string]: string } = {
-              '용지': '📄',
-              '볼펜': '��️',
-              '포스트잇': '📊',
-              '프린터': '🖨️',
-              '클립': '🖇️',
-              '멀티탭': '🔌',
-              '마우스': '🖱️',
-              '키보드': '⌨️',
-              '모니터': '🖥️',
-              '노트북': '💻',
-              '의자': '🪑',
-              '책상': '🪑',
+              용지: "📄",
+              볼펜: "��️",
+              포스트잇: "📊",
+              프린터: "🖨️",
+              클립: "🖇️",
+              멀티탭: "🔌",
+              마우스: "🖱️",
+              키보드: "⌨️",
+              모니터: "🖥️",
+              노트북: "💻",
+              의자: "🪑",
+              책상: "🪑",
             };
 
-            const matchedKey = Object.keys(emojiMap).find(key => itemName.toLowerCase().includes(key.toLowerCase()));
-            return matchedKey ? emojiMap[matchedKey] : '📦';
+            const matchedKey = Object.keys(emojiMap).find((key) =>
+              itemName.toLowerCase().includes(key.toLowerCase())
+            );
+            return matchedKey ? emojiMap[matchedKey] : "📦";
           };
 
           if (isMounted) {
@@ -913,21 +923,24 @@ export default function DashboardPage() {
               recommendData.map((item: any) => ({
                 id: item.id,
                 name: item.name,
-                emoji: getEmoji(item.name)
+                emoji: getEmoji(item.name),
               }))
             );
           }
 
           // 두 API 호출을 병렬로 처리
           const [statusResponse, requestsResponse] = await Promise.all([
-            fetch(`${API_URL}/api/v1/supply-requests/status-count/${loginUser?.id}`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              credentials: "include",
-            }),
+            fetch(
+              `${API_URL}/api/v1/supply-requests/status-count/${loginUser?.id}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Accept: "application/json",
+                },
+                credentials: "include",
+              }
+            ),
             fetch(`${API_URL}/api/v1/supply-requests/me`, {
               method: "GET",
               headers: {
@@ -935,12 +948,15 @@ export default function DashboardPage() {
                 Accept: "application/json",
               },
               credentials: "include",
-            })
+            }),
           ]);
 
           if (!isMounted) return;
 
-          if (statusResponse.status === 403 || requestsResponse.status === 403) {
+          if (
+            statusResponse.status === 403 ||
+            requestsResponse.status === 403
+          ) {
             router.replace("/login");
             return;
           }
@@ -951,7 +967,7 @@ export default function DashboardPage() {
 
           const [statusData, requestsData] = await Promise.all([
             statusResponse.json(),
-            requestsResponse.json()
+            requestsResponse.json(),
           ]);
 
           if (!isMounted) return;
@@ -961,7 +977,7 @@ export default function DashboardPage() {
             APPROVED: statusData.APPROVED || 0,
             REJECTED: statusData.REJECTED || 0,
             RETURN_PENDING: statusData.RETURN_PENDING || 0,
-            RETURNED: statusData.RETURNED || 0
+            RETURNED: statusData.RETURNED || 0,
           });
 
           // 날짜 기준으로 정렬하여 최신 5개만 선택
@@ -972,11 +988,14 @@ export default function DashboardPage() {
               return dateB - dateA;
             })
             .slice(0, 5);
-          
+
           setUserRequests(sortedRequests);
         } catch (error) {
           console.error("데이터 로딩 중 오류 발생:", error);
-          if (error instanceof Error && error.message === "사용자 정보가 없습니다.") {
+          if (
+            error instanceof Error &&
+            error.message === "사용자 정보가 없습니다."
+          ) {
             router.replace("/login");
           }
         } finally {
@@ -999,35 +1018,35 @@ export default function DashboardPage() {
     };
 
     // 대여 상태에 따른 스타일과 텍스트
-    const getRentalStatusStyle = (status: RentalItem['rentStatus']) => {
+    const getRentalStatusStyle = (status: RentalItem["rentStatus"]) => {
       switch (status) {
-        case 'RENTING':
+        case "RENTING":
           return {
-            bgColor: 'bg-blue-50',
-            textColor: 'text-blue-700',
-            hoverBg: 'group-hover:bg-blue-100',
-            text: '대여중'
+            bgColor: "bg-blue-50",
+            textColor: "text-blue-700",
+            hoverBg: "group-hover:bg-blue-100",
+            text: "대여중",
           };
-        case 'OVERDUE':
+        case "OVERDUE":
           return {
-            bgColor: 'bg-red-50',
-            textColor: 'text-red-700',
-            hoverBg: 'group-hover:bg-red-100',
-            text: '연체'
+            bgColor: "bg-red-50",
+            textColor: "text-red-700",
+            hoverBg: "group-hover:bg-red-100",
+            text: "연체",
           };
-        case 'RETURNED':
+        case "RETURNED":
           return {
-            bgColor: 'bg-green-50',
-            textColor: 'text-green-700',
-            hoverBg: 'group-hover:bg-green-100',
-            text: '반납완료'
+            bgColor: "bg-green-50",
+            textColor: "text-green-700",
+            hoverBg: "group-hover:bg-green-100",
+            text: "반납완료",
           };
         default:
           return {
-            bgColor: 'bg-gray-50',
-            textColor: 'text-gray-700',
-            hoverBg: 'group-hover:bg-gray-100',
-            text: '알 수 없음'
+            bgColor: "bg-gray-50",
+            textColor: "text-gray-700",
+            hoverBg: "group-hover:bg-gray-100",
+            text: "알 수 없음",
           };
       }
     };
@@ -1035,33 +1054,35 @@ export default function DashboardPage() {
     // 날짜 포맷 함수
     const formatDate = (dateString: string) => {
       try {
-        if (!dateString) return '-';
-        
+        if (!dateString) return "-";
+
         // ISO 8601 형식의 날짜 문자열인지 확인
         if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(dateString)) {
           // YYYY-MM-DD 형식으로 들어오는 경우
           if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-            return dateString.split('-').join('. ') + '.';
+            return dateString.split("-").join(". ") + ".";
           }
           return dateString;
         }
 
         const date = new Date(dateString);
-        
+
         // 유효한 날짜인지 확인
         if (isNaN(date.getTime())) {
-          console.error('Invalid date:', dateString);
-          return '-';
+          console.error("Invalid date:", dateString);
+          return "-";
         }
 
-        return date.toLocaleDateString('ko-KR', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        }).replace(/\s/g, '');
+        return date
+          .toLocaleDateString("ko-KR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
+          .replace(/\s/g, "");
       } catch (error) {
-        console.error('Date formatting error:', error);
-        return '-';
+        console.error("Date formatting error:", error);
+        return "-";
       }
     };
 
@@ -1070,11 +1091,10 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">대시보드</h1>
           <button
-            onClick={() => router.push('/item/supplyrequest/create')}
+            onClick={() => router.push("/item/supplyrequest/create")}
             className="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2"
           >
-            <span className="text-lg">+</span>
-            새 물품 요청하기
+            <span className="text-lg">+</span>새 물품 요청하기
           </button>
         </div>
 
@@ -1086,25 +1106,35 @@ export default function DashboardPage() {
               {/* 승인 대기중 */}
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors">
                 <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-3 border-4 border-orange-200">
-                  <span className="text-xl font-bold text-orange-600">{statusCounts.REQUESTED}</span>
+                  <span className="text-xl font-bold text-orange-600">
+                    {statusCounts.REQUESTED}
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-orange-900">승인 대기중</span>
+                <span className="text-sm font-medium text-orange-900">
+                  승인 대기중
+                </span>
                 <span className="text-xs text-orange-600 mt-1">Pending</span>
               </div>
 
               {/* 승인됨 */}
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-3 border-4 border-green-200">
-                  <span className="text-xl font-bold text-green-600">{statusCounts.APPROVED}</span>
+                  <span className="text-xl font-bold text-green-600">
+                    {statusCounts.APPROVED}
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-green-900">승인됨</span>
+                <span className="text-sm font-medium text-green-900">
+                  승인됨
+                </span>
                 <span className="text-xs text-green-600 mt-1">Approved</span>
               </div>
 
               {/* 거부됨 */}
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-red-50 hover:bg-red-100 transition-colors">
                 <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-3 border-4 border-red-200">
-                  <span className="text-xl font-bold text-red-600">{statusCounts.REJECTED}</span>
+                  <span className="text-xl font-bold text-red-600">
+                    {statusCounts.REJECTED}
+                  </span>
                 </div>
                 <span className="text-sm font-medium text-red-900">거부됨</span>
                 <span className="text-xs text-red-600 mt-1">Rejected</span>
@@ -1113,18 +1143,28 @@ export default function DashboardPage() {
               {/* 반납 대기 */}
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-yellow-50 hover:bg-yellow-100 transition-colors">
                 <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-3 border-4 border-yellow-200">
-                  <span className="text-xl font-bold text-yellow-600">{statusCounts.RETURN_PENDING}</span>
+                  <span className="text-xl font-bold text-yellow-600">
+                    {statusCounts.RETURN_PENDING}
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-yellow-900">반납 대기</span>
-                <span className="text-xs text-yellow-600 mt-1">Return Pending</span>
+                <span className="text-sm font-medium text-yellow-900">
+                  반납 대기
+                </span>
+                <span className="text-xs text-yellow-600 mt-1">
+                  Return Pending
+                </span>
               </div>
 
               {/* 반납 완료 */}
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
                 <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3 border-4 border-blue-200">
-                  <span className="text-xl font-bold text-blue-600">{statusCounts.RETURNED}</span>
+                  <span className="text-xl font-bold text-blue-600">
+                    {statusCounts.RETURNED}
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-blue-900">반납 완료</span>
+                <span className="text-sm font-medium text-blue-900">
+                  반납 완료
+                </span>
                 <span className="text-xs text-blue-600 mt-1">Returned</span>
               </div>
             </div>
@@ -1132,58 +1172,75 @@ export default function DashboardPage() {
 
           {/* 알림림 */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">알림</h2>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 bg-[#E8F5E9] p-3 rounded-lg">
-                  <div className="w-3 h-3 rounded-full bg-green-500 mt-1.5"></div>
-                  <div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">요청 승인됨</span>
-                      <span className="text-sm text-gray-500">1시간 전</span>
-                    </div>
-                    <p className="text-sm text-gray-600">모니터 발주대 요청이 승인되었습니다.</p>
+            <h2 className="text-xl font-semibold mb-4">알림</h2>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 bg-[#E8F5E9] p-3 rounded-lg">
+                <div className="w-3 h-3 rounded-full bg-green-500 mt-1.5"></div>
+                <div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">요청 승인됨</span>
+                    <span className="text-sm text-gray-500">1시간 전</span>
                   </div>
+                  <p className="text-sm text-gray-600">
+                    모니터 발주대 요청이 승인되었습니다.
+                  </p>
                 </div>
-                <div className="flex items-start gap-3 bg-[#E3F2FD] p-3 rounded-lg">
-                  <div className="w-3 h-3 rounded-full bg-blue-500 mt-1.5"></div>
-                  <div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">새 비품 입고</span>
-                      <span className="text-sm text-gray-500">24시간 전</span>
-                    </div>
-                    <p className="text-sm text-gray-600">자주 요청하시는 A4 용지가 입고되었습니다.</p>
+              </div>
+              <div className="flex items-start gap-3 bg-[#E3F2FD] p-3 rounded-lg">
+                <div className="w-3 h-3 rounded-full bg-blue-500 mt-1.5"></div>
+                <div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">새 비품 입고</span>
+                    <span className="text-sm text-gray-500">24시간 전</span>
                   </div>
+                  <p className="text-sm text-gray-600">
+                    자주 요청하시는 A4 용지가 입고되었습니다.
+                  </p>
                 </div>
-                <div className="flex items-start gap-3 bg-[#FFEBEE] p-3 rounded-lg">
-                  <div className="w-3 h-3 rounded-full bg-red-500 mt-1.5"></div>
-                  <div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">요청 거부됨</span>
-                      <span className="text-sm text-gray-500">1일 전</span>
-                    </div>
-                    <p className="text-sm text-gray-600">투썸 매장스 물품이 예산 초과로 거부되었습니다.</p>
+              </div>
+              <div className="flex items-start gap-3 bg-[#FFEBEE] p-3 rounded-lg">
+                <div className="w-3 h-3 rounded-full bg-red-500 mt-1.5"></div>
+                <div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">요청 거부됨</span>
+                    <span className="text-sm text-gray-500">1일 전</span>
                   </div>
+                  <p className="text-sm text-gray-600">
+                    투썸 매장스 물품이 예산 초과로 거부되었습니다.
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
 
           {/* 자주 요청하는 비품 */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">사용자 맞춤 추천 비품</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              사용자 맞춤 추천 비품
+            </h2>
             <div className="grid grid-cols-3 gap-4">
               {isLoading ? (
                 // 로딩 상태 표시
-                Array(6).fill(null).map((_, index) => (
-                  <div key={index} className="bg-gray-50 p-3 rounded-lg text-center animate-pulse">
-                    <div className="w-12 h-12 mx-auto mb-2 bg-gray-200 rounded-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
-                  </div>
-                ))
+                Array(6)
+                  .fill(null)
+                  .map((_, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-50 p-3 rounded-lg text-center animate-pulse"
+                    >
+                      <div className="w-12 h-12 mx-auto mb-2 bg-gray-200 rounded-full"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+                    </div>
+                  ))
               ) : recommendedItems.length > 0 ? (
                 recommendedItems.slice(0, 6).map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => router.push(`/item/supplyrequest/create?itemId=${item.id}`)}
+                    onClick={() =>
+                      router.push(
+                        `/item/supplyrequest/create?itemId=${item.id}`
+                      )
+                    }
                     className="bg-gray-50 p-3 rounded-lg text-center cursor-pointer hover:bg-gray-100 transition-all duration-300"
                   >
                     <span className="text-2xl mb-2 block">{item.emoji}</span>
@@ -1208,25 +1265,30 @@ export default function DashboardPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-1">
                 {loginUser?.name || "사용자"}
               </h3>
-              <p className="text-sm text-gray-500 mb-4">{loginUser?.email || "이메일 정보 없음"}</p>
+              <p className="text-sm text-gray-500 mb-4">
+                {loginUser?.email || "이메일 정보 없음"}
+              </p>
               <div className="w-full space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="text-sm text-gray-600">권한</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {loginUser?.role === 'MANAGER' ? '매니저' : 
-                     loginUser?.role === 'USER' ? '일반 사용자' : '관리자'}
+                    {loginUser?.role === "MANAGER"
+                      ? "매니저"
+                      : loginUser?.role === "USER"
+                      ? "일반 사용자"
+                      : "관리자"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="text-sm text-gray-600">관리자 페이지</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {loginUser?.managementDashboardName || '-'}
+                    {loginUser?.managementDashboardName || "-"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="text-sm text-gray-600">부서</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {loginUser?.departmentName || '-'}
+                    {loginUser?.departmentName || "-"}
                   </span>
                 </div>
               </div>
@@ -1240,11 +1302,15 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">최근 요청 내역</h2>
-                <p className="text-gray-500 text-sm">최근 5건의 비품 요청 현황입니다.</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                  최근 요청 내역
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  최근 5건의 비품 요청 현황입니다.
+                </p>
               </div>
             </div>
-            
+
             {isLoading ? (
               <div className="flex justify-center items-center h-48">
                 <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-gray-200 border-t-blue-600"></div>
@@ -1259,25 +1325,33 @@ export default function DashboardPage() {
                     <div className="flex items-center space-x-6">
                       <div className="flex-shrink-0">
                         <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center shadow-sm group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300">
-                          <span className="text-blue-600 font-bold">{request.quantity}개</span>
+                          <span className="text-blue-600 font-bold">
+                            {request.quantity}개
+                          </span>
                         </div>
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-blue-700 transition-colors duration-300">
                           {request.productName}
-                </h3>
-                        <p className="text-sm text-gray-500">{formatDate(request.useDate)}</p>
-                  </div>
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {formatDate(request.useDate)}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center">
-                      <span className={`
+                      <span
+                        className={`
                         px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300
-                        ${request.approvalStatus === 'APPROVED' 
-                          ? 'bg-green-50 text-green-700 group-hover:bg-green-100' 
-                          : request.approvalStatus === 'REJECTED' 
-                          ? 'bg-red-50 text-red-700 group-hover:bg-red-100' 
-                          : 'bg-orange-50 text-orange-700 group-hover:bg-orange-100'}
-                      `}>
+                        ${
+                          request.approvalStatus === "APPROVED"
+                            ? "bg-green-50 text-green-700 group-hover:bg-green-100"
+                            : request.approvalStatus === "REJECTED"
+                            ? "bg-red-50 text-red-700 group-hover:bg-red-100"
+                            : "bg-orange-50 text-orange-700 group-hover:bg-orange-100"
+                        }
+                      `}
+                      >
                         {getStatusText(request.approvalStatus)}
                       </span>
                     </div>
@@ -1287,12 +1361,24 @@ export default function DashboardPage() {
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
                 <div className="w-16 h-16 mb-4 rounded-full bg-gray-50 flex items-center justify-center">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  <svg
+                    className="w-8 h-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
                   </svg>
                 </div>
                 <p className="text-lg font-medium">요청 내역이 없습니다</p>
-                <p className="text-sm text-gray-400 mt-1">새로운 비품을 요청해보세요</p>
+                <p className="text-sm text-gray-400 mt-1">
+                  새로운 비품을 요청해보세요
+                </p>
               </div>
             )}
           </div>
@@ -1301,25 +1387,34 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">개인 대여 물품 관리</h2>
-                <p className="text-gray-500 text-sm">현재 대여중인 물품과 반납 예정일을 확인하세요.</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                  개인 대여 물품 관리
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  현재 대여중인 물품과 반납 예정일을 확인하세요.
+                </p>
               </div>
             </div>
-            
+
             {isLoading ? (
               <div className="space-y-4">
-                {Array(3).fill(null).map((_, index) => (
-                  <div key={index} className="animate-pulse flex items-center justify-between p-5 rounded-xl border border-gray-100">
-                    <div className="flex items-center space-x-6">
-                      <div className="w-14 h-14 bg-gray-200 rounded-xl"></div>
-                      <div className="space-y-3">
-                        <div className="h-4 bg-gray-200 rounded w-48"></div>
-                        <div className="h-3 bg-gray-200 rounded w-32"></div>
+                {Array(3)
+                  .fill(null)
+                  .map((_, index) => (
+                    <div
+                      key={index}
+                      className="animate-pulse flex items-center justify-between p-5 rounded-xl border border-gray-100"
+                    >
+                      <div className="flex items-center space-x-6">
+                        <div className="w-14 h-14 bg-gray-200 rounded-xl"></div>
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 rounded w-48"></div>
+                          <div className="h-3 bg-gray-200 rounded w-32"></div>
+                        </div>
                       </div>
+                      <div className="w-20 h-8 bg-gray-200 rounded-lg"></div>
                     </div>
-                    <div className="w-20 h-8 bg-gray-200 rounded-lg"></div>
-                  </div>
-                ))}
+                  ))}
               </div>
             ) : rentalItems.length > 0 ? (
               <div className="space-y-4">
@@ -1342,15 +1437,19 @@ export default function DashboardPage() {
                           </h3>
                           <div className="flex space-x-4 text-sm text-gray-500">
                             <span>대여일: {formatDate(item.useDate)}</span>
-                            <span>반납예정일: {formatDate(item.returnDate)}</span>
+                            <span>
+                              반납예정일: {formatDate(item.returnDate)}
+                            </span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center">
-                        <span className={`
+                        <span
+                          className={`
                           px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300
                           ${status.bgColor} ${status.textColor} ${status.hoverBg}
-                        `}>
+                        `}
+                        >
                           {status.text}
                         </span>
                       </div>
@@ -1361,33 +1460,48 @@ export default function DashboardPage() {
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
                 <div className="w-16 h-16 mb-4 rounded-full bg-gray-50 flex items-center justify-center">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <svg
+                    className="w-8 h-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
                   </svg>
                 </div>
                 <p className="text-lg font-medium">대여중인 물품이 없습니다</p>
-                <p className="text-sm text-gray-400 mt-1">새로운 물품을 대여해보세요</p>
+                <p className="text-sm text-gray-400 mt-1">
+                  새로운 물품을 대여해보세요
+                </p>
               </div>
             )}
 
             {/* 페이지네이션 */}
             {!isLoading && rentalItems.length > 0 && totalPages > 1 && (
               <div className="flex justify-center mt-6 gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`
                       px-3 py-1 rounded-md text-sm font-medium transition-colors
-                      ${currentPage === page
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                      ${
+                        currentPage === page
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                       }
                     `}
-                  >
-                    {page}
-                  </button>
-                ))}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
               </div>
             )}
           </div>

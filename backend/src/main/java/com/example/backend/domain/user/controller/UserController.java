@@ -565,6 +565,18 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.of(200, "매니저 검색 성공", result));
     }
 
+    @PatchMapping ("/delete/{userId}")
+    @Operation(
+            summary = "관리 페이지에서 유저를 삭제합니다.",
+            description = "관리 페이지에서 유저를 삭제합니다."
+    )
+    public ResponseEntity<ApiResponse<?>> deleteUserByDashBoard(
+            @PathVariable Long userId
+    ) {
+        userService.deleteUserById(userId);
+        return ResponseEntity.ok(ApiResponse.of(200, "유저 삭제 성공", null));
+    }
+
 
 
 

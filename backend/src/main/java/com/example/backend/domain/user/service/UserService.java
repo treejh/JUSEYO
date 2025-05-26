@@ -619,8 +619,14 @@ public class UserService {
 
 
 
-
-
+    @Transactional
+    public void deleteUserById(Long userId){
+        User user = findById(userId);
+        user.setManagementDashboard(null);
+        user.setDepartment(null);
+        user.setApprovalStatus(ApprovalStatus.REJECTED);
+        userRepository.save(user);
+    }
 
     public User findByEmail(String email){
         return userRepository.findByEmail(email).orElseThrow(
