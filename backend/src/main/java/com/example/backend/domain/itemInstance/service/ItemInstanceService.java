@@ -297,6 +297,7 @@ public class ItemInstanceService {
                 .instanceCode(e.getInstanceCode())
                 .status(e.getStatus())
                 .outbound(e.getOutbound())
+                .borrowerName(e.getBorrower() != null ? e.getBorrower().getName() : null)
                 .image(e.getImage())
                 .finalImage(e.getFinalImage())
                 .itemImage(e.getItem().getImage())

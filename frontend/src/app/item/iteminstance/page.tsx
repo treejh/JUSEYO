@@ -4,12 +4,14 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
+// API 반환 DTO
 interface ItemInstance {
   id: number;
   itemName: string;
   instanceCode: string;
   outbound: string;
   status: string;
+  borrowerName?: string; // 대여자 이름 필드
   createdAt: string;
 }
 
@@ -102,6 +104,7 @@ export default function ItemInstancePage() {
                 <th className="px-4 py-2">인스턴스 코드</th>
                 <th className="px-4 py-2">출고 유형</th>
                 <th className="px-4 py-2">상태</th>
+                <th className="px-4 py-2">대여자</th>
                 <th className="px-4 py-2">생성일</th>
               </tr>
             </thead>
@@ -113,6 +116,7 @@ export default function ItemInstancePage() {
                   <td className="px-4 py-2">{inst.instanceCode}</td>
                   <td className="px-4 py-2">{inst.outbound}</td>
                   <td className="px-4 py-2">{inst.status}</td>
+                  <td className="px-4 py-2">{inst.borrowerName || "–"}</td>
                   <td className="px-4 py-2">
                     {new Date(inst.createdAt).toLocaleString("ko-KR")}
                   </td>

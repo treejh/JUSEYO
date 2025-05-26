@@ -1,5 +1,6 @@
 package com.example.backend.domain.itemInstance.entity;
 
+import com.example.backend.domain.user.entity.User;
 import com.example.backend.global.auditable.Auditable;
 import com.example.backend.domain.item.entity.Item;
 import com.example.backend.enums.Outbound;
@@ -31,6 +32,9 @@ public class ItemInstance extends Auditable {
     @Column(name = "outbound", nullable = false, length = 20)
     private Outbound outbound; // 현재상태
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "borrower_user_id", nullable = false)
+    private User borrower;
 
     @Column(name = "image", nullable = false)
     private String image; //비품 이미지
@@ -41,8 +45,6 @@ public class ItemInstance extends Auditable {
     @ManyToOne
     @JoinColumn(name = "item_id")
     private Item item;
-
-
 
     // 예: PEN(비품명)-001-a1b2c3d4
     @Column(name = "instance_code", nullable = false, length = 50, unique = true)
