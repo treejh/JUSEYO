@@ -535,6 +535,11 @@ public class UserService {
     @Transactional
     public void deleteUser(){
         User loginUser = findById(tokenService.getIdFromToken());
+        //최초 매니저는 탈퇴 불가능
+        if (isInitialManagerValid()) {
+            throw new BusinessLogicException(ExceptionCode.INITIAL_MANAGER_CANNOT_WITHDRAW);
+        }
+
         loginUser.setStatus(Status.STOP);
         loginUser.setName("탈퇴한 유저");
         loginUser.setManagementDashboard(null);
