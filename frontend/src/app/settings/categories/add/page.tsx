@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FC, useState } from "react";
-import categoryService from "@/services/categoryService";
+import categoryService, { BusinessError } from "@/services/categoryService";
 import { toast } from "sonner";
 
 const AddCategoryPage: FC = () => {
@@ -26,8 +26,12 @@ const AddCategoryPage: FC = () => {
       toast.success("카테고리가 생성되었습니다.");
       router.push("/settings/categories");
     } catch (err) {
+      if (err instanceof BusinessError) {
+        toast.error(err.message);
+      } else {
+        toast.error("카테고리 생성에 실패했습니다.");
+      }
       console.error("Error creating category:", err);
-      toast.error("카테고리 생성에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }

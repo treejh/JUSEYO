@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import { ToastProvider } from "@/components/Toast/ToastContext";
+import { Toaster } from "sonner"; //알럿
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,10 @@ export default function RootLayout({
         <ToastProvider>
           <ClientLayout>{children}</ClientLayout>
         </ToastProvider>
+
+        <Toaster richColors position="top-center" /> //알럿
+
+
       </body>
     </html>
   );
