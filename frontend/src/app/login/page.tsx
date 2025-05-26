@@ -69,16 +69,20 @@ export default function LoginPage() {
         }),
         credentials: "include",
       });
+      if (response.status === 403) {
+        alert("로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요.");
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "로그인에 실패했습니다.");
+        throw new Error(
+          "로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요."
+        );
       }
 
       alert("로그인되었습니다.");
       window.location.href = "/";
     } catch (error) {
-      setError(error instanceof Error ? error.message : "로그인 중 오류 발생");
     } finally {
       setIsLoading(false);
     }

@@ -42,6 +42,7 @@ public enum ExceptionCode {
     UNAUTHORIZED_ROLE(403, "접근 권한이 없는 역할입니다."),
     EMAIL_VERIFICATION_FAILED(400, "이메일 인증을 실패하였습니다."),
     MANAGER_NOT_FOUND(404,"매니저를 찾을 수 없습니다."),
+    INITIAL_MANAGER_CANNOT_WITHDRAW(403,"최초 매니저는 탈퇴할 수 없습니다."),
 
     //회원가입 예외 처리
     ALREADY_HAS_EMAIL(409,"이미 존재하는 이메일입니다."),

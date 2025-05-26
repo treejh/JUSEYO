@@ -10,6 +10,7 @@ import com.example.backend.domain.user.dto.request.PhoneRequestDto;
 import com.example.backend.domain.user.dto.request.UserLoginRequestDto;
 import com.example.backend.domain.user.dto.request.UserPatchRequestDto;
 import com.example.backend.domain.user.dto.request.UserSignRequestDto;
+import com.example.backend.domain.user.dto.request.ValidPasswordRequestDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.domain.user.dto.response.UserListResponseDto;
 import com.example.backend.domain.user.entity.User;
@@ -509,20 +510,32 @@ public class UserController {
     }
 
 
-    @DeleteMapping
+    @DeleteMapping("/delete")
     @Operation(
             summary = "유저 삭제(manager, user)  구현  ",
             description = "유저 삭제(manager, user)를 삭제할 수 있습니다.  "
     )
-    public ResponseEntity updateDepartment() {
-
+    public ResponseEntity deleteUser() {
         userService.deleteUser();
-
         return new ResponseEntity<>(
-                ApiResponse.of(HttpStatus.OK.value(), "amdin 유저 삭제 완료( stop 상태 ) "),
+                ApiResponse.of(HttpStatus.OK.value(), " 유저 삭제 완료( stop 상태 ) "),
                 HttpStatus.OK
         );
     }
+
+    @PostMapping("/validation/password")
+    @Operation(
+            summary = "비밀번호 인증 (탈퇴/민감 작업 전에 확인)",
+            description = "현재 로그인된 사용자의 비밀번호가 일치하는지 확인합니다."
+    )
+    public ResponseEntity<ApiResponse> verifyPassword(@RequestBody ValidPasswordRequestDto validPasswordRequestDto) {
+        userService.verifyPassword(validPasswordRequestDto);
+        return new ResponseEntity<>(
+                ApiResponse.of(HttpStatus.OK.value(), "비밀번호 인증 완료"),
+                HttpStatus.OK
+        );
+    }
+
 
     @GetMapping("/validation/initialManager")
     @Operation(
@@ -563,6 +576,18 @@ public class UserController {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<?> result = userService.searchManagerByName( username, pageable);
         return ResponseEntity.ok(ApiResponse.of(200, "매니저 검색 성공", result));
+    }
+
+    @PatchMapping ("/delete/{userId}")
+    @Operation(
+            summary = "관리 페이지에서 유저를 삭제합니다.",
+            description = "관리 페이지에서 유저를 삭제합니다."
+    )
+    public ResponseEntity<ApiResponse<?>> deleteUserByDashBoard(
+            @PathVariable Long userId
+    ) {
+        userService.deleteUserById(userId);
+        return ResponseEntity.ok(ApiResponse.of(200, "유저 삭제 성공", null));
     }
 
 
