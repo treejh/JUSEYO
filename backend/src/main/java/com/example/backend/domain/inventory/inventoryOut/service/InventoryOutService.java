@@ -115,20 +115,20 @@ public class InventoryOutService {
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());
 
         // 5) **대여(LEND) 케이스에만** 개별자산단위 상태 변경 (AVAILABLE → LEND)
-        if (saved.getOutbound() == Outbound.LEND) {
-            for (int i = 0; i < saved.getQuantity(); i++) {
-                ItemInstance inst = instanceRepo
-                        .findFirstByItemIdAndOutboundAndStatus(item.getId(),
-                                Outbound.AVAILABLE,
-                                Status.ACTIVE)
-                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
-
-                UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
-                upd.setOutbound(Outbound.LEND);
-                upd.setFinalImage(null);
-                instanceService.updateStatus(inst.getId(), upd);
-            }
-        }
+//        if (saved.getOutbound() == Outbound.LEND) {
+//            for (int i = 0; i < saved.getQuantity(); i++) {
+//                ItemInstance inst = instanceRepo
+//                        .findFirstByItemIdAndOutboundAndStatus(item.getId(),
+//                                Outbound.AVAILABLE,
+//                                Status.ACTIVE)
+//                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+//
+//                UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
+//                upd.setOutbound(Outbound.LEND);
+//                upd.setFinalImage(null);
+//                instanceService.updateStatus(inst.getId(), upd);
+//            }
+//        }
 
         // 6) 응답 DTO 반환
         return mapToDto(saved);
@@ -263,6 +263,8 @@ public class InventoryOutService {
 
     /** DTO 매핑 공통 메서드 */
     private InventoryOutResponseDto mapToDto(InventoryOut o) {
+        String categoryName=categoryRepo.findById(o.getCategory().getId()).orElseThrow(()-> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND)).getName();
+        String itemName=itemRepo.findById(o.getItem().getId()).orElseThrow(()-> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND)).getName();
         return InventoryOutResponseDto.builder()
                 .id(o.getId())
                 .supplyRequestId(o.getSupplyRequest().getId())
@@ -271,9 +273,23 @@ public class InventoryOutService {
                 .managementId(o.getManagementDashboard().getId())
                 .quantity(o.getQuantity())
                 .outbound(o.getOutbound().name())
+                .categoryName(categoryName)
+                .itemName(itemName)
                 .createdAt(o.getCreatedAt())
                 .modifiedAt(o.getModifiedAt())
                 .build();
+    }
+
+    // **내 출고내역 엑셀용 리스트**
+    @Transactional(readOnly = true)
+    public List<InventoryOutResponseDto> getMyOutboundList(
+            String search,
+            LocalDate fromDate,
+            LocalDate toDate
+    ) {
+        // 재활용: 페이지 조회 메서드를 그대로 쓰되, 전체 가져오기
+        return getMyOutbound(search, fromDate, toDate, 0, Integer.MAX_VALUE, "createdAt", "desc")
+                .getContent();
     }
 
     @Transactional

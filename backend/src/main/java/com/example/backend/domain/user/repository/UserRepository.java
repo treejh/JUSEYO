@@ -104,5 +104,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
             Long excludeUserId
     );
 
+    // 사용자(회원) 이름 포함 검색
+    Page<User> findByNameContainingAndManagementDashboardAndRole(
+            String name,
+            ManagementDashboard managementDashboard,
+            Role role,
+            Pageable pageable
+    );
+
+
+
 
 }

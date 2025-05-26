@@ -1,15 +1,38 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
 import { useNotificationStore } from "@/stores/notifications";
 import { NotificationBell } from "@/components/Notification/NotificationBell";
+import LoadingScreen from "./components/LoadingScreen";
+import Navigation from "@/components/Navigation/Navigation";
 
-export function ClientLayout({ children }: { children: React.ReactNode }) {
+export default function ClientLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const router = useRouter();
+  const alertedRef = useRef(false);
+  const requestedAlertedRef = useRef(false);
+  const loggedInAuthPageAlertedRef = useRef(false);
+  const loginRequiredAlertedRef = useRef(false);
+
+  const isLoginPage = pathname.startsWith("/login");
+  const isSignupPage = pathname.startsWith("/signup");
+  const isFindPage = pathname.startsWith("/find");
+  const isAdminRequestPage = pathname === "/admin/request";
+
+  // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
+  const isAuthPage =
+    isLoginPage || isSignupPage || isFindPage || isAdminRequestPage;
+  const isRootPage = pathname === "/";
+  const shouldHideNav = isAuthPage || isRootPage;
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const {
     loginUser,
@@ -20,6 +43,11 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     logout,
     logoutAndHome,
   } = useLoginUser();
+
+  // 사이드바 접기/펼치기 토글 함수
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => !prev);
+  };
 
   const LoginUserContextValue = {
     loginUser,
@@ -32,36 +60,57 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // 사용자 정보 가져오기
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/token`, {
-      credentials: "include",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const userData = data.data;
-        console.log("사용자 데이터:", userData);
+    const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!API_URL) {
+      console.error("API URL이 설정되지 않았습니다.");
+      return;
+    }
 
-        if (!userData || !userData.id) {
-          console.error("사용자 ID가 없습니다:", userData);
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/users/token`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 403) {
+            setNoLoginUser();
+            return;
+          }
+          throw new Error(`사용자 정보 조회 실패: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data || !data.data || !data.data.id) {
+          console.error("사용자 데이터 형식 오류:", data);
           setNoLoginUser();
           return;
         }
+
+        const userData = data.data;
+        console.log("사용자 데이터:", userData);
 
         setLoginUser({
           id: userData.id,
           email: userData.email,
           phoneNumber: userData.phoneNumber,
-          username: userData.name,
+          name: userData.name,
           managementDashboardName: userData.managementDashboardName ?? "",
           departmentName: userData.departmentName ?? "",
-          role: userData.role ?? "user", // Provide a default role if not present
+          role: userData.role ?? "user",
+          approvalStatus: userData.approvalStatus ?? "",
         });
 
         // SSE 연결
         const connectSSE = async () => {
           try {
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/stream`,
+              `${API_URL}/api/v1/notifications/stream`,
               {
                 credentials: "include",
               }
@@ -103,9 +152,9 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                     useNotificationStore.getState().addNotification({
                       id: Number(parsed.id),
                       message: parsed.message,
-                      type: parsed.type,
+                      notificationType: parsed.type,
                       createdAt: parsed.createdAt,
-                      read: false,
+                      readStatus: false,
                     });
                   } catch (e) {
                     console.log(`💬 [message] 텍스트 메시지: ${data}`);
@@ -120,20 +169,99 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           }
         };
 
-        connectSSE();
-      })
-      .catch((error) => {
+        if (
+          userData.approvalStatus !== "REQUESTED" &&
+          userData.approvalStatus !== "REJECTED"
+        ) {
+          connectSSE();
+        }
+      } catch (error) {
         console.error("사용자 정보 조회 실패:", error);
         setNoLoginUser();
-      });
-  }, []);
+      }
+    };
+
+    fetchUserData();
+  }, [isLogin]); // 의존성 배열에서 setLoginUser와 setNoLoginUser 제거
+
+  // 로그인되지 않은 사용자가 접근 시 리다이렉트
+
+  useEffect(() => {
+    if (isLoginUserPending) return;
+
+    // 요청 상태 유저 알림 + 리다이렉트 (우선 처리)
+    if (
+      isLogin &&
+      loginUser?.approvalStatus === "REQUESTED" &&
+      !isAuthPage &&
+      pathname !== "/user" &&
+      pathname !== "/"
+    ) {
+      if (!requestedAlertedRef.current) {
+        alert("요청상태중인 유저입니다");
+        requestedAlertedRef.current = true;
+      }
+      router.replace("/");
+      return;
+    }
+
+    // 요청 상태 유저 알림 + 리다이렉트 (우선 처리)
+    if (
+      isLogin &&
+      loginUser?.approvalStatus === "REJECTED" &&
+      !isAuthPage &&
+      pathname !== "/user" &&
+      pathname !== "/"
+    ) {
+      if (!requestedAlertedRef.current) {
+        alert("접근 거부된 유저입니다");
+        requestedAlertedRef.current = true;
+      }
+      router.replace("/");
+      return;
+    }
+
+    // 이미 로그인된 사용자가 인증 페이지 접근 시 알림 + 이동
+    if (isLogin && isAuthPage) {
+      if (!loggedInAuthPageAlertedRef.current) {
+        alert("이미 로그인된 사용자 입니다.");
+        loggedInAuthPageAlertedRef.current = true;
+      }
+
+      // 로그인된 사용자가 로그인/회원가입/찾기 페이지 접근 시 리다이렉트
+      if (isLogin && (isLoginPage || isSignupPage || isFindPage)) {
+        alert("이미 로그인된 사용자 입니다.");
+        router.push("/");
+        return;
+      }
+
+      // 비로그인 상태에서 인증이 필요한 페이지 접근 시 알림 + 이동
+      if (!isLogin && !isAuthPage && !isRootPage) {
+        if (!loginRequiredAlertedRef.current) {
+          alert("로그인이 필요한 페이지입니다.");
+          loginRequiredAlertedRef.current = true;
+        }
+        router.push("/login/type");
+        return;
+      }
+
+      // 알림 리셋: 경로 바뀔 때마다 리셋해서 동일 경로 재접근 시 alert 다시 뜨도록
+      requestedAlertedRef.current = false;
+      loggedInAuthPageAlertedRef.current = false;
+      loginRequiredAlertedRef.current = false;
+    }
+  }, [
+    isLogin,
+    isAuthPage,
+    isRootPage,
+    isLoginUserPending,
+    router,
+    loginUser,
+    pathname,
+  ]);
 
   if (isLoginUserPending) {
-    return (
-      <div className="flex items-center justify-center h-screen w-screen bg-white text-black">
-        <div>로딩중</div>
-      </div>
-    );
+    return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
   }
 
   return (
@@ -147,7 +275,40 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         <main
           className={`flex-1 ${!isAuthPage ? "pt-[60px]" : ""} bg-[#F4F4F4]`}
         >
-          {children}
+          <div className="flex">
+            {/* 네비게이션 사이드바 */}
+            {!shouldHideNav && (
+              <div
+                className={`juseyo-sidebar ${
+                  sidebarCollapsed ? "sidebar-collapsed" : ""
+                }`}
+              >
+                <Navigation
+                  userRole={
+                    loginUser?.role?.replace("ROLE_", "") as
+                      | "ADMIN"
+                      | "MANAGER"
+                      | "USER"
+                  }
+                  isSidebarCollapsed={sidebarCollapsed}
+                  onToggleSidebar={toggleSidebar}
+                />
+              </div>
+            )}
+
+            {/* 메인 콘텐츠 */}
+            <div
+              className={`flex-1 min-h-screen transition-all duration-300 ease-in-out ${
+                !shouldHideNav
+                  ? sidebarCollapsed
+                    ? "ml-[80px]"
+                    : "ml-[280px]"
+                  : ""
+              }`}
+            >
+              {children}
+            </div>
+          </div>
         </main>
       </div>
     </LoginUserContext.Provider>

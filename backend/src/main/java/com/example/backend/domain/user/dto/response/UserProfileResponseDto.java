@@ -2,6 +2,7 @@ package com.example.backend.domain.user.dto.response;
 
 
 import com.example.backend.domain.user.entity.User;
+import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,8 @@ public class UserProfileResponseDto {
 
     RoleType role;
 
+    ApprovalStatus approvalStatus;
+
 
 
 
@@ -43,6 +46,7 @@ public class UserProfileResponseDto {
                 ? user.getDepartment().getName()
                 : null;
         this.role = user.getRole().getRole();
+        this.approvalStatus=user.getApprovalStatus();
     }
 
 

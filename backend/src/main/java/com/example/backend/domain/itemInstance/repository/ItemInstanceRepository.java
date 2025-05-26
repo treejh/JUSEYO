@@ -32,4 +32,16 @@ public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long
 
     long countByItemIdAndOutbound(Long itemId, Outbound outbound);
 
+    @Query("SELECT i.outbound, COUNT(i) FROM ItemInstance i GROUP BY i.outbound")
+    List<Object[]> countAllByOutboundGroup();
+
+    @Query("SELECT i.outbound, COUNT(i) " +
+            "FROM ItemInstance i " +
+            "WHERE i.item.managementDashboard.id = :managementId " +
+            "GROUP BY i.outbound")
+    List<Object[]> countAllByOutboundGroupAndManagementId(@Param("managementId") Long managementId);
+
+
+
+
 }

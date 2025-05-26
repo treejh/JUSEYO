@@ -3,14 +3,14 @@ package com.example.backend.domain.supply.supplyRequest.service;
 import com.example.backend.domain.chaseItem.dto.request.ChaseItemRequestDto;
 import com.example.backend.domain.chaseItem.service.ChaseItemService;
 import com.example.backend.domain.supply.supplyRequest.dto.request.SupplyRequestRequestDto;
+import com.example.backend.domain.supply.supplyRequest.dto.response.LentItemDto;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
+import com.example.backend.domain.supply.supplyReturn.entity.SupplyReturn;
+import com.example.backend.domain.supply.supplyReturn.repository.SupplyReturnRepository;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.repository.UserRepository;
-import com.example.backend.enums.ApprovalStatus;
-import com.example.backend.enums.Inbound;
-import com.example.backend.enums.Outbound;
-import com.example.backend.enums.Status;
+import com.example.backend.enums.*;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
 import com.example.backend.domain.inventory.inventoryIn.dto.request.InventoryInRequestDto;
@@ -27,14 +27,21 @@ import com.example.backend.domain.managementDashboard.entity.ManagementDashboard
 import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.domain.supply.supplyRequest.dto.response.SupplyRequestResponseDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class SupplyRequestService {
 
@@ -47,6 +54,7 @@ public class SupplyRequestService {
     private final ItemInstanceRepository instanceRepo;
     private final ItemInstanceService instanceService;
     private final ChaseItemService chaseItemService;
+    private final SupplyReturnRepository supplyReturnRepository;
 
     @Transactional
     public SupplyRequestResponseDto createRequest(SupplyRequestRequestDto dto) {
@@ -79,7 +87,9 @@ public class SupplyRequestService {
                 .returnDate(returnDate)
                 .rental(dto.isRental())
                 .approvalStatus(ApprovalStatus.REQUESTED)
+                .status(Status.ACTIVE)
                 .build();
+        req.setStatus(Status.ACTIVE);
         SupplyRequest saved = repo.save(req);
         return mapToDto(saved);
     }
@@ -132,21 +142,25 @@ public class SupplyRequestService {
         SupplyRequest req = repo.findById(requestId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
 
-        // 1) 출고 처리: InventoryOutService 로 availableQuantity 차감
-        InventoryOutRequestDto outDto = InventoryOutRequestDto.builder()
-                .supplyRequestId(req.getId())
-                .itemId(req.getItem().getId())
-                .categoryId(req.getItem().getCategory().getId())
-                .managementId(req.getItem().getManagementDashboard().getId())
-                .quantity(req.getQuantity())
-                .outbound(Outbound.ISSUE.name())
-                .build();
-        outService.removeOutbound(outDto);
-
         String issueMsg;
 
-        // 2) 상태별 분기 처리
         if (newStatus == ApprovalStatus.APPROVED) {
+            // 1) 출고 처리: rental 여부에 따라 LEND 또는 ISSUE
+            String outboundType = req.isRental()
+                    ? Outbound.LEND.name()
+                    : Outbound.ISSUE.name();
+
+            InventoryOutRequestDto outDto = InventoryOutRequestDto.builder()
+                    .supplyRequestId(req.getId())
+                    .itemId(req.getItem().getId())
+                    .categoryId(req.getItem().getCategory().getId())
+                    .managementId(req.getItem().getManagementDashboard().getId())
+                    .quantity(req.getQuantity())
+                    .outbound(outboundType)    // <-- 수정된 부분
+                    .build();
+            outService.removeOutbound(outDto);
+
+            // 2) 승인 처리 분기
             if (req.isRental()) {
                 // ── 대여 승인: 인스턴스 생성 + 상태 RETURN_PENDING ──
                 for (int i = 0; i < req.getQuantity(); i++) {
@@ -157,13 +171,14 @@ public class SupplyRequestService {
                             .status(Status.ACTIVE)
                             .image(req.getItem().getImage())
                             .finalImage(req.getItem().getImage())
+                            .borrower(req.getUser())
                             .build();
                     instanceRepo.save(inst);
                 }
                 req.setApprovalStatus(ApprovalStatus.RETURN_PENDING);
                 issueMsg = "대여 승인 자동 기록";
             } else {
-                // ── 비대여(지급) 승인: totalQuantity & availableQuantity 차감 ──
+                // ── 비대여 승인: totalQuantity & availableQuantity 차감 ──
                 Item item = req.getItem();
                 long qty = req.getQuantity();
                 if (item.getTotalQuantity() < qty || item.getAvailableQuantity() < qty) {
@@ -176,12 +191,14 @@ public class SupplyRequestService {
                 req.setApprovalStatus(ApprovalStatus.APPROVED);
                 issueMsg = "비대여 승인 자동 기록";
             }
+
         } else if (newStatus == ApprovalStatus.REJECTED) {
+            // 거절: 재고 차감 없이 상태만 변경
             req.setApprovalStatus(ApprovalStatus.REJECTED);
             issueMsg = "요청 거절 자동 기록";
 
         } else if (newStatus == ApprovalStatus.RETURNED && req.isRental()) {
-            // ── 반납 처리 ──
+            // 반납 처리
             InventoryInRequestDto inDto = new InventoryInRequestDto();
             inDto.setItemId(req.getItem().getId());
             inDto.setQuantity(req.getQuantity());
@@ -208,7 +225,7 @@ public class SupplyRequestService {
             throw new BusinessLogicException(ExceptionCode.INVALID_REQUEST_STATUS);
         }
 
-        // 3) 비품 추적 기록 저장
+        // 비품 추적 기록 저장
         ChaseItemRequestDto chaseDto = ChaseItemRequestDto.builder()
                 .requestId(req.getId())
                 .productName(req.getProductName())
@@ -217,10 +234,11 @@ public class SupplyRequestService {
                 .build();
         chaseItemService.addChaseItem(chaseDto);
 
-        // 4) 최종 저장 및 DTO 반환
+        // 최종 저장 및 DTO 반환
         SupplyRequest updated = repo.save(req);
         return mapToDto(updated);
     }
+
 
 
     private String generateInstanceCode(Item item) {
@@ -266,6 +284,61 @@ public class SupplyRequestService {
         req.setReRequest(repo.existsByUserIdAndItemId(userId, req.getItem().getId()));
         return mapToDto(req);
     }
+
+    public Map<ApprovalStatus, Long> getSupplyRequestCountsByApprovalStatus(Long userId) {
+        List<Object[]> results = repo.countByApprovalStatusByUserId(userId);
+        Map<ApprovalStatus, Long> countMap = new HashMap<>();
+        for (Object[] result : results) {
+            ApprovalStatus status = (ApprovalStatus) result[0];
+            Long count = (Long) result[1];
+            countMap.put(status, count);
+        }
+        return countMap;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<LentItemDto> getLentItems(Long userId, Pageable pageable) {
+        Page<SupplyRequest> entityPage = repo.findByUserId(userId, pageable);
+
+        Page<LentItemDto> dtoPage = entityPage.map(entity -> {
+            LentItemDto dto = new LentItemDto();
+            dto.setItemName(entity.getProductName());
+            dto.setUseDate(entity.getUseDate());
+            dto.setReturnDate(entity.getReturnDate());
+
+            log.info("처리 중인 대여: itemName={}, useDate={}, returnDate={}",
+                    dto.getItemName(), dto.getUseDate(), dto.getReturnDate());
+
+            List<SupplyReturn> supplyReturnList = supplyReturnRepository.findBySupplyRequest(entity);
+            log.debug("관련된 반납 정보 수: {}", supplyReturnList.size());
+
+            if (supplyReturnList != null && !supplyReturnList.isEmpty()) {
+                dto.setRentStatus(RentStatus.RETURNED);
+                log.info("반납 완료 처리됨");
+            } else {
+                LocalDate today = LocalDate.now();
+                LocalDate returnDate = dto.getReturnDate().toLocalDate();
+
+                if (returnDate.isBefore(today)) {
+                    dto.setRentStatus(RentStatus.OVERDUE);
+                    log.info("연체 처리됨 (returnDate={}, today={})", returnDate, today);
+                } else {
+                    dto.setRentStatus(RentStatus.RENTING);
+                    log.info("대여중 처리됨 (returnDate={}, today={})", returnDate, today);
+                }
+            }
+
+            return dto;
+        });
+
+        log.info("전체 대여 항목 {}건 반환", dtoPage.getContent().size());
+        return dtoPage;
+    }
+
+
+
+
+
 
     private SupplyRequestResponseDto mapToDto(SupplyRequest e) {
         return SupplyRequestResponseDto.builder()

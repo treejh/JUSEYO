@@ -5,11 +5,15 @@ package com.example.backend.domain.user.service;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.department.service.DepartmentService;
+import com.example.backend.domain.user.dto.request.EmailRequestDto;
+import com.example.backend.domain.user.dto.request.PhoneRequestDto;
+import com.example.backend.domain.user.dto.request.ValidPasswordRequestDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForManagerResponseDto;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.email.entity.EmailMessage;
 import com.example.backend.domain.user.email.service.EmailService;
+import com.example.backend.domain.user.sms.dto.SmsRequestDto;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;
 import com.example.backend.enums.Status;
@@ -34,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +62,8 @@ public class UserService {
     private final RoleService roleService;
     private final DepartmentService departmentService;
     private final EmailService emailService;
+
+    private static final String WITHDRAWN_USER_PREFIX = "withdrawn_user_";
 
 
 
@@ -91,6 +98,8 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
+
 
 
     @Transactional
@@ -314,6 +323,22 @@ public class UserService {
         userRepository.save(requestUser);
     }
 
+    public boolean isInitialManagerValid(){
+        User user = findById(tokenService.getIdFromToken());
+
+        // 1. 매니저 권한인지 확인
+        validManager();
+
+        // 2. 관리 페이지 엔티티 조회
+        ManagementDashboard dashboard = managementDashboardRepository.findById(user.getManagementDashboard().getId())
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        // 3. 해당 관리 페이지 소속인지 확인
+        validateManagementDashboardUser(dashboard);
+
+        // 4. 최초 매니저 여부 확인
+        return validInitialManager(dashboard);
+    }
     // 매니저 승인 처리
     @Transactional
     public void approveManager(Long userId) {
@@ -381,6 +406,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public User updatePassword(UserPatchRequestDto.changePassword changePasswordDto){
         User user = findById(tokenService.getIdFromToken());
 
@@ -389,6 +415,7 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(changePasswordDto.getChangePassword()));
         user.setModifiedAt(LocalDateTime.now());
+
         return userRepository.save(user);
     }
 
@@ -398,6 +425,15 @@ public class UserService {
             throw new BusinessLogicException(ExceptionCode.INVALID_PASSWORD);
         }
     }
+
+    public boolean isValidEmail(EmailRequestDto emailRequestDto){
+        return userRepository.findByEmail(emailRequestDto.getEmail()).isPresent();
+    }
+
+    public boolean isValidPhone(SmsRequestDto smsRequestDto){
+        return userRepository.findByPhoneNumber(smsRequestDto.getPhoneNumber()).isPresent();
+    }
+
 
 
 
@@ -489,13 +525,32 @@ public class UserService {
         userRepository.delete(adminUser);
     }
 
+    public void verifyPassword(ValidPasswordRequestDto validPasswordRequestDto){
+        User user = findById(tokenService.getIdFromToken());
+        validPassword(validPasswordRequestDto.getPassword(), user.getPassword());
+
+    }
+
 
     @Transactional
     public void deleteUser(){
         User loginUser = findById(tokenService.getIdFromToken());
+        //최초 매니저는 탈퇴 불가능
+        if (isInitialManagerValid()) {
+            throw new BusinessLogicException(ExceptionCode.INITIAL_MANAGER_CANNOT_WITHDRAW);
+        }
+
         loginUser.setStatus(Status.STOP);
+        loginUser.setName("탈퇴한 유저");
+        loginUser.setManagementDashboard(null);
+        loginUser.setDepartment(null);
+        loginUser.setEmail(WITHDRAWN_USER_PREFIX+loginUser.getId());
+        loginUser.setPhoneNumber(WITHDRAWN_USER_PREFIX+loginUser.getId());
+        loginUser.setApprovalStatus(ApprovalStatus.REJECTED);
+        loginUser.setModifiedAt(LocalDateTime.now());
         userRepository.save(loginUser);
     }
+
 
 
     public User verifiedUser(long projectId) {
@@ -534,7 +589,6 @@ public class UserService {
 
     @Transactional
     public void verifyEmailCode(EmailVerificationRequest emailVerificationRequest){
-        //이메일 중복 회원가입 불가
         validateEmail(emailVerificationRequest.getEmail());
         if(!emailService.verifiedCode(emailVerificationRequest.getEmail(),emailVerificationRequest.getAuthCode())){
             throw new BusinessLogicException(ExceptionCode.EMAIL_VERIFICATION_FAILED);
@@ -587,8 +641,14 @@ public class UserService {
 
 
 
-
-
+    @Transactional
+    public void deleteUserById(Long userId){
+        User user = findById(userId);
+        user.setManagementDashboard(null);
+        user.setDepartment(null);
+        user.setApprovalStatus(ApprovalStatus.REJECTED);
+        userRepository.save(user);
+    }
 
     public User findByEmail(String email){
         return userRepository.findByEmail(email).orElseThrow(
@@ -652,6 +712,7 @@ public class UserService {
             return users.map(ApproveUserListForManagerResponseDto::new);
         }
     }
+
 
     public List<User> findByManagerList(ManagementDashboard managementDashboard){
 
@@ -717,5 +778,58 @@ public class UserService {
         // 실제 검색 실행 (승인된 사용자만 조회)
         return userRepository.searchBasicUsers(managementDashboardId, searchKeyword, RoleType.USER, ApprovalStatus.APPROVED, pageable);
     }
+
+
+
+    public Page<?> searchMembersByName(String username, Pageable pageable) {
+        Role role = roleService.findRoleByRoleType(RoleType.USER);
+        User user = findById(tokenService.getIdFromToken());
+        validManager();
+
+        // 2. 관리 페이지 엔티티 조회
+        ManagementDashboard dashboard = managementDashboardRepository.findById(user.getManagementDashboard().getId())
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        // 3. 해당 관리 페이지 소속인지 확인
+        validateManagementDashboardUser(dashboard);
+        Page<User> users = userRepository.findByNameContainingAndManagementDashboardAndRole(
+                username,
+                dashboard,
+                role,
+                pageable
+        );
+
+        if (validInitialManager(dashboard)) {
+            return users.map(ApproveUserListForInitialManagerResponseDto::new);
+        } else {
+            return users.map(ApproveUserListForManagerResponseDto::new);
+        }
+    }
+
+    public Page<?> searchManagerByName(String username, Pageable pageable) {
+        Role role = roleService.findRoleByRoleType(RoleType.MANAGER);
+        User user = findById(tokenService.getIdFromToken());
+
+        ManagementDashboard dashboard = managementDashboardRepository.findById(user.getManagementDashboard().getId())
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        isInitialManagerValid();
+        Page<User> users = userRepository.findByNameContainingAndManagementDashboardAndRole(
+                username,
+                dashboard,
+                role,
+                pageable
+        );
+
+        if (validInitialManager(dashboard)) {
+            return users.map(ApproveUserListForInitialManagerResponseDto::new);
+        } else {
+            return users.map(ApproveUserListForManagerResponseDto::new);
+        }
+    }
+
+
+
+
 
 }

@@ -59,8 +59,6 @@ public class User extends Auditable { // Auditable 상속
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "refresh_token")
-    private String refreshToken;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

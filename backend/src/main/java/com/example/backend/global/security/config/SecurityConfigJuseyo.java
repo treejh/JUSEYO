@@ -49,16 +49,31 @@ public class SecurityConfigJuseyo {
                         //채팅
                         .requestMatchers( "/api/v1/users/chat/list/**","/api/v1/users/chat/**").hasAnyRole("MANAGER", "USER","ADMIN")
                         //회원
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request","/api/v1/users/approve/**","/api/v1/users/reject/**")
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/users/name","/api/v1/users/email"
+                                ,"/api/v1/users/password","/api/v1/users/phoneNumber"
+                        ).hasAnyRole("MANAGER", "USER","ADMIN")
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/users/delete/**").hasAnyRole("MANAGER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**","/api/v1/users/duplication/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/users/name","/api/v1/users/email","/api/v1/users/password","/api/v1/users/phoneNumber","/api/v1/users/validation/password/**").hasAnyRole("MANAGER", "USER","ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/api/v1/users/delete").hasAnyRole("MANAGER", "USER","ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request",
+                                "/api/v1/users/approve/**","/api/v1/users/reject/**"
+                        ,"/api/v1/users/validation/initialManager/**",
+                                "/api/v1/users/search/**")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
                         //비품
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
                         //부서
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/departments/management/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/departments/**").hasAnyRole("MANAGER", "USER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/departments/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/departments/**").hasRole("MANAGER")
+
+
+                        //관리 페이지
+                        .requestMatchers(HttpMethod.POST,"/api/v1/management/validation/**").permitAll()
+
 
                         // 알림 관련 설정
                         .requestMatchers(HttpMethod.POST, "/api/v1/notifications/**").authenticated()
@@ -81,6 +96,14 @@ public class SecurityConfigJuseyo {
                         // 검색
                         .requestMatchers(HttpMethod.GET, "/api/v1/search/items").hasAnyRole("MANAGER", "USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/search/users").hasAnyRole("MANAGER", "USER", "ADMIN")
+
+                        // 비품 요청
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/supply-requests/**").hasAnyRole("USER","MANAGER","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/supply-requests").hasAnyRole("USER","MANAGER","ADMIN")
+
+                        // 비품 출고
+                        .requestMatchers(HttpMethod.POST, "/api/v1/inventory-out").hasAnyRole("USER","MANAGER","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/inventory-out/**").hasAnyRole("USER","MANAGER","ADMIN")
 
                         .anyRequest().authenticated()
                 )

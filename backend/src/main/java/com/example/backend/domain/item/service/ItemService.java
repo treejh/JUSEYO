@@ -3,6 +3,7 @@ package com.example.backend.domain.item.service;
 import com.example.backend.domain.analysis.service.InventoryAnalysisService;
 import com.example.backend.domain.category.entity.Category;
 import com.example.backend.domain.category.repository.CategoryRepository;
+import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemSearchProjection;
 import com.example.backend.domain.item.entity.Item;
 import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
@@ -49,6 +50,7 @@ public class ItemService {
 
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto dto) {
+
         // 1) 시리얼 결정: 빈 값이면 비품명-순번-랜덤8 로 생성
         String serial = null;
 
@@ -64,8 +66,11 @@ public class ItemService {
         // 2) 연관 엔티티 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
-        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+
+        Long userId = tokenService.getIdFromToken();
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        ManagementDashboard mgmt = user.getManagementDashboard();
 
         // 3) 엔티티 빌드 및 저장
         Item entity = Item.builder()
@@ -175,8 +180,8 @@ public class ItemService {
                 .build();
     }
 
-    public Page<ItemResponseDto> getItemsPagedSorted(Pageable pageable) {
-        return repo.findAllAsDto(Status.ACTIVE, pageable);
+    public Page<ItemLiteResponseDto> getItemsPagedSorted(Pageable pageable) {
+        return repo.findAllAsLiteDto(Status.ACTIVE, pageable);
     }
 
     //비품 검색
@@ -194,5 +199,35 @@ public class ItemService {
 
         // 검색 로직 실행 (Projection 활용)
         return repo.searchItemsWithCategory(managementDashboardId, keyword, pageable);
+    }
+
+    /**
+     * 로그인한 사용자의 관리페이지에 속한 ACTIVE 품목 전체 조회
+     */
+    @Transactional(readOnly = true)
+    public List<ItemResponseDto> getAllActiveItems() {
+        // (Optional) 관리페이지 필터까지 적용하고 싶다면 아래처럼:
+        Long userId = tokenService.getIdFromToken();
+        Long mgmtId = userRepo.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard().getId();
+
+        // ① 전체 ACTIVE 아이템 가져오기
+        List<Item> items = repo.findAllByStatus(Status.ACTIVE);
+
+        // ② 필요하다면 관리페이지로 한번더 필터
+        items = items.stream()
+                .filter(i -> i.getManagementDashboard().getId().equals(mgmtId))
+                .toList();
+
+        return items.stream()
+                .map(this::mapToDto)  // 기존 mapToDto 사용
+                .toList();
+    }
+
+    /** 프론트 중복체크용 */
+    @Transactional(readOnly = true)
+    public boolean existsActiveName(String name) {
+        return repo.findByNameAndStatus(name, Status.ACTIVE).isPresent();
     }
 }

@@ -3,6 +3,7 @@ package com.example.backend.domain.notification.service;
 import com.example.backend.domain.notification.dto.NotificationDTO;
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.Notification;
+import com.example.backend.domain.notification.entity.NotificationType;
 import com.example.backend.domain.notification.sse.EmitterRepository;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.global.exception.BusinessLogicException;
@@ -10,13 +11,19 @@ import com.example.backend.global.exception.ExceptionCode;
 import com.example.backend.domain.notification.repository.NotificationRepository;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.repository.UserRepository;
+import com.example.backend.domain.notification.notificationPolicy.NotificationPolicy;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import com.example.backend.domain.notification.dto.NotificationPageResponseDTO;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -27,6 +34,8 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final EmitterRepository emitterRepository;
     private final NotificationStrategyFactory strategyFactory;
+
+
 
     @Transactional
     public Notification createNotification(NotificationRequestDTO request) {
@@ -56,6 +65,42 @@ public class NotificationService {
         }
 
         return saved;
+    }
+
+    public NotificationPageResponseDTO getNotifications(
+            Long userId,
+            NotificationType type,
+            Boolean unreadOnly,
+            Pageable pageable
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
+        Page<Notification> notifications;
+
+        // 사용자 ROLE에 따라 필터링할 알림 타입 결정
+        Set<NotificationType> allowedTypes = new HashSet<>(NotificationPolicy.getAllowedTypesByRole(user.getRole().getRole()));
+
+        if (type != null && !allowedTypes.contains(type)) {
+            throw new BusinessLogicException(ExceptionCode.NOTIFICATION_DENIED_EXCEPTION);
+        }
+
+        if (type == null && unreadOnly == null) {
+            notifications = notificationRepository.findByUserIdAndNotificationTypeIn(userId, allowedTypes, pageable);
+        } else if (type != null && unreadOnly == null) {
+            notifications = notificationRepository.findByUserIdAndNotificationType(userId, type, pageable);
+        } else if (type == null && unreadOnly != null) {
+            notifications = notificationRepository.findByUserIdAndReadStatusAndNotificationTypeIn(userId, !unreadOnly, allowedTypes, pageable);
+        } else {
+            notifications = notificationRepository.findByUserIdAndNotificationTypeAndReadStatus(
+                    userId,
+                    type,
+                    !unreadOnly,
+                    pageable
+            );
+        }
+
+        return NotificationPageResponseDTO.from(notifications);
     }
 
     @Transactional
@@ -111,6 +156,11 @@ public class NotificationService {
             notification.setReadStatus(true);
         }
         notificationRepository.saveAll(notifications);
+    }
+
+    @Transactional
+    public void deleteAllReadNotificationsByUserId(Long userId) {
+        notificationRepository.deleteByUserIdAndReadStatusTrue(userId);
     }
 
 
