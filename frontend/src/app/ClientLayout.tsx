@@ -166,7 +166,10 @@ export default function ClientLayout({
           }
         };
 
-        if (userData.approvalStatus !== "REQUESTED") {
+        if (
+          userData.approvalStatus !== "REQUESTED" &&
+          userData.approvalStatus !== "REJECTED"
+        ) {
           connectSSE();
         }
       } catch (error) {
@@ -193,6 +196,22 @@ export default function ClientLayout({
     ) {
       if (!requestedAlertedRef.current) {
         alert("요청상태중인 유저입니다");
+        requestedAlertedRef.current = true;
+      }
+      router.replace("/");
+      return;
+    }
+
+    // 요청 상태 유저 알림 + 리다이렉트 (우선 처리)
+    if (
+      isLogin &&
+      loginUser?.approvalStatus === "REJECTED" &&
+      !isAuthPage &&
+      pathname !== "/user" &&
+      pathname !== "/"
+    ) {
+      if (!requestedAlertedRef.current) {
+        alert("접근 거부된 유저입니다");
         requestedAlertedRef.current = true;
       }
       router.replace("/");

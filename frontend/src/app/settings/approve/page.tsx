@@ -80,9 +80,9 @@ export default function ApprovePage() {
     try {
       await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/delete/${userId}`,
-        { method: "DELETE", credentials: "include" }
+        { method: "PATCH", credentials: "include" }
       );
-      setUsers((prev) => prev.filter((user) => user.userId !== userId));
+      location.reload();
     } catch (error) {
       alert("삭제 처리 중 오류가 발생했습니다.");
     }
