@@ -6,12 +6,14 @@ import com.example.backend.domain.department.dto.DepartmentUpdateRequestDTO;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.managementDashboard.repository.ManagementDashboardRepository;
+import com.example.backend.domain.user.service.UserService;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
 import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,6 +84,7 @@ public class DepartmentService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
 
         Page<Department> departments = departmentRepository.findByManagementDashboard(managementDashboard, pageable);
+
 
         if (departments.isEmpty()) {
             throw new BusinessLogicException(ExceptionCode.DEPARTMENT_NOT_FOUND);
