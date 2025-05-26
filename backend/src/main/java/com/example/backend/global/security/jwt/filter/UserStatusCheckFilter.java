@@ -51,6 +51,7 @@ public class UserStatusCheckFilter extends OncePerRequestFilter {
                 // 허용할 경로 목록
                 boolean allowed = path.startsWith("/api/v1/users/signup")
                         || path.equals("/api/v1/users/login")
+                        || path.equals("/api/v1/users/logout")
                         || path.equals("/api/v1/users/emails/findPassword")
                         || path.startsWith("/api/v1/users/emails/**")
                         || path.startsWith("/api/v1/users/duplication/**")
