@@ -28,8 +28,8 @@ const DepartmentManagementPage = () => {
   const { loginUser } = useGlobalLoginUser();
 
   // 펼쳐진 부서 id와 유저 리스트 상태
-  const [openedDeptId, setOpenedDeptId] = useState<number | null>(null);
-  const [userList, setUserList] = useState<UserItem[]>([]);
+  const [openedDeptIds, setOpenedDeptIds] = useState<number[]>([]);
+  const [userList, setUserList] = useState<{ [key: number]: UserItem[] }>({});
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   const [editUserId, setEditUserId] = useState<number | null>(null);
@@ -62,25 +62,23 @@ const DepartmentManagementPage = () => {
 
   // 부서별 유저 리스트 불러오기
   const handleShowUsers = async (departmentId: number) => {
-    if (openedDeptId === departmentId) {
-      // 이미 열려있으면 닫기
-      setOpenedDeptId(null);
-      setUserList([]);
+    if (openedDeptIds.includes(departmentId)) {
+      setOpenedDeptIds(openedDeptIds.filter((id) => id !== departmentId));
       return;
     }
     setLoadingUsers(true);
-    setOpenedDeptId(departmentId);
+    // 유저 리스트는 부서별로 따로 관리해야 여러개 펼칠 때 각각 보임
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/departments/${departmentId}/users`,
       { credentials: "include" }
     );
-    if (!res.ok) {
-      setUserList([]);
-      setLoadingUsers(false);
-      return;
-    }
-    const data = await res.json();
-    setUserList(data);
+    let data: UserItem[] = [];
+    if (res.ok) data = await res.json();
+    setUserList((prev) => ({
+      ...prev,
+      [departmentId]: data,
+    }));
+    setOpenedDeptIds([...openedDeptIds, departmentId]);
     setLoadingUsers(false);
   };
 
@@ -142,7 +140,7 @@ const DepartmentManagementPage = () => {
                           className="text-lg focus:outline-none flex items-center justify-center w-6 h-6 rounded hover:bg-gray-100 transition"
                           aria-label="구성원 토글"
                         >
-                          {openedDeptId === department.id ? (
+                          {openedDeptIds.includes(department.id) ? (
                             <FiChevronUp className="text-gray-600" />
                           ) : (
                             <FiChevronDown className="text-gray-600" />
@@ -167,18 +165,19 @@ const DepartmentManagementPage = () => {
                         </button>
                       </td>
                     </tr>
-                    {openedDeptId === department.id && (
+                    {openedDeptIds.includes(department.id) && (
                       <tr>
                         <td colSpan={3} className="bg-gray-50 px-6 py-4">
                           {loadingUsers ? (
                             <div className="text-gray-500">로딩 중...</div>
-                          ) : userList.length === 0 ? (
+                          ) : !userList[department.id] ||
+                            userList[department.id].length === 0 ? (
                             <div className="text-gray-500">
                               구성원이 없습니다.
                             </div>
                           ) : (
                             <ul className="divide-y divide-gray-200">
-                              {userList.map((user, idx) => (
+                              {userList[department.id].map((user, idx) => (
                                 <li
                                   key={user.id}
                                   className="flex items-center justify-between py-3 px-2 hover:bg-gray-50 transition"
