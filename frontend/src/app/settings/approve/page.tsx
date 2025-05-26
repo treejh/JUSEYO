@@ -13,7 +13,7 @@ export default function ApprovePage() {
   const [selectedRole, setSelectedRole] = useState<"회원" | "매니저">("회원");
   const [users, setUsers] = useState<
     {
-      id: number;
+      userId: number;
       email: string;
       name: string;
       phoneNumber: string;
@@ -63,17 +63,25 @@ export default function ApprovePage() {
     fetchUsers();
   }, [filterStatus, selectedRole, managementDashboardName, currentPage]);
 
+  const handleDelete = async (userId: number) => {
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/delete/${userId}`,
+        { method: "DELETE", credentials: "include" }
+      );
+      setUsers((prev) => prev.filter((user) => user.userId !== userId));
+    } catch (error) {
+      alert("삭제 처리 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleApprove = async (userId: number) => {
     try {
       await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/approve/${userId}`,
         { method: "POST", credentials: "include" }
       );
-      setUsers((prev) =>
-        prev.map((user: any) =>
-          user.id === userId ? { ...user, approvalStatus: "승인됨" } : user
-        )
-      );
+      location.reload();
     } catch (error) {
       alert("승인 처리 중 오류가 발생했습니다.");
     }
@@ -81,15 +89,12 @@ export default function ApprovePage() {
 
   const handleReject = async (userId: number) => {
     try {
+      console.log("Rejecting userId:", userId);
       await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/reject/${userId}`,
         { method: "POST", credentials: "include" }
       );
-      setUsers((prev) =>
-        prev.map((user: any) =>
-          user.id === userId ? { ...user, approvalStatus: "거부됨" } : user
-        )
-      );
+      location.reload();
     } catch (error) {
       alert("거부 처리 중 오류가 발생했습니다.");
     }
@@ -181,7 +186,7 @@ export default function ApprovePage() {
               </td>
               <td className="border border-gray-200 px-4 py-2">
                 {user.departmentName || "N/A"}
-              </td>{" "}
+              </td>
               {/* 부서 이름 추가 */}
               <td className="border border-gray-200 px-4 py-2">
                 {new Date(user.requestDate).toLocaleString("ko-KR", {
@@ -196,30 +201,53 @@ export default function ApprovePage() {
                 {user.approvalStatus}
               </td>
               <td className="border border-gray-200 px-4 py-2 flex space-x-2">
-                {user.approvalStatus === "대기중" ? (
+                {filterStatus === "request" && (
                   <>
                     <button
-                      onClick={() => handleApprove(user.id)}
+                      onClick={() => handleApprove(user.userId)}
                       className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                     >
                       승인
                     </button>
                     <button
-                      onClick={() => handleReject(user.id)}
+                      onClick={() => handleReject(user.userId)}
                       className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                     >
                       거부
                     </button>
                   </>
-                ) : user.approvalStatus === "승인됨" ? (
-                  <span className="px-4 py-2 bg-blue-500 text-white rounded-lg">
-                    승인됨
-                  </span>
-                ) : user.approvalStatus === "거부됨" ? (
-                  <span className="px-4 py-2 bg-blue-500 text-white rounded-lg">
-                    거부됨
-                  </span>
-                ) : null}
+                )}
+
+                {filterStatus === "approve" &&
+                  (user.approvalStatus === "REJECTED" ? (
+                    <span className="px-4 py-2 bg-blue-500 text-white rounded-lg">
+                      거부됨
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleReject(user.userId)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    >
+                      거부
+                    </button>
+                  ))}
+
+                {filterStatus === "reject" && (
+                  <>
+                    <button
+                      onClick={() => handleApprove(user.userId)}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                    >
+                      승인
+                    </button>
+                    <button
+                      onClick={() => handleDelete(user.userId)} // 삭제 핸들러가 필요하다면 정의해야 함
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                    >
+                      삭제
+                    </button>
+                  </>
+                )}
               </td>
             </tr>
           ))}

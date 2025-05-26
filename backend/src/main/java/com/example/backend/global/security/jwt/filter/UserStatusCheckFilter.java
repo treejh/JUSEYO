@@ -52,8 +52,8 @@ public class UserStatusCheckFilter extends OncePerRequestFilter {
                 boolean allowed = path.startsWith("/api/v1/users/signup")
                         || path.equals("/api/v1/users/login")
                         || path.equals("/api/v1/users/emails/findPassword")
-                        || path.startsWith("/api/v1/users/emails/")
-                        || path.startsWith("/api/v1/users/duplication/")
+                        || path.startsWith("/api/v1/users/emails/**")
+                        || path.startsWith("/api/v1/users/duplication/**")
                         || path.startsWith("/api/v1/users/token");
 
                 if (!allowed) {

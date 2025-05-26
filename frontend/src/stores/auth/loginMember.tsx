@@ -9,6 +9,7 @@ type User = {
   managementDashboardName?: string; // 선택적 필드
   departmentName?: string; // 선택적 필드
   role: string; // 사용자 타입 필드 추가
+  approvalStatus?: string; // 승인 상태 필드 추가
 };
 
 export const LoginUserContext = createContext<{
@@ -36,6 +37,7 @@ function createEmptyUser(): User {
     managementDashboardName: "",
     departmentName: "",
     role: "", // 기본값 설정
+    approvalStatus: "", // 기본값 설정
   };
 }
 
