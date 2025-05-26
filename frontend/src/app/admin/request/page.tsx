@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginUser } from "@/types/auth";
+import { useLoginUser } from "@/stores/auth/loginMember";
 
 interface ApiResponse {
   success: boolean;
@@ -30,6 +31,7 @@ interface BizCheckResponse {
 
 export default function AdminRequest() {
   const router = useRouter();
+  const { isLogin, loginUser } = useLoginUser();
   const [formData, setFormData] = useState({
     pageName: '',
     owner: '',
@@ -38,34 +40,29 @@ export default function AdminRequest() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loginUser, setLoginUser] = useState<LoginUser | null>(null);
   const [step, setStep] = useState(1); // 1: 기본 정보, 2: 사업자 정보
 
-//   useEffect(() => {
-//     const loginData = localStorage.getItem('loginUser');
-//     if (!loginData) {
-//       alert('로그인이 필요한 서비스입니다.');
-//       router.push('/login');
-//       return;
-//     }
+   useEffect(() => {
+     if (!isLogin || !loginUser) {
+       alert('로그인이 필요한 서비스입니다.');
+       router.push('/login');
+       return;
+     }
 
-//     const user = JSON.parse(loginData) as LoginUser;
-//     setLoginUser(user);
+     if (loginUser.role !== 'admin') {
+       if (loginUser.managementDashboardName) {
+         alert('이미 관리자 페이지가 존재합니다.');
+         router.push('/');
+         return;
+       }
 
-//     if (user.userType !== 'admin') {
-//       if (user.managementDashboardName) {
-//         alert('이미 관리자 페이지가 존재합니다.');
-//         router.push('/');
-//         return;
-//       }
-
-//       if (user.userType !== 'manager') {
-//         alert('관리자 페이지 생성 권한이 없습니다.');
-//         router.push('/');
-//         return;
-//       }
-//     }
-//   }, [router]);
+       if (loginUser.role !== 'manager') {
+         alert('관리자 페이지 생성 권한이 없습니다.');
+         router.push('/');
+         return;
+       }
+     }
+   }, [isLogin, loginUser, router]);
 
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
@@ -189,7 +186,7 @@ export default function AdminRequest() {
         }
         
         alert('관리자 페이지가 성공적으로 생성되었습니다');
-        router.push('/');
+        router.push('/settings/departments');
       } else {
         setErrors({ submit: result.message || '관리 페이지 등록에 실패했습니다' });
       }
@@ -198,15 +195,15 @@ export default function AdminRequest() {
     } finally {
       setIsLoading(false);
     }
-  };
+   };
 
-//   if (!loginUser) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-//       </div>
-//     );
-//   }
+  if (!loginUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
