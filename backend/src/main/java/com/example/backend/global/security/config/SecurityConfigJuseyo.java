@@ -49,8 +49,12 @@ public class SecurityConfigJuseyo {
                         //채팅
                         .requestMatchers( "/api/v1/users/chat/list/**","/api/v1/users/chat/**").hasAnyRole("MANAGER", "USER","ADMIN")
                         //회원
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/users/name","/api/v1/users/email","/api/v1/users/password","/api/v1/users/phoneNumber").hasAnyRole("MANAGER", "USER","ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**","/api/v1/users/duplication/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request","/api/v1/users/approve/**","/api/v1/users/reject/**")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/approve","/api/v1/users/request",
+                                "/api/v1/users/approve/**","/api/v1/users/reject/**"
+                        ,"/api/v1/users/validation/initialManager/**",
+                                "/api/v1/users/search/**")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
                         //비품
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능

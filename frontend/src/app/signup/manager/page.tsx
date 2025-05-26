@@ -70,15 +70,19 @@ export default function InitialSignupPage() {
 
   useEffect(() => {
     // 로컬 스토리지에서 관리 페이지 이름과 부서 이름 가져오기
-    const managementPageName = localStorage.getItem("managementPageName") || "";
-    const departmentName = localStorage.getItem("departmentName") || "";
+    const managementPageName = localStorage.getItem("managementPageName");
+
+    if (!managementPageName) {
+      // 관리 페이지 이름과 부서 이름이 없으면 /signup/info로 리다이렉트
+      router.push("/signup/managerinfo");
+      return;
+    }
 
     setFormData((prev) => ({
       ...prev,
       managementPageName,
-      departmentName,
     }));
-  }, []);
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
@@ -234,7 +238,7 @@ export default function InitialSignupPage() {
     try {
       setIsLoading(true);
       const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const response = await fetch(`${API_URL}/api/v1/users/signup`, {
+      const response = await fetch(`${API_URL}/api/v1/users/signup/manager`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -245,6 +249,8 @@ export default function InitialSignupPage() {
       }
 
       alert("회원가입이 완료되었습니다.");
+      localStorage.removeItem("managementPageName");
+      localStorage.removeItem("departmentName");
       router.push("/");
     } catch (error) {
       alert(

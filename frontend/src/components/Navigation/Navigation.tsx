@@ -265,7 +265,7 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/settings/users"
+              href="/settings/approve"
               className={`menu-link ${
                 activeMenu === "user-management" ? "active" : ""
               }`}
@@ -342,7 +342,11 @@ export default function Navigation({
   );
 
   return (
-    <aside className={`juseyo-sidebar ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+    <aside
+      className={`juseyo-sidebar ${
+        isSidebarCollapsed ? "sidebar-collapsed" : ""
+      }`}
+    >
       <div className="juseyo-menu-container">
         {/* 사이드바 접기/펼치기 버튼 */}
         {onToggleSidebar && (
