@@ -335,44 +335,31 @@ export default function InboundPage() {
             {error}
           </div>
         )}
-        <div className="flex gap-6 items-center">
-          <div className="flex gap-3 items-center">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-gray-600">입고 일자</span>
-            <input
-              type="date"
-              className="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={dateRange.start}
-              onChange={(e) => handleDateChange('start', e.target.value)}
-              max={dateRange.end}
-            />
-            <span className="text-gray-400">-</span>
-            <input
-              type="date"
-              className="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={dateRange.end}
-              onChange={(e) => handleDateChange('end', e.target.value)}
-              min={dateRange.start}
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                className="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={dateRange.start}
+                onChange={(e) => handleDateChange('start', e.target.value)}
+                max={dateRange.end}
+              />
+              <span className="text-gray-400">-</span>
+              <input
+                type="date"
+                className="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={dateRange.end}
+                onChange={(e) => handleDateChange('end', e.target.value)}
+                min={dateRange.start}
+              />
+            </div>
           </div>
-          <div className="flex gap-3 items-center">
-            <span className="text-sm font-medium text-gray-600">입고 유형</span>
-            <select
-              className="border border-gray-200 rounded-lg px-4 py-2 min-w-[140px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={inboundType}
-              onChange={handleInboundTypeChange}
-            >
-              <option value="">전체</option>
-              {inboundTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-gray-600">카테고리</span>
             <select
-              className="border border-gray-200 rounded-lg px-4 py-2 min-w-[140px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="border border-gray-200 rounded-lg px-3 py-2 w-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={selectedCategory}
               onChange={handleCategoryChange}
             >
@@ -384,16 +371,37 @@ export default function InboundPage() {
               ))}
             </select>
           </div>
-          <div className="flex gap-3 items-center ml-auto">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-600">입고 유형</span>
+            <select
+              className="border border-gray-200 rounded-lg px-3 py-2 w-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={inboundType}
+              onChange={handleInboundTypeChange}
+            >
+              <option value="">전체</option>
+              {inboundTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
             <input
               type="text"
               placeholder="품목명, 카테고리, ID 검색"
-              className="border border-gray-200 rounded-lg px-4 py-2 w-80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="border border-gray-200 rounded-lg px-3 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  setCurrentPage(1);
+                  fetchInboundData();
+                }
+              }}
             />
             <button 
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               onClick={() => {
                 setCurrentPage(1);
                 fetchInboundData();
