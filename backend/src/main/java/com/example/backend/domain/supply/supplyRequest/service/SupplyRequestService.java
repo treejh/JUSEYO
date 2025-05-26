@@ -145,14 +145,18 @@ public class SupplyRequestService {
         String issueMsg;
 
         if (newStatus == ApprovalStatus.APPROVED) {
-            // 1) 출고 처리: InventoryOutService 로 availableQuantity 차감
+            // 1) 출고 처리: rental 여부에 따라 LEND 또는 ISSUE
+            String outboundType = req.isRental()
+                    ? Outbound.LEND.name()
+                    : Outbound.ISSUE.name();
+
             InventoryOutRequestDto outDto = InventoryOutRequestDto.builder()
                     .supplyRequestId(req.getId())
                     .itemId(req.getItem().getId())
                     .categoryId(req.getItem().getCategory().getId())
                     .managementId(req.getItem().getManagementDashboard().getId())
                     .quantity(req.getQuantity())
-                    .outbound(Outbound.ISSUE.name())
+                    .outbound(outboundType)    // <-- 수정된 부분
                     .build();
             outService.removeOutbound(outDto);
 
@@ -233,6 +237,7 @@ public class SupplyRequestService {
         SupplyRequest updated = repo.save(req);
         return mapToDto(updated);
     }
+
 
 
     private String generateInstanceCode(Item item) {

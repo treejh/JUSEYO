@@ -115,20 +115,20 @@ public class InventoryOutService {
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());
 
         // 5) **대여(LEND) 케이스에만** 개별자산단위 상태 변경 (AVAILABLE → LEND)
-        if (saved.getOutbound() == Outbound.LEND) {
-            for (int i = 0; i < saved.getQuantity(); i++) {
-                ItemInstance inst = instanceRepo
-                        .findFirstByItemIdAndOutboundAndStatus(item.getId(),
-                                Outbound.AVAILABLE,
-                                Status.ACTIVE)
-                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
-
-                UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
-                upd.setOutbound(Outbound.LEND);
-                upd.setFinalImage(null);
-                instanceService.updateStatus(inst.getId(), upd);
-            }
-        }
+//        if (saved.getOutbound() == Outbound.LEND) {
+//            for (int i = 0; i < saved.getQuantity(); i++) {
+//                ItemInstance inst = instanceRepo
+//                        .findFirstByItemIdAndOutboundAndStatus(item.getId(),
+//                                Outbound.AVAILABLE,
+//                                Status.ACTIVE)
+//                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+//
+//                UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
+//                upd.setOutbound(Outbound.LEND);
+//                upd.setFinalImage(null);
+//                instanceService.updateStatus(inst.getId(), upd);
+//            }
+//        }
 
         // 6) 응답 DTO 반환
         return mapToDto(saved);
