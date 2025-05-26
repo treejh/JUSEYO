@@ -99,6 +99,10 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.GET,  "/api/v1/supply-requests/**").hasAnyRole("USER","MANAGER","ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/supply-requests").hasAnyRole("USER","MANAGER","ADMIN")
 
+                        // 비품 출고
+                        .requestMatchers(HttpMethod.POST, "/api/v1/inventory-out").hasAnyRole("USER","MANAGER","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/inventory-out/**").hasAnyRole("USER","MANAGER","ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가
