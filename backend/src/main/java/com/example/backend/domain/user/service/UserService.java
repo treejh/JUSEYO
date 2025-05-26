@@ -527,7 +527,7 @@ public class UserService {
 
     public void verifyPassword(ValidPasswordRequestDto validPasswordRequestDto){
         User user = findById(tokenService.getIdFromToken());
-        validPassword(user.getPassword(), validPasswordRequestDto.getPassword());
+        validPassword(validPasswordRequestDto.getPassword(), user.getPassword());
 
     }
 

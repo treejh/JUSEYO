@@ -510,7 +510,7 @@ public class UserController {
     }
 
 
-    @DeleteMapping
+    @DeleteMapping("/delete")
     @Operation(
             summary = "유저 삭제(manager, user)  구현  ",
             description = "유저 삭제(manager, user)를 삭제할 수 있습니다.  "
