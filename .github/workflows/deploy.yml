@@ -38,7 +38,7 @@ jobs:
     needs: makeTagAndRelease
     runs-on: ubuntu-latest
     env:
-      DOCKER_IMAGE_NAME: JUSEYO  ###!!!팀 프로젝트 이미지 네임!!!###
+      DOCKER_IMAGE_NAME: juseyo  ###!!!팀 프로젝트 이미지 네임!!!###
     outputs:
       DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ env.OWNER_LC }}

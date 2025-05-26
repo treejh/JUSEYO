@@ -1,4 +1,4 @@
-package com.example.backend.domain.department.dto;
+package com.example.backend.domain.department.dto.response;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
