@@ -2,6 +2,8 @@ package com.example.backend.domain.user.dto.response;
 
 
 import com.example.backend.domain.user.entity.User;
+import com.example.backend.enums.ApprovalStatus;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,13 +21,27 @@ public class ApproveUserListForManagerResponseDto {
 
     String email;
 
-    String maskedPhoneNumber;
+    String phoneNumber;
+
+    LocalDateTime requestDate;
+
+    ApprovalStatus approvalStatus;
+
+    String departmentName;
 
     public ApproveUserListForManagerResponseDto(User user) {
         this.userId = user.getId();
         this.name = user.getName();
         this.email = user.getEmail();
-        this.maskedPhoneNumber = maskPhoneNumber(user.getPhoneNumber());
+        this.phoneNumber = user.getPhoneNumber();
+        this.requestDate = user.getCreatedAt();
+        this.approvalStatus = user.getApprovalStatus();
+
+        if (user.getDepartment() == null || user.getDepartment().getName() == null) {
+            this.departmentName = "매니저";
+        } else {
+            this.departmentName = user.getDepartment().getName();
+        }
     }
 
     private String maskPhoneNumber(String phoneNumber) {
