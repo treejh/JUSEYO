@@ -54,7 +54,20 @@ export default function ApprovePage() {
           currentPage,
           10
         );
-        setUsers(usersData.users);
+
+        const filteredUsers = usersData.users.filter(
+          (user: {
+            userId: number;
+            email: string;
+            name: string;
+            phoneNumber: string;
+            departmentName?: string;
+            requestDate: string;
+            approvalStatus: string;
+          }) => user.userId !== loginUser.id
+        );
+
+        setUsers(filteredUsers);
       } catch (error) {
         console.error(error);
       }
