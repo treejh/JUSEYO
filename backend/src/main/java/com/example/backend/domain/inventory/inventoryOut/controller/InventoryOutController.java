@@ -62,6 +62,22 @@ public class InventoryOutController {
         service.writeExcel(list, response.getOutputStream());
     }
 
+    /** 내 출고내역 엑셀 내보내기 (일반회원, 관리자) */
+    @GetMapping("/me/export")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    public void exportMyOutbound(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            HttpServletResponse response
+    ) throws IOException {
+        // service 에서 내 출고내역 리스트만 뽑아오는 메서드 호출
+        List<InventoryOutResponseDto> list = service.getMyOutboundList(search, fromDate, toDate);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment;filename=my-inventory-out.xlsx");
+        service.writeExcel(list, response.getOutputStream());
+    }
+
     /** 내 출고내역 조회 (일반회원) */
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('USER','MANAGER')")

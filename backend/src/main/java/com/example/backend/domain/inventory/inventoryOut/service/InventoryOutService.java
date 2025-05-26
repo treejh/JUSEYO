@@ -280,6 +280,18 @@ public class InventoryOutService {
                 .build();
     }
 
+    // **내 출고내역 엑셀용 리스트**
+    @Transactional(readOnly = true)
+    public List<InventoryOutResponseDto> getMyOutboundList(
+            String search,
+            LocalDate fromDate,
+            LocalDate toDate
+    ) {
+        // 재활용: 페이지 조회 메서드를 그대로 쓰되, 전체 가져오기
+        return getMyOutbound(search, fromDate, toDate, 0, Integer.MAX_VALUE, "createdAt", "desc")
+                .getContent();
+    }
+
     @Transactional
     // 재고 부족 알림 테스트용 메서드
     public void stockdown() {

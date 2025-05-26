@@ -93,7 +93,7 @@ export default function OutboundPage() {
     }
   };
 
-  // API 호출 (항상 /me 사용)
+  // API 호출 (/me 및 /me/export 허용)
   const load = async () => {
     setLoading(true);
     setError(null);
@@ -126,6 +126,34 @@ export default function OutboundPage() {
     }
   };
 
+  // 엑셀 다운로드
+  const downloadExcel = async () => {
+    setError(null);
+    try {
+      const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const ep = "/api/v1/inventory-out/me/export";
+      const params = new URLSearchParams({
+        fromDate: dateFrom,
+        toDate: dateTo,
+      });
+      const url = `${base}${ep}?${params}`;
+      console.log("Downloading Excel:", url);
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = `출고내역_${dateFrom}_to_${dateTo}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(href);
+    } catch {
+      setError("엑셀 다운로드 실패");
+    }
+  };
+
   // 필터링 적용
   const filtered = useMemo(
     () =>
@@ -155,35 +183,9 @@ export default function OutboundPage() {
     }
   };
 
-  // 엑셀 다운로드
-  const downloadExcel = async () => {
-    setError(null);
-    try {
-      const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const params = new URLSearchParams({
-        fromDate: dateFrom,
-        toDate: dateTo,
-      });
-      const res = await fetch(`${base}/api/v1/inventory-out/export?${params}`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `출고내역_${dateFrom}_to_${dateTo}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } catch {
-      setError("엑셀 다운로드 실패");
-    }
-  };
-
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
-      {/* 헤더 섹션 */}
+      {/* 헤더 */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">출고 내역</h1>
@@ -193,7 +195,7 @@ export default function OutboundPage() {
         </div>
         <button
           onClick={downloadExcel}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
         >
           <svg
             className="w-5 h-5"
@@ -212,149 +214,79 @@ export default function OutboundPage() {
         </button>
       </div>
 
-      {/* 통계 카드 섹션 */}
-      <div className="grid grid-cols-6 gap-6 mb-8">
-        <div className="bg-slate-50/80 rounded-xl p-8 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
-          <div className="flex flex-col">
-            <div className="text-slate-500 text-sm font-medium mb-4">전체</div>
-            <div className="text-4xl font-semibold text-slate-700 mb-1">
-              {filtered.length}
-            </div>
-            <div className="text-xs text-slate-400 font-medium">
-              총 출고 건수
-            </div>
-          </div>
-        </div>
-        {outboundTypes.slice(1).map((type) => (
-          <div
-            key={type.value}
-            className={`rounded-xl p-8 shadow-sm hover:translate-y-[-2px] transition-all duration-300
-          ${type.value === "ISSUE" ? "bg-emerald-50/80" : ""}
-          ${type.value === "LOST" ? "bg-red-50/80" : ""}
-          ${type.value === "LEND" ? "bg-blue-50/80" : ""}
-          ${type.value === "REPAIR" ? "bg-purple-50/80" : ""}
-          ${type.value === "DISPOSAL" ? "bg-gray-50/80" : ""}
-          ${type.value === "DAMAGED" ? "bg-amber-50/80" : ""}`}
-          >
-            <div className="flex flex-col">
-              <div
-                className={`text-sm font-medium mb-4
-              ${type.value === "ISSUE" ? "text-emerald-600" : ""}
-              ${type.value === "LOST" ? "text-red-600" : ""}
-              ${type.value === "LEND" ? "text-blue-600" : ""}
-              ${type.value === "REPAIR" ? "text-purple-600" : ""}
-              ${type.value === "DISPOSAL" ? "text-gray-600" : ""}
-              ${type.value === "DAMAGED" ? "text-amber-600" : ""}`}
-              >
-                {type.label}
-              </div>
-              <div
-                className={`text-4xl font-semibold mb-1
-              ${type.value === "ISSUE" ? "text-emerald-700" : ""}
-              ${type.value === "LOST" ? "text-red-700" : ""}
-              ${type.value === "LEND" ? "text-blue-700" : ""}
-              ${type.value === "REPAIR" ? "text-purple-700" : ""}
-              ${type.value === "DISPOSAL" ? "text-gray-700" : ""}
-              ${type.value === "DAMAGED" ? "text-amber-700" : ""}`}
-              >
-                {filtered.filter((item) => item.outbound === type.value).length}
-              </div>
-              <div
-                className={`text-xs font-medium
-              ${type.value === "ISSUE" ? "text-emerald-500" : ""}
-              ${type.value === "LOST" ? "text-red-500" : ""}
-              ${type.value === "LEND" ? "text-blue-500" : ""}
-              ${type.value === "REPAIR" ? "text-purple-500" : ""}
-              ${type.value === "DISPOSAL" ? "text-gray-500" : ""}
-              ${type.value === "DAMAGED" ? "text-amber-500" : ""}`}
-              >
-                {type.label} 건수
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* 필터 */}
+      <div className="bg-white p-6 rounded-lg shadow mb-6 flex flex-wrap gap-4">
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          className="border px-3 py-2 rounded"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          className="border px-3 py-2 rounded"
+        />
+        <input
+          type="text"
+          placeholder="검색"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="border px-3 py-2 rounded flex-1"
+        />
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="border px-3 py-2 rounded"
+        >
+          <option value="">전체 카테고리</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select
+          value={outboundType}
+          onChange={(e) => setOutboundType(e.target.value)}
+          className="border px-3 py-2 rounded"
+        >
+          {outboundTypes.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={() => {
+            setPage(0);
+            load();
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          조회
+        </button>
       </div>
 
-      {/* 필터 섹션 */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-        <div className="flex gap-6 items-center">
-          <div className="flex gap-3 items-center">
-            <span className="text-sm font-medium text-gray-600">출고 일자</span>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <span className="text-gray-400">-</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex gap-3 items-center">
-            <span className="text-sm font-medium text-gray-600">출고 유형</span>
-            <select
-              value={outboundType}
-              onChange={(e) => setOutboundType(e.target.value)}
-              className="border border-gray-200 rounded-lg px-4 py-2 min-w-[140px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {outboundTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex gap-3 items-center">
-            <span className="text-sm font-medium text-gray-600">카테고리</span>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="border border-gray-200 rounded-lg px-4 py-2 min-w-[140px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">전체</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
+      {/* 에러 */}
+      {error && <div className="text-red-600 mb-4">{error}</div>}
 
-      {/* 테이블 섹션 */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-100">
+      {/* 테이블 */}
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
+        <table className="min-w-full table-auto">
+          <thead className="bg-gray-100">
             <tr>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">
-                출고ID
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">
-                요청서ID
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">
-                출고 일자
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">
-                카테고리
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">
-                품목명
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">
-                수량
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">
-                출고 유형
-              </th>
+              <th className="px-4 py-2">출고ID</th>
+              <th className="px-4 py-2">요청서ID</th>
+              <th className="px-4 py-2">일자</th>
+              <th className="px-4 py-2">카테고리</th>
+              <th className="px-4 py-2">품목</th>
+              <th className="px-4 py-2">수량</th>
+              <th className="px-4 py-2">유형</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-200">
             {filtered.map((it) => (
               <tr key={it.id} className="hover:bg-gray-50">
                 <td className="px-4 py-2 text-sm text-gray-600">{it.id}</td>
