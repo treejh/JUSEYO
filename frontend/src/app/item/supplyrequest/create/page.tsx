@@ -102,7 +102,7 @@ export default function SupplyRequestCreatePage() {
       const msg = await res.text();
       return alert(`등록 실패: ${msg}`);
     }
-    router.push("/item/supplyrequest/list");
+    router.push("/item/supplyrequest/list/user");
   };
 
   return (

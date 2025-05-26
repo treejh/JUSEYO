@@ -16,32 +16,22 @@ interface SupplyRequest {
   createdAt: string;
 }
 
-interface PageInfo {
-  totalElements: number;
-  totalPages: number;
-  currentPage: number;
-  size: number;
-}
-
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export default function SupplyRequestUserListPage() {
   const { loginUser, isLogin } = useGlobalLoginUser();
-  const isManager = isLogin && loginUser?.role === "MANAGER";
 
   const [requests, setRequests] = useState<SupplyRequest[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // 검색 및 필터 상태
   const [searchKeyword, setSearchKeyword] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // 페이징 상태
   const [currentPage, setCurrentPage] = useState<number>(0);
   const pageSize = 20;
 
-  // 요청 데이터 불러오기
+  // 내 요청 목록 조회
   const fetchRequests = async () => {
     setLoading(true);
     try {
@@ -49,28 +39,42 @@ export default function SupplyRequestUserListPage() {
         credentials: "include",
       });
       if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(`서버 오류: ${msg}`);
+        throw new Error(await res.text());
       }
-      const data: SupplyRequest[] = await res.json();
-      setRequests(data);
+      setRequests(await res.json());
     } catch (err: any) {
-      alert(err.message);
+      alert(`로딩 실패: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+  // 개별 요청 삭제
+  const handleDeleteRequest = async (id: number) => {
+    if (!confirm("정말 이 요청을 삭제하시겠습니까?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/supply-requests/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+      await fetchRequests();
+    } catch (err: any) {
+      alert(`삭제 실패: ${err.message}`);
+    }
+  };
 
-  // 검색/필터 변경 시 페이지 초기화
+  useEffect(() => {
+    if (isLogin) fetchRequests();
+  }, [isLogin]);
+
+  // 페이지 초기화 on filter change
   useEffect(() => {
     setCurrentPage(0);
   }, [searchKeyword, startDate, endDate]);
 
-  // 상태 컬러
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case "REQUESTED":
@@ -89,32 +93,30 @@ export default function SupplyRequestUserListPage() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  // 필터링
+  // 필터링 & 정렬
   const filteredRequests = requests
     .filter((req) => {
       const matchesKeyword = req.productName
         .toLowerCase()
         .includes(searchKeyword.toLowerCase());
       if (!matchesKeyword) return false;
-
       if (startDate || endDate) {
         const reqDate = new Date(req.createdAt);
         if (startDate && new Date(startDate) > reqDate) return false;
         if (endDate) {
-          const endDt = new Date(endDate);
-          endDt.setHours(23, 59, 59);
-          if (endDt < reqDate) return false;
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59);
+          if (end < reqDate) return false;
         }
       }
       return true;
     })
-    // 최신순 정렬 추가
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-  // 페이징 계산
+  // 페이징
   const totalPages = Math.ceil(filteredRequests.length / pageSize);
   const startIdx = currentPage * pageSize;
   const paginatedRequests = filteredRequests.slice(
@@ -129,61 +131,21 @@ export default function SupplyRequestUserListPage() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold">비품 요청 리스트</h1>
+              <h1 className="text-2xl font-bold">나의 비품 요청</h1>
               <p className="text-gray-500 mt-1">
-                직원들의 비품 요청 현황을 확인하고 관리할 수 있습니다.
+                내가 작성한 비품 요청 현황을 확인합니다.
               </p>
             </div>
-            <div className="flex gap-3">
-              <Link
-                href="/item/supplyrequest/create"
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
-              >
-                <span className="text-lg">+</span> 신규 요청
-              </Link>
-            </div>
-          </div>
-          {/* 통계 */}
-          <div className="grid grid-cols-4 gap-4 mt-6">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-blue-600">전체 요청</p>
-              <p className="text-2xl font-bold text-blue-900">
-                {filteredRequests.length}
-              </p>
-            </div>
-            <div className="bg-yellow-50 rounded-lg p-4">
-              <p className="text-sm text-yellow-600">대기 중</p>
-              <p className="text-2xl font-bold text-yellow-900">
-                {
-                  filteredRequests.filter(
-                    (r) => r.approvalStatus === "REQUESTED"
-                  ).length
-                }
-              </p>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <p className="text-sm text-green-600">승인</p>
-              <p className="text-2xl font-bold text-green-900">
-                {
-                  filteredRequests.filter(
-                    (r) => r.approvalStatus === "APPROVED"
-                  ).length
-                }
-              </p>
-            </div>
-            <div className="bg-red-50 rounded-lg p-4">
-              <p className="text-sm text-red-600">반려</p>
-              <p className="text-2xl font-bold text-red-900">
-                {
-                  filteredRequests.filter(
-                    (r) => r.approvalStatus === "REJECTED"
-                  ).length
-                }
-              </p>
-            </div>
+            <Link
+              href="/item/supplyrequest/create"
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+            >
+              <span className="text-lg">+</span> 신규 요청
+            </Link>
           </div>
         </div>
-        {/* 검색 */}
+
+        {/* 검색 / 필터 */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[300px] relative">
@@ -235,6 +197,7 @@ export default function SupplyRequestUserListPage() {
             </div>
           </div>
         </div>
+
         {/* 테이블 */}
         {loading ? (
           <div className="text-center py-12">
@@ -264,14 +227,16 @@ export default function SupplyRequestUserListPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     작성일
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    관리
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedRequests.map((req, index) => (
+                {paginatedRequests.map((req, idx) => (
                   <tr key={req.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {startIdx + index + 1}{" "}
-                      {/* 현재 페이지의 시작 인덱스 + 현재 행 인덱스 + 1 */}
+                      {startIdx + idx + 1}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {req.productName}
@@ -294,11 +259,31 @@ export default function SupplyRequestUserListPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(req.createdAt)}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
+                      {req.approvalStatus === "REQUESTED" ? (
+                        <>
+                          <Link
+                            href={`/item/supplyrequest/edit/${req.id}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            수정
+                          </Link>
+                          <button
+                            onClick={() => handleDeleteRequest(req.id)}
+                            className="text-red-600 hover:underline"
+                          >
+                            삭제
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-gray-400">–</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {/* 페이징 컨트롤 */}
+            {/* 페이지네이션 */}
             <div className="flex justify-end items-center space-x-2 p-4">
               <button
                 disabled={currentPage === 0}
