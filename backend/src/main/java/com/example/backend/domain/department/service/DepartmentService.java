@@ -82,6 +82,7 @@ public class DepartmentService {
     }
 
 
+    //관리 페이지에 속한 모든 부서 조회
     public Page<Department> findAllDepartmentsByManagement(String name, Pageable pageable) {
         ManagementDashboard managementDashboard = managementDashboardRepository.findByName(name)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
@@ -96,6 +97,7 @@ public class DepartmentService {
         return departments;
     }
 
+    //부서에 속한 승인된 유저 기준으로 조회
     public List<User> getUserListByDepartment(Long departmentId){
         Department department = findDepartmentById(departmentId);
         return userRepository.findByDepartmentAndApprovalStatusAndStatus(
@@ -106,6 +108,7 @@ public class DepartmentService {
 
     }
 
+    //유저 부서 수정
     @Transactional
     public void updateUserDepartment(Long userId, Long departmentId){
         User user = userRepository.findById(userId).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
