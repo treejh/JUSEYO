@@ -171,6 +171,7 @@ public class SupplyRequestService {
                             .status(Status.ACTIVE)
                             .image(req.getItem().getImage())
                             .finalImage(req.getItem().getImage())
+                            .borrower(req.getUser())
                             .build();
                     instanceRepo.save(inst);
                 }

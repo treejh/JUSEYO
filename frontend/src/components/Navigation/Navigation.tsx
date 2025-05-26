@@ -177,7 +177,7 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/item/supplyrequest/list"
+              href="/item/supplyrequest/list/user"
               className={`menu-link ${
                 activeMenu === "request" ? "active" : ""
               }`}
