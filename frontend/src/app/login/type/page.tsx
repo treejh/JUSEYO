@@ -15,33 +15,31 @@ export default function LoginTypePage() {
   };
 
   return (
-    <div className="w-full h-screen bg-white flex  overflow-hidden gap-x-11">
-      <div className="w-1/11 h-full flex-shrink-0"></div>
-
-      <div className="w-1/4 h-full flex-shrink-0 flex flex-col justify-center ">
-        <div className="pl-0">
-          <Link href="/">
-            <p className="text-slate-600 mb-8 max-w-xl"></p>
-            <img
-              src="/logo.png"
-              alt="Juseyo 로고"
-              className="h-10 mb-8 rounded-xl shadow-md"
-            />
-          </Link>
-          <h1 className="text-5xl md:text-7xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-indigo-600">
-            로그인
-          </h1>
-          <p className="text-lg mb-2 text-gray-600">
-            재고 관리 플랫폼 Juseyo에 오신 것을 환영합니다.
-          </p>
-          <p className="text-base text-gray-500 mb-6">
-            계정에 로그인하여 재고를 효율적으로 관리하세요.
-          </p>
+    <div className="w-full h-screen bg-white flex justify-center items-center overflow-hidden">
+      <div className="flex gap-x-24 max-w-[1400px] mx-auto">
+        <div className="w-1/3 flex-shrink-0 flex flex-col justify-center">
+          <div className="pl-0">
+            <Link href="/">
+              <p className="text-slate-600 mb-8 max-w-xl"></p>
+              <img
+                src="/logo.png"
+                alt="Juseyo 로고"
+                className="h-10 mb-8 rounded-xl shadow-md"
+              />
+            </Link>
+            <h1 className="text-5xl md:text-7xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-indigo-600">
+              로그인
+            </h1>
+            <p className="text-lg mb-2 text-gray-600">
+              재고 관리 플랫폼 Juseyo에 오신 것을 환영합니다.
+            </p>
+            <p className="text-base text-gray-500 mb-6">
+              계정에 로그인하여 재고를 효율적으로 관리하세요.
+            </p>
+          </div>
         </div>
-      </div>
-      <div className="w-1/3 h-full flex-shrink-0 flex items-center soverflow-hidden gap-20 ">
-        <div>
-          <div className="shadow-xl rounded-2xl overflow-hidden w-3/2 mx-auto">
+        <div className="w-2/3 flex items-center">
+          <div className="shadow-xl rounded-2xl overflow-hidden w-[800px]">
             <div className="bg-[#0047AB] text-white px-8 py-6 text-center">
               <h2 className="text-2xl font-bold">로그인 유형 선택</h2>
               <p className="text-base mt-2 opacity-80">
