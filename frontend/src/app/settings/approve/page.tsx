@@ -147,7 +147,7 @@ export default function ApprovePage() {
               </td>
               <td className="border border-gray-200 px-4 py-2">
                 {user.departmentName || "N/A"}
-              </td>{" "}
+              </td>
               {/* 부서 이름 추가 */}
               <td className="border border-gray-200 px-4 py-2">
                 {new Date(user.requestDate).toLocaleString("ko-KR", {
