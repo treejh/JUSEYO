@@ -25,9 +25,10 @@ export default function ClientLayout({
   const isSignupPage = pathname.startsWith("/signup");
   const isFindPage = pathname.startsWith("/find");
   const isAdminRequestPage = pathname === "/admin/request";
-  
+
   // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
-  const isAuthPage = isLoginPage || isSignupPage || isFindPage || isAdminRequestPage;
+  const isAuthPage =
+    isLoginPage || isSignupPage || isFindPage || isAdminRequestPage;
   const isRootPage = pathname === "/";
   const shouldHideNav = isAuthPage || isRootPage;
 
@@ -188,7 +189,6 @@ export default function ClientLayout({
   useEffect(() => {
     if (isLoginUserPending) return;
 
-
     // 요청 상태 유저 알림 + 리다이렉트 (우선 처리)
     if (
       isLogin &&
@@ -228,28 +228,28 @@ export default function ClientLayout({
         loggedInAuthPageAlertedRef.current = true;
       }
 
-    // 로그인된 사용자가 로그인/회원가입/찾기 페이지 접근 시 리다이렉트
-    if (isLogin && (isLoginPage || isSignupPage || isFindPage)) {
-      alert("이미 로그인된 사용자 입니다.");
-      router.push("/");
-      return;
-    }
-
-    // 비로그인 상태에서 인증이 필요한 페이지 접근 시 알림 + 이동
-    if (!isLogin && !isAuthPage && !isRootPage) {
-      if (!loginRequiredAlertedRef.current) {
-        alert("로그인이 필요한 페이지입니다.");
-        loginRequiredAlertedRef.current = true;
+      // 로그인된 사용자가 로그인/회원가입/찾기 페이지 접근 시 리다이렉트
+      if (isLogin && (isLoginPage || isSignupPage || isFindPage)) {
+        alert("이미 로그인된 사용자 입니다.");
+        router.push("/");
+        return;
       }
-      router.push("/login/type");
-      return;
+
+      // 비로그인 상태에서 인증이 필요한 페이지 접근 시 알림 + 이동
+      if (!isLogin && !isAuthPage && !isRootPage) {
+        if (!loginRequiredAlertedRef.current) {
+          alert("로그인이 필요한 페이지입니다.");
+          loginRequiredAlertedRef.current = true;
+        }
+        router.push("/login/type");
+        return;
+      }
+
+      // 알림 리셋: 경로 바뀔 때마다 리셋해서 동일 경로 재접근 시 alert 다시 뜨도록
+      requestedAlertedRef.current = false;
+      loggedInAuthPageAlertedRef.current = false;
+      loginRequiredAlertedRef.current = false;
     }
-
-
-    // 알림 리셋: 경로 바뀔 때마다 리셋해서 동일 경로 재접근 시 alert 다시 뜨도록
-    requestedAlertedRef.current = false;
-    loggedInAuthPageAlertedRef.current = false;
-    loginRequiredAlertedRef.current = false;
   }, [
     isLogin,
     isAuthPage,
@@ -259,8 +259,6 @@ export default function ClientLayout({
     loginUser,
     pathname,
   ]);
-
-
 
   if (isLoginUserPending) {
     return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
