@@ -127,9 +127,9 @@ public class DepartmentController {
         Page<Department> departments = departmentService.findAllDepartmentsByManagement(name, pageable);
 
         Page<DepartmentResponseDTO> response = departments.map(DepartmentResponseDTO::fromEntity);
-
         return ResponseEntity.ok(response);
     }
+
 
 
 }

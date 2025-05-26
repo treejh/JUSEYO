@@ -1,52 +1,53 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FC, useState } from "react";
 import { HiUsers } from "react-icons/hi2";
+import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
 interface DepartmentItem {
   id: number;
   name: string;
-  memberCount: number;
-  status: "삭제" | "사용";
+  managementDashboardId: number;
+  userCount: number;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
-const DepartmentManagementPage: FC = () => {
+const DepartmentManagementPage = () => {
+  const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const { loginUser } = useGlobalLoginUser(); // 현재 로그인한 유저 정보
 
-  // 실제로는 API에서 받아올 데이터
-  const departments: DepartmentItem[] = [
-    { id: 1, name: "인사팀", memberCount: 8, status: "사용" },
-    { id: 2, name: "개발팀", memberCount: 15, status: "사용" },
-    { id: 3, name: "마케팅팀", memberCount: 10, status: "사용" },
-    { id: 4, name: "영업팀", memberCount: 12, status: "사용" },
-    { id: 5, name: "디자인팀", memberCount: 6, status: "사용" },
-    { id: 6, name: "재무팀", memberCount: 5, status: "사용" },
-    { id: 7, name: "운영팀", memberCount: 7, status: "사용" },
-    { id: 8, name: "고객지원팀", memberCount: 9, status: "삭제" },
-    { id: 9, name: "기획팀", memberCount: 6, status: "사용" },
-    { id: 10, name: "연구개발팀", memberCount: 11, status: "사용" },
-    { id: 11, name: "총무팀", memberCount: 4, status: "사용" },
-  ];
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      const res = await fetch(
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
+        }/api/v1/departments/management?name=${
+          loginUser.managementDashboardName
+        }&page=${currentPage - 1}&size=${ITEMS_PER_PAGE}`,
+        {
+          method: "GET",
+          credentials: "include", // ✅ 쿠키 포함
+        }
+      );
 
-  // 페이지네이션 계산
-  const totalPages = Math.ceil(departments.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedDepartments = departments.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
+      if (!res.ok) {
+        console.error("부서 목록 요청 실패", res.status);
+        return;
+      }
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+      const data = await res.json();
+      setDepartments(data.content);
+      setTotalPages(data.totalPages);
+    };
 
-  const handleDelete = (id: number) => {
-    // TODO: 삭제 로직 구현
-    console.log("삭제:", id);
-  };
+    fetchDepartments();
+  }, [currentPage]);
+
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,11 +74,10 @@ const DepartmentManagementPage: FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedDepartments.map((department, index) => (
+                {departments.map((department) => (
                   <tr
                     key={department.id}
-                    className={`border-b border-[#EEEEEE] hover:bg-[#0047AB]/5 transition-colors cursor-pointer
-                      ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                    className="border-b border-[#EEEEEE] hover:bg-[#0047AB]/5 transition-colors cursor-pointer"
                   >
                     <td className="text-left px-6 py-4">
                       <Link
@@ -88,12 +88,11 @@ const DepartmentManagementPage: FC = () => {
                         {department.name}
                       </Link>
                     </td>
-                    <td className="text-center px-6 py-4">{department.memberCount}</td>
                     <td className="text-center px-6 py-4">
-                      <button
-                        onClick={() => handleDelete(department.id)}
-                        className="text-gray-400 hover:text-gray-600 transition-colors text-sm"
-                      >
+                      {department.userCount}
+                    </td>
+                    <td className="text-center px-6 py-4">
+                      <button className="text-gray-400 hover:text-gray-600 transition-colors text-sm">
                         삭제
                       </button>
                     </td>
@@ -153,4 +152,4 @@ const DepartmentManagementPage: FC = () => {
   );
 };
 
-export default DepartmentManagementPage; 
+export default DepartmentManagementPage;
