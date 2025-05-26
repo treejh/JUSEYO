@@ -565,6 +565,32 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.of(200, "매니저 검색 성공", result));
     }
 
+//    @PatchMapping ("/delete/{id}")
+//    @Operation(
+//            summary = "관리 페이지에서 유저를 삭제합니다.",
+//            description = "관리 페이지에서 유저를 삭제합니다."
+//    )
+//    public ResponseEntity<ApiResponse<?>> deleteUserByDashBoard(
+//            @PathVariable Long id
+//    ) {
+//        userService.deleteManagerById(id);
+//        return ResponseEntity.ok(ApiResponse.of(200, "유저 삭제 성공", null));
+//    }
+//
+//    @PatchMapping ("/delete/manager/{id}")
+//    @Operation(
+//            summary = "관리 페이지에서 매너지를 삭제합니다.",
+//            description = "관리 페이지에서 매니저를 삭제합니다."
+//    )
+//    public ResponseEntity<ApiResponse<?>> deleteManagerByDashBoard(
+//            @PathVariable Long id
+//    ) {
+//        userService.deleteManagerById(id);
+//        return ResponseEntity.ok(ApiResponse.of(200, "매니저 삭제 성공", null));
+//    }
+
+
+
 
 
 
