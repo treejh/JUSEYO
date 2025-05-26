@@ -7,13 +7,13 @@ export default function ManagementSelectPage() {
 
   const handleManagementSelect = (hasManagementPage: boolean) => {
     if (hasManagementPage) {
-      router.push("/signup/manager"); // 관리 페이지가 있는 경우
+      router.push("/signup/managerinfo"); // 관리 페이지가 있는 경우
     } else {
       router.push("/signup/initial"); // 관리 페이지가 없는 경우
     }
   };
   const handleBackToSelection = () => {
-    router.push("/signup"); // 회원 유형 선택 페이지로 이동
+    router.push("/signup/info"); // 회원 유형 선택 페이지로 이동
   };
 
   return (
