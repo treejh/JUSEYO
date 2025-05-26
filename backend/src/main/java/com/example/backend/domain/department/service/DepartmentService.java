@@ -1,19 +1,21 @@
 package com.example.backend.domain.department.service;
 
 
-import com.example.backend.domain.department.dto.DepartmentCreateRequestDTO;
-import com.example.backend.domain.department.dto.DepartmentUpdateRequestDTO;
+import com.example.backend.domain.department.dto.request.DepartmentCreateRequestDTO;
+import com.example.backend.domain.department.dto.response.DepartmentUpdateRequestDTO;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.managementDashboard.repository.ManagementDashboardRepository;
-import com.example.backend.domain.user.service.UserService;
+import com.example.backend.domain.user.entity.User;
+import com.example.backend.domain.user.repository.UserRepository;
+import com.example.backend.enums.ApprovalStatus;
+import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
 import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final ManagementDashboardRepository managementDashboardRepository;
+    private final UserRepository userRepository;
 
 
     @Transactional
@@ -91,6 +94,29 @@ public class DepartmentService {
         }
 
         return departments;
+    }
+
+    public List<User> getUserListByDepartment(Long departmentId){
+        Department department = findDepartmentById(departmentId);
+        return userRepository.findByDepartmentAndApprovalStatusAndStatus(
+                department,
+                ApprovalStatus.APPROVED,
+                Status.ACTIVE
+        );
+
+    }
+
+    @Transactional
+    public void updateUserDepartment(Long userId, Long departmentId){
+        User user = userRepository.findById(userId).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
+        Department department = findDepartmentById(departmentId);
+        if (user.getDepartment() != null && user.getDepartment().getId().equals(departmentId)) {
+            return; // 변경 필요 없음
+        }
+        user.setDepartment(department);
+        userRepository.save(user);
+
     }
 
 

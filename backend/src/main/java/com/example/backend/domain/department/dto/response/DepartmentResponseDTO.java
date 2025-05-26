@@ -1,4 +1,4 @@
-package com.example.backend.domain.department.dto;
+package com.example.backend.domain.department.dto.response;
 
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.enums.ApprovalStatus;

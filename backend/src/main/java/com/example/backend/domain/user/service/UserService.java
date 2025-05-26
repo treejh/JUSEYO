@@ -828,14 +828,7 @@ public class UserService {
         }
     }
 
-    public List<User> getUserListByDepartment(Department department){
-        return userRepository.findByDepartmentAndApprovalStatusAndStatus(
-                department,
-                ApprovalStatus.APPROVED,
-                Status.ACTIVE
-        );
 
-    }
 
 
 
