@@ -1,35 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { HiArchiveBox } from "react-icons/hi2";
-
-interface CategoryItem {
-  id: number;
-  name: string;
-  count: number;
-  status: "삭제" | "사용";
-}
+import categoryService, { CategoryResponseDTO } from "@/services/categoryService";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
 
 const CategoryManagementPage: FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [categories, setCategories] = useState<CategoryResponseDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 실제로는 API에서 받아올 데이터
-  const categories: CategoryItem[] = [
-    { id: 1, name: "전자기기", count: 5, status: "사용" },
-    { id: 2, name: "종이", count: 5, status: "사용" },
-    { id: 3, name: "소프트웨어", count: 3, status: "사용" },
-    { id: 4, name: "하드웨어", count: 7, status: "삭제" },
-    { id: 5, name: "사무용품", count: 12, status: "사용" },
-    { id: 6, name: "가구", count: 4, status: "사용" },
-    { id: 7, name: "도서", count: 8, status: "사용" },
-    { id: 8, name: "음향기기", count: 6, status: "삭제" },
-    { id: 9, name: "네트워크장비", count: 9, status: "사용" },
-    { id: 10, name: "소모품", count: 15, status: "사용" },
-    { id: 11, name: "기타", count: 3, status: "사용" },
-  ];
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const data = await categoryService.getAllCategories();
+      setCategories(data);
+      setError(null);
+    } catch (err) {
+      setError("카테고리 목록을 불러오는데 실패했습니다.");
+      console.error("Error fetching categories:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
@@ -43,22 +44,56 @@ const CategoryManagementPage: FC = () => {
     setCurrentPage(page);
   };
 
-  const handleDelete = (id: number) => {
-    // TODO: 삭제 로직 구현
-    console.log("삭제:", id);
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("정말로 이 카테고리를 삭제하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      await categoryService.deleteCategory(id);
+      toast.success("카테고리가 삭제되었습니다.");
+      fetchCategories(); // 목록 새로고침
+    } catch (err) {
+      toast.error("카테고리 삭제에 실패했습니다.");
+      console.error("Error deleting category:", err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+          <button
+            onClick={fetchCategories}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 전체 레이아웃 컨테이너 */}
       <div className="flex min-h-screen">
-        {/* 메인 콘텐츠 영역 */}
         <div className="flex-1 p-12 pt-8 pl-16 bg-white">
           <div className="mb-6 mt-6">
             <h1 className="text-2xl font-bold text-gray-900">카테고리 관리</h1>
           </div>
 
-          {/* 카테고리 목록 테이블 */}
           <div className="overflow-x-auto">
             <table className="w-full border border-[#EEEEEE] rounded-xl overflow-hidden shadow-sm">
               <thead>
@@ -88,7 +123,7 @@ const CategoryManagementPage: FC = () => {
                         {category.name}
                       </Link>
                     </td>
-                    <td className="text-center px-6 py-4">{category.count}</td>
+                    <td className="text-center px-6 py-4">{category.itemCount}</td>
                     <td className="text-center px-6 py-4">
                       <button
                         onClick={() => handleDelete(category.id)}
@@ -110,7 +145,6 @@ const CategoryManagementPage: FC = () => {
               </Link>
             </div>
 
-            {/* 페이지네이션 */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center space-x-2 mt-6">
                 <button
