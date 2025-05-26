@@ -43,15 +43,25 @@ export function useLoginUser() {
   const router = useRouter();
 
   const [isLoginUserPending, setLoginUserPending] = useState(true);
-  const [loginUser, _setLoginUser] = useState<User>(createEmptyUser());
+  const [loginUser, _setLoginUser] = useState<User>(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('loginUser');
+      if (savedUser) {
+        return JSON.parse(savedUser);
+      }
+    }
+    return createEmptyUser();
+  });
 
   const removeLoginUser = () => {
     _setLoginUser(createEmptyUser());
+    localStorage.removeItem('loginUser');
     setLoginUserPending(false);
   };
 
   const setLoginUser = (user: User) => {
     _setLoginUser(user);
+    localStorage.setItem('loginUser', JSON.stringify(user));
     setLoginUserPending(false);
   };
 
