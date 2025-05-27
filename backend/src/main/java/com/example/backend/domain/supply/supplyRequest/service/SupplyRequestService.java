@@ -353,10 +353,15 @@ public class SupplyRequestService {
         return dtoPage;
     }
 
-
-
-
-
+    @Transactional
+    public void deleteRequest(Long requestId) {
+        SupplyRequest req = repo.findById(requestId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
+        if (req.getApprovalStatus() != ApprovalStatus.REQUESTED) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_REQUEST_STATUS);
+        }
+        repo.delete(req);
+    }
 
     private SupplyRequestResponseDto mapToDto(SupplyRequest e) {
         return SupplyRequestResponseDto.builder()
