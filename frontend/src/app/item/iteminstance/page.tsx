@@ -47,13 +47,22 @@ export default function ItemInstancePage() {
         size: String(size),
         keyword: search.trim(),
       });
+      // server-side sort 지원 시: params.append("sort", "createdAt,desc");
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/item-instances?${params}`,
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
+        }/api/v1/item-instances?${params.toString()}`,
         { credentials: "include" }
       );
       if (!res.ok) throw new Error(res.statusText);
       const data: Page<ItemInstance> = await res.json();
-      setInstances(data.content);
+
+      // 받은 페이지 내용을 생성일 내림차순(최신순)으로 정렬
+      const sorted = data.content.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setInstances(sorted);
       setTotalPages(data.totalPages);
     } catch (e) {
       console.error(e);
@@ -63,19 +72,19 @@ export default function ItemInstancePage() {
     }
   };
 
+  // 페이지나 검색어 변경 시 재조회
   useEffect(() => {
     loadInstances();
-  }, [page, search]); // search를 의존성 배열에 추가
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, search]);
 
   const handleSearch = () => {
-    setPage(0); // 검색 시 첫 페이지로 이동
+    setPage(0);
     loadInstances();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
+    if (e.key === "Enter") handleSearch();
   };
 
   return (

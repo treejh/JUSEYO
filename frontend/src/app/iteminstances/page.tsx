@@ -1,8 +1,5 @@
 "use client";
 
-// app/iteminstances/page.tsx
-// ✅ 컴파일 오류 수정: pageSize 상수, 중복 코드 제거, 변수 스코프 정리
-
 import React, { useEffect, useState } from "react";
 
 interface ItemInstance {
@@ -14,7 +11,7 @@ interface ItemInstance {
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-const pageSize = 20; // 한 페이지당 항목 수
+const pageSize = 20;
 
 export default function ItemInstancesPage() {
   const [instances, setInstances] = useState<ItemInstance[]>([]);
@@ -31,15 +28,21 @@ export default function ItemInstancesPage() {
         keyword
       )}`;
       const res = await fetch(url, { credentials: "include" });
-
       if (!res.ok) {
         const msg = await res.text();
         throw new Error(msg || `서버 오류: ${res.status}`);
       }
-
       const data: any = await res.json();
-      // Page<ItemInstanceResponseDto> 또는 배열 둘 다 처리
-      setInstances(Array.isArray(data) ? data : data.content ?? []);
+      // Page<ItemInstanceResponseDto> 또는 배열 처리
+      let list: ItemInstance[] = Array.isArray(data)
+        ? data
+        : data.content ?? [];
+      // 최신 순으로 정렬
+      list = list.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setInstances(list);
       setTotalPages(Array.isArray(data) ? 1 : data.totalPages ?? 1);
       setPage(p);
     } catch (err: any) {
@@ -114,7 +117,7 @@ export default function ItemInstancesPage() {
                     </span>
                   </td>
                   <td className="px-3 py-2 border">
-                    {item.createdAt?.slice(0, 10)}
+                    {item.createdAt.slice(0, 10)}
                   </td>
                 </tr>
               ))}
