@@ -1,5 +1,6 @@
 package com.example.backend.domain.supply.supplyReturn.service;
 
+import com.example.backend.domain.notification.event.SupplyReturnApprovedEvent;
 import com.example.backend.domain.notification.event.SupplyReturnCreatedEvent;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
@@ -113,6 +114,12 @@ public class SupplyReturnService {
         if(dto.getApprovalStatus()==ApprovalStatus.RETURNED){
             addInbound(supplyReturn, dto.getImage());
         }
+
+        // 비품 반납 승인 알림 발생
+        eventPublisher.publishEvent(new SupplyReturnApprovedEvent(
+                supplyReturn.getUser().getId(), supplyReturn.getProductName(), supplyReturn.getQuantity()
+        ));
+
         return toDto(supplyReturn);
     }
 

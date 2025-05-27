@@ -21,6 +21,7 @@ public class NotificationEventListener {
     private final NewDashboardRejectedNotificationService newDashboardRejectedNotificationService;
     private final NewManagerApprovedNotificationService newManagerApprovedNotificationService;
     private final NewManagerRejectedNotificationService newManagerRejectedNotificationService;
+
     // 매니저
     // 비품 요청 알림
     @EventListener
@@ -40,25 +41,12 @@ public class NotificationEventListener {
         stockNotificationService.checkAndNotifyLowStock(event.getSerialNumber(), event.getItemName(), event.getCurrentQuantity(), event.getMinimumQuantity());
     }
 
-    // 회원
-    // 비품 요청 승인 알림
-    @EventListener
-    public void handleSupplyRequestApproved(SupplyRequestApprovedEvent event) {
-        supplyRequestApprovedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
-    }
-
-    // 비품 요청 반려 알림
-    @EventListener
-    public void handleSupplyRequestRejected(SupplyRequestApprovedEvent event) {
-        supplyRequestRejectedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
-    }
-
-    // 기타
     // 관리자 페이지 승인 알림
     public void handleNewDashboardApproved(NewDashboardEvent event) {
-       newDashboardApprovedNotificationService.handleNewDashboardApproved(event.getDashboardName());
+        newDashboardApprovedNotificationService.handleNewDashboardApproved(event.getDashboardName());
     }
 
+    // 관리자 페이지 반려 알림
     public void handleNewDashboardRejected(NewDashboardEvent event) {
         newDashboardRejectedNotificationService.handleNewDashboardApproved(event.getDashboardName());
     }
@@ -73,6 +61,25 @@ public class NotificationEventListener {
         newManagerRejectedNotificationService.notifyNewManagerRejected(event.managerName);
     }
 
+    // 회원
+    // 비품 요청 승인 알림
+    @EventListener
+    public void handleSupplyRequestApproved(SupplyRequestApprovedEvent event) {
+        supplyRequestApprovedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
+    }
+
+    // 비품 요청 반려 알림
+    @EventListener
+    public void handleSupplyRequestRejected(SupplyRequestApprovedEvent event) {
+        supplyRequestRejectedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
+    }
+
+    @EventListener
+    public void handleSupplyReturnApproved(SupplyReturnApprovedEvent event) {
+        
+    }
+
+    // 기타
     // 새로운 채팅
     @EventListener
     public void handleNewChat(NewChatEvent event) {

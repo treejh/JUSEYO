@@ -5,8 +5,8 @@ public enum NotificationType {
     // 매니저 알림
     SUPPLY_REQUEST("비품 요청"),                   // (회원->매니저) 비품 요청
     SUPPLY_RETURN("비품 반납 알림"),
-    SUPPLY_RETURN_ALERT("비품 반납 알림(고장/불량 비품 신고)"), // (회원->매니저) 비품 반납 알림
-    STOCK_REACHED("재고 도달"),                    // 재고 도달
+//    SUPPLY_RETURN_ALERT("비품 반납 알림(고장/불량 비품 신고)"), // (회원->매니저) 비품 반납 알림
+//    STOCK_REACHED("재고 도달"),                    // 재고 도달
     STOCK_SHORTAGE("재고 부족"),                   // 재고 부족
     SUPPLY_REQUEST_MODIFIED("비품 요청 수정"),     // 비품 요청 수정
     RETURN_DUE_DATE_EXCEEDED("지정 반납일 초과"),  // 지정 반납일 초과
@@ -18,6 +18,7 @@ public enum NotificationType {
     SUPPLY_REQUEST_REJECTED("비품 요청 반려"),      // 비품 요청 반려
     RETURN_DUE_SOON("지정 반납일 임박"),   // 지정 반납일 임박 (사용자 행동 유도)
     SUPPLY_REQUEST_DELAYED("비품 요청 처리 지연"),  // 비품 요청 처리 지연 (사용자 행동 유도)
+    SUPPLY_RETURN_APPROVED("비품 반납 승인"),
 
     // 매니저 기타 알림
     ADMIN_APPROVAL_ALERT("관리 페이지 승인 알림"), // 관리 페이지 승인 알림 (어드민 -> 이니셜 매니저)
