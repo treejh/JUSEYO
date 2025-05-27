@@ -5,6 +5,9 @@ import com.example.backend.domain.item.dto.response.ItemCardResponseDto;
 import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemResponseDto;
 import com.example.backend.domain.item.service.ItemService;
+import com.example.backend.domain.user.entity.User;
+import com.example.backend.domain.user.service.UserService;
+import com.example.backend.global.security.jwt.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -18,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -31,6 +35,8 @@ import java.util.Map;
 public class ItemController {
 
     private final ItemService service;
+    private final TokenService tokenService;
+    private final UserService userService;
 
     @Operation(summary = "비품 등록", description = "새로운 비품을 등록합니다. (매니저 권한 필요)")
     @PreAuthorize("hasRole('MANAGER')")
@@ -123,8 +129,11 @@ public class ItemController {
 
             @Parameter(name = "size", description = "페이지당 항목 수", in = ParameterIn.QUERY)
             @RequestParam(name = "size", defaultValue = "10") int size
+
     ) {
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(service.getItemsByCategory(categoryId, pageable));
+        return ResponseEntity.ok(service.getItemsByCategory(categoryId, pageable, user));
     }
 }

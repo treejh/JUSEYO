@@ -234,16 +234,28 @@ public class ItemService {
 
     //카테고리별 비품 조회
     @Transactional(readOnly = true)
-    public Page<ItemCardResponseDto> getItemsByCategory(Long categoryId, Pageable pageable) {
-        Page<Item> page = repo.findByCategoryId(categoryId, pageable);
-        return page.map(item -> new ItemCardResponseDto(
-                item.getId(),
-                item.getName(),
-                item.getCategory().getName(),
-                item.getImage(),
-                item.getAvailableQuantity()
-        ));
+    public Page<ItemCardResponseDto> getItemsByCategory(Long categoryId, Pageable pageable, User user) {
+        Category category = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+
+        Long dashboardId = getDashboardId(user); // 기존 CategoryService랑 동일하게 작성
+
+        if (!category.getManagementDashboard().getId().equals(dashboardId)) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
+        }
+
+        return repo.findByCategoryId(categoryId, pageable)
+                .map(ItemCardResponseDto::fromEntity);
     }
 
+    private Long getDashboardId(User user) {
+        if (user.getManagementDashboard() != null) {
+            return user.getManagementDashboard().getId();
+        } else if (user.getDepartment() != null && user.getDepartment().getManagementDashboard() != null) {
+            return user.getDepartment().getManagementDashboard().getId();
+        } else {
+            throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
+        }
+    }
 
 }
