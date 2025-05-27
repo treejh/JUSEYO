@@ -152,7 +152,7 @@ export default function ClientLayout({
                     useNotificationStore.getState().addNotification({
                       id: Number(parsed.id),
                       message: parsed.message,
-                      notificationType: parsed.type,
+                      notificationType: parsed.notificationType,
                       createdAt: parsed.createdAt,
                       readStatus: false,
                     });

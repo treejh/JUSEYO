@@ -14,15 +14,14 @@ public class NotificationPolicy {
             case MANAGER -> Arrays.asList(
                     NotificationType.SUPPLY_REQUEST,
                     NotificationType.SUPPLY_RETURN,
-                    NotificationType.SUPPLY_RETURN_ALERT,
-                    NotificationType.STOCK_REACHED,
+//                    NotificationType.STOCK_REACHED,
                     NotificationType.STOCK_SHORTAGE,
-                    NotificationType.SUPPLY_REQUEST_MODIFIED,
                     NotificationType.RETURN_DUE_DATE_EXCEEDED,
-                    NotificationType.LONG_TERM_UNRETURNED_SUPPLIES,
-                    NotificationType.USER_SENT_MESSAGE_TO_MANAGER,
+                    NotificationType.NOT_RETURNED_YET,
                     NotificationType.ADMIN_APPROVAL_ALERT,
+                    NotificationType.ADMIN_REJECTION_ALERT,
                     NotificationType.MANAGER_APPROVAL_ALERT,
+                    NotificationType.MANAGER_REJECTION_ALERT,
                     NotificationType.NEW_CHAT
 
             );

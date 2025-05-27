@@ -10,5 +10,4 @@ public class SupplyRequestRejectedEvent {
     private final Long userId;
     private final String itemName;
     private final Long itemQuantity;
-    private final ApprovalStatus approvalStatus;
 }

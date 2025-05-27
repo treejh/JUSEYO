@@ -126,7 +126,7 @@ export default function SupplyRequestItemCreatePage() {
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow">
         <div className="flex justify-between mb-6">
           <h1 className="text-2xl font-bold">새 비품 요청</h1>
-          <Link href="/item/supplyrequest/list" className="text-blue-500">
+          <Link href="/item/user" className="text-blue-500">
             ← 목록
           </Link>
         </div>

@@ -114,6 +114,9 @@ public class InventoryOutService {
         // 4) 아이템 재고 차감
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());
 
+        // 재고 부족 알림 발생
+        eventPublisher.publishEvent(new StockShortageEvent(item.getSerialNumber(), item.getName(), item.getAvailableQuantity(), item.getMinimumQuantity()));
+
         // 5) **대여(LEND) 케이스에만** 개별자산단위 상태 변경 (AVAILABLE → LEND)
 //        if (saved.getOutbound() == Outbound.LEND) {
 //            for (int i = 0; i < saved.getQuantity(); i++) {
@@ -290,14 +293,5 @@ public class InventoryOutService {
         // 재활용: 페이지 조회 메서드를 그대로 쓰되, 전체 가져오기
         return getMyOutbound(search, fromDate, toDate, 0, Integer.MAX_VALUE, "createdAt", "desc")
                 .getContent();
-    }
-
-    @Transactional
-    // 재고 부족 알림 테스트용 메서드
-    public void stockdown() {
-        Item pen = itemRepo.findByName("볼펜").get();
-        pen.setAvailableQuantity(pen.getAvailableQuantity() - 3);
-        itemRepo.save(pen);
-        eventPublisher.publishEvent(new StockShortageEvent(pen.getSerialNumber(), pen.getName(), pen.getAvailableQuantity(), pen.getMinimumQuantity()));
     }
 }
