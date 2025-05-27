@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { fetchUsersByStatus } from "@/utils/statusUserList";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import Link from "next/link";
 
 export default function ApprovePage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -115,23 +116,34 @@ export default function ApprovePage() {
 
   return (
     <div className="p-6 bg-white">
-      <h1 className="text-2xl font-bold text-[#0047AB] mb-6">
-        {selectedRole === "회원" ? "사용자 관리" : "매니저 관리"}
-      </h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-[#0047AB]">
+          {selectedRole === "회원" ? "사용자 관리" : "매니저 관리"}
+        </h1>
+
+        <Link
+          href="/settings/approve/search"
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        >
+          검색하기
+        </Link>
+      </div>
 
       {isInitialManager && (
-        <div className="mb-4">
-          <label className="mr-4 font-bold">역할 선택:</label>
-          <select
-            value={selectedRole}
-            onChange={(e) =>
-              setSelectedRole(e.target.value as "회원" | "매니저")
-            }
-            className="px-4 py-2 border border-gray-300 rounded-lg"
-          >
-            <option value="회원">회원</option>
-            <option value="매니저">매니저</option>
-          </select>
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <label className="font-bold">역할 선택:</label>
+            <select
+              value={selectedRole}
+              onChange={(e) =>
+                setSelectedRole(e.target.value as "회원" | "매니저")
+              }
+              className="px-4 py-2 border border-gray-300 rounded-lg"
+            >
+              <option value="회원">회원</option>
+              <option value="매니저">매니저</option>
+            </select>
+          </div>
         </div>
       )}
 
