@@ -1,10 +1,12 @@
-package com.example.backend.domain.notification.service;
+package com.example.backend.domain.notification.service.alert;
 
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.NotificationType;
+import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
-import com.example.backend.domain.notification.strategy.context.SupplyRequestContext;
+import com.example.backend.domain.notification.strategy.context.SupplyReturnContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
+import com.example.backend.enums.Outbound;
 import com.example.backend.enums.RoleType;
 import com.example.backend.domain.role.service.RoleService;
 import com.example.backend.domain.role.entity.Role;
@@ -18,7 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SupplyRequestNotificationService {
+public class SupplyReturnNotificationService {
 
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
@@ -26,10 +28,10 @@ public class SupplyRequestNotificationService {
     private final RoleService roleService;
 
     @Transactional
-    public void notifySupplyRequest(String itemName, Long itemQuantity, String requesterName) {
-        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_REQUEST);
+    public void notifySupplyReturn(String itemName, Long itemQuantity, String returnerName, Outbound returnStatus) {
+        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_RETURN);
 
-        SupplyRequestContext context = new SupplyRequestContext(itemName, itemQuantity, requesterName);
+        SupplyReturnContext context = new SupplyReturnContext(itemName, itemQuantity, returnerName, returnStatus);
 
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 
@@ -44,7 +46,7 @@ public class SupplyRequestNotificationService {
 
                 // NotificationRequestDTO에 메시지 전달
                 notificationService.createNotification(new NotificationRequestDTO(
-                        NotificationType.SUPPLY_REQUEST,
+                        NotificationType.SUPPLY_RETURN,
                         msg,
                         manager.getId())
                 );

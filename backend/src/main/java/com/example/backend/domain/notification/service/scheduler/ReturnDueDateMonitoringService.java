@@ -1,7 +1,8 @@
-package com.example.backend.domain.notification.service;
+package com.example.backend.domain.notification.service.scheduler;
 
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.NotificationType;
+import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
 import com.example.backend.domain.notification.strategy.context.ReturnDueDateContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
@@ -33,7 +34,7 @@ public class ReturnDueDateMonitoringService {
     private final RoleService roleService;
     private final UserService userService;
 
-//    @Scheduled(cron = "0 0 0 * * *") // 배포용 : 매일 자정 실행
+//    @Scheduled(cron = "0 0 8 * * *") // 배포용 : 매일 오전 8시 실행
     @Scheduled(fixedRate = 600000)   // 테스트용 : 10분마다
     @Transactional
     public void scheduledCheckAndNotify() {

@@ -1,11 +1,6 @@
 package com.example.backend.domain.notification.event;
 
-import com.example.backend.domain.notification.service.NewChatNotificationService;
-import com.example.backend.domain.notification.service.StockNotificationService;
-import com.example.backend.domain.notification.service.SupplyRequestApprovedNotificationService;
-import com.example.backend.domain.notification.service.SupplyRequestNotificationService;
-import com.example.backend.domain.notification.service.SupplyRequestRejectedNotificationService;
-import com.example.backend.domain.notification.service.SupplyReturnNotificationService;
+import com.example.backend.domain.notification.service.alert.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -21,6 +16,11 @@ public class NotificationEventListener {
     private final SupplyRequestApprovedNotificationService supplyRequestApprovedNotificationService;
     private final SupplyRequestRejectedNotificationService supplyRequestRejectedNotificationService;
     private final NewChatNotificationService newChatNotificationService;
+
+    private final NewDashboardApprovedNotificationService newDashboardApprovedNotificationService;
+    private final NewDashboardRejectedNotificationService newDashboardRejectedNotificationService;
+    private final NewManagerApprovedNotificationService newManagerApprovedNotificationService;
+    private final NewManagerRejectedNotificationService newManagerRejectedNotificationService;
     // 매니저
     // 비품 요청 알림
     @EventListener
@@ -55,12 +55,22 @@ public class NotificationEventListener {
 
     // 기타
     // 관리자 페이지 승인 알림
-    public void handleManagementDashboardCreateApproved(ManagementDashboardCreateApproved dashboardCreateApproved) {
+    public void handleNewDashboardApproved(NewDashboardEvent event) {
+       newDashboardApprovedNotificationService.handleNewDashboardApproved(event.getDashboardName());
+    }
+
+    public void handleNewDashboardRejected(NewDashboardEvent event) {
+        newDashboardRejectedNotificationService.handleNewDashboardApproved(event.getDashboardName());
     }
 
     // 매니저 승인 알림
-    public void handleNewManagerApproved() {
+    public void handleNewManagerApproved(NewManagerEvent event) {
+        newManagerApprovedNotificationService.notifyNewManagerApproved(event.managerName);
+    }
 
+    // 매니저 거부 알림
+    public void handleNewManagerRejected(NewManagerEvent event) {
+        newManagerRejectedNotificationService.notifyNewManagerRejected(event.managerName);
     }
 
     // 새로운 채팅

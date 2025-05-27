@@ -1,20 +1,20 @@
 package com.example.backend.domain.notification.strategy.strategy;
 
-import com.example.backend.domain.notification.strategy.context.NewChatContext;
+import com.example.backend.domain.notification.strategy.context.NewDashboardContext;
 import com.example.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class ManagementCreatedApprovedStrategy implements NotificationStrategy {
+public class NewDashboardApprovedStrategy implements NotificationStrategy {
     UserService userService;
 
     @Override
     public String generateMessage(Object context) {
-        if (!(context instanceof NewChatContext)) {
+        if (!(context instanceof NewDashboardContext)) {
             throw new IllegalArgumentException("Invalid context for NewChat Strategy");
         }
-        NewChatContext ctx = (NewChatContext) context;
-        return ctx.getSenderRole() + " " +  ctx.getSenderName() + "님이 새로운 채팅방에 초대하셨습니다.";
+        NewDashboardContext ctx = (NewDashboardContext) context;
+        return ctx.getDashboardName() + " 관리 페이지 생성이 승인되었습니다.";
     }
 
     @Override

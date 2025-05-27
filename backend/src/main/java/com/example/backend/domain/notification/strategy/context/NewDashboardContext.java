@@ -5,8 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class DashboardCreateApprovedContext
+public class NewDashboardContext
 {
-    private final Long managerId;
     private final String dashboardName;
 }

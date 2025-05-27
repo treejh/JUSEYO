@@ -10,7 +10,7 @@ public enum NotificationType {
     STOCK_SHORTAGE("재고 부족"),                   // 재고 부족
     SUPPLY_REQUEST_MODIFIED("비품 요청 수정"),     // 비품 요청 수정
     RETURN_DUE_DATE_EXCEEDED("지정 반납일 초과"),  // 지정 반납일 초과
-    LONG_TERM_UNRETURNED_SUPPLIES("장기 미반납 비품 목록 알림"), // 장기 미반납 비품 목록 알림
+    NOT_RETURNED_YET("장기 미반납 비품 목록 알림"), // 장기 미반납 비품 목록 알림
     USER_SENT_MESSAGE_TO_MANAGER("채팅 알림"),
 
     // 회원 알림
@@ -21,7 +21,9 @@ public enum NotificationType {
 
     // 매니저 기타 알림
     ADMIN_APPROVAL_ALERT("관리 페이지 승인 알림"), // 관리 페이지 승인 알림 (어드민 -> 이니셜 매니저)
+    ADMIN_REJECTION_ALERT("관리 페이지 거부 알림"), // 관리 페이지 거부 알림 (어드민 -> 이니셜 매니저)
     MANAGER_APPROVAL_ALERT("매니저 승인 알림"),     // 매니저 승인 알림 (이니셜 매니저 -> 새 매니저)
+    MANAGER_REJECTION_ALERT("매니저 거부 알림"),     // 매니저 거부 알림 (이니셜 매니저 -> 새 매니저)
 
     // 공통 알림
     SYSTEM_MAINTENANCE("시스템 점검 알림"),        // 시스템 점검 알림

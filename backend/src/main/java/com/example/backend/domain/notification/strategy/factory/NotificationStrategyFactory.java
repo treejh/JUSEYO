@@ -2,15 +2,7 @@ package com.example.backend.domain.notification.strategy.factory;
 
 
 import com.example.backend.domain.notification.entity.NotificationType;
-import com.example.backend.domain.notification.strategy.strategy.NewChatStrategy;
-import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
-import com.example.backend.domain.notification.strategy.strategy.ReturnDueDateExceededStrategy;
-import com.example.backend.domain.notification.strategy.strategy.ReturnDueSoonStrategy;
-import com.example.backend.domain.notification.strategy.strategy.StockShortageStrategy;
-import com.example.backend.domain.notification.strategy.strategy.SupplyRequestApprovedStrategy;
-import com.example.backend.domain.notification.strategy.strategy.SupplyRequestRejectedStrategy;
-import com.example.backend.domain.notification.strategy.strategy.SupplyRequestStrategy;
-import com.example.backend.domain.notification.strategy.strategy.SupplyReturnStrategy;
+import com.example.backend.domain.notification.strategy.strategy.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +24,14 @@ public class NotificationStrategyFactory {
         strategyMap.put(NotificationType.SUPPLY_REQUEST_REJECTED, new SupplyRequestRejectedStrategy());
         strategyMap.put(NotificationType.SUPPLY_RETURN, new SupplyReturnStrategy());
         strategyMap.put(NotificationType.NEW_CHAT, new NewChatStrategy());
+
+        strategyMap.put(NotificationType.ADMIN_APPROVAL_ALERT, new NewDashboardApprovedStrategy());
+        strategyMap.put(NotificationType.ADMIN_REJECTION_ALERT, new NewDashboardRejectedStrategy());
+
+        strategyMap.put(NotificationType.MANAGER_APPROVAL_ALERT, new NewManagerApprovedStrategy());
+        strategyMap.put(NotificationType.MANAGER_REJECTION_ALERT, new NewManagerRejectedStrategy());
+        strategyMap.put(NotificationType.SUPPLY_REQUEST_DELAYED, new SupplyRequestDelayedStrategy());
+
 
         // ⚠️ 여기에 나머지 전략 등록
     }
