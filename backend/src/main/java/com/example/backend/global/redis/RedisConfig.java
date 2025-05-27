@@ -33,7 +33,6 @@ public class RedisConfig {
         config.setHostName(redisHost);
         config.setPort(redisPort);
         config.setPassword(redisPassword);  // 비밀번호 설정 추가
-
         return new LettuceConnectionFactory(config);
 
     }
