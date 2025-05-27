@@ -34,4 +34,11 @@ public class ChaseItemController {
     ) {
         return service.getByRequest(requestId);
     }
+
+    @Operation(summary = "전체 비품 추적 기록 조회")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @GetMapping
+    public List<ChaseItemResponseDto> getAll() {
+        return service.getAll();
+    }
 }
