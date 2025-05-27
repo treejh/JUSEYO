@@ -110,6 +110,27 @@ const DepartmentManagementPage = () => {
     window.location.reload();
   };
 
+  const handleDeleteDepartment = async (department: DepartmentItem) => {
+    if (department.userCount > 0) {
+      alert("구성원이 존재하여 삭제할 수 없습니다.");
+      return;
+    }
+    if (!confirm("정말로 이 부서를 삭제하시겠습니까?")) return;
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/departments/${department.id}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+    if (res.status === 204) {
+      alert("부서가 삭제되었습니다.");
+      window.location.reload();
+    } else {
+      alert("부서 삭제에 실패했습니다.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex min-h-screen">
@@ -160,7 +181,10 @@ const DepartmentManagementPage = () => {
                       </td>
                       <td className="text-center px-6 py-4"></td>
                       <td className="text-center px-6 py-4">
-                        <button className="text-gray-400 hover:text-gray-600 transition-colors text-sm">
+                        <button
+                          onClick={() => handleDeleteDepartment(department)}
+                          className="text-gray-400 hover:text-gray-600 transition-colors text-sm"
+                        >
                           삭제
                         </button>
                       </td>
