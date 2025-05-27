@@ -3,6 +3,7 @@ package com.example.backend.domain.item.service;
 import com.example.backend.domain.analysis.service.InventoryAnalysisService;
 import com.example.backend.domain.category.entity.Category;
 import com.example.backend.domain.category.repository.CategoryRepository;
+import com.example.backend.domain.item.dto.response.ItemCardResponseDto;
 import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemSearchProjection;
 import com.example.backend.domain.item.entity.Item;
@@ -230,4 +231,31 @@ public class ItemService {
     public boolean existsActiveName(String name) {
         return repo.findByNameAndStatus(name, Status.ACTIVE).isPresent();
     }
+
+    //카테고리별 비품 조회
+    @Transactional(readOnly = true)
+    public Page<ItemCardResponseDto> getItemsByCategory(Long categoryId, Pageable pageable, User user) {
+        Category category = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+
+        Long dashboardId = getDashboardId(user); // 기존 CategoryService랑 동일하게 작성
+
+        if (!category.getManagementDashboard().getId().equals(dashboardId)) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_IN_MANAGEMENT_DASHBOARD);
+        }
+
+        return repo.findByCategoryId(categoryId, pageable)
+                .map(ItemCardResponseDto::fromEntity);
+    }
+
+    private Long getDashboardId(User user) {
+        if (user.getManagementDashboard() != null) {
+            return user.getManagementDashboard().getId();
+        } else if (user.getDepartment() != null && user.getDepartment().getManagementDashboard() != null) {
+            return user.getDepartment().getManagementDashboard().getId();
+        } else {
+            throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
+        }
+    }
+
 }
