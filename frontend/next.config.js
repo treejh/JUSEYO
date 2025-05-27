@@ -8,7 +8,7 @@ const nextConfig = {
     domains: [
       "example-bucket.s3.ap-northeast-2.amazonaws.com",
       "juseyo.s3.ap-northeast-2.amazonaws.com",
-      // 추가 도메인 여기에 작성
+      // 추가 버킷 도메인
     ],
   },
 };
