@@ -633,8 +633,7 @@ export default function NotificationsPage() {
             {/* 알림 개수 표시 */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">
-                {notifications.filter((n) => !n.readStatus).length}개의 안 읽은
-                알림
+                {totalElements}개의 알림
               </span>
               {selectedNotifications.length > 0 && (
                 <span className="text-sm text-blue-600">
