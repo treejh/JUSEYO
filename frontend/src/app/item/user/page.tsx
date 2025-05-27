@@ -152,7 +152,10 @@ export default function AllItemsPage() {
           <div className="grid grid-cols-5 gap-6">
             {filteredItems.map((item) => (
               <div key={item.id} className="group cursor-pointer">
-                <div className="aspect-square bg-gray-100 rounded-sm mb-3 overflow-hidden">
+                <div
+                  onClick={() => router.push(`/item/detail/${item.id}`)}
+                  className="aspect-square bg-gray-100 rounded-sm mb-3 overflow-hidden cursor-pointer"
+                >
                   {item.image ? (
                     <Image
                       src={item.image}
