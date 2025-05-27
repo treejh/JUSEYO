@@ -11,6 +11,8 @@ public enum NotificationType {
 
     ADMIN_APPROVAL_ALERT("관리 페이지 승인 알림"), // 관리 페이지 승인 알림 (어드민 -> 이니셜 매니저)
     ADMIN_REJECTION_ALERT("관리 페이지 거부 알림"), // 관리 페이지 거부 알림 (어드민 -> 이니셜 매니저)
+
+    NEW_MANAGER("새로운 매니저 가입 요청"),
     MANAGER_APPROVAL_ALERT("매니저 승인 알림"),     // 매니저 승인 알림 (이니셜 매니저 -> 새 매니저)
     MANAGER_REJECTION_ALERT("매니저 거부 알림"),     // 매니저 거부 알림 (이니셜 매니저 -> 새 매니저)
 

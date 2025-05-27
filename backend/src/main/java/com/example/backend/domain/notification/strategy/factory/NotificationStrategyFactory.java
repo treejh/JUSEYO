@@ -24,8 +24,10 @@ public class NotificationStrategyFactory {
 
         strategyMap.put(NotificationType.ADMIN_APPROVAL_ALERT, new NewDashboardApprovedStrategy());
         strategyMap.put(NotificationType.ADMIN_REJECTION_ALERT, new NewDashboardRejectedStrategy());
+
         strategyMap.put(NotificationType.MANAGER_APPROVAL_ALERT, new NewManagerApprovedStrategy());
         strategyMap.put(NotificationType.MANAGER_REJECTION_ALERT, new NewManagerRejectedStrategy());
+        strategyMap.put(NotificationType.NEW_MANAGER, new NewManagerStrategy());
 
         // 회원
         strategyMap.put(NotificationType.RETURN_DUE_SOON, new ReturnDueSoonStrategy());

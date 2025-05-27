@@ -6,6 +6,7 @@ import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.department.service.DepartmentService;
 import com.example.backend.domain.notification.event.NewManagerApprovedEvent;
+import com.example.backend.domain.notification.event.NewManagerEvent;
 import com.example.backend.domain.user.dto.request.EmailRequestDto;
 import com.example.backend.domain.user.dto.request.ValidPasswordRequestDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForInitialManagerResponseDto;
@@ -143,6 +144,10 @@ public class UserService {
                 .approvalStatus(ApprovalStatus.REQUESTED)
                 .build();
         userValid(manager);
+
+        // 이니셜 매니저 대상 매니저 가입 요청 발생
+        eventPublisher.publishEvent(new NewManagerEvent(manager.getManagementDashboard().getId(), manager.getName()));
+
         return userRepository.save(manager);
     }
 

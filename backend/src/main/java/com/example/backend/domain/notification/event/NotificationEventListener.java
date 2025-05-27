@@ -22,6 +22,7 @@ public class NotificationEventListener {
     private final NewManagerApprovedNotificationService newManagerApprovedNotificationService;
     private final NewManagerRejectedNotificationService newManagerRejectedNotificationService;
     private final SupplyReturnApprovedNotificationService supplyReturnApprovedNotificationService;
+    private final NewManagerNotificationService newManagerNotificationService;
 
     // 매니저
     // 비품 요청 알림
@@ -52,6 +53,12 @@ public class NotificationEventListener {
     // 관리자 페이지 반려 알림
     public void handleNewDashboardRejected(NewDashboardRejectedEvent event) {
         newDashboardRejectedNotificationService.handleNewDashboardApproved(event.getDashboardId(), event.getDashboardName());
+    }
+
+    @EventListener
+    // 매니저 요청 알림
+    public void handleNewManager(NewManagerEvent event) {
+        newManagerNotificationService.notifyNewManager(event.requesterManagementDashboardId, event.requesterName);
     }
 
     @EventListener

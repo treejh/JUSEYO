@@ -21,7 +21,8 @@ public class NotificationPolicy {
                     NotificationType.ADMIN_REJECTION_ALERT,
                     NotificationType.MANAGER_APPROVAL_ALERT,
                     NotificationType.MANAGER_REJECTION_ALERT,
-                    NotificationType.NEW_CHAT
+                    NotificationType.NEW_CHAT,
+                    NotificationType.NEW_MANAGER
 
             );
             case USER -> Arrays.asList(
