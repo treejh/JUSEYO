@@ -1,4 +1,4 @@
-package com.example.backend.domain.notification.strategy;
+package com.example.backend.domain.notification.strategy.strategy;
 
 import com.example.backend.domain.notification.strategy.context.SupplyReturnContext;
 
@@ -10,9 +10,14 @@ public class SupplyReturnStrategy implements NotificationStrategy{
             throw new IllegalArgumentException("Invalid context for SupplyRequestStrategy");
         }
         SupplyReturnContext supplyContext = (SupplyReturnContext) context;
+        String statusMessage = switch (supplyContext.getReturnStatus()) {
+            case DAMAGED -> "❌ 고장: ";
+            case LOST -> "❗ 분실: ";
+            default -> "📦 비품 반납: ";
+        };
 
-        return "📦 비품 반납: " + supplyContext.getRequesterName() + "님이 " +
-                supplyContext.getItemName() + " " + supplyContext.getRequestQuantity() + "개을(를) 반납 요청했습니다.";
+        return statusMessage + supplyContext.getRequesterName() + "님이 " +
+                supplyContext.getItemName() + " " + supplyContext.getRequestQuantity() + "개를 반납 요청했습니다.";
     }
 
     @Override

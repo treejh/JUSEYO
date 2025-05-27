@@ -8,7 +8,6 @@ import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -16,14 +15,13 @@ import com.example.backend.domain.inventory.inventoryOut.service.InventoryOutSer
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.Notification;
 import com.example.backend.domain.notification.entity.NotificationType;
-import com.example.backend.domain.notification.service.NewChatNotificationService;
+import com.example.backend.domain.notification.service.alert.NewChatNotificationService;
 import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.domain.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -150,30 +148,4 @@ public class NotificationController {
         return notificationService.streamNotifications(userId);
     }
 
-
-    // 테스트용 알림 보내기 API
-    @PostMapping("/test/{userId}")
-    @Operation(
-            summary = "재고 요청 테스트 알림",
-            description = "재고 요청 테스트 알림을 보냅니다."
-    )
-    public Notification sendTestNotification(@PathVariable Long userId) {
-        NotificationRequestDTO testRequest = new NotificationRequestDTO(
-                NotificationType.SUPPLY_REQUEST,
-                "🔔 테스트 알림입니다!",
-                userId
-        );
-
-        return notificationService.createNotification(testRequest);
-    }
-
-    // 재고 알림 테스트용
-    @PostMapping("/test/stockDown")
-    @Operation(
-            summary = "재고 부족 테스트 알림",
-            description = "재고 부족 테스트 알림을 보냅니다."
-    )
-    public void stockDownAlertTest() {
-        inventoryOutService.stockdown();
-    }
 }

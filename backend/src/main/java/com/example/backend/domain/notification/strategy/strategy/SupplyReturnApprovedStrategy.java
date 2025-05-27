@@ -1,17 +1,17 @@
-package com.example.backend.domain.notification.strategy;
+package com.example.backend.domain.notification.strategy.strategy;
 
 import com.example.backend.domain.notification.strategy.context.SupplyRequestApprovalContext;
+import com.example.backend.domain.notification.strategy.context.SupplyReturnApprovalContext;
 
-public class SupplyRequestApprovedStrategy implements NotificationStrategy {
-
+public class SupplyReturnApprovedStrategy implements NotificationStrategy {
     @Override
     public String generateMessage(Object context) {
-        if (!(context instanceof SupplyRequestApprovalContext)) {
+        if (!(context instanceof SupplyReturnApprovalContext)) {
             throw new IllegalArgumentException("Invalid context for StockShortageStrategy");
         }
-        SupplyRequestApprovalContext ctx = (SupplyRequestApprovalContext) context;
+        SupplyReturnApprovalContext ctx = (SupplyReturnApprovalContext) context;
         // context에서 아이템 이름과 재고 수량을 추출하여 메시지 생성
-        return "✅ 요청 승인됨: " + ctx.getItemName() + " " +ctx.getItemQuantity() + "개에 대한 요청이 승인되었습니다.";
+        return ctx.getItemName() + " " +ctx.getItemQuantity() + "개에 대한 반납 요청이 승인되었습니다.";
     }
 
     @Override

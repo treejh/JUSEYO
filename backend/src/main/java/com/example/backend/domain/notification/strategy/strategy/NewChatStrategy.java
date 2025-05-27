@@ -1,4 +1,4 @@
-package com.example.backend.domain.notification.strategy;
+package com.example.backend.domain.notification.strategy.strategy;
 
 import com.example.backend.domain.notification.strategy.context.NewChatContext;
 import com.example.backend.domain.user.service.UserService;

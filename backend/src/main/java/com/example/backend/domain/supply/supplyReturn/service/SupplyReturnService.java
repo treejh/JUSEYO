@@ -1,5 +1,7 @@
 package com.example.backend.domain.supply.supplyReturn.service;
 
+import com.example.backend.domain.notification.event.SupplyReturnApprovedEvent;
+import com.example.backend.domain.notification.event.SupplyReturnCreatedEvent;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.domain.supply.supplyReturn.entity.SupplyReturn;
@@ -21,6 +23,7 @@ import com.example.backend.domain.supply.supplyReturn.dto.response.SupplyReturnR
 import com.example.backend.domain.supply.supplyReturn.repository.SupplyReturnRepository;
 import com.example.backend.global.security.jwt.service.TokenService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,7 @@ public class SupplyReturnService {
     private final ManagementDashboardRepository managementDashboardRepository;
     private final ItemRepository itemRepository;
     private final InventoryInService inventoryInService;
+    private final ApplicationEventPublisher eventPublisher;
     private final TokenService tokenService;
 
     //비품 반납 요청 생성
@@ -73,6 +77,10 @@ public class SupplyReturnService {
                 .outbound(supplyReturnRequestDto.getOutbound())
                 .build();
         supplyReturnRepository.save(supplyReturn);
+
+        // 반납 요청 알림 발생
+        eventPublisher.publishEvent(new SupplyReturnCreatedEvent(item.getName(), supplyRequest.getQuantity(), user.getName(), supplyReturnRequestDto.getOutbound()));
+
         return toDto(supplyReturn);
 
     }
@@ -106,6 +114,12 @@ public class SupplyReturnService {
         if(dto.getApprovalStatus()==ApprovalStatus.RETURNED){
             addInbound(supplyReturn, dto.getImage());
         }
+
+        // 비품 반납 승인 알림 발생
+        eventPublisher.publishEvent(new SupplyReturnApprovedEvent(
+                supplyReturn.getUser().getId(), supplyReturn.getProductName(), supplyReturn.getQuantity()
+        ));
+
         return toDto(supplyReturn);
     }
 

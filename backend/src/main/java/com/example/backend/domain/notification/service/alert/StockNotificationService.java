@@ -1,9 +1,10 @@
-package com.example.backend.domain.notification.service;
+package com.example.backend.domain.notification.service.alert;
 
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.NotificationType;
-import com.example.backend.domain.notification.strategy.NotificationStrategy;
-import com.example.backend.domain.notification.strategy.context.SupplyReturnContext;
+import com.example.backend.domain.notification.service.NotificationService;
+import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
+import com.example.backend.domain.notification.strategy.context.ItemStockContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.enums.RoleType;
 import com.example.backend.domain.role.service.RoleService;
@@ -18,18 +19,20 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SupplyReturnNotificationService {
-
+public class StockNotificationService {
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
     private final UserService userService;
     private final RoleService roleService;
 
     @Transactional
-    public void notifySupplyReturn(String itemName, Long itemQuantity, String returnerName) {
-        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_RETURN);
+    public void checkAndNotifyLowStock(String serialNumber, String itemName,
+    Long currentQuantity, Long minimumQuantity) {
+        // STOCK_SHORTAGE 전략을 가져오고
+        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.STOCK_SHORTAGE);
 
-        SupplyReturnContext context = new SupplyReturnContext(itemName, itemQuantity, returnerName);
+        // ItemStockContext 생성
+        ItemStockContext context = new ItemStockContext(serialNumber, itemName, currentQuantity, minimumQuantity);
 
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 
@@ -44,7 +47,7 @@ public class SupplyReturnNotificationService {
 
                 // NotificationRequestDTO에 메시지 전달
                 notificationService.createNotification(new NotificationRequestDTO(
-                        NotificationType.SUPPLY_RETURN,
+                        NotificationType.STOCK_SHORTAGE,
                         msg,
                         manager.getId())
                 );

@@ -1,11 +1,6 @@
 package com.example.backend.domain.notification.event;
 
-import com.example.backend.domain.notification.service.NewChatNotificationService;
-import com.example.backend.domain.notification.service.StockNotificationService;
-import com.example.backend.domain.notification.service.SupplyRequestApprovedNotificationService;
-import com.example.backend.domain.notification.service.SupplyRequestNotificationService;
-import com.example.backend.domain.notification.service.SupplyRequestRejectedNotificationService;
-import com.example.backend.domain.notification.service.SupplyReturnNotificationService;
+import com.example.backend.domain.notification.service.alert.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -21,6 +16,12 @@ public class NotificationEventListener {
     private final SupplyRequestApprovedNotificationService supplyRequestApprovedNotificationService;
     private final SupplyRequestRejectedNotificationService supplyRequestRejectedNotificationService;
     private final NewChatNotificationService newChatNotificationService;
+
+    private final NewDashboardApprovedNotificationService newDashboardApprovedNotificationService;
+    private final NewDashboardRejectedNotificationService newDashboardRejectedNotificationService;
+    private final NewManagerApprovedNotificationService newManagerApprovedNotificationService;
+    private final NewManagerRejectedNotificationService newManagerRejectedNotificationService;
+
     // 매니저
     // 비품 요청 알림
     @EventListener
@@ -31,7 +32,7 @@ public class NotificationEventListener {
     // 비품 반납 알림
     @EventListener
     public void handleSupplyReturnCreated(SupplyReturnCreatedEvent event) {
-        supplyReturnNotificationService.notifySupplyReturn(event.getItemName(), event.getRequestQuantity(), event.getReturnerName());
+        supplyReturnNotificationService.notifySupplyReturn(event.getItemName(), event.getRequestQuantity(), event.getReturnerName(), event.getReturnStatus());
     }
 
     // 재고 부족 알림
@@ -40,29 +41,45 @@ public class NotificationEventListener {
         stockNotificationService.checkAndNotifyLowStock(event.getSerialNumber(), event.getItemName(), event.getCurrentQuantity(), event.getMinimumQuantity());
     }
 
+    // 관리자 페이지 승인 알림
+    public void handleNewDashboardApproved(NewDashboardEvent event) {
+        newDashboardApprovedNotificationService.handleNewDashboardApproved(event.getDashboardName());
+    }
+
+    // 관리자 페이지 반려 알림
+    public void handleNewDashboardRejected(NewDashboardEvent event) {
+        newDashboardRejectedNotificationService.handleNewDashboardApproved(event.getDashboardName());
+    }
+
+    // 매니저 승인 알림
+    public void handleNewManagerApproved(NewManagerEvent event) {
+        newManagerApprovedNotificationService.notifyNewManagerApproved(event.managerName);
+    }
+
+    // 매니저 거부 알림
+    public void handleNewManagerRejected(NewManagerEvent event) {
+        newManagerRejectedNotificationService.notifyNewManagerRejected(event.managerName);
+    }
+
     // 회원
     // 비품 요청 승인 알림
     @EventListener
     public void handleSupplyRequestApproved(SupplyRequestApprovedEvent event) {
-        supplyRequestApprovedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity(), event.getApprovalStatus());
+        supplyRequestApprovedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
     }
 
     // 비품 요청 반려 알림
     @EventListener
     public void handleSupplyRequestRejected(SupplyRequestApprovedEvent event) {
-        supplyRequestRejectedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity(), event.getApprovalStatus());
+        supplyRequestRejectedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
+    }
+
+    @EventListener
+    public void handleSupplyReturnApproved(SupplyReturnApprovedEvent event) {
+        
     }
 
     // 기타
-    // 관리자 페이지 승인 알림
-    public void handleManagementDashboardCreateApproved(ManagementDashboardCreateApproved dashboardCreateApproved) {
-    }
-
-    // 매니저 승인 알림
-    public void handleNewManagerApproved() {
-
-    }
-
     // 새로운 채팅
     @EventListener
     public void handleNewChat(NewChatEvent event) {

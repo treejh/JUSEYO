@@ -5,8 +5,8 @@ package com.example.backend.domain.user.service;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.department.service.DepartmentService;
+import com.example.backend.domain.notification.event.NewManagerEvent;
 import com.example.backend.domain.user.dto.request.EmailRequestDto;
-import com.example.backend.domain.user.dto.request.PhoneRequestDto;
 import com.example.backend.domain.user.dto.request.ValidPasswordRequestDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForInitialManagerResponseDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForManagerResponseDto;
@@ -38,10 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -69,6 +69,8 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     // 알림용 - 현재 페이지 저장: userId -> pageUrl
     private final Map<Long, String> userCurrentPageMap = new ConcurrentHashMap<>();
@@ -342,13 +344,22 @@ public class UserService {
     // 매니저 승인 처리
     @Transactional
     public void approveManager(Long userId) {
+
         approveOrRejectManager(userId, ApprovalStatus.APPROVED);
+
+        // 매니저 승인 알림 생성
+        User user = userRepository.findById(userId).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        eventPublisher.publishEvent(new NewManagerEvent(user.getName()));
     }
 
     // 매니저 거부 처리
     @Transactional
     public void rejectManager(Long userId) {
         approveOrRejectManager(userId, ApprovalStatus.REJECTED);
+
+        // 매니저 거부 알림 생성
+        User user = userRepository.findById(userId).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        eventPublisher.publishEvent(new NewManagerEvent(user.getName()));
     }
 
     public User findById(Long userId){
