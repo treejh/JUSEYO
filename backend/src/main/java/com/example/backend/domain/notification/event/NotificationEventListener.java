@@ -21,6 +21,7 @@ public class NotificationEventListener {
     private final NewDashboardRejectedNotificationService newDashboardRejectedNotificationService;
     private final NewManagerApprovedNotificationService newManagerApprovedNotificationService;
     private final NewManagerRejectedNotificationService newManagerRejectedNotificationService;
+    private final SupplyReturnApprovedNotificationService supplyReturnApprovedNotificationService;
 
     // 매니저
     // 비품 요청 알림
@@ -41,21 +42,25 @@ public class NotificationEventListener {
         stockNotificationService.checkAndNotifyLowStock(event.getSerialNumber(), event.getItemName(), event.getCurrentQuantity(), event.getMinimumQuantity());
     }
 
+    @EventListener
     // 관리자 페이지 승인 알림
     public void handleNewDashboardApproved(NewDashboardEvent event) {
         newDashboardApprovedNotificationService.handleNewDashboardApproved(event.getDashboardName());
     }
 
+    @EventListener
     // 관리자 페이지 반려 알림
     public void handleNewDashboardRejected(NewDashboardEvent event) {
         newDashboardRejectedNotificationService.handleNewDashboardApproved(event.getDashboardName());
     }
 
+    @EventListener
     // 매니저 승인 알림
     public void handleNewManagerApproved(NewManagerEvent event) {
         newManagerApprovedNotificationService.notifyNewManagerApproved(event.managerName);
     }
 
+    @EventListener
     // 매니저 거부 알림
     public void handleNewManagerRejected(NewManagerEvent event) {
         newManagerRejectedNotificationService.notifyNewManagerRejected(event.managerName);
@@ -74,9 +79,10 @@ public class NotificationEventListener {
         supplyRequestRejectedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
     }
 
+    // 비품 반납 승인 알림
     @EventListener
     public void handleSupplyReturnApproved(SupplyReturnApprovedEvent event) {
-        
+        supplyReturnApprovedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
     }
 
     // 기타

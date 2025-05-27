@@ -8,8 +8,6 @@ import com.example.backend.domain.managementDashboard.service.ManagementDashboar
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.Notification;
 import com.example.backend.domain.notification.entity.NotificationType;
-import com.example.backend.domain.notification.event.StockShortageEvent;
-import com.example.backend.domain.notification.event.SupplyRequestCreatedEvent;
 import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.domain.supply.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
@@ -29,7 +27,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,7 +51,6 @@ public class TestNotificationController {
     private final SupplyRequestRepository supplyRequestRepository;
     private final SupplyReturnRepository supplyReturnRepository;
     private final ManagementDashboardService managementDashboardService;
-
 
     // 테스트용 알림 보내기 API
     @PostMapping("/{userId}")
@@ -102,7 +98,7 @@ public class TestNotificationController {
         Item pen = itemRepo.findByName("볼펜").get();
         SupplyRequestRequestDto dto = new SupplyRequestRequestDto();
         dto.setItemId(pen.getId());
-        dto.setQuantity(1L);
+        dto.setQuantity(2L);
         dto.setPurpose("테스트용 요청");
         dto.setRental(false);
         supplyRequestService.createRequest(dto);
@@ -131,6 +127,11 @@ public class TestNotificationController {
         supplyReturnService.addSupplyReturn(dto);
     }
 
+    @PostMapping("/newDashboardApproved")
+    @Operation(
+            summary = "비품 반납 테스트",
+            description = "비품 반납 테스트 알림을 보냅니다."
+    )
     public void sendNewDashboardApproved(){
         managementDashboardService.approvalManagementDashBoard(2L);
     }
@@ -169,7 +170,11 @@ public class TestNotificationController {
         return;
 
     }
-
+    @PostMapping("/supplyReturnApproved")
+    @Operation(
+            summary = "비품 반납 요청 테스트",
+            description = "비품 반납 요청 테스트 알림을 보냅니다."
+    )
     public void sendSupplyReturnApproved() {
         SupplyReturn request = supplyReturnRepository.findById(2L).get();
         if(!request.getApprovalStatus().equals(ApprovalStatus.REQUESTED)) {
