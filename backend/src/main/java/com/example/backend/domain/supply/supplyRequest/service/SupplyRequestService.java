@@ -2,6 +2,9 @@ package com.example.backend.domain.supply.supplyRequest.service;
 
 import com.example.backend.domain.chaseItem.dto.request.ChaseItemRequestDto;
 import com.example.backend.domain.chaseItem.service.ChaseItemService;
+import com.example.backend.domain.notification.event.SupplyRequestApprovedEvent;
+import com.example.backend.domain.notification.event.SupplyRequestCreatedEvent;
+import com.example.backend.domain.notification.event.SupplyRequestRejectedEvent;
 import com.example.backend.domain.supply.supplyRequest.dto.request.SupplyRequestRequestDto;
 import com.example.backend.domain.supply.supplyRequest.dto.response.LentItemDto;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
@@ -27,6 +30,7 @@ import com.example.backend.domain.managementDashboard.entity.ManagementDashboard
 import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.domain.supply.supplyRequest.dto.response.SupplyRequestResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,6 +58,7 @@ public class SupplyRequestService {
     private final ItemInstanceRepository instanceRepo;
     private final ItemInstanceService instanceService;
     private final ChaseItemService chaseItemService;
+    private final ApplicationEventPublisher eventPublisher;
     private final SupplyReturnRepository supplyReturnRepository;
 
     @Transactional
@@ -91,6 +96,10 @@ public class SupplyRequestService {
                 .build();
         req.setStatus(Status.ACTIVE);
         SupplyRequest saved = repo.save(req);
+
+        // 비품 요청 알림 발생
+        eventPublisher.publishEvent(new SupplyRequestCreatedEvent(saved.getProductName(), saved.getQuantity(), saved.getUser().getName()));
+
         return mapToDto(saved);
     }
 
@@ -122,12 +131,21 @@ public class SupplyRequestService {
                 .build();
         chaseItemService.addChaseItem(chaseDto);
 
+        // 요청 승인 알림 발생
+        eventPublisher.publishEvent(new SupplyRequestApprovedEvent(req.getUser().getId(), req.getItem().getName(), req.getQuantity()));
+
         // 3) DTO 반환
         return mapToDto(req);
     }
 
     @Transactional
     public SupplyRequestResponseDto rejectRequest(Long requestId) {
+
+        // 요청 반려 알림 발생
+        SupplyRequest req = repo.findById(requestId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
+        eventPublisher.publishEvent(new SupplyRequestRejectedEvent(req.getUser().getId(), req.getItem().getName(), req.getQuantity()));
+
         return updateRequestStatus(requestId, ApprovalStatus.REJECTED);
     }
 

@@ -5,7 +5,6 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class ManagementDashboardCreateApproved {
-    private final Long managerId;
-    private final String dashboardName;
+public class NewManagerEvent {
+    String managerName;
 }

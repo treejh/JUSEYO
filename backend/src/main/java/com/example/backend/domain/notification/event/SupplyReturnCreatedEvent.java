@@ -1,5 +1,6 @@
 package com.example.backend.domain.notification.event;
 
+import com.example.backend.enums.Outbound;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,5 +10,6 @@ public class SupplyReturnCreatedEvent {
     private final String itemName;
     private final Long requestQuantity;
     private final String returnerName;
+    private final Outbound returnStatus;
 
 }

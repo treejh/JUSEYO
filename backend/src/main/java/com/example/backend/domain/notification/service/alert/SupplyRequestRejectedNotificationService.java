@@ -1,27 +1,26 @@
-package com.example.backend.domain.notification.service;
+package com.example.backend.domain.notification.service.alert;
 
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.NotificationType;
-import com.example.backend.domain.notification.strategy.NotificationStrategy;
+import com.example.backend.domain.notification.service.NotificationService;
+import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
 import com.example.backend.domain.notification.strategy.context.SupplyRequestApprovalContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
-import com.example.backend.enums.ApprovalStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class SupplyRequestApprovedNotificationService {
+public class SupplyRequestRejectedNotificationService {
 
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
 
     @Transactional
-    public void notifyIfApproved(Long userId, String itemName, Long itemQuantity, ApprovalStatus approvalStatus) {
-        if (approvalStatus != ApprovalStatus.APPROVED) return;
+    public void notifyIfApproved(Long userId, String itemName, Long itemQuantity) {
 
-        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_REQUEST_APPROVED);
+        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_REQUEST_REJECTED);
 
         SupplyRequestApprovalContext context = new SupplyRequestApprovalContext(
                 userId, itemName, itemQuantity
@@ -31,7 +30,7 @@ public class SupplyRequestApprovedNotificationService {
             String message = strategy.generateMessage(context);
 
             notificationService.createNotification(new NotificationRequestDTO(
-                    NotificationType.SUPPLY_REQUEST_APPROVED,
+                    NotificationType.SUPPLY_REQUEST_REJECTED,
                     message,
                     context.getUserId()
             ));

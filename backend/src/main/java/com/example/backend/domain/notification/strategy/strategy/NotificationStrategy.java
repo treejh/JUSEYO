@@ -1,4 +1,4 @@
-package com.example.backend.domain.notification.strategy;
+package com.example.backend.domain.notification.strategy.strategy;
 
 public interface NotificationStrategy {
     String generateMessage(Object context);
