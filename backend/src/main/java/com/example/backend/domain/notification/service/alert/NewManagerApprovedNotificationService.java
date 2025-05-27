@@ -19,12 +19,10 @@ public class NewManagerApprovedNotificationService {
     private final TokenService tokenService;
 
     @Transactional
-    public void notifyNewManagerApproved(String managerName) {
+    public void notifyNewManagerApproved(Long requesterId, String managerName) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.MANAGER_APPROVAL_ALERT);
 
         NewManagerContext context = new NewManagerContext(managerName);
-
-        Long userId = tokenService.getIdFromToken();
 
         // 조건을 확인하고 알림을 생성
         if (strategy.shouldTrigger(context)) {
@@ -35,7 +33,7 @@ public class NewManagerApprovedNotificationService {
             notificationService.createNotification(new NotificationRequestDTO(
                     NotificationType.MANAGER_APPROVAL_ALERT,
                     msg,
-                    userId)
+                    requesterId)
             );
         }
     }

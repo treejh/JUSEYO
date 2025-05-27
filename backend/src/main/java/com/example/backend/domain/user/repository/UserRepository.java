@@ -120,6 +120,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             Status status
     );
 
+    User findByManagementDashboardIdAndInitialManager(Long managementDashboardId, boolean isInitialManager);
+
 
 
 

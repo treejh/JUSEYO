@@ -44,26 +44,26 @@ public class NotificationEventListener {
 
     @EventListener
     // 관리자 페이지 승인 알림
-    public void handleNewDashboardApproved(NewDashboardEvent event) {
-        newDashboardApprovedNotificationService.handleNewDashboardApproved(event.getDashboardName());
+    public void handleNewDashboardApproved(NewDashboardApprovedEvent event) {
+        newDashboardApprovedNotificationService.handleNewDashboardApproved(event.getDashboardId(), event.getDashboardName());
     }
 
     @EventListener
     // 관리자 페이지 반려 알림
-    public void handleNewDashboardRejected(NewDashboardEvent event) {
-        newDashboardRejectedNotificationService.handleNewDashboardApproved(event.getDashboardName());
+    public void handleNewDashboardRejected(NewDashboardRejectedEvent event) {
+        newDashboardRejectedNotificationService.handleNewDashboardApproved(event.getDashboardId(), event.getDashboardName());
     }
 
     @EventListener
     // 매니저 승인 알림
-    public void handleNewManagerApproved(NewManagerEvent event) {
-        newManagerApprovedNotificationService.notifyNewManagerApproved(event.managerName);
+    public void handleNewManagerApproved(NewManagerApprovedEvent event) {
+        newManagerApprovedNotificationService.notifyNewManagerApproved(event.getRequesterId(), event.managerName);
     }
 
     @EventListener
     // 매니저 거부 알림
-    public void handleNewManagerRejected(NewManagerEvent event) {
-        newManagerRejectedNotificationService.notifyNewManagerRejected(event.managerName);
+    public void handleNewManagerRejected(NewManagerRejectedEvent event) {
+        newManagerRejectedNotificationService.notifyNewManagerRejected(event.getRequesterId(), event.managerName);
     }
 
     // 회원
@@ -75,7 +75,7 @@ public class NotificationEventListener {
 
     // 비품 요청 반려 알림
     @EventListener
-    public void handleSupplyRequestRejected(SupplyRequestApprovedEvent event) {
+    public void handleSupplyRequestRejected(SupplyRequestRejectedEvent event) {
         supplyRequestRejectedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
     }
 

@@ -4,7 +4,7 @@ package com.example.backend.domain.managementDashboard.service;
 import com.example.backend.domain.managementDashboard.dto.ManagementDashBoardRequestDto;
 import com.example.backend.domain.managementDashboard.dto.ManagementDashBoardResponseDto;
 import com.example.backend.domain.managementDashboard.dto.ManagementDashboardUpdateRequestDto;
-import com.example.backend.domain.notification.event.NewDashboardEvent;
+import com.example.backend.domain.notification.event.NewDashboardApprovedEvent;
 import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
@@ -143,7 +143,7 @@ public class ManagementDashboardService {
         managementDashboard.setApproval(true);
 
         // 대시보드 생성 승인 알림 생성
-        eventPublisher.publishEvent(new NewDashboardEvent(managementDashboard.getName()));
+        eventPublisher.publishEvent(new NewDashboardApprovedEvent(managementDashboard.getId(), managementDashboard.getName()));
     }
 
 

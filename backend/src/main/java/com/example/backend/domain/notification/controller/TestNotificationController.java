@@ -129,11 +129,20 @@ public class TestNotificationController {
 
     @PostMapping("/newDashboardApproved")
     @Operation(
-            summary = "비품 반납 테스트",
-            description = "비품 반납 테스트 알림을 보냅니다."
+            summary = "대시 보드 생성 요청 승인 테스트",
+            description = "대시 보드 생성 요청 승인 테스트 알림을 보냅니다."
     )
     public void sendNewDashboardApproved(){
         managementDashboardService.approvalManagementDashBoard(2L);
+    }
+
+    @PostMapping("/newManagerApproved")
+    @Operation(
+            summary = "매니저 승인 테스트",
+            description = "매니저 승인 테스트 알림을 보냅니다."
+    )
+    public void sendNewManagerApproved(){
+        userService.approveManager(7L);
     }
 
     // =========================================================================
@@ -145,11 +154,11 @@ public class TestNotificationController {
             description = "비품 요청 승인 테스트 알림을 보냅니다."
     )
     public void sendSupplyRequestApproved() {
-        SupplyRequest request = supplyRequestRepository.findById(1L).get();
-        if (!request.getApprovalStatus().equals(ApprovalStatus.REQUESTED)) {
-            request.setApprovalStatus(ApprovalStatus.REQUESTED);
-
-        }
+//        SupplyRequest request = supplyRequestRepository.findById(1L).get();
+//        if (!request.getApprovalStatus().equals(ApprovalStatus.REQUESTED)) {
+//            request.setApprovalStatus(ApprovalStatus.REQUESTED);
+//
+//        }
         supplyRequestService.approveRequest(1L);
         return;
 
@@ -161,11 +170,11 @@ public class TestNotificationController {
             description = "비품 요청 반려 테스트 알림을 보냅니다."
     )
     public void sendSupplyRequestRejected() {
-        SupplyRequest request = supplyRequestRepository.findById(2L).get();
-        if(!request.getApprovalStatus().equals(ApprovalStatus.REQUESTED)) {
-            request.setApprovalStatus(ApprovalStatus.REQUESTED);
-
-        }
+//        SupplyRequest request = supplyRequestRepository.findById(2L).get();
+//        if(!request.getApprovalStatus().equals(ApprovalStatus.REQUESTED)) {
+//            request.setApprovalStatus(ApprovalStatus.REQUESTED);
+//
+//        }
         supplyRequestService.rejectRequest(2L);
         return;
 
