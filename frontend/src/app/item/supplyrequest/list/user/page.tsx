@@ -20,9 +20,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export default function SupplyRequestUserListPage() {
   const { loginUser, isLogin } = useGlobalLoginUser();
-
   const [requests, setRequests] = useState<SupplyRequest[]>([]);
   const [loading, setLoading] = useState(false);
+  const [deleteLoadingId, setDeleteLoadingId] = useState<number | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -34,16 +35,15 @@ export default function SupplyRequestUserListPage() {
   // 내 요청 목록 조회
   const fetchRequests = async () => {
     setLoading(true);
+    setErrorMsg(null);
     try {
       const res = await fetch(`${API_BASE}/api/v1/supply-requests/me`, {
         credentials: "include",
       });
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
+      if (!res.ok) throw new Error(await res.text());
       setRequests(await res.json());
     } catch (err: any) {
-      alert(`로딩 실패: ${err.message}`);
+      setErrorMsg(`로딩 실패: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -52,6 +52,8 @@ export default function SupplyRequestUserListPage() {
   // 개별 요청 삭제
   const handleDeleteRequest = async (id: number) => {
     if (!confirm("정말 이 요청을 삭제하시겠습니까?")) return;
+    setDeleteLoadingId(id);
+    setErrorMsg(null);
     try {
       const res = await fetch(`${API_BASE}/api/v1/supply-requests/${id}`, {
         method: "DELETE",
@@ -60,17 +62,21 @@ export default function SupplyRequestUserListPage() {
       if (!res.ok) {
         throw new Error(await res.text());
       }
+      // 삭제 성공 후 목록 다시 불러오기
       await fetchRequests();
     } catch (err: any) {
-      alert(`삭제 실패: ${err.message}`);
+      setErrorMsg(`삭제 실패: ${err.message}`);
+    } finally {
+      setDeleteLoadingId(null);
     }
   };
 
+  // 로그인 시 데이터 로딩
   useEffect(() => {
     if (isLogin) fetchRequests();
   }, [isLogin]);
 
-  // 페이지 초기화 on filter change
+  // 필터 변경 시 페이지 초기화
   useEffect(() => {
     setCurrentPage(0);
   }, [searchKeyword, startDate, endDate]);
@@ -90,16 +96,14 @@ export default function SupplyRequestUserListPage() {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString("ko-KR");
   };
 
   // 필터링 & 정렬
   const filteredRequests = requests
     .filter((req) => {
-      const matchesKeyword = req.productName
-        .toLowerCase()
-        .includes(searchKeyword.toLowerCase());
-      if (!matchesKeyword) return false;
+      if (!req.productName.toLowerCase().includes(searchKeyword.toLowerCase()))
+        return false;
       if (startDate || endDate) {
         const reqDate = new Date(req.createdAt);
         if (startDate && new Date(startDate) > reqDate) return false;
@@ -147,6 +151,7 @@ export default function SupplyRequestUserListPage() {
 
         {/* 검색 / 필터 */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+          {errorMsg && <div className="mb-4 text-red-600">{errorMsg}</div>}
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[300px] relative">
               <input
@@ -156,19 +161,6 @@ export default function SupplyRequestUserListPage() {
                 onChange={(e) => setSearchKeyword(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
               />
-              <svg
-                className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
             </div>
             <div className="flex items-center gap-2 min-w-[500px]">
               <span className="text-gray-600">작성일:</span>
@@ -260,7 +252,7 @@ export default function SupplyRequestUserListPage() {
                       {formatDate(req.createdAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
-                      {req.approvalStatus === "REQUESTED" ? (
+                      {req.approvalStatus === "REQUESTED" && (
                         <>
                           <Link
                             href={`/item/supplyrequest/edit/${req.id}`}
@@ -270,12 +262,14 @@ export default function SupplyRequestUserListPage() {
                           </Link>
                           <button
                             onClick={() => handleDeleteRequest(req.id)}
-                            className="text-red-600 hover:underline"
+                            disabled={deleteLoadingId === req.id}
+                            className="text-red-600 hover:underline disabled:opacity-50"
                           >
-                            삭제
+                            {deleteLoadingId === req.id ? "삭제 중..." : "삭제"}
                           </button>
                         </>
-                      ) : (
+                      )}
+                      {req.approvalStatus !== "REQUESTED" && (
                         <span className="text-gray-400">–</span>
                       )}
                     </td>
@@ -283,6 +277,7 @@ export default function SupplyRequestUserListPage() {
                 ))}
               </tbody>
             </table>
+
             {/* 페이지네이션 */}
             <div className="flex justify-end items-center space-x-2 p-4">
               <button

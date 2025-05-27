@@ -142,5 +142,11 @@ public class SupplyRequestController {
         return supplyRequestService.getLentItems(userId, pageable);
     }
 
-
+    // 본인 요청 삭제
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMyRequest(@PathVariable Long id) {
+        supplyRequestService.deleteRequest(id);
+    }
 }
