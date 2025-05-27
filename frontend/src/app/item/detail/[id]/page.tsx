@@ -11,8 +11,9 @@ interface Product {
   id: number;
   name: string;
   serialNumber: string;
-  total_quantity: number;
-  available_quantity: number;
+  totalQuantity: number;
+  availableQuantity: number;
+  rental: boolean; // ← 대여 가능 여부
   location: string;
   createdAt: string;
   buyer: string;
@@ -44,6 +45,7 @@ export default function ItemDetailPage() {
         return res.json() as Promise<Product>;
       })
       .then((data) => {
+        // createdAt을 YYYY-MM-DD로 표시
         const createdDate = data.createdAt.slice(0, 10);
         setProduct({ ...data, createdAt: createdDate });
       })
@@ -88,10 +90,13 @@ export default function ItemDetailPage() {
           <div>{product.serialNumber}</div>
 
           <div className="font-medium">총 보유수량</div>
-          <div>{product.total_quantity}개</div>
+          <div>{product.totalQuantity}개</div>
 
           <div className="font-medium">이용 가능 수량</div>
-          <div>{product.available_quantity}개</div>
+          <div>{product.availableQuantity}개</div>
+
+          <div className="font-medium">대여 여부</div>
+          <div>{product.rental ? "대여" : "비대여"}</div>
 
           <div className="font-medium">위치</div>
           <div>{product.location}</div>
