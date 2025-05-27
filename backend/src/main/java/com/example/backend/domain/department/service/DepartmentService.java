@@ -44,7 +44,6 @@ public class DepartmentService {
             throw new BusinessLogicException(ExceptionCode.AlREADY_HAS_DEPARTMENT);
         }
         Department department = Department.builder()
-                .id(dto.getId())
                 .name(dto.getName())
                 .managementDashboard(dashboard)
                 .build();
