@@ -160,21 +160,25 @@ public class SupplyRequestService {
         SupplyRequest req = repo.findById(requestId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
 
-        // 1) 출고 처리: InventoryOutService 로 availableQuantity 차감
-        InventoryOutRequestDto outDto = InventoryOutRequestDto.builder()
-                .supplyRequestId(req.getId())
-                .itemId(req.getItem().getId())
-                .categoryId(req.getItem().getCategory().getId())
-                .managementId(req.getItem().getManagementDashboard().getId())
-                .quantity(req.getQuantity())
-                .outbound(Outbound.ISSUE.name())
-                .build();
-        outService.removeOutbound(outDto);
-
         String issueMsg;
 
-        // 2) 상태별 분기 처리
         if (newStatus == ApprovalStatus.APPROVED) {
+            // 1) 출고 처리: rental 여부에 따라 LEND 또는 ISSUE
+            String outboundType = req.isRental()
+                    ? Outbound.LEND.name()
+                    : Outbound.ISSUE.name();
+
+            InventoryOutRequestDto outDto = InventoryOutRequestDto.builder()
+                    .supplyRequestId(req.getId())
+                    .itemId(req.getItem().getId())
+                    .categoryId(req.getItem().getCategory().getId())
+                    .managementId(req.getItem().getManagementDashboard().getId())
+                    .quantity(req.getQuantity())
+                    .outbound(outboundType)    // <-- 수정된 부분
+                    .build();
+            outService.removeOutbound(outDto);
+
+            // 2) 승인 처리 분기
             if (req.isRental()) {
                 // ── 대여 승인: 인스턴스 생성 + 상태 RETURN_PENDING ──
                 for (int i = 0; i < req.getQuantity(); i++) {
@@ -185,13 +189,14 @@ public class SupplyRequestService {
                             .status(Status.ACTIVE)
                             .image(req.getItem().getImage())
                             .finalImage(req.getItem().getImage())
+                            .borrower(req.getUser())
                             .build();
                     instanceRepo.save(inst);
                 }
                 req.setApprovalStatus(ApprovalStatus.RETURN_PENDING);
                 issueMsg = "대여 승인 자동 기록";
             } else {
-                // ── 비대여(지급) 승인: totalQuantity & availableQuantity 차감 ──
+                // ── 비대여 승인: totalQuantity & availableQuantity 차감 ──
                 Item item = req.getItem();
                 long qty = req.getQuantity();
                 if (item.getTotalQuantity() < qty || item.getAvailableQuantity() < qty) {
@@ -204,12 +209,14 @@ public class SupplyRequestService {
                 req.setApprovalStatus(ApprovalStatus.APPROVED);
                 issueMsg = "비대여 승인 자동 기록";
             }
+
         } else if (newStatus == ApprovalStatus.REJECTED) {
+            // 거절: 재고 차감 없이 상태만 변경
             req.setApprovalStatus(ApprovalStatus.REJECTED);
             issueMsg = "요청 거절 자동 기록";
 
         } else if (newStatus == ApprovalStatus.RETURNED && req.isRental()) {
-            // ── 반납 처리 ──
+            // 반납 처리
             InventoryInRequestDto inDto = new InventoryInRequestDto();
             inDto.setItemId(req.getItem().getId());
             inDto.setQuantity(req.getQuantity());
@@ -236,7 +243,7 @@ public class SupplyRequestService {
             throw new BusinessLogicException(ExceptionCode.INVALID_REQUEST_STATUS);
         }
 
-        // 3) 비품 추적 기록 저장
+        // 비품 추적 기록 저장
         ChaseItemRequestDto chaseDto = ChaseItemRequestDto.builder()
                 .requestId(req.getId())
                 .productName(req.getProductName())
@@ -245,10 +252,11 @@ public class SupplyRequestService {
                 .build();
         chaseItemService.addChaseItem(chaseDto);
 
-        // 4) 최종 저장 및 DTO 반환
+        // 최종 저장 및 DTO 반환
         SupplyRequest updated = repo.save(req);
         return mapToDto(updated);
     }
+
 
 
     private String generateInstanceCode(Item item) {

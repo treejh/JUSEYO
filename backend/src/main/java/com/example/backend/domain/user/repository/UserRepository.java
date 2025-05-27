@@ -1,12 +1,14 @@
 package com.example.backend.domain.user.repository;
 
 
+import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.RoleType;
 import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.domain.role.entity.Role;
 import com.example.backend.domain.user.dto.response.UserSearchProjection;
+import com.example.backend.enums.Status;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -103,6 +105,23 @@ public interface UserRepository extends JpaRepository<User, Long> {
             List<Role> roles,
             Long excludeUserId
     );
+
+    // 사용자(회원) 이름 포함 검색
+    Page<User> findByNameContainingAndManagementDashboardAndRole(
+            String name,
+            ManagementDashboard managementDashboard,
+            Role role,
+            Pageable pageable
+    );
+
+    List<User> findByDepartmentAndApprovalStatusAndStatus(
+            Department department,
+            ApprovalStatus approvalStatus,
+            Status status
+    );
+
+
+
 
 
 }

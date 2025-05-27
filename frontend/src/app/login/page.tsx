@@ -15,6 +15,19 @@ export default function LoginPage() {
   const handleBackToSelection = () => {
     router.push("/login/type");
   };
+
+  // 이메일 형식 검증
+  const isValidEmailFormat = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // 비밀번호 형식 검증
+  const isValidPasswordFormat = (password: string) => {
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*\W).{8,20}$/;
+    return passwordRegex.test(password);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -23,8 +36,21 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 입력값 검증
     if (!formData.email.trim() || !formData.password.trim()) {
-      setError("이메일과 비밀번호를 모두 입력해주세요.");
+      setError("입력 필드를 모두 입력해주세요.");
+      return;
+    }
+
+    if (!isValidEmailFormat(formData.email)) {
+      setError("이메일 형식에 맞지 않습니다.");
+      return;
+    }
+
+    if (!isValidPasswordFormat(formData.password)) {
+      setError(
+        "비밀번호는 영문자, 숫자, 특수문자를 포함한 8~20자리여야 합니다."
+      );
       return;
     }
 
@@ -43,15 +69,20 @@ export default function LoginPage() {
         }),
         credentials: "include",
       });
+      if (response.status === 403) {
+        alert("로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요.");
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "로그인에 실패했습니다.");
+        throw new Error(
+          "로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요."
+        );
       }
 
-      router.push("/dashboard"); // 로그인 성공 시 대시보드로 이동
+      alert("로그인되었습니다.");
+      window.location.href = "/";
     } catch (error) {
-      setError(error instanceof Error ? error.message : "로그인 중 오류 발생");
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +120,7 @@ export default function LoginPage() {
       >
         <div className="bg-[#0047AB] text-white px-8 py-6 text-center">
           <h2 className="text-2xl font-bold">
-            {loginType === "manager" ? "매니저 로그인" : "회원 로그인"}
+            {loginType === "MANAGER" ? "매니저 로그인" : "회원 로그인"}
           </h2>
           <p className="text-base mt-2 opacity-80">
             계정 정보를 입력하여 로그인하세요.
@@ -135,7 +166,8 @@ export default function LoginPage() {
             </svg>
           </div>
         </div>
-        <div className="px-8 py-8">
+
+        <div className="bg-white px-8 py-8">
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-base">
               {error}
@@ -174,10 +206,17 @@ export default function LoginPage() {
           >
             {isLoading ? "로그인 중..." : "로그인"}
           </button>
-          <div className="mt-4 text-center">
-            <a href="#" className="text-[#0047AB] hover:underline">
-              비밀번호를 잊으셨나요?
-            </a>
+          <div className="mt-4 text-right">
+            <Link href="/find/email" className="text-[#0047AB] hover:underline">
+              이메일 찾기
+            </Link>
+            /
+            <Link
+              href="/find/password"
+              className="text-[#0047AB] hover:underline"
+            >
+              비밀번호 찾기
+            </Link>
           </div>
         </div>
         <div className="bg-gray-50 px-8 py-4 text-center border-t border-gray-200">

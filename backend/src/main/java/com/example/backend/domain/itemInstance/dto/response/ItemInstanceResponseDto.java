@@ -16,6 +16,7 @@ public class ItemInstanceResponseDto {
     private String instanceCode;
     private Status status;
     private Outbound outbound;
+    private String borrowerName;
     private String image;
     private String finalImage;
     private String itemImage;

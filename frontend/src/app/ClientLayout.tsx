@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
 import { Header } from "./components/Header";
@@ -16,12 +16,19 @@ export default function ClientLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const alertedRef = useRef(false);
+  const requestedAlertedRef = useRef(false);
+  const loggedInAuthPageAlertedRef = useRef(false);
+  const loginRequiredAlertedRef = useRef(false);
+
+  const isLoginPage = pathname.startsWith("/login");
+  const isSignupPage = pathname.startsWith("/signup");
+  const isFindPage = pathname.startsWith("/find");
+  const isAdminRequestPage = pathname === "/admin/request";
 
   // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
   const isAuthPage =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup") ||
-    pathname.startsWith("/find/");
+    isLoginPage || isSignupPage || isFindPage || isAdminRequestPage;
   const isRootPage = pathname === "/";
   const shouldHideNav = isAuthPage || isRootPage;
 
@@ -96,6 +103,7 @@ export default function ClientLayout({
           managementDashboardName: userData.managementDashboardName ?? "",
           departmentName: userData.departmentName ?? "",
           role: userData.role ?? "user",
+          approvalStatus: userData.approvalStatus ?? "",
         });
 
         // SSE 연결
@@ -161,7 +169,12 @@ export default function ClientLayout({
           }
         };
 
-        connectSSE();
+        if (
+          userData.approvalStatus !== "REQUESTED" &&
+          userData.approvalStatus !== "REJECTED"
+        ) {
+          connectSSE();
+        }
       } catch (error) {
         console.error("사용자 정보 조회 실패:", error);
         setNoLoginUser();
@@ -172,16 +185,80 @@ export default function ClientLayout({
   }, [isLogin]); // 의존성 배열에서 setLoginUser와 setNoLoginUser 제거
 
   // 로그인되지 않은 사용자가 접근 시 리다이렉트
+
   useEffect(() => {
-    // 로그인 여부 확인 중일 때는 리다이렉트하지 않음
     if (isLoginUserPending) return;
 
-    // 로그인되지 않은 사용자가 인증이 필요한 페이지에 접근하려고 할 때 리다이렉트
-    if (!isLogin && !isAuthPage && !isRootPage) {
-      alert("로그인이 필요한 페이지입니다.");
-      router.push("/login/type");
+    // 요청 상태 유저 알림 + 리다이렉트 (우선 처리)
+    if (
+      isLogin &&
+      loginUser?.approvalStatus === "REQUESTED" &&
+      !isAuthPage &&
+      pathname !== "/user" &&
+      pathname !== "/"
+    ) {
+      if (!requestedAlertedRef.current) {
+        alert("요청상태중인 유저입니다");
+        requestedAlertedRef.current = true;
+      }
+      router.replace("/");
+      return;
     }
-  }, [isLogin, isAuthPage, isRootPage, isLoginUserPending, router]);
+
+    // 요청 상태 유저 알림 + 리다이렉트 (우선 처리)
+    if (
+      isLogin &&
+      loginUser?.approvalStatus === "REJECTED" &&
+      !isAuthPage &&
+      pathname !== "/user" &&
+      pathname !== "/"
+    ) {
+      if (!requestedAlertedRef.current) {
+        alert("접근 거부된 유저입니다");
+        requestedAlertedRef.current = true;
+      }
+      router.replace("/");
+      return;
+    }
+
+    // 이미 로그인된 사용자가 인증 페이지 접근 시 알림 + 이동
+    if (isLogin && isAuthPage) {
+      if (!loggedInAuthPageAlertedRef.current) {
+        alert("이미 로그인된 사용자 입니다.");
+        loggedInAuthPageAlertedRef.current = true;
+      }
+
+      // 로그인된 사용자가 로그인/회원가입/찾기 페이지 접근 시 리다이렉트
+      if (isLogin && (isLoginPage || isSignupPage || isFindPage)) {
+        alert("이미 로그인된 사용자 입니다.");
+        router.push("/");
+        return;
+      }
+
+      // 비로그인 상태에서 인증이 필요한 페이지 접근 시 알림 + 이동
+      if (!isLogin && !isAuthPage && !isRootPage) {
+        if (!loginRequiredAlertedRef.current) {
+          alert("로그인이 필요한 페이지입니다.");
+          loginRequiredAlertedRef.current = true;
+        }
+        router.push("/login/type");
+        return;
+      }
+
+      // 알림 리셋: 경로 바뀔 때마다 리셋해서 동일 경로 재접근 시 alert 다시 뜨도록
+      requestedAlertedRef.current = false;
+      loggedInAuthPageAlertedRef.current = false;
+      loginRequiredAlertedRef.current = false;
+    }
+  }, [
+    isLogin,
+    isAuthPage,
+    isRootPage,
+    isLoginUserPending,
+    router,
+    loginUser,
+    pathname,
+  ]);
 
   if (isLoginUserPending) {
     return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;

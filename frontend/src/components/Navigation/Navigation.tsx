@@ -39,6 +39,7 @@ export default function Navigation({
     if (pathname.includes("request")) return "request";
     if (pathname.includes("inbound")) return "inbound";
     if (pathname.includes("outbound")) return "outbound";
+    if (pathname.includes("iteminstance")) return "iteminstance";
     if (pathname.includes("page-management")) return "page-management";
     if (pathname.includes("department")) return "department";
     if (pathname.includes("category")) return "category";
@@ -46,6 +47,9 @@ export default function Navigation({
     if (pathname.includes("request-history")) return "request-history";
     if (pathname.includes("inventory-view")) return "inventory-view";
     if (pathname.includes("return")) return "return";
+    if (pathname.includes("item/manage")) return "item-manage";
+    if (pathname.includes("supplyrequest/list/user"))
+      return "supply-request-manage";
     return "";
   };
 
@@ -165,7 +169,7 @@ export default function Navigation({
         <ul className="menu-list">
           <li className="menu-item">
             <Link
-              href="/inventory"
+              href="/item/user"
               className={`menu-link ${
                 activeMenu === "inventory" ? "active" : ""
               }`}
@@ -177,7 +181,7 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/item/supplyrequest/list"
+              href="/item/supplyrequest/list/user"
               className={`menu-link ${
                 activeMenu === "request" ? "active" : ""
               }`}
@@ -219,6 +223,18 @@ export default function Navigation({
             >
               <span className="menu-icon">📤</span>
               <span>출고 관리</span>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <Link
+              href="/item/iteminstance"
+              className={`menu-link ${
+                activeMenu === "iteminstance" ? "active" : ""
+              }`}
+              onClick={() => onPageChange?.("iteminstance")}
+            >
+              <span className="menu-icon">🏷️</span>
+              <span>개별자산관리</span>
             </Link>
           </li>
         </ul>
@@ -265,7 +281,31 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/settings/users"
+              href="/item/manage"
+              className={`menu-link ${
+                activeMenu === "item-manage" ? "active" : ""
+              }`}
+              onClick={() => onPageChange?.("item-manage")}
+            >
+              <span className="menu-icon">📦</span>
+              <span>비품 관리</span>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <Link
+              href="/item/supplyrequest/list/manage"
+              className={`menu-link ${
+                activeMenu === "supply-request-manage" ? "active" : ""
+              }`}
+              onClick={() => onPageChange?.("supply-request-manage")}
+            >
+              <span className="menu-icon">📝</span>
+              <span>비품 요청</span>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <Link
+              href="/settings/approve"
               className={`menu-link ${
                 activeMenu === "user-management" ? "active" : ""
               }`}
@@ -342,7 +382,11 @@ export default function Navigation({
   );
 
   return (
-    <aside className={`juseyo-sidebar ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+    <aside
+      className={`juseyo-sidebar ${
+        isSidebarCollapsed ? "sidebar-collapsed" : ""
+      }`}
+    >
       <div className="juseyo-menu-container">
         {/* 사이드바 접기/펼치기 버튼 */}
         {onToggleSidebar && (
