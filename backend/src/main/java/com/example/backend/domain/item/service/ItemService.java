@@ -3,6 +3,7 @@ package com.example.backend.domain.item.service;
 import com.example.backend.domain.analysis.service.InventoryAnalysisService;
 import com.example.backend.domain.category.entity.Category;
 import com.example.backend.domain.category.repository.CategoryRepository;
+import com.example.backend.domain.item.dto.response.ItemCardResponseDto;
 import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemSearchProjection;
 import com.example.backend.domain.item.entity.Item;
@@ -230,4 +231,19 @@ public class ItemService {
     public boolean existsActiveName(String name) {
         return repo.findByNameAndStatus(name, Status.ACTIVE).isPresent();
     }
+
+    //카테고리별 비품 조회
+    @Transactional(readOnly = true)
+    public Page<ItemCardResponseDto> getItemsByCategory(Long categoryId, Pageable pageable) {
+        Page<Item> page = repo.findByCategoryId(categoryId, pageable);
+        return page.map(item -> new ItemCardResponseDto(
+                item.getId(),
+                item.getName(),
+                item.getCategory().getName(),
+                item.getImage(),
+                item.getAvailableQuantity()
+        ));
+    }
+
+
 }

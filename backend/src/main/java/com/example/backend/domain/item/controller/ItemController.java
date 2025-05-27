@@ -1,10 +1,13 @@
 package com.example.backend.domain.item.controller;
 
 import com.example.backend.domain.item.dto.request.ItemRequestDto;
+import com.example.backend.domain.item.dto.response.ItemCardResponseDto;
 import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemResponseDto;
 import com.example.backend.domain.item.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -103,5 +106,25 @@ public class ItemController {
     public Map<String, Boolean> existsByName(@RequestParam String name) {
         boolean exists = service.existsActiveName(name);
         return Collections.singletonMap("exists", exists);
+    }
+
+    //카테고리별 비품 조회
+    @Operation(
+            summary = "카테고리별 비품 조회",
+            description = "카테고리 ID를 기준으로 해당 카테고리에 속한 비품들을 페이지 단위로 조회합니다."
+    )
+    @GetMapping("/by-category")
+    public ResponseEntity<Page<ItemCardResponseDto>> getItemsByCategory(
+            @Parameter(name = "categoryId", description = "조회할 카테고리 ID", required = true, in = ParameterIn.QUERY)
+            @RequestParam("categoryId") Long categoryId,
+
+            @Parameter(name = "page", description = "조회할 페이지 번호 (0부터 시작)", in = ParameterIn.QUERY)
+            @RequestParam(name = "page", defaultValue = "0") int page,
+
+            @Parameter(name = "size", description = "페이지당 항목 수", in = ParameterIn.QUERY)
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(service.getItemsByCategory(categoryId, pageable));
     }
 }

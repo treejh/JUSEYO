@@ -65,5 +65,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     // 상태가 ACTIVE인 아이템 가져오기
     List<Item> findAllByStatus(Status status);
 
+    //카테고리별 비품 조회
+    Page<Item> findByCategoryId(Long categoryId, Pageable pageable);
+
+
 }
 
