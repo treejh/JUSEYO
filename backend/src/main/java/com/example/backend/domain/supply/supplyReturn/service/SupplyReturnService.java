@@ -78,7 +78,7 @@ public class SupplyReturnService {
         supplyReturnRepository.save(supplyReturn);
 
         // 반납 요청 알림 발생
-        eventPublisher.publishEvent(new SupplyReturnCreatedEvent(item.getName(), supplyRequest.getQuantity(), user.getName()));
+        eventPublisher.publishEvent(new SupplyReturnCreatedEvent(item.getName(), supplyRequest.getQuantity(), user.getName(), supplyReturnRequestDto.getOutbound()));
 
         return toDto(supplyReturn);
 

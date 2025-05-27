@@ -121,7 +121,7 @@ public class TestNotificationController {
         dto.setProductName(pen.getName());
         dto.setQuantity(2L);
         dto.setReturnDate(LocalDateTime.now());
-        dto.setOutbound(Outbound.AVAILABLE);
+        dto.setOutbound(Outbound.DAMAGED);
 
         supplyReturnService.addSupplyReturn(dto);
     }

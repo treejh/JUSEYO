@@ -31,7 +31,7 @@ public class NotificationEventListener {
     // 비품 반납 알림
     @EventListener
     public void handleSupplyReturnCreated(SupplyReturnCreatedEvent event) {
-        supplyReturnNotificationService.notifySupplyReturn(event.getItemName(), event.getRequestQuantity(), event.getReturnerName());
+        supplyReturnNotificationService.notifySupplyReturn(event.getItemName(), event.getRequestQuantity(), event.getReturnerName(), event.getReturnStatus());
     }
 
     // 재고 부족 알림

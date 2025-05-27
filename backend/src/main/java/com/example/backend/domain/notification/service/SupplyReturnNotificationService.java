@@ -5,6 +5,7 @@ import com.example.backend.domain.notification.entity.NotificationType;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
 import com.example.backend.domain.notification.strategy.context.SupplyReturnContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
+import com.example.backend.enums.Outbound;
 import com.example.backend.enums.RoleType;
 import com.example.backend.domain.role.service.RoleService;
 import com.example.backend.domain.role.entity.Role;
@@ -26,10 +27,10 @@ public class SupplyReturnNotificationService {
     private final RoleService roleService;
 
     @Transactional
-    public void notifySupplyReturn(String itemName, Long itemQuantity, String returnerName) {
+    public void notifySupplyReturn(String itemName, Long itemQuantity, String returnerName, Outbound returnStatus) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_RETURN);
 
-        SupplyReturnContext context = new SupplyReturnContext(itemName, itemQuantity, returnerName);
+        SupplyReturnContext context = new SupplyReturnContext(itemName, itemQuantity, returnerName, returnStatus);
 
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 
