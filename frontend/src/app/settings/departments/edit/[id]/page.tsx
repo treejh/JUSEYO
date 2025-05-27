@@ -9,22 +9,32 @@ const EditDepartmentPage: FC = () => {
   const params = useParams();
   const [departmentName, setDepartmentName] = useState("");
 
-  useEffect(() => {
-    // TODO: API에서 부서 정보를 가져오는 로직 구현
-    // 임시 데이터
-    const mockDepartment = {
-      id: Number(params.id),
-      name: "개발팀",
-      memberCount: 15,
-      status: "사용"
-    };
-    setDepartmentName(mockDepartment.name);
-  }, [params.id]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 부서 수정 로직 구현
-    console.log("부서 수정:", { id: params.id, name: departmentName });
+    if (departmentName.length > 10) {
+      alert("부서 이름은 최대 10글자까지 가능합니다.");
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/departments/${params.id}`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: departmentName }),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.message || "부서명 수정에 실패했습니다.");
+        return;
+      }
+      alert("부서명이 수정되었습니다.");
+      window.location.href = "/settings/departments";
+    } catch (err) {
+      alert("부서명 수정 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -74,4 +84,4 @@ const EditDepartmentPage: FC = () => {
   );
 };
 
-export default EditDepartmentPage; 
+export default EditDepartmentPage;

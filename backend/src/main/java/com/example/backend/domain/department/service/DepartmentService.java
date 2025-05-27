@@ -2,7 +2,7 @@ package com.example.backend.domain.department.service;
 
 
 import com.example.backend.domain.department.dto.request.DepartmentCreateRequestDTO;
-import com.example.backend.domain.department.dto.response.DepartmentUpdateRequestDTO;
+import com.example.backend.domain.department.dto.request.DepartmentUpdateRequestDTO;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.managementDashboard.repository.ManagementDashboardRepository;
