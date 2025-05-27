@@ -46,6 +46,13 @@ public class ChaseItemService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<ChaseItemResponseDto> getAll() {
+        return repo.findAll().stream()
+                .map(this::map)
+                .collect(Collectors.toList());
+    }
+
     private ChaseItemResponseDto map(ChaseItem e) {
         return ChaseItemResponseDto.builder()
                 .id(e.getId())
