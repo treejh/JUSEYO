@@ -117,7 +117,7 @@ export default function Navigation({
         </li>
         <li className="menu-item">
           <Link
-            href="/chat"
+            href="/chat/select"
             className={`menu-link ${activeMenu === "chat" ? "active" : ""}`}
             onClick={() => onPageChange?.("chat")}
           >

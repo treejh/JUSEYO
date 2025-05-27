@@ -3,6 +3,9 @@ package com.example.backend.domain.category.dto.response;
 import com.example.backend.domain.category.entity.Category;
 import lombok.*;
 
+import java.util.List;
+import java.util.Optional;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -19,7 +22,9 @@ public class CategoryResponseDTO {
                 .id(category.getId())
                 .name(category.getName())
                 .managementDashboardId(category.getManagementDashboard().getId())
-                .itemCount(category.getItemList() != null ? category.getItemList().size() : 0)
+                .itemCount(Optional.ofNullable(category.getItemList())
+                        .map(List::size)
+                        .orElse(0))
                 .build();
     }
 }

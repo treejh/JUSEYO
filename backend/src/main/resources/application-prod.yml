@@ -1,37 +1,37 @@
 # 배포 환경
 
-server:
-  port: 8080
-spring:
-  datasource:
-    url: jdbc:mysql://mysql_1:3306/blog_prod
-    username: ll
-    password: ${custom.prod.db.password}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      auto-commit: false
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: false
-        highlight_sql: false
-        use_sql_comments: false
-logging:
-  level:
-    com.back: INFO
-    org.hibernate.SQL: INFO
-    org.hibernate.orm.jdbc.bind: INFO
-    org.hibernate.orm.jdbc.extract: INFO
-    org.springframework.transaction.interceptor: INFO
-custom:
-  site:
-    cookieDomain: "${custom.prod.cookieDomain}"
-    frontUrl: "${custom.prod.frontUrl}"
-    backUrl: "${custom.prod.backUrl}"
-  genFile:
-    dirPath: /gen
+# server:
+#   port: 8080
+# spring:
+#   datasource:
+#     url: jdbc:mysql://mysql_1:3306/blog_prod
+#     username: ll
+#     password: ${custom.prod.db.password}
+#     driver-class-name: com.mysql.cj.jdbc.Driver
+#     hikari:
+#       auto-commit: false
+#   jpa:
+#     hibernate:
+#       ddl-auto: update
+#     properties:
+#       hibernate:
+#         format_sql: false
+#         highlight_sql: false
+#         use_sql_comments: false
+# logging:
+#   level:
+#     com.back: INFO
+#     org.hibernate.SQL: INFO
+#     org.hibernate.orm.jdbc.bind: INFO
+#     org.hibernate.orm.jdbc.extract: INFO
+#     org.springframework.transaction.interceptor: INFO
+# custom:
+#   site:
+#     cookieDomain: "${custom.prod.cookieDomain}"
+#     frontUrl: "${custom.prod.frontUrl}"
+#     backUrl: "${custom.prod.backUrl}"
+#   genFile:
+#     dirPath: /gen
 
-recommend:
-  flask-url: http://flask-recommender:5000/
+# recommend:
+#   flask-url: http://flask-recommender:5000/
