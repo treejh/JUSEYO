@@ -9,6 +9,7 @@ public enum NotificationType {
     RETURN_DUE_DATE_EXCEEDED("지정 반납일 초과"),  // 지정 반납일 초과
     NOT_RETURNED_YET("장기 미반납 비품 목록 알림"), // 장기 미반납 비품 목록 알림
 
+    NEW_MANAGEMENT_DASHBOARD("새로운 관리 페이지 승인 요청 알림"),
     ADMIN_APPROVAL_ALERT("관리 페이지 승인 알림"), // 관리 페이지 승인 알림 (어드민 -> 이니셜 매니저)
     ADMIN_REJECTION_ALERT("관리 페이지 거부 알림"), // 관리 페이지 거부 알림 (어드민 -> 이니셜 매니저)
 

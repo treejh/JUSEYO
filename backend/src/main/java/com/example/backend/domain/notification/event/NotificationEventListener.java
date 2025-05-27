@@ -23,6 +23,7 @@ public class NotificationEventListener {
     private final NewManagerRejectedNotificationService newManagerRejectedNotificationService;
     private final SupplyReturnApprovedNotificationService supplyReturnApprovedNotificationService;
     private final NewManagerNotificationService newManagerNotificationService;
+    private final NewDashboardNotificationService newDashboardNotificationService;
 
     // 매니저
     // 비품 요청 알림
@@ -41,6 +42,12 @@ public class NotificationEventListener {
     @EventListener
     public void handleStockShortage(StockShortageEvent event) {
         stockNotificationService.checkAndNotifyLowStock(event.getSerialNumber(), event.getItemName(), event.getCurrentQuantity(), event.getMinimumQuantity());
+    }
+
+    @EventListener
+    // 관리 페이지 생성 승인 요청 알림
+    public void handleNewDashboard(NewDashboardEvent event) {
+        newDashboardNotificationService.notifyNewDashboard(event.dashboardName, event.getRequesterName());
     }
 
     @EventListener

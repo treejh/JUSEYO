@@ -24,6 +24,7 @@ public class NotificationStrategyFactory {
 
         strategyMap.put(NotificationType.ADMIN_APPROVAL_ALERT, new NewDashboardApprovedStrategy());
         strategyMap.put(NotificationType.ADMIN_REJECTION_ALERT, new NewDashboardRejectedStrategy());
+        strategyMap.put(NotificationType.NEW_MANAGEMENT_DASHBOARD, new NewDashboardStrategy());
 
         strategyMap.put(NotificationType.MANAGER_APPROVAL_ALERT, new NewManagerApprovedStrategy());
         strategyMap.put(NotificationType.MANAGER_REJECTION_ALERT, new NewManagerRejectedStrategy());

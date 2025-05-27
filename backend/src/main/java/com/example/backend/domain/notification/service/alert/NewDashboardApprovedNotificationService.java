@@ -3,7 +3,7 @@ package com.example.backend.domain.notification.service.alert;
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.NotificationType;
 import com.example.backend.domain.notification.service.NotificationService;
-import com.example.backend.domain.notification.strategy.context.NewDashboardContext;
+import com.example.backend.domain.notification.strategy.context.NewDashboardApproveOrNotContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
 import com.example.backend.domain.user.entity.User;
@@ -26,7 +26,7 @@ public class NewDashboardApprovedNotificationService {
     public void handleNewDashboardApproved(Long dashboardId, String dashboardName) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.ADMIN_APPROVAL_ALERT);
 
-        NewDashboardContext context = new NewDashboardContext(dashboardName);
+        NewDashboardApproveOrNotContext context = new NewDashboardApproveOrNotContext(dashboardName);
 
         User user = userService.findUserByDashboardIdAndIsInitialManager(dashboardId, true);
 
