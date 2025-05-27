@@ -7,10 +7,32 @@ import { FC, useState } from "react";
 const AddDepartmentPage: FC = () => {
   const [departmentName, setDepartmentName] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 부서 추가 로직 구현
-    console.log("부서 추가:", departmentName);
+    if (departmentName.length > 10) {
+      alert("부서 이름은 10글자까지 가능합니다.");
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/departments`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: departmentName }),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.message || "부서 생성에 실패했습니다.");
+        return;
+      }
+      alert("부서가 생성되었습니다.");
+      window.location.href = "/settings/departments";
+    } catch (err) {
+      alert("부서 생성 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -60,4 +82,4 @@ const AddDepartmentPage: FC = () => {
   );
 };
 
-export default AddDepartmentPage; 
+export default AddDepartmentPage;
