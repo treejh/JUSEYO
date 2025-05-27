@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
@@ -12,16 +12,19 @@ interface Item {
   isReturnRequired: boolean;
 }
 
-export default function SupplyRequestCreatePage() {
+export default function SupplyRequestItemCreatePage() {
   const router = useRouter();
+  const params = useParams();
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const { loginUser, isLogin } = useGlobalLoginUser();
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  // URL 파라미터에서 넘어온 item id
+  const prefillId = params.id ? Number(params.id) : null;
 
   // 로그인 보장
   useEffect(() => {
     if (!isLogin) router.push("/login");
   }, [isLogin, router]);
-
   if (!isLogin || !loginUser) return null;
   const user = loginUser as any;
 
@@ -30,8 +33,6 @@ export default function SupplyRequestCreatePage() {
   const [search, setSearch] = useState("");
   const [filtered, setFiltered] = useState<Item[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [rental, setRental] = useState(false);
@@ -40,16 +41,32 @@ export default function SupplyRequestCreatePage() {
     new Date().toISOString().slice(0, 10)
   );
   const [purpose, setPurpose] = useState("");
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // 전체 ACTIVE 품목 로드
+  // 1) 전체 ACTIVE 품목 로드
   useEffect(() => {
-    fetch(`${API_BASE}/api/v1/items/active`, { credentials: "include" })
+    fetch(`${API_BASE}/api/v1/items/active`, {
+      credentials: "include",
+    })
       .then((res) => res.json())
-      .then((data) => setItems(data.content || data))
-      .catch(() => setItems([]));
-  }, [API_BASE]);
+      .then((data: { content?: Item[] } | Item[]) => {
+        const list = Array.isArray(data) ? data : data.content || [];
+        setItems(list);
 
-  // 검색어 변경 시 필터링 (대여 여부 무관)
+        // URL 파라미터에 prefillId 있으면, 해당 아이템을 selected 상태로
+        if (prefillId != null) {
+          const match = list.find((it) => it.id === prefillId);
+          if (match) {
+            setSelectedItem(match);
+            setSearch(match.name);
+            setShowDropdown(false);
+          }
+        }
+      })
+      .catch(() => setItems([]));
+  }, [API_BASE, prefillId]);
+
+  // 2) 검색어 변경 시 필터링
   useEffect(() => {
     const f = items.filter((item) =>
       item.name.toLowerCase().includes(search.toLowerCase())
@@ -58,7 +75,7 @@ export default function SupplyRequestCreatePage() {
     setShowDropdown(f.length > 0 && search.trim() !== "");
   }, [items, search]);
 
-  // 외부 클릭 시 드롭다운 닫기
+  // 3) 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (
@@ -72,13 +89,12 @@ export default function SupplyRequestCreatePage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // 4) 제출
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedItem) return alert("항목을 선택해주세요.");
     if (quantity < 1) return alert("수량을 확인해주세요.");
     if (!purpose.trim()) return alert("목적을 입력해주세요.");
-
-    // 대여 여부에 따른 필수 반환 요구 체크
     if (rental && !selectedItem.isReturnRequired) {
       return alert("대여 비품이 아닙니다");
     }
@@ -115,6 +131,7 @@ export default function SupplyRequestCreatePage() {
           </Link>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* 요청자 */}
           <div>
             <label className="block mb-1">요청자</label>
             <input
@@ -123,6 +140,8 @@ export default function SupplyRequestCreatePage() {
               disabled
             />
           </div>
+
+          {/* 품목 검색 */}
           <div ref={wrapperRef} className="relative">
             <label className="block mb-1">품목 검색</label>
             <input
@@ -152,6 +171,8 @@ export default function SupplyRequestCreatePage() {
               </ul>
             )}
           </div>
+
+          {/* 수량 / 대여 여부 */}
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block mb-1">수량</label>
@@ -187,6 +208,8 @@ export default function SupplyRequestCreatePage() {
               </div>
             </div>
           </div>
+
+          {/* 사용·반납 일자 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1">사용 일자</label>
@@ -209,6 +232,8 @@ export default function SupplyRequestCreatePage() {
               </div>
             )}
           </div>
+
+          {/* 요청 사유 */}
           <div>
             <label className="block mb-1">요청 사유</label>
             <textarea
@@ -217,6 +242,8 @@ export default function SupplyRequestCreatePage() {
               onChange={(e) => setPurpose(e.target.value)}
             />
           </div>
+
+          {/* 제출 */}
           <button
             type="submit"
             className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700"

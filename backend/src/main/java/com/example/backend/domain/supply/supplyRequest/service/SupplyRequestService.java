@@ -185,7 +185,7 @@ public class SupplyRequestService {
                     throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
                 }
                 item.setTotalQuantity(item.getTotalQuantity() - qty);
-                item.setAvailableQuantity(item.getAvailableQuantity() - qty);
+                //item.setAvailableQuantity(item.getAvailableQuantity() - qty);
                 itemRepo.save(item);
 
                 req.setApprovalStatus(ApprovalStatus.APPROVED);

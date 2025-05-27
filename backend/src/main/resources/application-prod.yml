@@ -4,6 +4,10 @@ server:
   port: 8080
 spring:
   datasource:
+    url: jdbc:mysql://mysql_1:3306/blog_prod
+    username: ll
+    password: ${custom.prod.db.password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       auto-commit: false
   jpa:
@@ -28,3 +32,6 @@ custom:
     backUrl: "${custom.prod.backUrl}"
   genFile:
     dirPath: /gen
+
+recommend:
+  flask-url: http://flask-recommender:5000/
