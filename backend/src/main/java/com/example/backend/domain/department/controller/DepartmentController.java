@@ -4,7 +4,7 @@ package com.example.backend.domain.department.controller;
 import com.example.backend.domain.department.dto.request.DepartmentCreateRequestDTO;
 import com.example.backend.domain.department.dto.request.UpdateUserDepartmentRequest;
 import com.example.backend.domain.department.dto.response.DepartmentResponseDTO;
-import com.example.backend.domain.department.dto.response.DepartmentUpdateRequestDTO;
+import com.example.backend.domain.department.dto.request.DepartmentUpdateRequestDTO;
 import com.example.backend.domain.department.dto.response.UserResponseDTO;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.service.DepartmentService;
