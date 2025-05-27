@@ -22,13 +22,17 @@ type NotificationType =
   | "MANAGER_REJECTION_ALERT"
   | "ADMIN_REJECTION_ALERT"
   | "SUPPLY_RETURN_APPROVED"
-  | "NOT_RETURNED_YET";
+  | "NOT_RETURNED_YET"
+  | "OTHER";
 
-const MANAGER_NOTIFICATION_TYPES: NotificationType[] = [
+const MANAGER_MAIN_NOTIFICATION_TYPES: NotificationType[] = [
   "SUPPLY_REQUEST",
   "SUPPLY_RETURN",
   "STOCK_SHORTAGE",
   "RETURN_DUE_DATE_EXCEEDED",
+];
+
+const MANAGER_OTHER_NOTIFICATION_TYPES: NotificationType[] = [
   "NEW_CHAT",
   "NOT_RETURNED_YET",
   "ADMIN_APPROVAL_ALERT",
@@ -41,6 +45,19 @@ const USER_NOTIFICATION_TYPES: NotificationType[] = [
   "SUPPLY_REQUEST_APPROVED",
   "SUPPLY_REQUEST_REJECTED",
   "SUPPLY_RETURN_APPROVED",
+  "RETURN_DUE_SOON",
+  "SUPPLY_REQUEST_DELAYED",
+  "NEW_CHAT",
+];
+
+// Add new constant for grouped notification types
+const USER_MAIN_NOTIFICATION_TYPES: NotificationType[] = [
+  "SUPPLY_REQUEST_APPROVED",
+  "SUPPLY_REQUEST_REJECTED",
+  "SUPPLY_RETURN_APPROVED",
+];
+
+const USER_OTHER_NOTIFICATION_TYPES: NotificationType[] = [
   "RETURN_DUE_SOON",
   "SUPPLY_REQUEST_DELAYED",
   "NEW_CHAT",
@@ -59,6 +76,11 @@ interface NotificationPageResponse {
   totalElements: number;
   totalPages: number;
 }
+
+// Add type definitions for filtered notification types
+type FilteredNotificationTypes =
+  | { type: "manager"; main: NotificationType[]; other: NotificationType[] }
+  | { type: "user"; main: NotificationType[]; other: NotificationType[] };
 
 const NOTIFICATION_TYPE_LABELS: Record<
   NotificationType,
@@ -203,6 +225,15 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
+  OTHER: {
+    label: "기타",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
 };
 
 export default function NotificationsPage() {
@@ -224,10 +255,21 @@ export default function NotificationsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const pageSize = 10;
 
-  // 사용자 ROLE에 따른 알림 타입 필터링
-  const getFilteredNotificationTypes = () => {
+  // Modify the getFilteredNotificationTypes function
+  const getFilteredNotificationTypes = (): FilteredNotificationTypes => {
     const isManager = loginUser.role === "MANAGER";
-    return isManager ? MANAGER_NOTIFICATION_TYPES : USER_NOTIFICATION_TYPES;
+    if (isManager) {
+      return {
+        type: "manager",
+        main: MANAGER_MAIN_NOTIFICATION_TYPES,
+        other: MANAGER_OTHER_NOTIFICATION_TYPES,
+      };
+    }
+    return {
+      type: "user",
+      main: USER_MAIN_NOTIFICATION_TYPES,
+      other: USER_OTHER_NOTIFICATION_TYPES,
+    };
   };
 
   const fetchNotifications = async () => {
@@ -240,12 +282,65 @@ export default function NotificationsPage() {
 
       // 알림 타입 필터링 처리
       if (selectedType !== "ALL") {
-        const allowedTypes = getFilteredNotificationTypes();
-        if (allowedTypes.includes(selectedType)) {
-          params.append("type", selectedType);
+        const filteredTypes = getFilteredNotificationTypes();
+        if (selectedType === "OTHER") {
+          // 기타 카테고리에 속하는 알림 타입들을 각각 조회하여 합치기
+          const otherTypes = filteredTypes.other;
+          const allNotifications: Notification[] = [];
+          let totalElements = 0;
+          let totalPages = 0;
+
+          // 각 타입별로 알림을 가져와서 합치기
+          for (const type of otherTypes) {
+            const typeParams = new URLSearchParams({
+              page: "0", // 첫 페이지부터
+              size: "100", // 충분히 큰 수로 설정
+              ...(showUnreadOnly && { unreadOnly: "true" }),
+              type: type,
+            });
+
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications?${typeParams}`,
+              {
+                credentials: "include",
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error("알림 목록을 불러오는데 실패했습니다.");
+            }
+
+            const data: NotificationPageResponse = await response.json();
+            allNotifications.push(...data.notifications);
+            totalElements += data.totalElements;
+            totalPages = Math.max(totalPages, data.totalPages);
+          }
+
+          // 날짜순으로 정렬
+          allNotifications.sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+
+          // 페이지네이션 처리
+          const startIndex = currentPage * pageSize;
+          const endIndex = startIndex + pageSize;
+          const paginatedNotifications = allNotifications.slice(
+            startIndex,
+            endIndex
+          );
+
+          setNotifications(paginatedNotifications);
+          setTotalPages(Math.ceil(allNotifications.length / pageSize));
+          setTotalElements(allNotifications.length);
+          setIsLoading(false);
+          return;
         } else {
-          // 선택된 타입이 허용되지 않은 경우, 전체 알림을 가져옴
-          setSelectedType("ALL");
+          if (filteredTypes.main.includes(selectedType)) {
+            params.append("type", selectedType);
+          } else {
+            setSelectedType("ALL");
+          }
         }
       }
 
@@ -599,22 +694,43 @@ export default function NotificationsPage() {
                     >
                       전체
                     </button>
-                    {getFilteredNotificationTypes().map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => {
-                          setSelectedType(type);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
-                          selectedType === type
-                            ? "bg-blue-50 text-blue-600"
-                            : ""
-                        }`}
-                      >
-                        {NOTIFICATION_TYPE_LABELS[type].label}
-                      </button>
-                    ))}
+                    {(() => {
+                      const filteredTypes = getFilteredNotificationTypes();
+                      return (
+                        <>
+                          {filteredTypes.main.map((type: NotificationType) => (
+                            <button
+                              key={type}
+                              onClick={() => {
+                                setSelectedType(type);
+                                setIsDropdownOpen(false);
+                              }}
+                              className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                                selectedType === type
+                                  ? "bg-blue-50 text-blue-600"
+                                  : ""
+                              }`}
+                            >
+                              {NOTIFICATION_TYPE_LABELS[type].label}
+                            </button>
+                          ))}
+                          <div className="border-t border-gray-200 my-1"></div>
+                          <button
+                            onClick={() => {
+                              setSelectedType("OTHER");
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                              selectedType === "OTHER"
+                                ? "bg-blue-50 text-blue-600"
+                                : ""
+                            }`}
+                          >
+                            기타
+                          </button>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               )}

@@ -1,5 +1,3 @@
-# 배포 환경
-
 server:
   port: 8080
 spring:
