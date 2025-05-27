@@ -4,6 +4,7 @@ import com.example.backend.domain.inventory.inventoryOut.dto.request.InventoryOu
 import com.example.backend.domain.inventory.inventoryOut.service.InventoryOutService;
 import com.example.backend.domain.item.entity.Item;
 import com.example.backend.domain.item.repository.ItemRepository;
+import com.example.backend.domain.managementDashboard.service.ManagementDashboardService;
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.Notification;
 import com.example.backend.domain.notification.entity.NotificationType;
@@ -15,7 +16,9 @@ import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.domain.supply.supplyRequest.service.SupplyRequestService;
 import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnRequestDto;
+import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnStatusUpdateRequestDto;
 import com.example.backend.domain.supply.supplyReturn.entity.SupplyReturn;
+import com.example.backend.domain.supply.supplyReturn.repository.SupplyReturnRepository;
 import com.example.backend.domain.supply.supplyReturn.service.SupplyReturnService;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.service.UserService;
@@ -49,6 +52,8 @@ public class TestNotificationController {
     private final InventoryOutService inventoryOutService;
     private final SupplyReturnService supplyReturnService;
     private final SupplyRequestRepository supplyRequestRepository;
+    private final SupplyReturnRepository supplyReturnRepository;
+    private final ManagementDashboardService managementDashboardService;
 
 
     // 테스트용 알림 보내기 API
@@ -126,6 +131,10 @@ public class TestNotificationController {
         supplyReturnService.addSupplyReturn(dto);
     }
 
+    public void sendNewDashboardApproved(){
+        managementDashboardService.approvalManagementDashBoard(2L);
+    }
+
     // =========================================================================
     // 회원
     // 비품 요청 승인
@@ -160,4 +169,19 @@ public class TestNotificationController {
         return;
 
     }
+
+    public void sendSupplyReturnApproved() {
+        SupplyReturn request = supplyReturnRepository.findById(2L).get();
+        if(!request.getApprovalStatus().equals(ApprovalStatus.REQUESTED)) {
+            request.setApprovalStatus(ApprovalStatus.REQUESTED);
+        }
+        SupplyReturnStatusUpdateRequestDto dto = new SupplyReturnStatusUpdateRequestDto();
+
+
+        dto.setApprovalStatus(ApprovalStatus.REQUESTED);
+        supplyReturnService.updateSupplyReturn(2L, dto);
+        return;
+    }
+
+
 }
