@@ -38,8 +38,6 @@ public class TokenService {
             for(Cookie cookie : cookies){
                 if("accessToken".equals(cookie.getName())){
                     return cookie.getValue();
-                }else if("refreshToken".equals(cookie.getName())){
-                    return cookie.getValue();
                 }
             }
         }
