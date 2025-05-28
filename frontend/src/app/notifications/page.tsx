@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -384,12 +383,91 @@ export default function NotificationsPage() {
     }
   }, [loginUser.id, currentPage, selectedType, showUnreadOnly]);
 
+  // BroadcastChannel 설정
+  React.useEffect(() => {
+    const channel = new BroadcastChannel("notifications");
+
+    // 다른 탭에서 온 알림 수신
+    channel.onmessage = (event) => {
+      if (event.data.type === "MARK_AS_READ") {
+        // 읽음 처리
+        useNotificationStore.getState().markAsRead(event.data.notificationId);
+      } else if (event.data.type === "MARK_ALL_AS_READ") {
+        // 전체 읽음 처리
+        useNotificationStore.getState().markAllAsRead();
+      } else if (event.data.type === "NEW_NOTIFICATION") {
+        // 새 알림 추가
+        useNotificationStore.getState().addNotification(event.data.data);
+      }
+    };
+
+    return () => {
+      channel.close();
+    };
+  }, []);
+
   const handleCheckboxChange = (notificationId: number) => {
     setSelectedNotifications((prev) =>
       prev.includes(notificationId)
         ? prev.filter((id) => id !== notificationId)
         : [...prev, notificationId]
     );
+  };
+
+  const handleMarkSelectedAsRead = async () => {
+    if (selectedNotifications.length === 0) return;
+
+    try {
+      const markAsReadPromises = selectedNotifications.map((id) =>
+        fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/${id}/read`,
+          {
+            method: "PUT",
+            credentials: "include",
+          }
+        ).then(async (response) => {
+          if (response.ok) {
+            // 각 알림의 상태를 스토어에서도 업데이트
+            useNotificationStore.getState().markAsRead(id);
+
+            // 다른 탭에 알림
+            const channel = new BroadcastChannel("notifications");
+            channel.postMessage({
+              type: "MARK_AS_READ",
+              notificationId: id,
+            });
+            channel.close();
+          }
+          return response;
+        })
+      );
+
+      await Promise.all(markAsReadPromises);
+      setSelectedNotifications([]);
+      await fetchNotifications();
+    } catch (err) {
+      setError("알림 상태 변경 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/delete?notificationId=${notificationId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("알림 삭제에 실패했습니다.");
+      }
+
+      fetchNotifications();
+    } catch (err) {
+      setError("알림 삭제 중 오류가 발생했습니다.");
+    }
   };
 
   const handleDeleteSelected = async () => {
@@ -451,57 +529,17 @@ export default function NotificationsPage() {
 
       // 알림 스토어의 상태도 업데이트
       useNotificationStore.getState().markAllAsRead();
+
+      // 다른 탭에 알림
+      const channel = new BroadcastChannel("notifications");
+      channel.postMessage({
+        type: "MARK_ALL_AS_READ",
+      });
+      channel.close();
+
       await fetchNotifications();
     } catch (err) {
       setError("알림 상태 변경 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleMarkSelectedAsRead = async () => {
-    if (selectedNotifications.length === 0) return;
-
-    try {
-      const markAsReadPromises = selectedNotifications.map((id) =>
-        fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/${id}/read`,
-          {
-            method: "PUT",
-            credentials: "include",
-          }
-        ).then(async (response) => {
-          if (response.ok) {
-            // 각 알림의 상태를 스토어에서도 업데이트
-            useNotificationStore.getState().markAsRead(id);
-          }
-          return response;
-        })
-      );
-
-      await Promise.all(markAsReadPromises);
-      setSelectedNotifications([]);
-      await fetchNotifications();
-    } catch (err) {
-      setError("알림 상태 변경 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleDeleteNotification = async (notificationId: number) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/delete?notificationId=${notificationId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("알림 삭제에 실패했습니다.");
-      }
-
-      fetchNotifications();
-    } catch (err) {
-      setError("알림 삭제 중 오류가 발생했습니다.");
     }
   };
 
