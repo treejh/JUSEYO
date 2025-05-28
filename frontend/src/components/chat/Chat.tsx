@@ -424,6 +424,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
                       {new Date(msg.createDate).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
+                        timeZone: "Asia/Seoul",
                       })}
                     </small>
                   )}
