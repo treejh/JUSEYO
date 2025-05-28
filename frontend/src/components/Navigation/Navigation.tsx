@@ -157,6 +157,16 @@ export default function Navigation({
             <span>검색</span>
           </Link>
         </li>
+        <li className="menu-item">
+          <Link
+            href="/item/supplyrequest/list/user"
+            className={`menu-link ${activeMenu === "request" ? "active" : ""}`}
+            onClick={() => onPageChange?.("request")}
+          >
+            <span className="menu-icon">✏️</span>
+            <span>비품 요청</span>
+          </Link>
+        </li>
       </ul>
     </div>
   );
@@ -175,20 +185,18 @@ export default function Navigation({
               }`}
               onClick={() => onPageChange?.("inventory")}
             >
-              <span className="menu-icon">📦</span>
-              <span>비품 관리</span>
+              <span className="menu-icon">🗂️</span>
+              <span>비품 조회</span>
             </Link>
           </li>
           <li className="menu-item">
             <Link
-              href="/item/supplyrequest/list/user"
-              className={`menu-link ${
-                activeMenu === "request" ? "active" : ""
-              }`}
-              onClick={() => onPageChange?.("request")}
+              href="/item/supplyrequest/list/manage"
+              className={`menu-link ${activeMenu === "supply-request-manage" ? "active" : ""}`}
+              onClick={() => onPageChange?.("supply-request-manage")}
             >
-              <span className="menu-icon">📝</span>
-              <span>비품 요청</span>
+              <span className="menu-icon">📋</span>
+              <span>비품 요청 내역</span>
             </Link>
           </li>
           <li className="menu-item">
@@ -197,8 +205,8 @@ export default function Navigation({
               className={`menu-link ${activeMenu === "return" ? "active" : ""}`}
               onClick={() => onPageChange?.("return")}
             >
-              <span className="menu-icon">↩️</span>
-              <span>비품 반납</span>
+              <span className="menu-icon">🔄</span>
+              <span>비품 반납 내역</span>
             </Link>
           </li>
           <li className="menu-item">
@@ -251,8 +259,18 @@ export default function Navigation({
               }`}
               onClick={() => onPageChange?.("page-management")}
             >
-              <span className="menu-icon">📄</span>
+              <span className="menu-icon">⚙️</span>
               <span>페이지 관리</span>
+            </Link>
+          </li>
+          <li className="menu-item submenu-item">
+            <Link
+              href="/item/manage"
+              className={`menu-link ${activeMenu === "item-manage" ? "active" : ""}`}
+              onClick={() => onPageChange?.("item-manage")}
+            >
+              <span className="menu-icon">📦</span>
+              <span>비품 관리</span>
             </Link>
           </li>
           <li className="menu-item submenu-item">
@@ -263,7 +281,7 @@ export default function Navigation({
               }`}
               onClick={() => onPageChange?.("department")}
             >
-              <span className="menu-icon">🏗️</span>
+              <span className="menu-icon">🏢</span>
               <span>부서 관리</span>
             </Link>
           </li>
@@ -281,34 +299,8 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/item/manage"
-              className={`menu-link ${
-                activeMenu === "item-manage" ? "active" : ""
-              }`}
-              onClick={() => onPageChange?.("item-manage")}
-            >
-              <span className="menu-icon">📦</span>
-              <span>비품 관리</span>
-            </Link>
-          </li>
-          <li className="menu-item">
-            <Link
-              href="/item/supplyrequest/list/manage"
-              className={`menu-link ${
-                activeMenu === "supply-request-manage" ? "active" : ""
-              }`}
-              onClick={() => onPageChange?.("supply-request-manage")}
-            >
-              <span className="menu-icon">📝</span>
-              <span>비품 요청</span>
-            </Link>
-          </li>
-          <li className="menu-item">
-            <Link
               href="/settings/approve"
-              className={`menu-link ${
-                activeMenu === "user-management" ? "active" : ""
-              }`}
+              className={`menu-link ${activeMenu === "user-management" ? "active" : ""}`}
               onClick={() => onPageChange?.("user-management")}
             >
               <span className="menu-icon">👥</span>
