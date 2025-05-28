@@ -21,11 +21,15 @@ public class NotificationStrategyFactory {
         strategyMap.put(NotificationType.SUPPLY_RETURN, new SupplyReturnStrategy());
         strategyMap.put(NotificationType.STOCK_SHORTAGE, new StockShortageStrategy());
         strategyMap.put(NotificationType.RETURN_DUE_DATE_EXCEEDED, new ReturnDueDateExceededStrategy());
+        strategyMap.put(NotificationType.NOT_RETURNED_YET, new NotReturnedYetStrategy());
 
         strategyMap.put(NotificationType.ADMIN_APPROVAL_ALERT, new NewDashboardApprovedStrategy());
         strategyMap.put(NotificationType.ADMIN_REJECTION_ALERT, new NewDashboardRejectedStrategy());
+        strategyMap.put(NotificationType.NEW_MANAGEMENT_DASHBOARD, new NewDashboardStrategy());
+
         strategyMap.put(NotificationType.MANAGER_APPROVAL_ALERT, new NewManagerApprovedStrategy());
         strategyMap.put(NotificationType.MANAGER_REJECTION_ALERT, new NewManagerRejectedStrategy());
+        strategyMap.put(NotificationType.NEW_MANAGER, new NewManagerStrategy());
 
         // 회원
         strategyMap.put(NotificationType.RETURN_DUE_SOON, new ReturnDueSoonStrategy());

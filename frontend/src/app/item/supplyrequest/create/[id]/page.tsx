@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import { useCustomToast } from "@/utils/toast";
 
 // 비품 아이템 타입에 반환 요구 여부 필드 추가
 interface Item {
@@ -17,7 +18,7 @@ export default function SupplyRequestItemCreatePage() {
   const params = useParams();
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const { loginUser, isLogin } = useGlobalLoginUser();
-
+  const toast = useCustomToast();
   // URL 파라미터에서 넘어온 item id
   const prefillId = params.id ? Number(params.id) : null;
 
@@ -92,11 +93,11 @@ export default function SupplyRequestItemCreatePage() {
   // 4) 제출
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedItem) return alert("항목을 선택해주세요.");
-    if (quantity < 1) return alert("수량을 확인해주세요.");
-    if (!purpose.trim()) return alert("목적을 입력해주세요.");
+    if (!selectedItem) return toast.error("항목을 선택해주세요.");  
+    if (quantity < 1) return toast.error("수량을 확인해주세요.");
+    if (!purpose.trim()) return toast.error("목적을 입력해주세요.");
     if (rental && !selectedItem.isReturnRequired) {
-      return alert("대여 비품이 아닙니다");
+      return toast.error("대여 비품이 아닙니다");
     }
 
     const payload = {
@@ -116,8 +117,9 @@ export default function SupplyRequestItemCreatePage() {
     });
     if (!res.ok) {
       const msg = await res.text();
-      return alert(`등록 실패: ${msg}`);
+      return toast.error(`등록 실패: ${msg}`);
     }
+    toast.success("등록 완료");
     router.push("/item/supplyrequest/list/user");
   };
 

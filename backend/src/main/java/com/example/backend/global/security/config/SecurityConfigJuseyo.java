@@ -61,10 +61,12 @@ public class SecurityConfigJuseyo {
                         ,"/api/v1/users/validation/initialManager/**",
                                 "/api/v1/users/search/**")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
+
                         //비품
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/items/**").hasRole("MANAGER") // 비품삭제는 매니저만 가능
-                        .requestMatchers(HttpMethod.GET, "/api/v1/items/**").hasAnyRole("MANAGER","USER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/items/**").hasAnyRole("MANAGER", "USER") //조회 추가
+
                         //부서
                         .requestMatchers(HttpMethod.GET,  "/api/v1/departments/management/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/departments/**").hasRole("MANAGER")
@@ -102,8 +104,6 @@ public class SecurityConfigJuseyo {
                         // 비품 요청
                         .requestMatchers(HttpMethod.GET,  "/api/v1/supply-requests/**").hasAnyRole("USER","MANAGER","ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/supply-requests").hasAnyRole("USER","MANAGER","ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/supply-requests/**").hasAnyRole("MANAGER","ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/supply-requests/**").hasAnyRole("MANAGER","ADMIN")
 
                         // 비품 출고
                         .requestMatchers(HttpMethod.POST, "/api/v1/inventory-out").hasAnyRole("USER","MANAGER","ADMIN")
@@ -112,11 +112,6 @@ public class SecurityConfigJuseyo {
                         // 비품 추적
                         .requestMatchers(HttpMethod.POST, "/api/v1/chase-items/chase-items").hasAnyRole("MANAGER","ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/chase-items/**").hasAnyRole("MANAGER","ADMIN")
-
-                        // 개별자산관리
-                        .requestMatchers(HttpMethod.GET, "/api/v1/item-instances/**").hasAnyRole("MANAGER","ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/item-instances/**").hasAnyRole("MANAGER","ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/item-instances/**").hasAnyRole("MANAGER","ADMIN")
 
                         .anyRequest().authenticated()
                 )

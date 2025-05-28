@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useCustomToast } from "@/utils/toast";
 
 export default function ManagementPage() {
   const [managementPageName, setManagementPageName] = useState("");
@@ -13,6 +14,7 @@ export default function ManagementPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const toast = useCustomToast();
 
   // 페이지 로드 시 로컬 스토리지 값 제거
   useEffect(() => {
@@ -86,7 +88,7 @@ export default function ManagementPage() {
     e.preventDefault();
 
     if (!managementPageName.trim() || !departmentName.trim()) {
-      alert("모든 필드를 입력해주세요.");
+      toast.error("모든 필드를 입력해주세요.");
       return;
     }
 

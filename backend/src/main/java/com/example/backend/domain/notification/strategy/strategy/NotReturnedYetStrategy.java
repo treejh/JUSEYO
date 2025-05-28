@@ -9,19 +9,20 @@ import com.example.backend.enums.ApprovalStatus;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 @RequiredArgsConstructor
 public class NotReturnedYetStrategy implements  NotificationStrategy{
-    private final SupplyReturnRepository  supplyReturnRepository;
 
     @Override
     public String generateMessage(Object context) {
         NotReturnedContext ctx = (NotReturnedContext) context;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String formattedDate = ctx.getReturnDate().format(formatter);
-        return "📦 장기 미반납 알림: " + ctx.getItemName() + "의 반납일(" + formattedDate + ")이 지났습니다.";
+        return "📦 " + ctx.getItemName() + "의 반납일(" + formattedDate + ")이 지났습니다.";
     }
 
     @Override
@@ -34,8 +35,14 @@ public class NotReturnedYetStrategy implements  NotificationStrategy{
             return false;
         }
 
-        // 단순 날짜 비교: 반납일이 3일 이상 지났으면 알림
-        long daysOverdue = Duration.between(ctx.getReturnDate().toLocalDate().atStartOfDay(), LocalDateTime.now()).toDays();
+        if (ctx.getReturnDate() == null) return false;
+
+//        // 테스트용
+//        return ctx.getReturnDate() != null &&
+//                ctx.getReturnDate().isBefore(LocalDateTime.now().minusMinutes(1));
+
+//         배포용 - 단순 날짜 비교: 반납일이 3일 이상 지났으면 알림
+        long daysOverdue = ChronoUnit.DAYS.between(ctx.getReturnDate(), LocalDate.now());
         return daysOverdue >= 3;
     }
 }

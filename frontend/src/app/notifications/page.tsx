@@ -3,44 +3,54 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useNotificationStore } from "@/stores/notifications";
 
 type NotificationType =
   | "SUPPLY_REQUEST"
   | "SUPPLY_RETURN"
-  | "SUPPLY_RETURN_ALERT"
-  | "STOCK_REACHED"
   | "STOCK_SHORTAGE"
-  | "SUPPLY_REQUEST_MODIFIED"
+  | "RETURN_DUE_DATE_EXCEEDED"
+  | "NOT_RETURNED_YET"
+  | "NEW_MANAGEMENT_DASHBOARD"
+  | "ADMIN_APPROVAL_ALERT"
+  | "ADMIN_REJECTION_ALERT"
+  | "NEW_MANAGER"
+  | "MANAGER_APPROVAL_ALERT"
+  | "MANAGER_REJECTION_ALERT"
   | "SUPPLY_REQUEST_APPROVED"
   | "SUPPLY_REQUEST_REJECTED"
   | "SUPPLY_REQUEST_DELAYED"
-  | "RETURN_DUE_DATE_EXCEEDED"
   | "RETURN_DUE_SOON"
-  | "LONG_TERM_UNRETURNED_SUPPLIES"
-  | "USER_SENT_MESSAGE_TO_MANAGER"
   | "NEW_CHAT"
-  | "SYSTEM_MAINTENANCE"
-  | "ADMIN_APPROVAL_ALERT"
-  | "MANAGER_APPROVAL_ALERT";
+  | "SUPPLY_RETURN_APPROVED";
+
+type NotificationGroup = "IMPORTANT" | "OTHER";
+
+const USER_NOTIFICATION_TYPES: NotificationType[] = [
+  "SUPPLY_REQUEST_APPROVED",
+  "SUPPLY_REQUEST_REJECTED",
+  "SUPPLY_RETURN_APPROVED",
+  "RETURN_DUE_SOON",
+  "SUPPLY_REQUEST_DELAYED",
+  "NEW_CHAT",
+];
 
 const MANAGER_NOTIFICATION_TYPES: NotificationType[] = [
   "SUPPLY_REQUEST",
   "SUPPLY_RETURN",
   "STOCK_SHORTAGE",
+  "RETURN_DUE_DATE_EXCEEDED",
+  "NOT_RETURNED_YET",
+  "NEW_MANAGEMENT_DASHBOARD",
+  "ADMIN_APPROVAL_ALERT",
+  "ADMIN_REJECTION_ALERT",
+  "NEW_MANAGER",
+  "MANAGER_APPROVAL_ALERT",
+  "MANAGER_REJECTION_ALERT",
   "NEW_CHAT",
 ];
-
-const USER_NOTIFICATION_TYPES: NotificationType[] = [
-  "SUPPLY_REQUEST_APPROVED",
-  "SUPPLY_REQUEST_REJECTED",
-  "RETURN_DUE_SOON",
-  "NEW_CHAT",
-];
-
-const COMMON_NOTIFICATION_TYPES: NotificationType[] = ["SYSTEM_MAINTENANCE"];
 
 interface Notification {
   id: number;
@@ -57,9 +67,27 @@ interface NotificationPageResponse {
 }
 
 const NOTIFICATION_TYPE_LABELS: Record<
-  NotificationType,
+  NotificationType | "ALL" | "OTHER",
   { label: string; color: string; icon: React.ReactElement }
 > = {
+  ALL: {
+    label: "전체",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  OTHER: {
+    label: "기타 알림",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
   SUPPLY_REQUEST: {
     label: "비품 요청",
     color: "bg-blue-100 text-blue-800",
@@ -78,36 +106,9 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
-  SUPPLY_RETURN_ALERT: {
-    label: "비품 반납 알림",
-    color: "bg-blue-100 text-blue-800",
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  STOCK_REACHED: {
-    label: "재고 도달",
-    color: "bg-blue-100 text-blue-800",
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
   STOCK_SHORTAGE: {
     label: "재고 부족",
     color: "bg-red-100 text-red-800",
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  SUPPLY_REQUEST_MODIFIED: {
-    label: "비품 요청 수정",
-    color: "bg-blue-100 text-blue-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
         <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
@@ -142,7 +143,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   RETURN_DUE_DATE_EXCEEDED: {
-    label: "지정 반납일 초과",
+    label: "반납일 초과",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -151,7 +152,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   RETURN_DUE_SOON: {
-    label: "지정 반납일 임박",
+    label: "반납일 임박",
     color: "bg-yellow-100 text-yellow-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -159,36 +160,9 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
-  LONG_TERM_UNRETURNED_SUPPLIES: {
-    label: "장기 미반납",
-    color: "bg-red-100 text-red-800",
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  USER_SENT_MESSAGE_TO_MANAGER: {
-    label: "채팅 알림",
-    color: "bg-green-100 text-green-800",
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
   NEW_CHAT: {
-    label: "새로운 채팅",
+    label: "채팅",
     color: "bg-green-100 text-green-800",
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  SYSTEM_MAINTENANCE: {
-    label: "시스템 점검",
-    color: "bg-gray-100 text-gray-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
         <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
@@ -213,6 +187,65 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
+  MANAGER_REJECTION_ALERT: {
+    label: "매니저 거절",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  ADMIN_REJECTION_ALERT: {
+    label: "관리 페이지 생성 반려",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  SUPPLY_RETURN_APPROVED: {
+    label: "비품 반납 승인",
+    color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path
+          fillRule="evenodd"
+          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+          clipRule="evenodd"
+        />
+      </svg>
+    ),
+  },
+  NOT_RETURNED_YET: {
+    label: "장기 미반납 비품 목록",
+    color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  NEW_MANAGEMENT_DASHBOARD: {
+    label: "관리 대시보드 생성",
+    color: "bg-purple-100 text-purple-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+        <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+      </svg>
+    ),
+  },
+  NEW_MANAGER: {
+    label: "매니저 권한 요청",
+    color: "bg-indigo-100 text-indigo-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+      </svg>
+    ),
+  },
 };
 
 export default function NotificationsPage() {
@@ -223,9 +256,9 @@ export default function NotificationsPage() {
   const [selectedNotifications, setSelectedNotifications] = useState<number[]>(
     []
   );
-  const [selectedType, setSelectedType] = useState<NotificationType | "ALL">(
-    "ALL"
-  );
+  const [selectedType, setSelectedType] = useState<
+    NotificationType | "ALL" | "OTHER"
+  >("ALL");
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -234,23 +267,45 @@ export default function NotificationsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const pageSize = 10;
 
-  // 사용자 ROLE에 따른 알림 타입 필터링
-  const getFilteredNotificationTypes = () => {
-    const isManager = loginUser.role === "MANAGER";
-    const allowedTypes = isManager
-      ? MANAGER_NOTIFICATION_TYPES
-      : USER_NOTIFICATION_TYPES;
-    return [...allowedTypes, ...COMMON_NOTIFICATION_TYPES];
-  };
+  // 유저와 매니저에 따른 주요 알림 타입 정의
+  const PRIMARY_NOTIFICATION_TYPES =
+    loginUser.role === "MANAGER"
+      ? [
+          "SUPPLY_REQUEST",
+          "SUPPLY_RETURN",
+          "STOCK_SHORTAGE",
+          "RETURN_DUE_DATE_EXCEEDED",
+        ]
+      : [
+          "SUPPLY_REQUEST_APPROVED",
+          "SUPPLY_REQUEST_REJECTED",
+          "SUPPLY_RETURN_APPROVED",
+        ];
 
   const fetchNotifications = async () => {
     try {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         size: pageSize.toString(),
-        ...(selectedType !== "ALL" && { type: selectedType }),
         ...(showUnreadOnly && { unreadOnly: "true" }),
       });
+
+      // 알림 타입 필터링 처리
+      if (selectedType !== "ALL") {
+        if (selectedType === "OTHER") {
+          // 기타 알림 타입들을 제외한 나머지
+          const otherTypes = (
+            loginUser.role === "MANAGER"
+              ? MANAGER_NOTIFICATION_TYPES
+              : USER_NOTIFICATION_TYPES
+          ).filter((type) => !PRIMARY_NOTIFICATION_TYPES.includes(type));
+          if (otherTypes.length > 0) {
+            params.append("types", otherTypes.join(","));
+          }
+        } else {
+          params.append("type", selectedType);
+        }
+      }
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications?${params}`,
@@ -264,9 +319,23 @@ export default function NotificationsPage() {
       }
 
       const data: NotificationPageResponse = await response.json();
-      setNotifications(data.notifications);
+
+      // 프론트엔드에서 추가 필터링
+      let filteredNotifications = data.notifications;
+      if (selectedType === "OTHER") {
+        const otherTypes = (
+          loginUser.role === "MANAGER"
+            ? MANAGER_NOTIFICATION_TYPES
+            : USER_NOTIFICATION_TYPES
+        ).filter((type) => !PRIMARY_NOTIFICATION_TYPES.includes(type));
+        filteredNotifications = data.notifications.filter((notification) =>
+          otherTypes.includes(notification.notificationType)
+        );
+      }
+
+      setNotifications(filteredNotifications);
       setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      setTotalElements(filteredNotifications.length);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
@@ -401,6 +470,24 @@ export default function NotificationsPage() {
     } catch (err) {
       setError("알림 삭제 중 오류가 발생했습니다.");
     }
+  };
+
+  // 알림 라벨을 가져오는 함수
+  const getNotificationLabel = (type: NotificationType) => {
+    // PRIMARY_NOTIFICATION_TYPES에 포함된 알림만 원래 라벨 사용
+    if (PRIMARY_NOTIFICATION_TYPES.includes(type)) {
+      return NOTIFICATION_TYPE_LABELS[type];
+    }
+    // 나머지는 모두 공통 라벨 사용
+    return {
+      label: "알림",
+      color: "bg-gray-100 text-gray-800",
+      icon: (
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+        </svg>
+      ),
+    };
   };
 
   if (isLoading) {
@@ -551,7 +638,6 @@ export default function NotificationsPage() {
 
         <div className="mb-6 flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            {/* 드롭다운 메뉴 */}
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -560,7 +646,10 @@ export default function NotificationsPage() {
                 <span>
                   {selectedType === "ALL"
                     ? "전체"
-                    : NOTIFICATION_TYPE_LABELS[selectedType]?.label}
+                    : selectedType === "OTHER"
+                    ? "기타 알림"
+                    : getNotificationLabel(selectedType as NotificationType)
+                        .label}
                 </span>
                 <svg
                   className={`w-4 h-4 transition-transform ${
@@ -593,11 +682,11 @@ export default function NotificationsPage() {
                     >
                       전체
                     </button>
-                    {getFilteredNotificationTypes().map((type) => (
+                    {PRIMARY_NOTIFICATION_TYPES.map((type) => (
                       <button
                         key={type}
                         onClick={() => {
-                          setSelectedType(type);
+                          setSelectedType(type as NotificationType);
                           setIsDropdownOpen(false);
                         }}
                         className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
@@ -606,9 +695,22 @@ export default function NotificationsPage() {
                             : ""
                         }`}
                       >
-                        {NOTIFICATION_TYPE_LABELS[type].label}
+                        {getNotificationLabel(type as NotificationType).label}
                       </button>
                     ))}
+                    <button
+                      onClick={() => {
+                        setSelectedType("OTHER");
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                        selectedType === "OTHER"
+                          ? "bg-blue-50 text-blue-600"
+                          : ""
+                      }`}
+                    >
+                      기타 알림
+                    </button>
                   </div>
                 </div>
               )}
@@ -653,11 +755,9 @@ export default function NotificationsPage() {
             <div className="space-y-4">
               {notifications
                 .sort((a, b) => {
-                  // 안 읽은 알림을 먼저 표시
                   if (a.readStatus !== b.readStatus) {
                     return a.readStatus ? 1 : -1;
                   }
-                  // 같은 읽음 상태 내에서는 최신순으로 정렬
                   return (
                     new Date(b.createdAt).getTime() -
                     new Date(a.createdAt).getTime()
@@ -689,15 +789,17 @@ export default function NotificationsPage() {
                             <div className="flex items-center gap-2 mb-1">
                               <span
                                 className={`px-3 py-1 rounded-full inline-flex items-center gap-2 ${
-                                  NOTIFICATION_TYPE_LABELS[
+                                  getNotificationLabel(
                                     notification.notificationType
-                                  ]?.color || "bg-gray-100 text-gray-800"
+                                  ).color
                                 }`}
                               >
                                 <span className="text-sm font-medium">
-                                  {NOTIFICATION_TYPE_LABELS[
-                                    notification.notificationType
-                                  ]?.label || "알림"}
+                                  {
+                                    getNotificationLabel(
+                                      notification.notificationType
+                                    ).label
+                                  }
                                 </span>
                               </span>
                               {!notification.readStatus && (
@@ -714,8 +816,7 @@ export default function NotificationsPage() {
                             <p className="text-sm text-gray-500 mt-1">
                               {format(
                                 new Date(notification.createdAt),
-                                "yyyy년 MM월 dd일 HH:mm",
-                                { locale: ko }
+                                "yyyy년 MM월 dd일 HH:mm"
                               )}
                             </p>
                           </div>

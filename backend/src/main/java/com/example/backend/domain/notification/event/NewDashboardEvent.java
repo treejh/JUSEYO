@@ -6,5 +6,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class NewDashboardEvent {
-    private final String dashboardName;
+    String requesterName;
+    String dashboardName;
 }

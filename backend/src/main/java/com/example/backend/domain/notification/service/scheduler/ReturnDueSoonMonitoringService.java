@@ -27,8 +27,8 @@ public class ReturnDueSoonMonitoringService {
     private final NotificationStrategyFactory strategyFactory;
     private final SupplyReturnRepository supplyReturnRepository;
 
-    //    @Scheduled(cron = "0 0 8 * * *") // 배포용 : 매일 오전 8시 실행
-    @Scheduled(fixedRate = 60000)   // 테스트용 : 1분마다
+        @Scheduled(cron = "0 0 8 * * *") // 배포용 : 매일 오전 8시 실행
+//    @Scheduled(fixedRate = 60000)   // 테스트용 : 1분마다
     @Transactional
     public void scheduledCheckAndNotify() {
         checkAndNotifyUsersBeforeDueDate();
@@ -41,7 +41,7 @@ public class ReturnDueSoonMonitoringService {
 
         for (SupplyRequest request : requests) {
             if (request.getApprovalStatus() != ApprovalStatus.APPROVED) continue;   // 비품 사용 요청이 승인되지 않는 경우 skip
-            if (supplyReturnRepository.existsBySupplyRequest(request)) continue; // 반납 요청서가 존재하는 경우 skip
+            if (supplyReturnRepository.existsBySupplyRequestId(request.getId())) continue; // 반납 요청서가 존재하는 경우 skip
 
             ReturnDueDateContext context = new ReturnDueDateContext(
                     request.getItem().getName(),

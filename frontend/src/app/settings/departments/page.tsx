@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HiUsers } from "react-icons/hi2";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { useCustomToast } from "@/utils/toast";
 
 interface DepartmentItem {
   id: number;
@@ -26,6 +27,7 @@ const DepartmentManagementPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const { loginUser } = useGlobalLoginUser();
+  const toast = useCustomToast();
 
   // 펼쳐진 부서 id와 유저 리스트 상태
   const [openedDeptIds, setOpenedDeptIds] = useState<number[]>([]);
@@ -112,7 +114,7 @@ const DepartmentManagementPage = () => {
 
   const handleDeleteDepartment = async (department: DepartmentItem) => {
     if (department.userCount > 0) {
-      alert("구성원이 존재하여 삭제할 수 없습니다.");
+      toast.error("구성원이 존재하여 삭제할 수 없습니다.");
       return;
     }
     if (!confirm("정말로 이 부서를 삭제하시겠습니까?")) return;
@@ -124,10 +126,10 @@ const DepartmentManagementPage = () => {
       }
     );
     if (res.status === 204) {
-      alert("부서가 삭제되었습니다.");
+      toast.success("부서가 삭제되었습니다.");
       window.location.reload();
     } else {
-      alert("부서 삭제에 실패했습니다.");
+      toast.error("부서 삭제에 실패했습니다.");
     }
   };
 

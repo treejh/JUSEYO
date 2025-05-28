@@ -9,6 +9,7 @@ on:
       - "backend/Dockerfile"
     branches:
       - main
+      - dev
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest
@@ -108,5 +109,8 @@ jobs:
             docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
             docker stop app1 2>/dev/null
             docker rm app1 2>/dev/null
-            docker run -d --network common --name app1 -p 8080:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+            docker run -d --network common --name app1 -p 8080:8080 \
+                    -v /etc/localtime:/etc/localtime:ro \
+                    -e TZ=Asia/Seoul \
+                    ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
             docker rmi $(docker images -f "dangling=true" -q)

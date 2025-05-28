@@ -33,5 +33,5 @@
 #   genFile:
 #     dirPath: /gen
 
-# recommend:
-#   flask-url: http://flask-recommender:5000/
+recommend:
+  flask-url: http://flask-recommender:5000/
