@@ -108,6 +108,10 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.POST, "/api/v1/inventory-out").hasAnyRole("USER","MANAGER","ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/inventory-out/**").hasAnyRole("USER","MANAGER","ADMIN")
 
+                        // 비품 추적
+                        .requestMatchers(HttpMethod.POST, "/api/v1/chase-items/chase-items").hasAnyRole("MANAGER","ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/chase-items/**").hasAnyRole("MANAGER","ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가
@@ -140,7 +144,8 @@ public class SecurityConfigJuseyo {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://www.app.jusey0.site"
         ));
 
         config.addAllowedHeader("*");
