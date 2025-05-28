@@ -1,3 +1,5 @@
+// src/app/settings/categories/edit/[id]/page.tsx
+
 'use client';
 
 import { Button } from '@/components/ui/button';

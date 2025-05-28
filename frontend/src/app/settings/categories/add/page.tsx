@@ -1,3 +1,5 @@
+// src/app/settings/categories/add/page.tsx
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -14,7 +16,7 @@ const AddCategoryPage: FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!categoryName.trim()) {
       toast.error("카테고리 이름을 입력해주세요.");
       return;
