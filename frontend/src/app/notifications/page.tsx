@@ -26,6 +26,17 @@ type NotificationType =
   | "NEW_CHAT"
   | "SUPPLY_RETURN_APPROVED";
 
+type NotificationGroup = "IMPORTANT" | "OTHER";
+
+const USER_NOTIFICATION_TYPES: NotificationType[] = [
+  "SUPPLY_REQUEST_APPROVED",
+  "SUPPLY_REQUEST_REJECTED",
+  "SUPPLY_RETURN_APPROVED",
+  "RETURN_DUE_SOON",
+  "SUPPLY_REQUEST_DELAYED",
+  "NEW_CHAT",
+];
+
 const MANAGER_NOTIFICATION_TYPES: NotificationType[] = [
   "SUPPLY_REQUEST",
   "SUPPLY_RETURN",
@@ -38,15 +49,6 @@ const MANAGER_NOTIFICATION_TYPES: NotificationType[] = [
   "NEW_MANAGER",
   "MANAGER_APPROVAL_ALERT",
   "MANAGER_REJECTION_ALERT",
-  "NEW_CHAT",
-];
-
-const USER_NOTIFICATION_TYPES: NotificationType[] = [
-  "SUPPLY_REQUEST_APPROVED",
-  "SUPPLY_REQUEST_REJECTED",
-  "SUPPLY_RETURN_APPROVED",
-  "RETURN_DUE_SOON",
-  "SUPPLY_REQUEST_DELAYED",
   "NEW_CHAT",
 ];
 
@@ -65,9 +67,27 @@ interface NotificationPageResponse {
 }
 
 const NOTIFICATION_TYPE_LABELS: Record<
-  NotificationType,
+  NotificationType | "ALL" | "OTHER",
   { label: string; color: string; icon: React.ReactElement }
 > = {
+  ALL: {
+    label: "전체",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  OTHER: {
+    label: "기타 알림",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
   SUPPLY_REQUEST: {
     label: "비품 요청",
     color: "bg-blue-100 text-blue-800",
@@ -236,9 +256,9 @@ export default function NotificationsPage() {
   const [selectedNotifications, setSelectedNotifications] = useState<number[]>(
     []
   );
-  const [selectedType, setSelectedType] = useState<NotificationType | "ALL">(
-    "ALL"
-  );
+  const [selectedType, setSelectedType] = useState<
+    NotificationType | "ALL" | "OTHER"
+  >("ALL");
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -247,11 +267,20 @@ export default function NotificationsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const pageSize = 10;
 
-  // 사용자 ROLE에 따른 알림 타입 필터링
-  const getFilteredNotificationTypes = () => {
-    const isManager = loginUser.role === "MANAGER";
-    return isManager ? MANAGER_NOTIFICATION_TYPES : USER_NOTIFICATION_TYPES;
-  };
+  // 유저와 매니저에 따른 주요 알림 타입 정의
+  const PRIMARY_NOTIFICATION_TYPES =
+    loginUser.role === "MANAGER"
+      ? [
+          "SUPPLY_REQUEST",
+          "SUPPLY_RETURN",
+          "STOCK_SHORTAGE",
+          "RETURN_DUE_DATE_EXCEEDED",
+        ]
+      : [
+          "SUPPLY_REQUEST_APPROVED",
+          "SUPPLY_REQUEST_REJECTED",
+          "SUPPLY_RETURN_APPROVED",
+        ];
 
   const fetchNotifications = async () => {
     try {
@@ -263,22 +292,20 @@ export default function NotificationsPage() {
 
       // 알림 타입 필터링 처리
       if (selectedType !== "ALL") {
-        const allowedTypes = getFilteredNotificationTypes();
-        if (allowedTypes.includes(selectedType)) {
-          params.append("type", selectedType);
+        if (selectedType === "OTHER") {
+          // 기타 알림 타입들을 제외한 나머지
+          const otherTypes = (
+            loginUser.role === "MANAGER"
+              ? MANAGER_NOTIFICATION_TYPES
+              : USER_NOTIFICATION_TYPES
+          ).filter((type) => !PRIMARY_NOTIFICATION_TYPES.includes(type));
+          if (otherTypes.length > 0) {
+            params.append("types", otherTypes.join(","));
+          }
         } else {
-          // 선택된 타입이 허용되지 않은 경우, 전체 알림을 가져옴
-          setSelectedType("ALL");
+          params.append("type", selectedType);
         }
       }
-
-      console.log("Fetching notifications with params:", params.toString());
-      console.log("Selected type:", selectedType);
-      console.log("User role:", loginUser.role);
-      console.log(
-        "Available notification types:",
-        getFilteredNotificationTypes()
-      );
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications?${params}`,
@@ -292,10 +319,23 @@ export default function NotificationsPage() {
       }
 
       const data: NotificationPageResponse = await response.json();
-      console.log("Received notifications:", data.notifications);
-      setNotifications(data.notifications);
+
+      // 프론트엔드에서 추가 필터링
+      let filteredNotifications = data.notifications;
+      if (selectedType === "OTHER") {
+        const otherTypes = (
+          loginUser.role === "MANAGER"
+            ? MANAGER_NOTIFICATION_TYPES
+            : USER_NOTIFICATION_TYPES
+        ).filter((type) => !PRIMARY_NOTIFICATION_TYPES.includes(type));
+        filteredNotifications = data.notifications.filter((notification) =>
+          otherTypes.includes(notification.notificationType)
+        );
+      }
+
+      setNotifications(filteredNotifications);
       setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      setTotalElements(filteredNotifications.length);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
@@ -580,7 +620,6 @@ export default function NotificationsPage() {
 
         <div className="mb-6 flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            {/* 드롭다운 메뉴 */}
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -589,7 +628,9 @@ export default function NotificationsPage() {
                 <span>
                   {selectedType === "ALL"
                     ? "전체"
-                    : NOTIFICATION_TYPE_LABELS[selectedType]?.label}
+                    : selectedType === "OTHER"
+                    ? "기타 알림"
+                    : NOTIFICATION_TYPE_LABELS[selectedType]?.label || "알림"}
                 </span>
                 <svg
                   className={`w-4 h-4 transition-transform ${
@@ -622,11 +663,11 @@ export default function NotificationsPage() {
                     >
                       전체
                     </button>
-                    {getFilteredNotificationTypes().map((type) => (
+                    {PRIMARY_NOTIFICATION_TYPES.map((type) => (
                       <button
                         key={type}
                         onClick={() => {
-                          setSelectedType(type);
+                          setSelectedType(type as NotificationType);
                           setIsDropdownOpen(false);
                         }}
                         className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
@@ -635,9 +676,23 @@ export default function NotificationsPage() {
                             : ""
                         }`}
                       >
-                        {NOTIFICATION_TYPE_LABELS[type].label}
+                        {NOTIFICATION_TYPE_LABELS[type as NotificationType]
+                          ?.label || type}
                       </button>
                     ))}
+                    <button
+                      onClick={() => {
+                        setSelectedType("OTHER");
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                        selectedType === "OTHER"
+                          ? "bg-blue-50 text-blue-600"
+                          : ""
+                      }`}
+                    >
+                      기타 알림
+                    </button>
                   </div>
                 </div>
               )}
