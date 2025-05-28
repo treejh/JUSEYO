@@ -2,8 +2,8 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 
 // 타입 정의
@@ -34,6 +34,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
   const query = searchParams.get("q") || "";
   const currentPage = Number(searchParams.get("page")) || 1;
   const [searchQuery, setSearchQuery] = useState(query);
@@ -44,10 +45,52 @@ export default function SearchPage() {
   const [itemImages, setItemImages] = useState<Record<number, string>>({});
   const [allItems, setAllItems] = useState<SearchItem[]>([]);
   const [randomItems, setRandomItems] = useState<SearchItem[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const ITEMS_PER_PAGE = 10;
   const SUGGESTION_COUNT = 5;
   
+  // 추천 검색어만 새로고침하는 함수
+  const refreshSuggestions = useCallback(() => {
+    setRandomItems(getRandomItems(allItems, SUGGESTION_COUNT));
+  }, [allItems]);
+
+  // 검색 상태 초기화 함수
+  const resetSearch = useCallback(() => {
+    setSearchQuery("");
+    setResults([]);
+    setIsSearched(false);
+    setTotalPages(0);
+    refreshSuggestions();
+  }, [refreshSuggestions]);
+
+  // 페이지 진입 시 초기화
+  useEffect(() => {
+    resetSearch();
+  }, [resetSearch]);
+
+  // pathname이 변경될 때마다 초기화
+  useEffect(() => {
+    if (pathname === '/search') {
+      resetSearch();
+      setRefreshKey(prev => prev + 1);
+    }
+  }, [pathname, resetSearch]);
+
+  // 추천 검색어 새로고침 효과
+  useEffect(() => {
+    refreshSuggestions();
+  }, [refreshKey, refreshSuggestions]);
+
+  // URL 쿼리 파라미터 변경 감지
+  useEffect(() => {
+    const currentQuery = searchParams.get("q");
+    // 쿼리 파라미터가 없어지면 초기화
+    if (!currentQuery) {
+      resetSearch();
+    }
+  }, [searchParams, resetSearch]);
+
   // 랜덤으로 아이템을 선택하는 함수
   const getRandomItems = (items: SearchItem[], count: number) => {
     const shuffled = [...items].sort(() => 0.5 - Math.random());
@@ -90,9 +133,6 @@ export default function SearchPage() {
       const activeItems = items.filter(item => item.status === "ACTIVE");
       setAllItems(activeItems);
       
-      // 랜덤으로 5개 선택
-      setRandomItems(getRandomItems(activeItems, SUGGESTION_COUNT));
-      
       // 이미지 맵 업데이트
       const imageMap: Record<number, string> = {};
       items.forEach(item => {
@@ -112,15 +152,15 @@ export default function SearchPage() {
   
   // 검색 실행
   const handleSearch = async (searchText: string, page: number = 0) => {
-    if (!searchText.trim()) return;
+    if (!searchText.trim()) {
+      resetSearch();
+      return;
+    }
     
     setLoading(true);
     try {
       // URL 업데이트
-      const url = new URL(window.location.href);
-      url.searchParams.set("q", searchText.trim());
-      url.searchParams.set("page", (page + 1).toString());
-      window.history.pushState({}, "", url);
+      router.push(`/search?q=${encodeURIComponent(searchText.trim())}&page=${page + 1}`);
 
       // 검색 API 호출
       const response = await fetch(
@@ -170,6 +210,28 @@ export default function SearchPage() {
     }
   }, [query]);
 
+  // 검색 메뉴 클릭 핸들러
+  const handleSearchMenuClick = useCallback(() => {
+    if (pathname === '/search' && !searchParams.get('q')) {
+      // 이미 검색 페이지이고 검색어가 없는 상태면 강제 새로고침
+      resetSearch();
+      setRefreshKey(prev => prev + 1);
+    } else {
+      // 다른 페이지에서 오거나 검색 결과가 있는 상태면 라우터 사용
+      router.push('/search');
+    }
+  }, [pathname, searchParams, router, resetSearch]);
+
+  // window 객체에 핸들러 등록
+  useEffect(() => {
+    // 전역 객체에 함수 노출
+    (window as any).handleSearchMenuClick = handleSearchMenuClick;
+    
+    return () => {
+      delete (window as any).handleSearchMenuClick;
+    };
+  }, [handleSearchMenuClick]);
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 pl-8">
       <div className="max-w-7xl mx-auto px-8">
@@ -209,7 +271,7 @@ export default function SearchPage() {
         </div>
 
         {!isSearched && (
-          <div className="mb-8">
+          <div className="mt-12 mb-8">
             <h2 className="text-base font-medium text-gray-900 mb-3">추천 검색어</h2>
             <div className="flex flex-wrap gap-2">
               {randomItems.length > 0 ? (
