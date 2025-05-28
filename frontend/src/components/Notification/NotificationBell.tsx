@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNotificationStore } from "@/stores/notifications";
+import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { ko } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -341,7 +342,7 @@ export function NotificationBell() {
     <div className="relative" ref={notificationRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+        className="relative p-2 text-gray-600 hover:text-gray-800 focus:outline-none mr-2 transition-all duration-200 hover:bg-gray-100 rounded-full"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -358,20 +359,20 @@ export function NotificationBell() {
           />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform bg-red-500 rounded-full ring-2 ring-white">
             {unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg overflow-hidden z-50">
-          <div className="p-4 border-b">
+        <div className="absolute right-0 mt-3 w-[400px] bg-white rounded-xl shadow-2xl overflow-hidden z-50 border border-gray-100 transform transition-all duration-200">
+          <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-semibold text-gray-900">알림</h3>
                 {unreadCount > 0 && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
                     {unreadCount}개
                   </span>
                 )}
@@ -379,7 +380,7 @@ export function NotificationBell() {
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded-full transition-all duration-200"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -399,63 +400,75 @@ export function NotificationBell() {
             </div>
           </div>
 
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {notifications.filter((n) => !n.readStatus).length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                새로운 알림이 없습니다
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-sm">새로운 알림이 없습니다</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-50">
                 {notifications
                   .filter((n) => !n.readStatus)
                   .map((notification) => {
+                    const category = getNotificationCategory(notification.notificationType);
                     return (
                       <div
                         key={notification.id}
-                        className="p-4 hover:bg-gray-50 transition-colors"
+                        className="p-4 hover:bg-gray-50 transition-all duration-200"
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center gap-2 mb-2">
                               <span
-                                className={`px-2 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                                  NOTIFICATION_TYPE_LABELS[
-                                    notification.notificationType
-                                  ]?.color || "bg-gray-100 text-gray-800"
-                                }`}
+                                className={`px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
+                                  NOTIFICATION_TYPE_LABELS[notification.notificationType]?.color || "bg-gray-100 text-gray-800"
+                                } bg-opacity-50 backdrop-blur-sm`}
                               >
-                                {NOTIFICATION_TYPE_LABELS[
-                                  notification.notificationType
-                                ]?.label || "알림"}
+                                {NOTIFICATION_TYPE_LABELS[notification.notificationType]?.icon}
+                                <span className="ml-1">
+                                  {NOTIFICATION_TYPE_LABELS[notification.notificationType]?.label || "알림"}
+                                </span>
                               </span>
                             </div>
-                            <p className="text-sm text-gray-900 mb-1">
+                            <p className="text-sm text-gray-900 mb-1 line-clamp-2">
                               {notification.message}
                             </p>
-                            <p className="text-xs text-gray-500">
-                              {getTimeAgo(new Date(notification.createdAt))}
+                            <p className="text-xs text-gray-500 font-medium">
+                              {(() => {
+                                const distance = formatDistanceToNow(
+                                  new Date(notification.createdAt),
+                                  {
+                                    addSuffix: true,
+                                    locale: ko,
+                                  }
+                                );
+                                return distance === "1분 미만 전" ? "방금 전" : distance;
+                              })()}
+
                             </p>
                           </div>
-                          <div className="flex items-end mt-2">
-                            <button
-                              onClick={() => handleMarkAsRead(notification.id)}
-                              className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                          <button
+                            onClick={() => handleMarkAsRead(notification.id)}
+                            className="flex-shrink-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-all duration-200"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-3.5 w-3.5"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              확인
-                            </button>
-                          </div>
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     );
@@ -464,10 +477,10 @@ export function NotificationBell() {
             )}
           </div>
 
-          <div className="p-3 bg-gray-50 border-t">
+          <div className="p-3 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-100">
             <Link
               href="/notifications"
-              className="block text-center text-sm text-blue-600 hover:text-blue-800"
+              className="block text-center text-sm text-blue-600 hover:text-blue-800 font-medium hover:bg-white py-2 rounded-lg transition-all duration-200"
               onClick={() => setIsOpen(false)}
             >
               모든 알림 보기

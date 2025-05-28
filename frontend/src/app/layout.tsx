@@ -43,7 +43,7 @@ export default function RootLayout({
           <ClientLayout>{children}</ClientLayout>
         </ToastProvider>
 
-        <Toaster richColors position="top-center" /> //알럿
+        <Toaster richColors position="top-center" /> 
 
 
       </body>
