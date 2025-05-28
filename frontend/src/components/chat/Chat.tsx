@@ -169,6 +169,10 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
       console.error("STOMP 연결이 활성화되지 않았습니다.");
       return;
     }
+    if (inputMessage.length > 200) {
+      alert("메시지는 200글자를 초과할 수 없습니다!"); // 알림 띄우기
+      return; // 함수 실행 중단
+    }
 
     if (inputMessage.trim()) {
       const messagePayload = {
@@ -424,6 +428,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
                       {new Date(msg.createDate).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
+                        timeZone: "Asia/Seoul",
                       })}
                     </small>
                   )}
@@ -445,6 +450,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyPress={handleKeyPress} // Enter 키 처리 추가
           placeholder="메시지를 입력하세요..."
+          maxLength={200}
         />
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded-r"
