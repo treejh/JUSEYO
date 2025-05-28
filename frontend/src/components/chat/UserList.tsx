@@ -170,9 +170,11 @@ const UserList: React.FC<Props> = ({
               className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
             >
               {/* 유저 정보 */}
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0 flex-1 truncate">
                 <span className="font-medium text-gray-800">{user.name}</span>
-                <span className="text-sm text-gray-500">{user.department}</span>
+                <span className="text-sm text-gray-500 truncate">
+                  {user.department}
+                </span>
               </div>
 
               {/* 채팅방 생성 버튼 */}
