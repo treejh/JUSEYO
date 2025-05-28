@@ -147,6 +147,7 @@ public class SecurityConfigJuseyo {
 
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000"
+                ,"https://www.app.jusey0.site"
         ));
 
         config.addAllowedHeader("*");
