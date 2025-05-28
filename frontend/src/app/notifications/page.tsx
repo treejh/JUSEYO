@@ -143,7 +143,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   RETURN_DUE_DATE_EXCEEDED: {
-    label: "지정 반납일 초과",
+    label: "반납일 초과",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -152,7 +152,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   RETURN_DUE_SOON: {
-    label: "지정 반납일 임박",
+    label: "반납일 임박",
     color: "bg-yellow-100 text-yellow-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -161,7 +161,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   NEW_CHAT: {
-    label: "새로운 채팅",
+    label: "채팅",
     color: "bg-green-100 text-green-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -219,7 +219,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   NOT_RETURNED_YET: {
-    label: "장기 미반납 비품 목록 알림",
+    label: "장기 미반납 비품 목록",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -238,7 +238,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   NEW_MANAGER: {
-    label: "새 매니저 등록",
+    label: "매니저 권한 요청",
     color: "bg-indigo-100 text-indigo-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -472,6 +472,24 @@ export default function NotificationsPage() {
     }
   };
 
+  // 알림 라벨을 가져오는 함수
+  const getNotificationLabel = (type: NotificationType) => {
+    // PRIMARY_NOTIFICATION_TYPES에 포함된 알림만 원래 라벨 사용
+    if (PRIMARY_NOTIFICATION_TYPES.includes(type)) {
+      return NOTIFICATION_TYPE_LABELS[type];
+    }
+    // 나머지는 모두 공통 라벨 사용
+    return {
+      label: "알림",
+      color: "bg-gray-100 text-gray-800",
+      icon: (
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+        </svg>
+      ),
+    };
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 pt-20">
@@ -630,7 +648,8 @@ export default function NotificationsPage() {
                     ? "전체"
                     : selectedType === "OTHER"
                     ? "기타 알림"
-                    : NOTIFICATION_TYPE_LABELS[selectedType]?.label || "알림"}
+                    : getNotificationLabel(selectedType as NotificationType)
+                        .label}
                 </span>
                 <svg
                   className={`w-4 h-4 transition-transform ${
@@ -676,8 +695,7 @@ export default function NotificationsPage() {
                             : ""
                         }`}
                       >
-                        {NOTIFICATION_TYPE_LABELS[type as NotificationType]
-                          ?.label || type}
+                        {getNotificationLabel(type as NotificationType).label}
                       </button>
                     ))}
                     <button
@@ -737,11 +755,9 @@ export default function NotificationsPage() {
             <div className="space-y-4">
               {notifications
                 .sort((a, b) => {
-                  // 안 읽은 알림을 먼저 표시
                   if (a.readStatus !== b.readStatus) {
                     return a.readStatus ? 1 : -1;
                   }
-                  // 같은 읽음 상태 내에서는 최신순으로 정렬
                   return (
                     new Date(b.createdAt).getTime() -
                     new Date(a.createdAt).getTime()
@@ -773,15 +789,17 @@ export default function NotificationsPage() {
                             <div className="flex items-center gap-2 mb-1">
                               <span
                                 className={`px-3 py-1 rounded-full inline-flex items-center gap-2 ${
-                                  NOTIFICATION_TYPE_LABELS[
+                                  getNotificationLabel(
                                     notification.notificationType
-                                  ]?.color || "bg-gray-100 text-gray-800"
+                                  ).color
                                 }`}
                               >
                                 <span className="text-sm font-medium">
-                                  {NOTIFICATION_TYPE_LABELS[
-                                    notification.notificationType
-                                  ]?.label || "알림"}
+                                  {
+                                    getNotificationLabel(
+                                      notification.notificationType
+                                    ).label
+                                  }
                                 </span>
                               </span>
                               {!notification.readStatus && (

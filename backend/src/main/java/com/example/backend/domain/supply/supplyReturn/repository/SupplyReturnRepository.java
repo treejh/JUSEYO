@@ -36,7 +36,7 @@ public interface SupplyReturnRepository extends JpaRepository<SupplyReturn, Long
             Pageable pageable);
 
 
-    boolean existsBySupplyRequest(SupplyRequest request);
+    boolean existsBySupplyRequestId(Long requestId);
 
     List<SupplyReturn> findBySupplyRequest(SupplyRequest request);
 

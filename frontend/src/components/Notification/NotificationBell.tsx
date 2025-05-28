@@ -157,7 +157,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   RETURN_DUE_DATE_EXCEEDED: {
-    label: "지정 반납일 초과",
+    label: "반납일 초과",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -166,7 +166,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   RETURN_DUE_SOON: {
-    label: "지정 반납일 임박",
+    label: "반납일 임박",
     color: "bg-yellow-100 text-yellow-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -242,7 +242,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   NOT_RETURNED_YET: {
-    label: "장기 미반납 비품 목록 알림",
+    label: "장기 미반납",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

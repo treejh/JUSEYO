@@ -25,7 +25,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ReturnDueDateMonitoringService {
+public class ReturnDueDateExceededMonitoringService {
 
     private final SupplyRequestRepository supplyRequestRepository;
     private final SupplyReturnRepository supplyReturnRepository;
@@ -34,8 +34,8 @@ public class ReturnDueDateMonitoringService {
     private final RoleService roleService;
     private final UserService userService;
 
-//    @Scheduled(cron = "0 0 8 * * *") // 배포용 : 매일 오전 8시 실행
-    @Scheduled(fixedRate = 60000)   // 테스트용 : 1분마다
+    @Scheduled(cron = "0 0 8 * * *") // 배포용 : 매일 오전 8시 실행
+//    @Scheduled(fixedRate = 60000)   // 테스트용 : 1분마다
     @Transactional
     public void scheduledCheckAndNotify() {
         checkAndNotifyOverdueReturns();
@@ -50,10 +50,10 @@ public class ReturnDueDateMonitoringService {
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 
         for (SupplyRequest request : requests) {
-            List<User> managers = userService.findAllByRoleAndManagementDashboardId(managerRole, request.getManagementDashboard().getId());
-
             if (request.getApprovalStatus() != ApprovalStatus.APPROVED) continue; // 대여 요청서 승인상태가 승인되지 않은 아이템은 skip
-            if (supplyReturnRepository.existsBySupplyRequest(request)) continue; // 반납 요청서가 존재하는 경우 skip
+            if (supplyReturnRepository.existsBySupplyRequestId(request.getId())) continue; // 반납 요청서가 존재하는 경우 skip
+
+            List<User> managers = userService.findAllByRoleAndManagementDashboardId(managerRole, request.getManagementDashboard().getId());
 
             ReturnDueDateContext context = new ReturnDueDateContext(
                     request.getProductName(),
@@ -63,6 +63,15 @@ public class ReturnDueDateMonitoringService {
             if (strategy.shouldTrigger(context)) {
                 String msg = strategy.generateMessage(context);
 
+                // 유저 대상
+                User user = request.getUser();
+                notificationService.createNotification(new NotificationRequestDTO(
+                        NotificationType.RETURN_DUE_DATE_EXCEEDED,
+                        msg,
+                        user.getId()
+                ));
+
+                // 매니저들 대상
                 for (User manager : managers) {
                     notificationService.createNotification(new NotificationRequestDTO(
                             NotificationType.RETURN_DUE_DATE_EXCEEDED,
