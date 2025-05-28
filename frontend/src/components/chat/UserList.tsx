@@ -177,13 +177,15 @@ const UserList: React.FC<Props> = ({
                 </span>
               </div>
 
-              {/* 채팅방 생성 버튼 */}
-              <button
-                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                onClick={() => handleChatRoomCheck(user.id, user.name)}
-              >
-                채팅방 생성
-              </button>
+              {/* 버튼 영역: 고정 너비와 shrink 방지 */}
+              <div className="flex min-w-[110px] flex-shrink-0 justify-end ml-4">
+                <button
+                  className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                  onClick={() => handleChatRoomCheck(user.id, user.name)}
+                >
+                  채팅방 생성
+                </button>
+              </div>
             </li>
           ))}
         </ul>
