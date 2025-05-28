@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Client } from "@stomp/stompjs";
 import { leaveChatRoom } from "../../utils/leaveChatRoom";
+import { useCustomToast } from "@/utils/toast";
 
 interface ChatRoom {
   id: number;
@@ -43,6 +44,7 @@ const ChatRoomList: React.FC<Props> = ({
 
   const [searchQuery, setSearchQuery] = useState<string>(""); // 검색어 상태
   const [filteredChatRooms, setFilteredChatRooms] = useState<ChatRoom[]>([]); // 필터링된 채팅방 리스트
+  const toast = useCustomToast();
 
   useEffect(() => {
     const fetchChatRooms = async () => {
@@ -235,7 +237,7 @@ const ChatRoomList: React.FC<Props> = ({
     try {
       // 현재 열려 있는 채팅방이 있는지 확인
       if (currentRoomId && currentRoomId !== roomId) {
-        alert(
+        toast.error(
           "현재 열려 있는 채팅방을 닫아야 다른 채팅방에 입장할 수 있습니다."
         );
         return;

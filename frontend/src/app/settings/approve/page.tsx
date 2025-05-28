@@ -4,6 +4,7 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { fetchUsersByStatus } from "@/utils/statusUserList";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import Link from "next/link";
+import { useCustomToast } from "@/utils/toast";
 
 export default function ApprovePage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -11,6 +12,7 @@ export default function ApprovePage() {
   const managementDashboardName = loginUser.managementDashboardName;
   const [isInitialManager, setIsInitialManager] = useState(false);
   const [selectedRole, setSelectedRole] = useState<"회원" | "매니저">("회원");
+  const toast = useCustomToast();
   const [users, setUsers] = useState<
     {
       userId: number;
@@ -109,7 +111,7 @@ export default function ApprovePage() {
       );
       location.reload();
     } catch (error) {
-      alert("삭제 처리 중 오류가 발생했습니다.");
+      toast.error("삭제 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -121,7 +123,7 @@ export default function ApprovePage() {
       );
       location.reload();
     } catch (error) {
-      alert("승인 처리 중 오류가 발생했습니다.");
+      toast.error("승인 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -134,7 +136,7 @@ export default function ApprovePage() {
       );
       location.reload();
     } catch (error) {
-      alert("거부 처리 중 오류가 발생했습니다.");
+      toast.error("거부 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -149,10 +151,10 @@ export default function ApprovePage() {
           )
         )
       );
-      alert("승인되었습니다.");
+      toast.success("승인되었습니다.");
       location.reload();
     } catch (error) {
-      alert("승인 처리 중 오류가 발생했습니다.");
+      toast.error("승인 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -166,10 +168,10 @@ export default function ApprovePage() {
           )
         )
       );
-      alert("거부되었습니다.");
+      toast.success("거부되었습니다.");
       location.reload();
     } catch (error) {
-      alert("거부 처리 중 오류가 발생했습니다.");
+      toast.error("거부 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -183,10 +185,10 @@ export default function ApprovePage() {
           )
         )
       );
-      alert("삭제되었습니다.");
+      toast.success("삭제되었습니다.");
       location.reload();
     } catch (error) {
-      alert("삭제 처리 중 오류가 발생했습니다.");
+      toast.error("삭제 처리 중 오류가 발생했습니다.");
     }
   };
 

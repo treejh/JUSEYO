@@ -3,7 +3,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useNotificationStore } from "@/stores/notifications";
 
@@ -714,8 +714,7 @@ export default function NotificationsPage() {
                             <p className="text-sm text-gray-500 mt-1">
                               {format(
                                 new Date(notification.createdAt),
-                                "yyyy년 MM월 dd일 HH:mm",
-                                { locale: ko }
+                                "yyyy년 MM월 dd일 HH:mm"
                               )}
                             </p>
                           </div>

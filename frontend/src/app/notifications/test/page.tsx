@@ -3,10 +3,12 @@
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useCustomToast } from "@/utils/toast";
 
 export default function NotificationTestPage() {
   const { loginUser, isLogin } = useGlobalLoginUser();
   const router = useRouter();
+  const toast = useCustomToast();
 
   useEffect(() => {
     if (!isLogin) {
@@ -25,13 +27,13 @@ export default function NotificationTestPage() {
         }
       );
       if (response.ok) {
-        alert("재고 부족 알림 테스트가 실행되었습니다.");
+        toast.success("재고 부족 알림 테스트가 실행되었습니다.");
       } else {
-        alert("알림 테스트 실행에 실패했습니다.");
+        toast.error("알림 테스트 실행에 실패했습니다.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("알림 테스트 실행 중 오류가 발생했습니다.");
+      toast.error("알림 테스트 실행 중 오류가 발생했습니다.");
     }
   };
 
@@ -46,13 +48,13 @@ export default function NotificationTestPage() {
         }
       );
       if (response.ok) {
-        alert("비품 요청 알림 테스트가 실행되었습니다.");
+        toast.success("비품 요청 알림 테스트가 실행되었습니다.");
       } else {
-        alert("알림 테스트 실행에 실패했습니다.");
+        toast.error("알림 테스트 실행에 실패했습니다.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("알림 테스트 실행 중 오류가 발생했습니다.");
+      toast.error("알림 테스트 실행 중 오류가 발생했습니다.");
     }
   };
 
@@ -67,13 +69,13 @@ export default function NotificationTestPage() {
         }
       );
       if (response.ok) {
-        alert("비품 반납 알림 테스트가 실행되었습니다.");
+        toast.success("비품 반납 알림 테스트가 실행되었습니다.");
       } else {
-        alert("알림 테스트 실행에 실패했습니다.");
+        toast.error("알림 테스트 실행에 실패했습니다.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("알림 테스트 실행 중 오류가 발생했습니다.");
+      toast.error("알림 테스트 실행 중 오류가 발생했습니다.");
     }
   };
 
@@ -88,13 +90,13 @@ export default function NotificationTestPage() {
         }
       );
       if (response.ok) {
-        alert("비품 요청 승인 알림 테스트가 실행되었습니다.");
+        toast.success("비품 요청 승인 알림 테스트가 실행되었습니다.");
       } else {
-        alert("알림 테스트 실행에 실패했습니다.");
+        toast.error("알림 테스트 실행에 실패했습니다.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("알림 테스트 실행 중 오류가 발생했습니다.");
+      toast.error("알림 테스트 실행 중 오류가 발생했습니다.");
     }
   };
 
@@ -109,13 +111,13 @@ export default function NotificationTestPage() {
         }
       );
       if (response.ok) {
-        alert("비품 요청 반려 알림 테스트가 실행되었습니다.");
+        toast.success("비품 요청 반려 알림 테스트가 실행되었습니다.");
       } else {
-        alert("알림 테스트 실행에 실패했습니다.");
+        toast.error("알림 테스트 실행에 실패했습니다.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("알림 테스트 실행 중 오류가 발생했습니다.");
+      toast.error("알림 테스트 실행 중 오류가 발생했습니다.");
     }
   };
 

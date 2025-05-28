@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useCustomToast } from "@/utils/toast";
 
 interface Item {
   id: number;
@@ -24,6 +25,7 @@ export default function ItemsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
+  const toast = useCustomToast();
 
   // ─── Excel 다운로드 ──────────────────────────
   const downloadExcel = async () => {
@@ -44,7 +46,7 @@ export default function ItemsPage() {
       a.remove();
       URL.revokeObjectURL(a.href);
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -87,7 +89,7 @@ export default function ItemsPage() {
       setItems(list);
       setPage(p);
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }

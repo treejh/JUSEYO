@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useCustomToast } from "@/utils/toast";
 
 interface SupplyRequest {
   id: number;
@@ -21,6 +22,7 @@ export default function ManageSupplyRequestsPage() {
   const [requests, setRequests] = useState<SupplyRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [processingIds, setProcessingIds] = useState<number[]>([]);
+  const toast = useCustomToast();
 
   const fetchPending = async () => {
     setLoading(true);
@@ -32,7 +34,7 @@ export default function ManageSupplyRequestsPage() {
       const data: SupplyRequest[] = await res.json();
       setRequests(data);
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -47,7 +49,7 @@ export default function ManageSupplyRequestsPage() {
       // Refresh list after action
       await fetchPending();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setProcessingIds((prev) => prev.filter((pid) => pid !== id));
     }

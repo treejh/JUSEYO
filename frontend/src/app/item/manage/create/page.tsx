@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useCustomToast } from "@/utils/toast";
 
 interface Category {
   id: number;
@@ -38,6 +39,7 @@ export default function CreateItemPage() {
   const [preview, setPreview] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [nameExists, setNameExists] = useState(false);
+  const toast = useCustomToast();
 
   // 1) 카테고리 로드
   useEffect(() => {
@@ -97,14 +99,14 @@ export default function CreateItemPage() {
 
     // 5.1) 중복 방지
     if (nameExists) {
-      return alert("이미 등록된 이름입니다. 다른 이름을 입력하세요.");
+      return toast.error("이미 등록된 이름입니다. 다른 이름을 입력하세요.");
     }
     // 5.2) 로직 검증
     if (form.totalQuantity < form.minimumQuantity) {
-      return alert("총수량은 최소수량 이상이어야 합니다.");
+      return toast.error("총수량은 최소수량 이상이어야 합니다.");
     }
     if (form.availableQuantity > form.totalQuantity) {
-      return alert("사용 가능 수량은 총수량 이하여야 합니다.");
+      return toast.error("사용 가능 수량은 총수량 이하여야 합니다.");
     }
 
     // 5.3) FormData
@@ -122,10 +124,10 @@ export default function CreateItemPage() {
         const msg = await res.text();
         throw new Error(msg || "등록 실패");
       }
-      alert("신규 비품이 성공적으로 등록되었습니다.");
+      toast.success("신규 비품이 성공적으로 등록되었습니다.");
       router.push("/item/manage");
     } catch (err: any) {
-      alert(`서버 오류: ${err.message}`);
+      toast.error(`서버 오류: ${err.message}`);
     }
   };
 

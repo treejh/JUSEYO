@@ -18,6 +18,8 @@ import {
   sendPhoneAuthCode,
   verifyPhoneAuthCode,
 } from "@/utils/phoneValidation";
+import { useCustomToast } from "@/utils/toast";
+
 
 const UserProfilePage = () => {
   const { loginUser } = useGlobalLoginUser(); // 현재 로그인한 유저 정보
@@ -54,15 +56,16 @@ const UserProfilePage = () => {
   const [phoneAuthCode, setPhoneAuthCode] = useState(""); // 핸드폰 인증 코드
   const [isPhoneAuthLoading, setIsPhoneAuthLoading] = useState(false); // 로딩 상태
   const [phoneTimer, setPhoneTimer] = useState(120); // 2분 타이머
+  const toast  = useCustomToast();
 
   const handleSaveName = async () => {
     try {
       const data = await updateUserName(userInfo.name);
-      alert("이름이 성공적으로 수정되었습니다.");
+      toast.success("이름이 성공적으로 수정되었습니다.");
       setUserInfo((prev) => ({ ...prev, name: data.data.name }));
       setIsEditing((prev) => ({ ...prev, name: false }));
     } catch (error) {
-      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
     }
   };
 
@@ -73,18 +76,18 @@ const UserProfilePage = () => {
 
   const handleVerifyEmail = async () => {
     if (!userInfo.email || !isValidEmailFormat(userInfo.email)) {
-      alert("올바른 이메일 형식을 입력해주세요.");
+      toast.error("올바른 이메일 형식을 입력해주세요.");
       return;
     }
 
     try {
       setIsEmailLoading(true);
       await checkEmailDuplication(userInfo.email);
-      alert("사용 가능한 이메일입니다.");
+      toast.success("사용 가능한 이메일입니다.");
       setIsEmailChecked(true);
 
       await sendAuthCode(userInfo.email);
-      alert("인증 코드가 발송되었습니다.");
+      toast.success("인증 코드가 발송되었습니다.");
       setAuthCodeSent(true);
 
       // 2분 타이머 시작
@@ -99,7 +102,7 @@ const UserProfilePage = () => {
         }
       }, 1000);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
       setIsEmailChecked(false); // 실패 시 재확인 가능하게
     } finally {
       setIsEmailLoading(false);
@@ -110,51 +113,51 @@ const UserProfilePage = () => {
     try {
       // 인증 코드 확인
       await verifyAuthCode(userInfo.email, verificationCode);
-      alert("인증이 완료되었습니다.");
+      toast.success("인증이 완료되었습니다.");
       setIsVerified(true);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
     }
   };
 
   const handleSaveEmail = async () => {
     if (!isVerified) {
-      alert("이메일 인증을 완료해주세요.");
+      toast.error("이메일 인증을 완료해주세요.");
       return;
     }
 
     try {
       const data = await updateUserEmail(userInfo.email);
-      alert("이메일이 성공적으로 수정되었습니다.");
+      toast.success("이메일이 성공적으로 수정되었습니다.");
       setUserInfo((prev) => ({ ...prev, email: data.data.email }));
       setIsEditing((prev) => ({ ...prev, email: false }));
       setIsVerified(false); // 인증 상태 초기화
       setIsEmailChecked(false); // 이메일 중복 확인 상태 초기화
     } catch (error) {
-      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
     }
   };
 
   const handleSavePhoneNumber = async () => {
     try {
       const data = await updateUserPhoneNumber(userInfo.phoneNumber);
-      alert("핸드폰 번호가 성공적으로 수정되었습니다.");
+      toast.success("핸드폰 번호가 성공적으로 수정되었습니다.");
       setUserInfo((prev) => ({ ...prev, phoneNumber: data.data.phoneNumber }));
       setIsEditing((prev) => ({ ...prev, phoneNumber: false }));
     } catch (error) {
-      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
     }
   };
 
   const handlePasswordChange = async () => {
     try {
       const data = await updateUserPassword(currentPassword, newPassword);
-      alert("비밀번호가 성공적으로 변경되었습니다.");
+      toast.success("비밀번호가 성공적으로 변경되었습니다.");
       setNewPassword("");
       setConfirmPassword("");
       setCurrentPassword("");
     } catch (error) {
-      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
     }
   };
 
@@ -163,18 +166,18 @@ const UserProfilePage = () => {
       !userInfo.phoneNumber ||
       !/^\d{3}-\d{4}-\d{4}$/.test(userInfo.phoneNumber)
     ) {
-      alert("올바른 핸드폰 번호 형식을 입력해주세요. (예: 010-1234-5678)");
+      toast.error("올바른 핸드폰 번호 형식을 입력해주세요. (예: 010-1234-5678)");
       return;
     }
 
     try {
       setIsPhoneAuthLoading(true);
       await checkPhoneDuplication(userInfo.phoneNumber);
-      alert("사용 가능한 핸드폰 번호입니다.");
+      toast.success("사용 가능한 핸드폰 번호입니다.");
       setIsPhoneChecked(true);
 
       await sendPhoneAuthCode(userInfo.phoneNumber);
-      alert("인증 코드가 발송되었습니다.");
+      toast.success("인증 코드가 발송되었습니다.");
       setPhoneTimer(120); // 2분 타이머 시작
       const timerInterval = setInterval(() => {
         setPhoneTimer((prev) => {
@@ -186,7 +189,7 @@ const UserProfilePage = () => {
         });
       }, 1000);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
       setIsPhoneChecked(false); // 실패 시 재확인 가능하게
     } finally {
       setIsPhoneAuthLoading(false);
@@ -197,10 +200,10 @@ const UserProfilePage = () => {
     try {
       // 핸드폰 인증 코드 확인
       await verifyPhoneAuthCode(userInfo.phoneNumber, phoneAuthCode);
-      alert("핸드폰 인증이 완료되었습니다.");
+      toast.success("핸드폰 인증이 완료되었습니다.");
       setIsPhoneVerified(true);
     } catch (error) {
-      alert(
+      toast.error(
         error instanceof Error
           ? error.message
           : "인증 코드가 올바르지 않습니다."
@@ -210,19 +213,19 @@ const UserProfilePage = () => {
 
   const handleSavePhone = async () => {
     if (!isPhoneVerified) {
-      alert("핸드폰 인증을 완료해주세요.");
+      toast.error("핸드폰 인증을 완료해주세요.");
       return;
     }
 
     try {
       const data = await updateUserPhoneNumber(userInfo.phoneNumber);
-      alert("핸드폰 번호가 성공적으로 수정되었습니다.");
+      toast.success("핸드폰 번호가 성공적으로 수정되었습니다.");
       setUserInfo((prev) => ({ ...prev, phoneNumber: data.data.phoneNumber }));
       setIsEditing((prev) => ({ ...prev, phoneNumber: false }));
       setIsPhoneVerified(false); // 인증 상태 초기화
       setIsPhoneChecked(false); // 핸드폰 중복 확인 상태 초기화
     } catch (error) {
-      alert(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
     }
   };
 
@@ -394,11 +397,11 @@ const UserProfilePage = () => {
                 <button
                   onClick={() => {
                     if (!isEmailChecked) {
-                      alert("이메일 중복 확인이 완료되지 않았습니다.");
+                      toast.error("이메일 중복 확인이 완료되지 않았습니다.");
                       return;
                     }
                     if (!isVerified) {
-                      alert("이메일 인증이 완료되지 않았습니다.");
+                      toast.error("이메일 인증이 완료되지 않았습니다.");
                       return;
                     }
                     handleSaveEmail();
@@ -524,11 +527,11 @@ const UserProfilePage = () => {
                 <button
                   onClick={() => {
                     if (!isPhoneChecked) {
-                      alert("핸드폰 중복 확인이 완료되지 않았습니다.");
+                      toast.error("핸드폰 중복 확인이 완료되지 않았습니다.");
                       return;
                     }
                     if (!isPhoneVerified) {
-                      alert("핸드폰 인증이 완료되지 않았습니다.");
+                      toast.error("핸드폰 인증이 완료되지 않았습니다.");
                       return;
                     }
                     handleSavePhoneNumber();
