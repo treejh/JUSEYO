@@ -237,6 +237,15 @@ export default function InitialSignupPage() {
       alert("이름은 한글만 입력 가능하며 최대 20자까지 가능합니다.");
       return;
     }
+    // 이메일 검증
+    if (!formData.email) {
+      alert("이메일을 입력해주세요.");
+      return;
+    }
+    if (!isValidEmailFormat(formData.email)) {
+      alert("유효한 이메일 형식이 아닙니다.");
+      return;
+    }
 
     // 비밀번호 검사
     if (!formData.password) {

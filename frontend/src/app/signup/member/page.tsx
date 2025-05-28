@@ -43,9 +43,17 @@ export default function InitialSignupPage() {
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [isPhoneLoading, setIsPhoneLoading] = useState(false);
 
+  // 유효성 검사 함수들
   const isValidEmailFormat = (email: string): boolean =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidPhoneNumberFormat = (phoneNumber: string) =>
+
+  const isValidName = (name: string): boolean =>
+    name.trim() !== "" && name.length <= 20 && /^[가-힣]+$/.test(name);
+
+  const isValidPassword = (password: string): boolean =>
+    /^(?=.*[a-zA-Z])(?=.*\d)(?=.*\W).{8,20}$/.test(password);
+
+  const isValidPhoneNumberFormat = (phoneNumber: string): boolean =>
     /^010-\d{4}-\d{4}$/.test(phoneNumber);
 
   useEffect(() => {
@@ -232,8 +240,46 @@ export default function InitialSignupPage() {
       return;
     }
 
+    // 이름 검증
+    if (!formData.name) {
+      alert("이름은 필수입니다.");
+      return;
+    }
+    if (!isValidName(formData.name)) {
+      alert("이름은 한글만 입력 가능하며 최대 20자까지 가능합니다.");
+      return;
+    }
+    // 이메일 검증
+    if (!formData.email) {
+      alert("이메일을 입력해주세요.");
+      return;
+    }
+    if (!isValidEmailFormat(formData.email)) {
+      alert("유효한 이메일 형식이 아닙니다.");
+      return;
+    }
+
+    // 비밀번호 검사
+    if (!formData.password) {
+      alert("비밀번호를 입력해주세요.");
+      return;
+    }
+    if (!isValidPassword(formData.password)) {
+      alert("비밀번호는 영문자, 숫자, 특수문자를 포함한 8~20자리여야 합니다.");
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    // 전화번호 검사
+    if (!formData.phoneNumber) {
+      alert("전화번호를 입력해주세요.");
+      return;
+    }
+    if (!isValidPhoneNumberFormat(formData.phoneNumber)) {
+      alert("전화번호 형식은 010-1234-5678이어야 합니다.");
       return;
     }
 
