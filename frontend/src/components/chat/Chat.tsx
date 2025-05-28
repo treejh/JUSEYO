@@ -323,41 +323,51 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
     <div className="flex flex-col h-[90vh] border border-gray-300 rounded-lg shadow-md">
       {/* 채팅방 헤더 */}
       <div className="flex justify-between items-center p-4 border-b border-gray-300">
-        <div>
-          <h2 className="text-xl font-bold">
+        {/* 헤더 왼쪽: 이름/부서 */}
+        <div className="min-w-0 flex-1">
+          <h2
+            className="text-xl font-bold truncate"
+            title={
+              roomInfo?.roomType === "GROUP"
+                ? roomInfo.roomName
+                : `${opponentInfo?.name || "종료된 채팅방"} 채팅방`
+            }
+          >
             {roomInfo?.roomType === "GROUP"
               ? roomInfo.roomName
               : `${opponentInfo?.name || "종료된 채팅방"} 채팅방`}
           </h2>
           {roomInfo?.roomType !== "GROUP" && opponentInfo?.department && (
-            <p className="text-sm text-gray-500">{opponentInfo.department}</p>
+            <p
+              className="text-sm text-gray-500 truncate"
+              title={opponentInfo.department}
+            >
+              {opponentInfo.department}
+            </p>
           )}
         </div>
-        {/* 닫기 및 나가기 버튼 */}
-        <div className="flex items-center">
-          {/* 참여 유저 목록 버튼 */}
+        {/* 헤더 오른쪽: 버튼 */}
+        <div className="flex items-center flex-shrink-0 ml-4 gap-2 min-w-[120px]">
           <button
-            className="text-gray-600 hover:text-gray-800 mr-4"
+            className="text-gray-600 hover:text-gray-800 mr-2"
             onClick={() => {
               setShowParticipants(!showParticipants);
-              if (!showParticipants) loadParticipants(); // 참여 유저 목록 가져오기
+              if (!showParticipants) loadParticipants();
             }}
           >
             <FaUser size={24} />
           </button>
-          {/* 닫기 버튼 */}
           <button
-            className="text-gray-600 hover:text-gray-800 mr-4"
-            onClick={handleClose} // 닫기 버튼 클릭 시 화면 새로 고침
+            className="text-gray-600 hover:text-gray-800 mr-2"
+            onClick={handleClose}
           >
-            <FaTimes size={24} /> {/* x 아이콘 */}
+            <FaTimes size={24} />
           </button>
-          {/* 나가기 버튼 */}
           <button
             className="text-gray-600 hover:text-gray-800"
             onClick={() => leaveChatRoom(client, roomId, loginUserId)}
           >
-            <FaDoorOpen size={24} /> {/* 문 아이콘 */}
+            <FaDoorOpen size={24} />
           </button>
         </div>
       </div>
