@@ -3,6 +3,7 @@ package com.example.backend.domain.inventory.inventoryOut.controller;
 import com.example.backend.domain.inventory.inventoryOut.dto.request.InventoryOutRequestDto;
 import com.example.backend.domain.inventory.inventoryOut.dto.response.InventoryOutResponseDto;
 import com.example.backend.domain.inventory.inventoryOut.service.InventoryOutService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +22,10 @@ import java.util.List;
 public class InventoryOutController {
     private final InventoryOutService service;
 
-    /** 출고 처리 (매니저, 일반회원) */
+    @Operation(
+            summary = "출고 처리",
+            description = "매니저 또는 일반 사용자 권한으로 물품 출고를 처리하고 출고 내역을 생성합니다."
+    )
     @PostMapping
     @PreAuthorize("hasAnyRole('USER','MANAGER')")
     public ResponseEntity<InventoryOutResponseDto> removeOutbound(
@@ -30,7 +34,10 @@ public class InventoryOutController {
         return ResponseEntity.ok(response);
     }
 
-    /** 페이징·정렬·검색·날짜 필터 조회 (매니저) */
+    @Operation(
+            summary = "전체 출고내역 조회",
+            description = "매니저 권한으로 관리 대시보드 소속 모든 출고내역을 페이징, 정렬, 검색, 날짜 필터링하여 조회합니다."
+    )
     @GetMapping
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Page<InventoryOutResponseDto>> getOutbound(
@@ -47,7 +54,10 @@ public class InventoryOutController {
         return ResponseEntity.ok(result);
     }
 
-    /** Excel 내보내기 (매니저) */
+    @Operation(
+            summary = "전체 출고내역 Excel 내보내기",
+            description = "매니저 권한으로 조회된 전체 출고내역을 Excel 파일로 다운로드합니다."
+    )
     @GetMapping("/export")
     @PreAuthorize("hasRole('MANAGER')")
     public void exportOutbound(
@@ -62,7 +72,10 @@ public class InventoryOutController {
         service.writeExcel(list, response.getOutputStream());
     }
 
-    /** 내 출고내역 엑셀 내보내기 (일반회원, 관리자) */
+    @Operation(
+            summary = "내 출고내역 Excel 내보내기",
+            description = "사용자 본인의 출고내역을 Excel 파일로 다운로드합니다."
+    )
     @GetMapping("/me/export")
     @PreAuthorize("hasAnyRole('USER','MANAGER')")
     public void exportMyOutbound(
@@ -78,7 +91,10 @@ public class InventoryOutController {
         service.writeExcel(list, response.getOutputStream());
     }
 
-    /** 내 출고내역 조회 (일반회원) */
+    @Operation(
+            summary = "내 출고내역 조회",
+            description = "일반 사용자 또는 매니저 권한으로 본인이 출고한 내역을 페이징, 정렬, 검색, 날짜 필터링하여 조회합니다."
+    )
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('USER','MANAGER')")
     public ResponseEntity<Page<InventoryOutResponseDto>> getMyOutbound(
