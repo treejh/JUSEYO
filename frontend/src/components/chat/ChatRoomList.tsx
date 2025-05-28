@@ -426,11 +426,17 @@ const ChatRoomList: React.FC<Props> = ({
                     </span>
                   )}
 
-                  <span className="font-medium text-gray-800 truncate">
+                  <span
+                    className="font-medium text-gray-800 truncate"
+                    title={displayName}
+                  >
                     {displayName}
                   </span>
                   {department && (
-                    <span className="text-sm text-gray-500 truncate">
+                    <span
+                      className="text-sm text-gray-500 truncate"
+                      title={department}
+                    >
                       {department}
                     </span>
                   )}
