@@ -48,9 +48,10 @@ public class ReturnDueDateMonitoringService {
 
         // 매니저 Role과 유저 조회
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
-        List<User> managers = userService.findUsersByRole(managerRole);
 
         for (SupplyRequest request : requests) {
+            List<User> managers = userService.findAllByRoleAndManagementDashboardId(managerRole, request.getManagementDashboard().getId());
+
             if (request.getApprovalStatus() != ApprovalStatus.APPROVED) continue; // 대여 요청서 승인상태가 승인되지 않은 아이템은 skip
             if (supplyReturnRepository.existsBySupplyRequest(request)) continue; // 반납 요청서가 존재하는 경우 skip
 

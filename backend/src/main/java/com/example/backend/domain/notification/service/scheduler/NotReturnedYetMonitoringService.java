@@ -46,9 +46,11 @@ public class NotReturnedYetMonitoringService {
 
         // 매니저 Role과 유저 조회
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
-        List<User> managers = userService.findUsersByRole(managerRole);
 
         for (SupplyRequest request : requests) {
+            // 요청 비품의 관리페이지 매니저들 특정
+            List<User> managers = userService.findAllByRoleAndManagementDashboardId(managerRole, request.getManagementDashboard().getId());
+
             NotReturnedContext context = new NotReturnedContext(
                     request.getProductName(),
                     request.getReturnDate(),

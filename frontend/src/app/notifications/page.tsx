@@ -11,30 +11,34 @@ type NotificationType =
   | "SUPPLY_REQUEST"
   | "SUPPLY_RETURN"
   | "STOCK_SHORTAGE"
+  | "RETURN_DUE_DATE_EXCEEDED"
+  | "NOT_RETURNED_YET"
+  | "NEW_MANAGEMENT_DASHBOARD"
+  | "ADMIN_APPROVAL_ALERT"
+  | "ADMIN_REJECTION_ALERT"
+  | "NEW_MANAGER"
+  | "MANAGER_APPROVAL_ALERT"
+  | "MANAGER_REJECTION_ALERT"
   | "SUPPLY_REQUEST_APPROVED"
   | "SUPPLY_REQUEST_REJECTED"
   | "SUPPLY_REQUEST_DELAYED"
-  | "RETURN_DUE_DATE_EXCEEDED"
   | "RETURN_DUE_SOON"
   | "NEW_CHAT"
-  | "ADMIN_APPROVAL_ALERT"
-  | "MANAGER_APPROVAL_ALERT"
-  | "MANAGER_REJECTION_ALERT"
-  | "ADMIN_REJECTION_ALERT"
-  | "SUPPLY_RETURN_APPROVED"
-  | "NOT_RETURNED_YET";
+  | "SUPPLY_RETURN_APPROVED";
 
 const MANAGER_NOTIFICATION_TYPES: NotificationType[] = [
   "SUPPLY_REQUEST",
   "SUPPLY_RETURN",
   "STOCK_SHORTAGE",
   "RETURN_DUE_DATE_EXCEEDED",
-  "NEW_CHAT",
   "NOT_RETURNED_YET",
+  "NEW_MANAGEMENT_DASHBOARD",
   "ADMIN_APPROVAL_ALERT",
+  "ADMIN_REJECTION_ALERT",
+  "NEW_MANAGER",
   "MANAGER_APPROVAL_ALERT",
   "MANAGER_REJECTION_ALERT",
-  "ADMIN_REJECTION_ALERT",
+  "NEW_CHAT",
 ];
 
 const USER_NOTIFICATION_TYPES: NotificationType[] = [
@@ -200,6 +204,25 @@ const NOTIFICATION_TYPE_LABELS: Record<
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
         <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  NEW_MANAGEMENT_DASHBOARD: {
+    label: "관리 대시보드 생성",
+    color: "bg-purple-100 text-purple-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+        <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+      </svg>
+    ),
+  },
+  NEW_MANAGER: {
+    label: "새 매니저 등록",
+    color: "bg-indigo-100 text-indigo-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
       </svg>
     ),
   },

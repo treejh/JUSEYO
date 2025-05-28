@@ -9,8 +9,10 @@ import com.example.backend.enums.ApprovalStatus;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 public class NotReturnedYetStrategy implements  NotificationStrategy{
 
@@ -33,7 +35,7 @@ public class NotReturnedYetStrategy implements  NotificationStrategy{
         }
 
         // 단순 날짜 비교: 반납일이 3일 이상 지났으면 알림
-        long daysOverdue = Duration.between(ctx.getReturnDate().toLocalDate().atStartOfDay(), LocalDateTime.now()).toDays();
-        return daysOverdue >= 3;
+        long daysOverdue = ChronoUnit.DAYS.between(ctx.getReturnDate(), LocalDate.now());
+        return ctx.getReturnDate() != null && daysOverdue >= 3;
     }
 }
