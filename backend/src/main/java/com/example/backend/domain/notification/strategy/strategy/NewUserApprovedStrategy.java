@@ -6,7 +6,7 @@ public class NewUserApprovedStrategy implements NotificationStrategy {
     @Override
     public String generateMessage(Object context) {
         if (!(context instanceof NewUserContext)) {
-            throw new IllegalArgumentException("Invalid context for ManagerApproved Strategy");
+            throw new IllegalArgumentException("Invalid context for NewUserApproved Strategy");
         }
         NewUserContext ctx = (NewUserContext) context;
         return ctx.getRequesterName() +"님의 회원 가입이 승인되었습니다.";

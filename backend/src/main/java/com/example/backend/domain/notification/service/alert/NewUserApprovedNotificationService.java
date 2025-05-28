@@ -4,6 +4,7 @@ import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.NotificationType;
 import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.domain.notification.strategy.context.NewManagerContext;
+import com.example.backend.domain.notification.strategy.context.NewUserContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class NewUserApprovedNotificationService {
     public void notifyNewUserApproved(Long requesterId, String userName) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.NEW_USER_APRROVED);
 
-        NewManagerContext context = new NewManagerContext(userName);
+        NewUserContext context = new NewUserContext(userName);
 
         // 조건을 확인하고 알림을 생성
         if (strategy.shouldTrigger(context)) {

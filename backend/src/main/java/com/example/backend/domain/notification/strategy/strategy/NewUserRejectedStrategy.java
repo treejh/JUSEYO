@@ -6,7 +6,7 @@ public class NewUserRejectedStrategy implements NotificationStrategy{
     @Override
     public String generateMessage(Object context) {
         if (!(context instanceof NewUserContext)) {
-            throw new IllegalArgumentException("Invalid context for ManagerApproved Strategy");
+            throw new IllegalArgumentException("Invalid context for NewUserRejected Strategy");
         }
         NewUserContext ctx = (NewUserContext) context;
         return ctx.getRequesterName() +"님의 회원 가입이 거부되었습니다.";

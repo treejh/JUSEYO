@@ -4,6 +4,7 @@ import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.NotificationType;
 import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.domain.notification.strategy.context.NewManagerContext;
+import com.example.backend.domain.notification.strategy.context.NewUserContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
 import com.example.backend.domain.role.entity.Role;
@@ -30,7 +31,7 @@ public class NewUserNotificationService {
     public void notifyNewUser(Long requesterManagementDashboardId, String requesterName) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.NEW_USER);
 
-        NewManagerContext context = new NewManagerContext(requesterName);
+        NewUserContext context = new NewUserContext(requesterName);
 
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 
