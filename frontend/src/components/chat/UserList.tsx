@@ -171,8 +171,13 @@ const UserList: React.FC<Props> = ({
             >
               {/* 유저 정보 */}
               <div className="flex flex-col min-w-0 flex-1 truncate">
-                <span className="font-medium text-gray-800">{user.name}</span>
-                <span className="text-sm text-gray-500 truncate">
+                <span className="font-medium text-gray-800" title={user.name}>
+                  {user.name}
+                </span>
+                <span
+                  className="text-sm text-gray-500 truncate"
+                  title={user.department}
+                >
                   {user.department}
                 </span>
               </div>

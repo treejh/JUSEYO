@@ -327,7 +327,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
           <h2 className="text-xl font-bold">
             {roomInfo?.roomType === "GROUP"
               ? roomInfo.roomName
-              : `${opponentInfo?.name || "알 수 없음"} 채팅방`}
+              : `${opponentInfo?.name || "종료된 채팅방"} 채팅방`}
           </h2>
           {roomInfo?.roomType !== "GROUP" && opponentInfo?.department && (
             <p className="text-sm text-gray-500">{opponentInfo.department}</p>
