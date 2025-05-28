@@ -172,5 +172,19 @@ public class InventoryInService {
         return inventoryInResponseDto;
     }
 
+    // 비품 ID 기준 입고내역 조회
+    public Page<InventoryInResponseDto> getInventoryInsByItemId(
+            Long itemId,
+            Pageable pageable
+    ) {
+        // 1) 관리대시보드 ID 조회
+        Long userId = tokenService.getIdFromToken();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        Long mgmtId = user.getManagementDashboard().getId();
+
+        // 2) Repository 호출
+        return inRepo.getInventoryInsByItemIdAndManagementId(mgmtId, itemId, pageable);
+    }
 
 }
