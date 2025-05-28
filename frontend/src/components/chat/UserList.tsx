@@ -163,28 +163,40 @@ const UserList: React.FC<Props> = ({
         />
       </div>
 
-      <ul className="divide-y divide-gray-200">
-        {filteredUsers.map((user) => (
-          <li
-            key={user.id}
-            className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
-          >
-            {/* 유저 정보 */}
-            <div className="flex flex-col">
-              <span className="font-medium text-gray-800">{user.name}</span>
-              <span className="text-sm text-gray-500">{user.department}</span>
-            </div>
-
-            {/* 채팅방 생성 버튼 */}
-            <button
-              className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-              onClick={() => handleChatRoomCheck(user.id, user.name)} // 채팅방 존재 여부 확인
+      {/* 유저 리스트 감싸는 컨테이너에 max-h와 스크롤 추가 */}
+      <div className="max-h-[600px] overflow-y-auto">
+        <ul className="divide-y divide-gray-200">
+          {filteredUsers.map((user) => (
+            <li
+              key={user.id}
+              className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
             >
-              채팅방 생성
-            </button>
-          </li>
-        ))}
-      </ul>
+              {/* 유저 정보 */}
+              <div className="flex flex-col min-w-0 flex-1 truncate">
+                <span className="font-medium text-gray-800" title={user.name}>
+                  {user.name}
+                </span>
+                <span
+                  className="text-sm text-gray-500 truncate"
+                  title={user.department}
+                >
+                  {user.department}
+                </span>
+              </div>
+
+              {/* 버튼 영역: 고정 너비와 shrink 방지 */}
+              <div className="flex min-w-[110px] flex-shrink-0 justify-end ml-4">
+                <button
+                  className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                  onClick={() => handleChatRoomCheck(user.id, user.name)}
+                >
+                  채팅방 생성
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* 채팅방 생성 UI */}
       {showCreateUI && (
