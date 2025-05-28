@@ -17,6 +17,8 @@ public enum NotificationType {
     MANAGER_APPROVAL_ALERT("매니저 승인 알림"),     // 매니저 승인 알림 (이니셜 매니저 -> 새 매니저)
     MANAGER_REJECTION_ALERT("매니저 거부 알림"),     // 매니저 거부 알림 (이니셜 매니저 -> 새 매니저)
 
+    NEW_USER("새로운 회원 가입 요청"),
+
 
     // 회원 알림
     SUPPLY_REQUEST_APPROVED("비품 요청 승인"),      // 비품 요청 승인
@@ -24,6 +26,9 @@ public enum NotificationType {
     RETURN_DUE_SOON("지정 반납일 임박"),   // 지정 반납일 임박 (사용자 행동 유도)
     SUPPLY_REQUEST_DELAYED("비품 요청 처리 지연"),  // 비품 요청 처리 지연 (사용자 행동 유도)
     SUPPLY_RETURN_APPROVED("비품 반납 승인"),
+
+    NEW_USER_APRROVED("회원 가입 요청 승인"),
+    NEW_USER_REJECTED("회원 가입 요청 거부"),
 
     // 공통 알림
 //    SYSTEM_MAINTENANCE("시스템 점검 알림"),        // 시스템 점검 알림

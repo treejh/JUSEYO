@@ -3,7 +3,6 @@ package com.example.backend.domain.notification.strategy.strategy;
 import com.example.backend.domain.notification.strategy.context.NewManagerContext;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class NewManagerStrategy implements NotificationStrategy {
     @Override
     public String generateMessage(Object context) {

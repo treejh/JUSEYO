@@ -28,7 +28,10 @@ type NotificationType =
   | "MANAGER_APPROVAL_ALERT"
   | "MANAGER_REJECTION_ALERT"
   | "ADMIN_REJECTION_ALERT"
-  | "SUPPLY_RETURN_APPROVED";
+  | "SUPPLY_RETURN_APPROVED"
+  | "NEW_USER"
+  | "NEW_USER_APPROVED"
+  | "NEW_USER_REJECTED";
 
 interface NotificationCategory {
   label: string;
@@ -67,6 +70,9 @@ const NOTIFICATION_CATEGORIES: Record<string, NotificationCategory> = {
       "MANAGER_APPROVAL_ALERT",
       "MANAGER_REJECTION_ALERT",
       "ADMIN_REJECTION_ALERT",
+      "NEW_USER",
+      "NEW_USER_APPROVED",
+      "NEW_USER_REJECTED",
     ],
     color: "gray",
   },
@@ -244,6 +250,33 @@ const NOTIFICATION_TYPE_LABELS: Record<
   },
   NOT_RETURNED_YET: {
     label: "장기 미반납",
+    color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  NEW_USER: {
+    label: "새로운 회원",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  NEW_USER_APPROVED: {
+    label: "회원 승인",
+    color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  NEW_USER_REJECTED: {
+    label: "회원 거부",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
