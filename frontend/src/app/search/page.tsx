@@ -29,15 +29,6 @@ interface ApiResponse<T> {
   };
 }
 
-// 추천 검색어 데이터
-const RECOMMENDED_SEARCHES = [
-  "맥북",
-  "모니터 스탠드",
-  "무선 마우스",
-  "USB 허브",
-  "화이트보드 마커"
-];
-
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export default function SearchPage() {
@@ -50,8 +41,32 @@ export default function SearchPage() {
   const [isSearched, setIsSearched] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [itemImages, setItemImages] = useState<Record<number, string>>({});
 
   const ITEMS_PER_PAGE = 10;
+  
+  // 모든 아이템의 이미지 정보를 가져오는 함수
+  const fetchItemImages = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/items/all`, {
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      
+      const items: SearchItem[] = await res.json();
+      const imageMap: Record<number, string> = {};
+      
+      items.forEach(item => {
+        if (item.image) {
+          imageMap[item.id] = item.image;
+        }
+      });
+      
+      setItemImages(imageMap);
+    } catch (error) {
+      console.error("이미지 정보 가져오기 실패:", error);
+    }
+  };
   
   // 검색 실행
   const handleSearch = async (searchText: string, page: number = 0) => {
@@ -65,7 +80,7 @@ export default function SearchPage() {
       url.searchParams.set("page", (page + 1).toString());
       window.history.pushState({}, "", url);
 
-      // API 호출
+      // 검색 API 호출
       const response = await fetch(
         `${API_BASE}/api/v1/search/items?managementDashboardId=1&keyword=${encodeURIComponent(searchText)}&page=${page}&size=${ITEMS_PER_PAGE}`,
         {
@@ -78,7 +93,19 @@ export default function SearchPage() {
       }
 
       const data: ApiResponse<SearchItem> = await response.json();
-      setResults(data.data.content);
+      
+      // 검색 결과가 있으면 이미지 정보도 가져옴
+      if (data.data.content.length > 0) {
+        await fetchItemImages();
+      }
+      
+      // 검색 결과에 이미지 정보 추가
+      const resultsWithImages = data.data.content.map(item => ({
+        ...item,
+        image: itemImages[item.id]
+      }));
+
+      setResults(resultsWithImages);
       setTotalPages(data.data.totalPages);
       setIsSearched(true);
     } catch (error) {
@@ -139,27 +166,6 @@ export default function SearchPage() {
           </div>
         </div>
 
-        {!isSearched && (
-          /* 추천 검색어 */
-          <div className="mb-8">
-            <h2 className="text-base font-medium text-gray-900 mb-3">추천 검색어</h2>
-            <div className="flex flex-wrap gap-2">
-              {RECOMMENDED_SEARCHES.map((text, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setSearchQuery(text);
-                    handleSearch(text);
-                  }}
-                  className="px-4 py-1.5 text-sm bg-white border border-blue-500 text-blue-500 rounded-full hover:bg-blue-50 transition-colors"
-                >
-                  {text}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* 검색 결과 */}
         {isSearched && (
           <div className="mt-8">
@@ -184,17 +190,19 @@ export default function SearchPage() {
                       key={item.id}
                       className="bg-white rounded-lg p-4 flex items-center gap-4"
                     >
-                      <div className="relative w-16 h-16 flex-shrink-0">
+                      <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-md">
                         {item.image ? (
                           <Image
                             src={item.image}
                             alt={item.name}
-                            fill
-                            className="object-cover rounded-md"
+                            width={64}
+                            height={64}
+                            className="object-cover w-full h-full"
+                            style={{ objectFit: 'cover' }}
                           />
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-md">
-                            <span className="text-gray-400 text-xs">이미지 없음</span>
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                            <span className="text-gray-400 text-xs">No IMG</span>
                           </div>
                         )}
                       </div>
@@ -205,18 +213,11 @@ export default function SearchPage() {
                         <p className="text-sm text-gray-500 mt-1">{item.categoryName}</p>
                         <div className="mt-1 text-sm">
                           <span className="text-blue-600 font-medium">
-                            {item.availableQuantity}
+                            남은 수량: {item.availableQuantity}
                           </span>
-                          /{item.totalQuantity}
                         </div>
                       </div>
                       <div className="flex gap-2 flex-shrink-0">
-                        <button
-                          onClick={() => router.push(`/items/${item.id}`)}
-                          className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50"
-                        >
-                          조회
-                        </button>
                         <button
                           onClick={() => router.push(`/item/supplyrequest/create/${item.id}`)}
                           className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700"
