@@ -42,9 +42,18 @@ export default function SearchPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [itemImages, setItemImages] = useState<Record<number, string>>({});
+  const [allItems, setAllItems] = useState<SearchItem[]>([]);
+  const [randomItems, setRandomItems] = useState<SearchItem[]>([]);
 
   const ITEMS_PER_PAGE = 10;
+  const SUGGESTION_COUNT = 5;
   
+  // 랜덤으로 아이템을 선택하는 함수
+  const getRandomItems = (items: SearchItem[], count: number) => {
+    const shuffled = [...items].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  };
+
   // 모든 아이템의 이미지 정보를 가져오는 함수
   const fetchItemImages = async () => {
     try {
@@ -67,6 +76,39 @@ export default function SearchPage() {
       console.error("이미지 정보 가져오기 실패:", error);
     }
   };
+  
+  // 모든 아이템 정보를 가져오는 함수
+  const fetchAllItems = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/items/all`, {
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      
+      const items: SearchItem[] = await res.json();
+      // 활성화된 아이템만 필터링
+      const activeItems = items.filter(item => item.status === "ACTIVE");
+      setAllItems(activeItems);
+      
+      // 랜덤으로 5개 선택
+      setRandomItems(getRandomItems(activeItems, SUGGESTION_COUNT));
+      
+      // 이미지 맵 업데이트
+      const imageMap: Record<number, string> = {};
+      items.forEach(item => {
+        if (item.image) {
+          imageMap[item.id] = item.image;
+        }
+      });
+      setItemImages(imageMap);
+    } catch (error) {
+      console.error("아이템 정보 가져오기 실패:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllItems();
+  }, []);
   
   // 검색 실행
   const handleSearch = async (searchText: string, page: number = 0) => {
@@ -166,6 +208,30 @@ export default function SearchPage() {
           </div>
         </div>
 
+        {!isSearched && (
+          <div className="mb-8">
+            <h2 className="text-base font-medium text-gray-900 mb-3">추천 검색어</h2>
+            <div className="flex flex-wrap gap-2">
+              {randomItems.length > 0 ? (
+                randomItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setSearchQuery(item.name);
+                      handleSearch(item.name);
+                    }}
+                    className="px-4 py-1.5 text-sm bg-white border border-blue-500 text-blue-500 rounded-full hover:bg-blue-50 transition-colors"
+                  >
+                    {item.name}
+                  </button>
+                ))
+              ) : (
+                <p className="text-gray-500 text-sm">등록된 비품이 아직 없습니다.</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* 검색 결과 */}
         {isSearched && (
           <div className="mt-8">
@@ -212,8 +278,8 @@ export default function SearchPage() {
                         </h3>
                         <p className="text-sm text-gray-500 mt-1">{item.categoryName}</p>
                         <div className="mt-1 text-sm">
-                          <span className="text-blue-600 font-medium">
-                            남은 수량: {item.availableQuantity}
+                          <span className="text-gray-400">
+                            남은 수량 {item.availableQuantity}
                           </span>
                         </div>
                       </div>
