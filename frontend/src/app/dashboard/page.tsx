@@ -17,7 +17,7 @@ import styles from "./page.module.css";
 import InventoryTable from "./inventory-table";
 import { useRouter } from "next/navigation";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
-
+import { useCustomToast } from "@/utils/toast";
 // Chart.js 등록
 ChartJS.register(
   CategoryScale,
@@ -107,7 +107,7 @@ interface RentalItem {
 export default function DashboardPage() {
   const router = useRouter();
   const { loginUser, isLogin } = useGlobalLoginUser();
-
+  const toast = useCustomToast();
   // 권한 체크
   useEffect(() => {
     const checkAuth = async () => {
@@ -132,7 +132,7 @@ export default function DashboardPage() {
           error instanceof Error &&
           error.message.includes("Failed to fetch")
         ) {
-          alert("서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.");
+          toast.error("서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.");
         }
         router.replace("/login");
       }

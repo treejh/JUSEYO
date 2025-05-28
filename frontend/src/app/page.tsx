@@ -159,109 +159,107 @@ export default function Home() {
     // 채팅 페이지에서는 파티클 로드 안함
     if (isChatPage) return;
 
-    // 서버 사이드 렌더링 방지 또는 이미 로드된 경우 중복 로드 방지
-    if (typeof window === "undefined" || particlesLoaded.current) return;
+    // 서버 사이드 렌더링 방지
+    if (typeof window === "undefined") return;
 
     // 파티클 스크립트 로드
-    const loadParticles = () => {
-      const existingScript = document.querySelector(
-        'script[src*="particles.min.js"]'
-      );
-      if (existingScript) return existingScript;
+    const loadParticles = async () => {
+      if (!window.particlesJS) {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
+        script.async = true;
+        
+        await new Promise((resolve) => {
+          script.onload = resolve;
+          document.body.appendChild(script);
+        });
+      }
 
-      const script = document.createElement("script");
-      script.src =
-        "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
-      script.async = true;
+      // 기존 파티클 인스턴스 제거
+      if (window.pJSDom && window.pJSDom.length > 0) {
+        window.pJSDom[0].pJS.fn.vendors.destroypJS();
+        window.pJSDom = [];
+      }
 
-      script.onload = () => {
-        if (window.particlesJS) {
-          // 최적화된 파티클 설정
-          window.particlesJS("particles-js", {
-            particles: {
-              number: {
-                value: 30, // 파티클 수 대폭 감소
-                density: {
-                  enable: true,
-                  value_area: 1000, // 더 넓은 영역에 분산
-                },
-              },
-              color: {
-                value: "#1543a8",
-              },
-              shape: {
-                type: "circle",
-                stroke: {
-                  width: 0,
-                  color: "#000000",
-                },
-              },
-              opacity: {
-                value: 0.3, // 투명도 증가
-                random: false,
-                anim: {
-                  enable: false,
-                  speed: 1,
-                  opacity_min: 0.1,
-                  sync: false,
-                },
-              },
-              size: {
-                value: 3,
-                random: true,
-                anim: {
-                  enable: false,
-                },
-              },
-              line_linked: {
-                enable: true,
-                distance: 250, // 거리 증가하여 선 개수 감소
-                color: "#1543a8",
-                opacity: 0.2, // 투명도 증가
-                width: 1,
-              },
-              move: {
-                enable: true,
-                speed: 0.8, // 속도 감소
-                direction: "none",
-                random: false,
-                straight: false,
-                out_mode: "out",
-                bounce: false,
-                attract: {
-                  enable: false,
-                },
-              },
+      // 파티클 초기화
+      window.particlesJS("particles-js", {
+        particles: {
+          number: {
+            value: 30,
+            density: {
+              enable: true,
+              value_area: 1000,
             },
-            interactivity: {
-              detect_on: "canvas",
-              events: {
-                onhover: {
-                  enable: false, // 호버 이벤트 비활성화
-                  mode: "grab",
-                },
-                onclick: {
-                  enable: false, // 클릭 이벤트 비활성화
-                  mode: "push",
-                },
-                resize: true,
-              },
+          },
+          color: {
+            value: "#1543a8",
+          },
+          shape: {
+            type: "circle",
+            stroke: {
+              width: 0,
+              color: "#000000",
             },
-            retina_detect: false, // 레티나 감지 비활성화
-          });
-          particlesLoaded.current = true;
-        }
-      };
-
-      document.body.appendChild(script);
-      return script;
+          },
+          opacity: {
+            value: 0.3,
+            random: false,
+            anim: {
+              enable: false,
+              speed: 1,
+              opacity_min: 0.1,
+              sync: false,
+            },
+          },
+          size: {
+            value: 3,
+            random: true,
+            anim: {
+              enable: false,
+            },
+          },
+          line_linked: {
+            enable: true,
+            distance: 250,
+            color: "#1543a8",
+            opacity: 0.2,
+            width: 1,
+          },
+          move: {
+            enable: true,
+            speed: 0.8,
+            direction: "none",
+            random: false,
+            straight: false,
+            out_mode: "out",
+            bounce: false,
+            attract: {
+              enable: false,
+            },
+          },
+        },
+        interactivity: {
+          detect_on: "canvas",
+          events: {
+            onhover: {
+              enable: false,
+              mode: "grab",
+            },
+            onclick: {
+              enable: false,
+              mode: "push",
+            },
+            resize: true,
+          },
+        },
+        retina_detect: false,
+      });
     };
 
-    const script = loadParticles();
+    loadParticles();
 
     // 클린업 함수
     return () => {
-      // 페이지 이동 시 파티클 인스턴스 제거
       if (window.pJSDom && window.pJSDom.length > 0) {
         try {
           window.pJSDom[0].pJS.fn.vendors.destroypJS();
@@ -270,7 +268,6 @@ export default function Home() {
           console.error("Failed to destroy particles:", e);
         }
       }
-      particlesLoaded.current = false;
     };
   }, [isChatPage]);
 

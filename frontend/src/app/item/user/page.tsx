@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useCustomToast } from "@/utils/toast";
 
 interface Item {
   id: number;
@@ -23,7 +24,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export default function AllItemsPage() {
   const router = useRouter();
-
+  const toast = useCustomToast();
   const [items, setItems] = useState<Item[]>([]);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -45,7 +46,7 @@ export default function AllItemsPage() {
       setItems(active);
       setFilteredItems(active.slice(0, size));
     } catch (err: any) {
-      alert("비품 로드 실패: " + err.message);
+      toast.error("비품 로드 실패: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -59,7 +60,7 @@ export default function AllItemsPage() {
       if (!res.ok) throw new Error(await res.text());
       setCategories(await res.json());
     } catch (err) {
-      console.error("카테고리 로드 실패", err);
+      toast.error("카테고리 로드 실패");
     }
   };
 
@@ -152,7 +153,10 @@ export default function AllItemsPage() {
           <div className="grid grid-cols-5 gap-6">
             {filteredItems.map((item) => (
               <div key={item.id} className="group cursor-pointer">
-                <div className="aspect-square bg-gray-100 rounded-sm mb-3 overflow-hidden">
+                <div
+                  onClick={() => router.push(`/item/detail/${item.id}`)}
+                  className="aspect-square bg-gray-100 rounded-sm mb-3 overflow-hidden cursor-pointer"
+                >
                   {item.image ? (
                     <Image
                       src={item.image}

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useCustomToast } from "@/utils/toast";
 
 interface Item {
   id: number;
@@ -27,6 +28,7 @@ export default function AllItemsPage() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const toast = useCustomToast();
 
   const fetchAllItems = async () => {
     setLoading(true);
@@ -43,7 +45,7 @@ export default function AllItemsPage() {
       setItems(active);
       setFilteredItems(active);
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export default function AllItemsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -82,7 +84,7 @@ export default function AllItemsPage() {
       if (!res.ok) throw new Error("삭제 실패");
       await fetchAllItems();
     } catch {
-      alert("삭제 중 오류가 발생했습니다.");
+      toast.error("삭제 중 오류가 발생했습니다.");
     } finally {
       setOpenMenuId(null);
     }

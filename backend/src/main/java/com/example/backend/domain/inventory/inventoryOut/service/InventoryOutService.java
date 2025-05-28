@@ -115,7 +115,7 @@ public class InventoryOutService {
         item.setAvailableQuantity(item.getAvailableQuantity() - saved.getQuantity());
 
         // 재고 부족 알림 발생
-        eventPublisher.publishEvent(new StockShortageEvent(item.getSerialNumber(), item.getName(), item.getAvailableQuantity(), item.getMinimumQuantity()));
+        eventPublisher.publishEvent(new StockShortageEvent(item.getManagementDashboard().getId(), item.getSerialNumber(), item.getName(), item.getAvailableQuantity(), item.getMinimumQuantity()));
 
         // 5) **대여(LEND) 케이스에만** 개별자산단위 상태 변경 (AVAILABLE → LEND)
 //        if (saved.getOutbound() == Outbound.LEND) {
@@ -157,6 +157,7 @@ public class InventoryOutService {
     @Transactional(readOnly = true)
     public Page<InventoryOutResponseDto> getOutbound(
             String search,
+            Long itemId,
             LocalDate fromDate,
             LocalDate toDate,
             int page,
@@ -192,7 +193,7 @@ public class InventoryOutService {
             LocalDate fromDate,
             LocalDate toDate
     ) {
-        return getOutbound(search, fromDate, toDate, 0, Integer.MAX_VALUE, "createdAt", "desc")
+        return getOutbound(search, null, fromDate, toDate, 0, Integer.MAX_VALUE, "createdAt", "desc")
                 .getContent();
     }
 

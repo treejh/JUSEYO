@@ -32,8 +32,8 @@ public class NotReturnedYetMonitoringService {
     private final RoleService roleService;
     private final UserService userService;
 
-    //    @Scheduled(cron = "0 0 8 * * *") // 배포용 : 매일 오전 8시 실행
-    @Scheduled(fixedRate = 600000)   // 테스트용 : 10분마다
+        @Scheduled(cron = "0 0 8 * * MON") // 배포용 : 매주 월요일 오전 8시 실행
+//    @Scheduled(fixedRate = 60000)   // 테스트용 : 1분마다
     @Transactional
     public void scheduledCheckAndNotify() {
         checkAndNotifyNotReturnedYet();
@@ -46,9 +46,10 @@ public class NotReturnedYetMonitoringService {
 
         // 매니저 Role과 유저 조회
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
-        List<User> managers = userService.findUsersByRole(managerRole);
 
         for (SupplyRequest request : requests) {
+            if (supplyReturnRepository.existsBySupplyRequestId(request.getId())) continue; // 요청서에 대응하는 반납 요청서가 존재하는 경우 skip
+
             NotReturnedContext context = new NotReturnedContext(
                     request.getProductName(),
                     request.getReturnDate(),
@@ -56,13 +57,21 @@ public class NotReturnedYetMonitoringService {
             );
 
             if (strategy.shouldTrigger(context)) {
+                // 요청 비품의 관리페이지 매니저들 특정
+                List<User> managers = userService.findAllByRoleAndManagementDashboardId(managerRole, request.getManagementDashboard().getId());
+
+
                 String msg = strategy.generateMessage(context);
+
+                // 유저 대상
                 User user = request.getUser();
                 notificationService.createNotification(new NotificationRequestDTO(
                         NotificationType.NOT_RETURNED_YET,
                         msg,
                         user.getId()
                 ));
+
+                // 매니저들 대상
                 for (User manager : managers) {
                     notificationService.createNotification(new NotificationRequestDTO(
                             NotificationType.NOT_RETURNED_YET,

@@ -1,3 +1,5 @@
+// src/app/settings/categories/add/page.tsx
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -25,9 +27,11 @@ const AddCategoryPage: FC = () => {
       await categoryService.createCategory({ name: categoryName.trim() });
       toast.success("카테고리가 생성되었습니다.");
       router.push("/settings/categories");
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof BusinessError) {
         toast.error(err.message);
+      } else if (err?.response?.data?.message) {
+        toast.error(err.response.data.message);
       } else {
         toast.error("카테고리 생성에 실패했습니다.");
       }

@@ -3,6 +3,7 @@ import { Client } from "@stomp/stompjs";
 import { FaUser, FaTimes, FaDoorOpen } from "react-icons/fa"; // 아이콘 추가
 import { fetchParticipants, Participant } from "../../utils/fetchParticipants";
 import { leaveChatRoom } from "../../utils/leaveChatRoom";
+import { useCustomToast } from "@/utils/toast";
 
 interface Props {
   roomId: number;
@@ -42,6 +43,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
   const [showParticipants, setShowParticipants] = useState<boolean>(false); // 참여 유저 목록 표시 여부
   const messagesEndRef = useRef<HTMLDivElement | null>(null); // 스크롤 이동을 위한 ref
   const messageContainerRef = useRef<HTMLDivElement | null>(null); // 메시지 컨테이너 ref 추가
+  const toast = useCustomToast();
 
   // 참여 유저 목록 가져오기
   const loadParticipants = async () => {
@@ -157,7 +159,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
   //채팅방 나가기
   const handleLeaveChatRoom = async () => {
     try {
-      await leaveChatRoom(client, roomId, loginUserId);
+      await leaveChatRoom(client, roomId, loginUserId, toast);
     } catch (error) {
       console.error("채팅방 나가기 실패:", error);
     }
@@ -168,6 +170,10 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
     if (!client || !client.connected) {
       console.error("STOMP 연결이 활성화되지 않았습니다.");
       return;
+    }
+    if (inputMessage.length > 200) {
+      alert("메시지는 200글자를 초과할 수 없습니다!"); // 알림 띄우기
+      return; // 함수 실행 중단
     }
 
     if (inputMessage.trim()) {
@@ -319,41 +325,51 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
     <div className="flex flex-col h-[90vh] border border-gray-300 rounded-lg shadow-md">
       {/* 채팅방 헤더 */}
       <div className="flex justify-between items-center p-4 border-b border-gray-300">
-        <div>
-          <h2 className="text-xl font-bold">
+        {/* 헤더 왼쪽: 이름/부서 */}
+        <div className="min-w-0 flex-1">
+          <h2
+            className="text-xl font-bold truncate"
+            title={
+              roomInfo?.roomType === "GROUP"
+                ? roomInfo.roomName
+                : `${opponentInfo?.name || "종료된 채팅방"} 채팅방`
+            }
+          >
             {roomInfo?.roomType === "GROUP"
               ? roomInfo.roomName
-              : `${opponentInfo?.name || "알 수 없음"} 채팅방`}
+              : `${opponentInfo?.name || "종료된 채팅방"} 채팅방`}
           </h2>
           {roomInfo?.roomType !== "GROUP" && opponentInfo?.department && (
-            <p className="text-sm text-gray-500">{opponentInfo.department}</p>
+            <p
+              className="text-sm text-gray-500 truncate"
+              title={opponentInfo.department}
+            >
+              {opponentInfo.department}
+            </p>
           )}
         </div>
-        {/* 닫기 및 나가기 버튼 */}
-        <div className="flex items-center">
-          {/* 참여 유저 목록 버튼 */}
+        {/* 헤더 오른쪽: 버튼 */}
+        <div className="flex items-center flex-shrink-0 ml-4 gap-2 min-w-[120px]">
           <button
-            className="text-gray-600 hover:text-gray-800 mr-4"
+            className="text-gray-600 hover:text-gray-800 mr-2"
             onClick={() => {
               setShowParticipants(!showParticipants);
-              if (!showParticipants) loadParticipants(); // 참여 유저 목록 가져오기
+              if (!showParticipants) loadParticipants();
             }}
           >
             <FaUser size={24} />
           </button>
-          {/* 닫기 버튼 */}
           <button
-            className="text-gray-600 hover:text-gray-800 mr-4"
-            onClick={handleClose} // 닫기 버튼 클릭 시 화면 새로 고침
+            className="text-gray-600 hover:text-gray-800 mr-2"
+            onClick={handleClose}
           >
-            <FaTimes size={24} /> {/* x 아이콘 */}
+            <FaTimes size={24} />
           </button>
-          {/* 나가기 버튼 */}
           <button
             className="text-gray-600 hover:text-gray-800"
-            onClick={() => leaveChatRoom(client, roomId, loginUserId)}
+            onClick={() => leaveChatRoom(client, roomId, loginUserId, toast)}
           >
-            <FaDoorOpen size={24} /> {/* 문 아이콘 */}
+            <FaDoorOpen size={24} />
           </button>
         </div>
       </div>
@@ -424,6 +440,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
                       {new Date(msg.createDate).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
+                        timeZone: "Asia/Seoul",
                       })}
                     </small>
                   )}
@@ -437,21 +454,39 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
       </div>
 
       {/* 메시지 입력 영역 */}
-      <div className="flex items-center p-4 border-t border-gray-300">
-        <input
-          type="text"
-          className="flex-1 border border-gray-300 p-2 rounded-l"
-          value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          onKeyPress={handleKeyPress} // Enter 키 처리 추가
-          placeholder="메시지를 입력하세요..."
-        />
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-r"
-          onClick={sendMessage}
+      <div className="p-4 border-t border-gray-300 bg-gray-50 rounded-b-lg">
+        <form
+          className="flex items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            sendMessage();
+          }}
         >
-          전송
-        </button>
+          <input
+            type="text"
+            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-800 transition"
+            value={inputMessage}
+            onChange={(e) => {
+              if (e.target.value.length > 200) {
+                alert("채팅은 200글자 까지만 가능합니다.");
+                return;
+              }
+              setInputMessage(e.target.value);
+            }}
+            onKeyPress={handleKeyPress}
+            placeholder="메시지를 입력하세요..."
+            maxLength={200}
+          />
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full font-semibold shadow transition"
+          >
+            전송
+          </button>
+        </form>
+        <div className="text-right text-xs text-gray-400 mt-1 mr-25">
+          {inputMessage.length}/200
+        </div>
       </div>
     </div>
   );

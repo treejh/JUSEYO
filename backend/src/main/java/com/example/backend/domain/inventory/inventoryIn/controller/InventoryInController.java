@@ -60,4 +60,19 @@ public class InventoryInController {
     ) {
         return service.getInventoryIn(id);
     }
+
+    @Operation(
+            summary = "비품별 입고내역 조회",
+            description = "itemId 파라미터로 특정 비품의 입고내역만 페이징 조회합니다."
+    )
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @GetMapping("/by-item")
+    public Page<InventoryInResponseDto> getInboundsByItem(
+            @RequestParam Long itemId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return service.getInventoryInsByItemId(itemId, pageable);
+    }
 }

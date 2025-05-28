@@ -53,6 +53,7 @@ public class SecurityConfigJuseyo {
                                 ,"/api/v1/users/password","/api/v1/users/phoneNumber"
                         ).hasAnyRole("MANAGER", "USER","ADMIN")
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/users/delete/**").hasAnyRole("MANAGER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/api/v1/users/logout").hasAnyRole("MANAGER", "USER","ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/signup/**","/api/v1/users/login","/api/v1/users/emails/findPassword","/api/v1/users/emails/**","/api/v1/users/duplication/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/users/name","/api/v1/users/email","/api/v1/users/password","/api/v1/users/phoneNumber","/api/v1/users/validation/password/**").hasAnyRole("MANAGER", "USER","ADMIN")
                         .requestMatchers(HttpMethod.DELETE,"/api/v1/users/delete").hasAnyRole("MANAGER", "USER","ADMIN")
@@ -61,8 +62,12 @@ public class SecurityConfigJuseyo {
                         ,"/api/v1/users/validation/initialManager/**",
                                 "/api/v1/users/search/**")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
+
                         //비품
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/items/**").hasRole("MANAGER") // 비품삭제는 매니저만 가능
+                        .requestMatchers(HttpMethod.GET, "/api/v1/items/**").hasAnyRole("MANAGER", "USER") //조회 추가
+
                         //부서
                         .requestMatchers(HttpMethod.GET,  "/api/v1/departments/management/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/departments/**").hasRole("MANAGER")
@@ -142,6 +147,7 @@ public class SecurityConfigJuseyo {
 
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000"
+                ,"https://www.app.jusey0.site"
         ));
 
         config.addAllowedHeader("*");

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginUser } from "@/types/auth";
 import { useLoginUser } from "@/stores/auth/loginMember";
+import { useCustomToast } from "@/utils/toast";
 
 interface ApiResponse {
   success: boolean;
@@ -31,7 +32,9 @@ interface BizCheckResponse {
 
 export default function AdminRequest() {
   const router = useRouter();
+  const toast = useCustomToast();
   const { isLogin, loginUser } = useLoginUser();
+
   const [formData, setFormData] = useState({
     pageName: '',
     owner: '',
@@ -44,20 +47,20 @@ export default function AdminRequest() {
 
    useEffect(() => {
      if (!isLogin || !loginUser) {
-       alert('로그인이 필요한 서비스입니다.');
+       toast.error('로그인이 필요한 서비스입니다.');
        router.push('/login');
        return;
      }
 
-     if (loginUser.role !== 'admin') {
+     if (loginUser.role !== 'ADMIN') {
        if (loginUser.managementDashboardName) {
-         alert('이미 관리자 페이지가 존재합니다.');
+         toast.warning('이미 관리자 페이지가 존재합니다.');
          router.push('/');
          return;
        }
 
-       if (loginUser.role !== 'manager') {
-         alert('관리자 페이지 생성 권한이 없습니다.');
+       if (loginUser.role !== 'MANAGER') {
+         toast.error('관리자 페이지 생성 권한이 없습니다.');
          router.push('/');
          return;
        }
@@ -185,7 +188,7 @@ export default function AdminRequest() {
           localStorage.setItem('loginUser', JSON.stringify(updatedUser));
         }
         
-        alert('관리자 페이지가 성공적으로 생성되었습니다');
+        toast.success('관리자 페이지가 성공적으로 생성되었습니다');
         router.push('/settings/departments');
       } else {
         setErrors({ submit: result.message || '관리 페이지 등록에 실패했습니다' });
