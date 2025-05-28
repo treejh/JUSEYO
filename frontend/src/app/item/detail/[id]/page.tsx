@@ -20,14 +20,13 @@ interface Product {
   image?: string;
 }
 
-// 백엔드 DTO 에 맞춰 필드명 조정
 interface InventoryMoveDto {
   itemId: number;
   quantity: number;
   createdAt: string;
 }
 
-type Tab = "입고" | "출고";
+type Tab = "출고" | "입고";
 
 export default function ItemDetailPage() {
   const router = useRouter();
@@ -42,6 +41,7 @@ export default function ItemDetailPage() {
   const [inRecords, setInRecords] = useState<InventoryMoveDto[]>([]);
   const [outRecords, setOutRecords] = useState<InventoryMoveDto[]>([]);
 
+  // 1) Fetch product
   useEffect(() => {
     if (!isLogin) {
       router.push("/login");
@@ -49,7 +49,6 @@ export default function ItemDetailPage() {
     }
     if (!id) return;
 
-    // 1) 제품 정보
     setLoading(true);
     fetch(`${API_BASE}/api/v1/items/${id}`, { credentials: "include" })
       .then((res) => {
@@ -57,7 +56,6 @@ export default function ItemDetailPage() {
         return res.json() as Promise<Product>;
       })
       .then((data) => {
-        // createdAt 만 YYYY-MM-DD
         data.createdAt = data.createdAt.slice(0, 10);
         setProduct(data);
       })
@@ -65,57 +63,46 @@ export default function ItemDetailPage() {
       .finally(() => setLoading(false));
   }, [id, isLogin, router]);
 
+  // 2) Fetch in/out records
   useEffect(() => {
     if (!id) return;
-    // 2) 출고 기록
-    fetch(
-      `${API_BASE}/api/v1/inventory-out?page=0&size=100&sort=createdAt,desc`,
-      { credentials: "include" }
-    )
+
+    // 출고 내역 (내 출고만)
+    fetch(`${API_BASE}/api/v1/inventory-out/me?size=100&sort=createdAt,desc`, {
+      credentials: "include",
+    })
       .then((res) => {
         if (!res.ok) throw new Error("출고 내역을 불러올 수 없습니다.");
-        return res.json() as Promise<{
-          content: InventoryMoveDto[];
-        }>;
+        return res.json() as Promise<{ content: InventoryMoveDto[] }>;
       })
-      .then((page) => {
-        const filtered = page.content
+      .then(({ content }) => {
+        const recs = content
           .filter((r) => r.itemId === Number(id))
           .map((r) => ({
             ...r,
             createdAt: r.createdAt.slice(0, 10),
-            quantity: -r.quantity, // 출고는 음수로 표시
           }));
-        setOutRecords(filtered);
+        setOutRecords(recs);
       })
-      .catch(() => {
-        /* silently fail */
-      });
+      .catch(() => {});
 
-    // 3) 입고 기록 (InventoryInController 필요)
+    // 입고 내역 (추가된 by-item 엔드포인트)
     fetch(
-      `${API_BASE}/api/v1/inventory-in?page=0&size=100&sort=createdAt,desc`,
+      `${API_BASE}/api/v1/inventory-in/by-item?itemId=${id}&page=1&size=100&sort=createdAt,desc`,
       { credentials: "include" }
     )
       .then((res) => {
         if (!res.ok) throw new Error("입고 내역을 불러올 수 없습니다.");
-        return res.json() as Promise<{
-          content: InventoryMoveDto[];
-        }>;
+        return res.json() as Promise<{ content: InventoryMoveDto[] }>;
       })
-      .then((page) => {
-        const filtered = page.content
-          .filter((r) => r.itemId === Number(id))
-          .map((r) => ({
-            ...r,
-            createdAt: r.createdAt.slice(0, 10),
-            quantity: r.quantity, // 입고는 양수
-          }));
-        setInRecords(filtered);
+      .then(({ content }) => {
+        const recs = content.map((r) => ({
+          ...r,
+          createdAt: r.createdAt.slice(0, 10),
+        }));
+        setInRecords(recs);
       })
-      .catch(() => {
-        /* silently fail */
-      });
+      .catch(() => {});
   }, [id]);
 
   if (loading) {
@@ -135,6 +122,12 @@ export default function ItemDetailPage() {
     );
   }
 
+  // “5월 28일” 형태로 포맷
+  const formatMonthDay = (dateString: string) => {
+    const d = new Date(dateString);
+    return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+  };
+
   const placeholder = "/no-image.png";
   const imgSrc = product.image
     ? product.image.startsWith("http")
@@ -142,7 +135,6 @@ export default function ItemDetailPage() {
       : `${API_BASE}${product.image}`
     : placeholder;
 
-  // 보여줄 기록 선택
   const history = tab === "출고" ? outRecords : inRecords;
 
   return (
@@ -156,39 +148,31 @@ export default function ItemDetailPage() {
             <div className="grid grid-cols-2 gap-y-3 text-sm text-gray-700">
               <div className="font-medium">제품명</div>
               <div>{product.name}</div>
-
               <div className="font-medium">고유번호</div>
               <div>{product.serialNumber}</div>
-
               <div className="font-medium">총 보유수량</div>
               <div>{product.totalQuantity}개</div>
-
               <div className="font-medium">이용 가능 수량</div>
               <div>{product.availableQuantity}개</div>
-
               <div className="font-medium">대여 여부</div>
               <div>{product.rental ? "대여" : "비대여"}</div>
-
               <div className="font-medium">위치</div>
               <div>{product.location}</div>
-
               <div className="font-medium">등록일</div>
               <div>{product.createdAt}</div>
-
               <div className="font-medium">구매처</div>
               <div>{product.buyer}</div>
             </div>
           </div>
-
           {/* 제품 이미지 */}
           <div className="w-80 flex flex-col items-center">
             <div className="bg-gray-50 rounded-lg p-4 w-full h-80">
               <img
                 src={imgSrc}
                 alt={product.name}
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = placeholder;
-                }}
+                onError={(e) =>
+                  ((e.currentTarget as HTMLImageElement).src = placeholder)
+                }
                 className="w-full h-full object-contain rounded"
               />
             </div>
@@ -241,21 +225,28 @@ export default function ItemDetailPage() {
             </div>
           ) : (
             <ul className="space-y-2">
-              {history.map((h, i) => (
-                <li
-                  key={i}
-                  className="flex justify-between items-center p-3 hover:bg-gray-50 rounded"
-                >
-                  <div className="text-sm text-gray-700">{h.createdAt}</div>
-                  <div
-                    className={`font-bold ${
-                      h.quantity > 0 ? "text-green-500" : "text-red-500"
-                    }`}
+              {history.map((h, i) => {
+                const isOut = tab === "출고";
+                const sign = isOut ? "-" : "+";
+                return (
+                  <li
+                    key={i}
+                    className="flex justify-between items-center p-3 hover:bg-gray-50 rounded"
                   >
-                    {h.quantity > 0 ? `+${h.quantity}` : h.quantity} 개
-                  </div>
-                </li>
-              ))}
+                    <div className="text-sm text-gray-700">
+                      {formatMonthDay(h.createdAt)}
+                    </div>
+                    <div
+                      className={`font-bold ${
+                        isOut ? "text-red-500" : "text-green-500"
+                      }`}
+                    >
+                      {sign}
+                      {Math.abs(h.quantity)}개 {tab}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

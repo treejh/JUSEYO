@@ -46,11 +46,12 @@ public class InventoryOutController {
             @RequestParam(defaultValue = "createdAt") String sortField,
             @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long itemId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
     ) {
         Page<InventoryOutResponseDto> result = service.getOutbound(
-                search, fromDate, toDate, page, size, sortField, sortDir);
+                search, itemId, fromDate, toDate, page, size, sortField, sortDir);
         return ResponseEntity.ok(result);
     }
 
