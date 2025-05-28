@@ -1,9 +1,9 @@
+// app/outbound/page.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
 // API 반환 DTO
@@ -29,26 +29,24 @@ interface Page<T> {
 
 export default function OutboundPage() {
   const router = useRouter();
-  const { loginUser, isLogin } = useGlobalLoginUser();
+  const { isLogin } = useGlobalLoginUser();
 
   // 로그인 전 리다이렉트
   useEffect(() => {
-    if (!isLogin) router.push("/login");
+    if (!isLogin) {
+      router.push("/login");
+    }
   }, [isLogin, router]);
   if (!isLogin) return null;
 
-  // 검색·필터 상태
-  const [dateFrom, setDateFrom] = useState<string>(
-    format(new Date(), "yyyy-MM-dd")
-  );
-  const [dateTo, setDateTo] = useState<string>(
-    format(new Date(), "yyyy-MM-dd")
-  );
+  // --- 필터 상태 ---
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
   const [search, setSearch] = useState<string>("");
   const [category, setCategory] = useState<string>("");
-  const [outboundType, setOutboundType] = useState<string>("");
+  const [outType, setOutType] = useState<string>("");
 
-  // 데이터 상태
+  // --- 페이징/데이터 상태 ---
   const [data, setData] = useState<Page<OutboundItem> | null>(null);
   const [items, setItems] = useState<OutboundItem[]>([]);
   const [page, setPage] = useState<number>(0);
@@ -56,13 +54,11 @@ export default function OutboundPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 고유 카테고리 목록
+  // 카테고리, 출고유형 목록
   const categories = useMemo(
     () => Array.from(new Set(items.map((i) => i.categoryName))),
     [items]
   );
-
-  // 출고 유형 목록
   const outboundTypes = [
     { value: "", label: "전체" },
     { value: "ISSUE", label: "지급" },
@@ -72,10 +68,8 @@ export default function OutboundPage() {
     { value: "DISPOSAL", label: "폐기" },
     { value: "DAMAGED", label: "파손" },
   ];
-
-  // 출고 유형별 스타일 매핑
-  const getOutboundTypeStyle = (type: string): string => {
-    switch (type) {
+  const getStyle = (t: string): string => {
+    switch (t) {
       case "ISSUE":
         return "bg-emerald-100 text-emerald-800";
       case "LOST":
@@ -93,91 +87,62 @@ export default function OutboundPage() {
     }
   };
 
-  // API 호출 (/me 및 /me/export 허용)
+  // --- 전체 출고내역 조회 함수 ---
   const load = async () => {
     setLoading(true);
     setError(null);
+
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const ep = "/api/v1/inventory-out";
+    const params = new URLSearchParams();
+
+    params.append("page", String(page));
+    params.append("size", String(size));
+    params.append("sortField", "createdAt");
+    params.append("sortDir", "desc");
+    if (search.trim()) params.append("search", search);
+    if (dateFrom) params.append("fromDate", dateFrom);
+    if (dateTo) params.append("toDate", dateTo);
+
     try {
-      const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const ep = "/api/v1/inventory-out/me";
-      const params = new URLSearchParams({
-        page: String(page),
-        size: String(size),
-        fromDate: dateFrom,
-        toDate: dateTo,
-        search,
+      const res = await fetch(`${base}${ep}?${params.toString()}`, {
+        credentials: "include",
       });
-      const url = `${base}${ep}?${params}`;
-      console.log("Fetching Outbound:", url);
-      const res = await fetch(url, { credentials: "include" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: Page<OutboundItem> = await res.json();
       setData(json);
       setItems(json.content);
     } catch (e) {
       console.error(e);
-      setError(
-        (e as Error).message.includes("403")
-          ? "권한이 없습니다."
-          : "출고내역 로드 실패"
-      );
+      setError("전체 출고내역 로드 실패");
     } finally {
       setLoading(false);
     }
   };
 
-  // 엑셀 다운로드
-  const downloadExcel = async () => {
-    setError(null);
-    try {
-      const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const ep = "/api/v1/inventory-out/me/export";
-      const params = new URLSearchParams({
-        fromDate: dateFrom,
-        toDate: dateTo,
-      });
-      const url = `${base}${ep}?${params}`;
-      console.log("Downloading Excel:", url);
-      const res = await fetch(url, { credentials: "include" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      const href = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = href;
-      a.download = `출고내역_${dateFrom}_to_${dateTo}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(href);
-    } catch {
-      setError("엑셀 다운로드 실패");
-    }
-  };
-
-  // 필터링 적용
-  const filtered = useMemo(
-    () =>
-      items.filter(
-        (item) =>
-          (!category || item.categoryName === category) &&
-          (!outboundType || item.outbound === outboundType) &&
-          (!search.trim() ||
-            item.itemName.toLowerCase().includes(search.toLowerCase()) ||
-            item.categoryName.toLowerCase().includes(search.toLowerCase()) ||
-            item.id.toString().includes(search))
-      ),
-    [items, category, outboundType, search]
-  );
-
-  // 초기 및 파라미터 변화 시 호출
+  // 초기 로드 및 필터/페이징 변경 시 재조회
   useEffect(() => {
     load();
   }, [page, dateFrom, dateTo, search]);
 
-  // 날짜 포맷터
+  // UI 단 클라이언트 필터링
+  const filtered = useMemo(
+    () =>
+      items.filter(
+        (i) =>
+          (!category || i.categoryName === category) &&
+          (!outType || i.outbound === outType) &&
+          (!search.trim() ||
+            i.itemName.toLowerCase().includes(search.toLowerCase()) ||
+            i.categoryName.toLowerCase().includes(search.toLowerCase()) ||
+            i.id.toString().includes(search))
+      ),
+    [items, category, outType, search]
+  );
+
   const fmt = (d: string) => {
     try {
-      return format(new Date(d), "yyyy-MM-dd", { locale: ko });
+      return format(new Date(d), "yyyy-MM-dd");
     } catch {
       return d;
     }
@@ -188,56 +153,81 @@ export default function OutboundPage() {
       {/* 헤더 */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">출고 내역</h1>
+          <h1 className="text-3xl font-bold mb-2">전체 출고내역</h1>
           <p className="text-gray-500">
-            비품의 출고 현황을 확인할 수 있습니다.
+            관리 대시보드 소속 모든 출고내역입니다.
           </p>
         </div>
+        {/* 엑셀 다운로드 */}
         <button
-          onClick={downloadExcel}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+          onClick={() => {
+            const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+            const ep = "/api/v1/inventory-out/export";
+            const params = new URLSearchParams({
+              fromDate: dateFrom,
+              toDate: dateTo,
+            });
+            fetch(`${base}${ep}?${params.toString()}`, {
+              credentials: "include",
+            })
+              .then((r) => {
+                if (!r.ok) throw new Error();
+                return r.blob();
+              })
+              .then((blob) => {
+                const href = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = href;
+                a.download = `전체출고내역_${dateFrom}_to_${dateTo}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(href);
+              })
+              .catch(() => setError("엑셀 다운로드 실패"));
+          }}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
           엑셀 다운로드
         </button>
       </div>
 
       {/* 필터 */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6 flex flex-wrap gap-4">
+      <div className="bg-white p-6 rounded shadow mb-6 flex flex-wrap gap-4">
         <input
           type="date"
           value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
+          onChange={(e) => {
+            setDateFrom(e.target.value);
+            setPage(0);
+          }}
           className="border px-3 py-2 rounded"
         />
         <input
           type="date"
           value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
+          onChange={(e) => {
+            setDateTo(e.target.value);
+            setPage(0);
+          }}
           className="border px-3 py-2 rounded"
         />
         <input
           type="text"
           placeholder="검색"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border px-3 py-2 rounded flex-1"
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(0);
+          }}
+          className="border px-3 py-2 flex-1 rounded"
         />
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setPage(0);
+          }}
           className="border px-3 py-2 rounded"
         >
           <option value="">전체 카테고리</option>
@@ -248,8 +238,11 @@ export default function OutboundPage() {
           ))}
         </select>
         <select
-          value={outboundType}
-          onChange={(e) => setOutboundType(e.target.value)}
+          value={outType}
+          onChange={(e) => {
+            setOutType(e.target.value);
+            setPage(0);
+          }}
           className="border px-3 py-2 rounded"
         >
           {outboundTypes.map((o) => (
@@ -269,12 +262,12 @@ export default function OutboundPage() {
         </button>
       </div>
 
-      {/* 에러 */}
+      {/* 에러 메시지 */}
       {error && <div className="text-red-600 mb-4">{error}</div>}
 
       {/* 테이블 */}
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
-        <table className="min-w-full table-auto">
+      <div className="bg-white rounded shadow overflow-x-auto">
+        <table className="min-w-full">
           <thead className="bg-gray-100">
             <tr>
               <th className="px-4 py-2">출고ID</th>
@@ -286,33 +279,22 @@ export default function OutboundPage() {
               <th className="px-4 py-2">유형</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody>
             {filtered.map((it) => (
               <tr key={it.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 text-sm text-gray-600">{it.id}</td>
-                <td className="px-4 py-2 text-sm text-gray-600">
-                  {it.supplyRequestId}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-600">
-                  {fmt(it.createdAt)}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-900">
-                  {it.categoryName}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-900">
-                  {it.itemName}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-600">
-                  {it.quantity}
-                </td>
-                <td className="px-4 py-2 text-sm">
+                <td className="px-4 py-2">{it.id}</td>
+                <td className="px-4 py-2">{it.supplyRequestId}</td>
+                <td className="px-4 py-2">{fmt(it.createdAt)}</td>
+                <td className="px-4 py-2">{it.categoryName}</td>
+                <td className="px-4 py-2">{it.itemName}</td>
+                <td className="px-4 py-2">{it.quantity}</td>
+                <td className="px-4 py-2">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs ${getOutboundTypeStyle(
+                    className={`px-2 py-1 rounded-full text-xs ${getStyle(
                       it.outbound
                     )}`}
                   >
-                    {outboundTypes.find((o) => o.value === it.outbound)
-                      ?.label || it.outbound}
+                    {outboundTypes.find((o) => o.value === it.outbound)?.label}
                   </span>
                 </td>
               </tr>
@@ -337,21 +319,21 @@ export default function OutboundPage() {
         >
           이전
         </button>
-        <span className="px-4 text-sm text-gray-700">
-          {page + 1} / {data?.totalPages || 1}
+        <span className="px-4">
+          {page + 1} / {data?.totalPages ?? 1}
         </span>
         <button
           onClick={() =>
-            setPage((p) => Math.min((data?.totalPages || 1) - 1, p + 1))
+            setPage((p) => Math.min((data?.totalPages ?? 1) - 1, p + 1))
           }
-          disabled={page >= (data?.totalPages || 1) - 1}
+          disabled={page >= (data?.totalPages ?? 1) - 1}
           className="px-2 py-1 border rounded disabled:opacity-50"
         >
           다음
         </button>
         <button
-          onClick={() => setPage((data?.totalPages || 1) - 1)}
-          disabled={page >= (data?.totalPages || 1) - 1}
+          onClick={() => setPage((data?.totalPages ?? 1) - 1)}
+          disabled={page >= (data?.totalPages ?? 1) - 1}
           className="px-2 py-1 border rounded disabled:opacity-50"
         >
           마지막
