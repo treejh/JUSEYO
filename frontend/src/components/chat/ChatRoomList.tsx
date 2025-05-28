@@ -374,7 +374,7 @@ const ChatRoomList: React.FC<Props> = ({
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="h-full overflow-y-auto bg-white rounded-lg shadow-md p-4">
+    <div className="h-full bg-white rounded-lg shadow-md p-4">
       <h2 className="text-lg font-bold mb-4">채팅방 리스트</h2>
 
       {/* 검색 입력 필드 */}
@@ -392,66 +392,70 @@ const ChatRoomList: React.FC<Props> = ({
         />
       </div>
 
-      <ul className="divide-y divide-gray-200">
-        {(filteredChatRooms || []).map((room) => {
-          if (!room) return null; // 안전 검사
+      {/* 채팅방 리스트: 최대 10개, 초과 시 스크롤 */}
+      <div className="max-h-[440px] overflow-y-auto">
+        <ul className="divide-y divide-gray-200">
+          {(filteredChatRooms || []).map((room) => {
+            if (!room) return null;
 
-          let displayName = "알 수 없음";
-          let department = null;
+            let displayName = "알 수 없음";
+            let department = null;
 
-          try {
-            if (roomType === "GROUP") {
-              displayName = room.roomName || "알 수 없음";
-            } else {
-              displayName = opponentInfo[room.id]?.name || "로딩중..";
-              department = opponentInfo[room.id]?.department || null;
+            try {
+              if (roomType === "GROUP") {
+                displayName = room.roomName || "알 수 없음";
+              } else {
+                displayName = opponentInfo[room.id]?.name || "로딩중..";
+                department = opponentInfo[room.id]?.department || null;
+              }
+            } catch (err) {
+              console.error("표시명 가져오기 오류:", err);
             }
-          } catch (err) {
-            console.error("표시명 가져오기 오류:", err);
-          }
 
-          return (
-            <li
-              key={room.id}
-              className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
-            >
-              {/* 채팅방 이름 및 부서 */}
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-800">{displayName}</span>
-                {department && (
-                  <span className="text-sm text-gray-500">{department}</span>
+            return (
+              <li
+                key={room.id}
+                className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
+              >
+                {/* 채팅방 이름 및 부서 */}
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="font-medium text-gray-800 truncate">
+                    {displayName}
+                  </span>
+                  {department && (
+                    <span className="text-sm text-gray-500 truncate">
+                      {department}
+                    </span>
+                  )}
+                </div>
+
+                {/* NEW 뱃지 */}
+                {newMessages[room.id] && currentRoomId !== room.id && (
+                  <span className="text-white bg-blue-500 rounded-full px-2 py-1 text-xs font-bold ml-2">
+                    NEW
+                  </span>
                 )}
-              </div>
 
-              {/* NEW 뱃지 */}
-              {newMessages[room.id] && currentRoomId !== room.id && (
-                <span className="text-white bg-blue-500 rounded-full px-2 py-1 text-xs font-bold">
-                  NEW
-                </span>
-              )}
-
-              {/* 버튼 영역 */}
-              <div className="flex gap-2">
-                {/* 입장 버튼 */}
-                <button
-                  className="border border-blue-500 text-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-100"
-                  onClick={() => validateAndEnterRoom(room.id)}
-                >
-                  입장
-                </button>
-
-                {/* 나가기 버튼 */}
-                <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                  onClick={() => leaveChatRoom(client, room.id, loginUserId)}
-                >
-                  나가기
-                </button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+                {/* 버튼 영역: 고정 너비와 shrink 방지 */}
+                <div className="flex gap-2 min-w-[120px] flex-shrink-0 justify-end ml-4">
+                  <button
+                    className="border border-blue-500 text-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-100"
+                    onClick={() => validateAndEnterRoom(room.id)}
+                  >
+                    입장
+                  </button>
+                  <button
+                    className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                    onClick={() => leaveChatRoom(client, room.id, loginUserId)}
+                  >
+                    나가기
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 };
