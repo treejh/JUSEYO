@@ -106,15 +106,15 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const getPositionStyle = (position: ToastPosition): string => {
     switch (position) {
       case "top-right":
-        return "top-4 right-4 items-end";
+        return "top-20 right-4 items-end";
       case "top-center":
-        return "top-4 left-1/2 -translate-x-1/2 items-center";
+        return "top-20 left-1/2 -translate-x-1/2 items-center";
       case "bottom-right":
         return "bottom-4 right-4 items-end";
       case "bottom-center":
         return "bottom-4 left-1/2 -translate-x-1/2 items-center";
       default:
-        return "top-4 right-4 items-end";
+        return "top-20 right-4 items-end";
     }
   };
 

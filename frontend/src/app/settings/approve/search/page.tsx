@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import Link from "next/link";
+import { useCustomToast } from "@/utils/toast";
 
 export default function ApproveSearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -11,6 +12,7 @@ export default function ApproveSearchPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const { loginUser } = useGlobalLoginUser();
   const [isInitialManager, setIsInitialManager] = useState(false);
+  const toast = useCustomToast();
 
   useEffect(() => {
     const checkInitialManager = async () => {
@@ -33,7 +35,7 @@ export default function ApproveSearchPage() {
       );
       location.reload();
     } catch (error) {
-      alert("삭제 처리 중 오류가 발생했습니다.");
+      toast.error("삭제 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -45,7 +47,7 @@ export default function ApproveSearchPage() {
       );
       location.reload();
     } catch (error) {
-      alert("승인 처리 중 오류가 발생했습니다.");
+      toast.error("승인 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -58,7 +60,7 @@ export default function ApproveSearchPage() {
       );
       location.reload();
     } catch (error) {
-      alert("거부 처리 중 오류가 발생했습니다.");
+      toast.error("거부 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -86,7 +88,7 @@ export default function ApproveSearchPage() {
       );
       setUsers(filteredUsers);
     } catch (e) {
-      alert("검색 중 오류가 발생했습니다.");
+      toast.error("검색 중 오류가 발생했습니다.");
     }
   };
 

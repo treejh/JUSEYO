@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useCustomToast } from "@/utils/toast";
 
 interface Category {
   id: number;
@@ -38,6 +39,7 @@ export default function EditItemPage() {
   const [saving, setSaving] = useState(false);
   const [item, setItem] = useState<Item | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const toast = useCustomToast();
 
   // 새로 선택한 파일
   const [newFile, setNewFile] = useState<File | null>(null);
@@ -67,7 +69,8 @@ export default function EditItemPage() {
         setPreview(data.image ?? "");
       })
       .catch(() => {
-        alert("데이터 로딩 중 오류가 발생했습니다.");
+        toast.error("데이터 로딩 중 오류가 발생했습니다.");
+
         router.back();
       })
       .finally(() => setLoading(false));
@@ -135,10 +138,10 @@ export default function EditItemPage() {
         body, // multipart/form-data; boundary=… 자동 설정
       });
       if (!res.ok) throw new Error();
-      alert("성공적으로 수정되었습니다.");
+      toast.success("성공적으로 수정되었습니다.");
       router.push("/item/manage");
     } catch {
-      alert("수정 중 오류가 발생했습니다.");
+      toast.error("수정 중 오류가 발생했습니다.");
     } finally {
       setSaving(false);
     }

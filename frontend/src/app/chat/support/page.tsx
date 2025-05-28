@@ -6,11 +6,13 @@ import Chat from "@/components/chat/Chat";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import { useCustomToast } from "@/utils/toast";
 
 const SupportChatPage = () => {
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [client, setClient] = useState<Client | null>(null); // WebSocket 클라이언트 상태
   const { loginUser } = useGlobalLoginUser(); // 현재 로그인한 유저 정보
+  const toast = useCustomToast();
 
   // WebSocket 클라이언트 초기화
   useEffect(() => {
@@ -61,7 +63,7 @@ const SupportChatPage = () => {
     try {
       const exists = await checkSupportChatRoomExistence(); // 채팅방 존재 여부 확인
       if (exists) {
-        alert("이미 고객센터 채팅방이 존재합니다.");
+        toast.error("이미 고객센터 채팅방이 존재합니다.");
         return;
       }
 
@@ -84,12 +86,12 @@ const SupportChatPage = () => {
       }
 
       const data = await response.json();
-      alert("고객센터 채팅방이 생성되었습니다.");
+      toast.success("고객센터 채팅방이 생성되었습니다.");
       window.location.reload(); // 페이지 새로고침
       console.log("생성된 채팅방:", data.data);
     } catch (error) {
       console.error("고객센터 채팅방 생성 실패:", error);
-      alert("고객센터 채팅방 생성에 실패했습니다.");
+      toast.error("고객센터 채팅방 생성에 실패했습니다.");
     }
   };
 

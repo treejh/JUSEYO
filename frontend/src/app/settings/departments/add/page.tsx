@@ -3,14 +3,16 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FC, useState } from "react";
+import { useCustomToast } from "@/utils/toast";
 
 const AddDepartmentPage: FC = () => {
   const [departmentName, setDepartmentName] = useState("");
+  const toast = useCustomToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (departmentName.length > 10) {
-      alert("부서 이름은 10글자까지 가능합니다.");
+      toast.error("부서 이름은 10글자까지 가능합니다.");
       return;
     }
     try {
@@ -25,13 +27,13 @@ const AddDepartmentPage: FC = () => {
       );
       if (!res.ok) {
         const data = await res.json();
-        alert(data.message || "부서 생성에 실패했습니다.");
+        toast.error(data.message || "부서 생성에 실패했습니다.");
         return;
       }
-      alert("부서가 생성되었습니다.");
+      toast.success("부서가 생성되었습니다.");
       window.location.href = "/settings/departments";
     } catch (err) {
-      alert("부서 생성 중 오류가 발생했습니다.");
+      toast.error("부서 생성 중 오류가 발생했습니다.");
     }
   };
 

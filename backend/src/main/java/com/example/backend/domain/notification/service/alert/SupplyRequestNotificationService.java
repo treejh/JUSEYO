@@ -27,7 +27,7 @@ public class SupplyRequestNotificationService {
     private final RoleService roleService;
 
     @Transactional
-    public void notifySupplyRequest(String itemName, Long itemQuantity, String requesterName) {
+    public void notifySupplyRequest(Long managementDashboardId, String itemName, Long itemQuantity, String requesterName) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_REQUEST);
 
         SupplyRequestContext context = new SupplyRequestContext(itemName, itemQuantity, requesterName);
@@ -35,7 +35,7 @@ public class SupplyRequestNotificationService {
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 
         // 모든 매니저에 대한 알림 생성
-        List<User> managers = userService.findUsersByRole(managerRole);
+        List<User> managers = userService.findAllByRoleAndManagementDashboardId(managerRole, managementDashboardId);
 
         for (User manager : managers) {
             // 조건을 확인하고 알림을 생성

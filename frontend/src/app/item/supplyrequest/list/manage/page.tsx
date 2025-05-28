@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import { useCustomToast } from "@/utils/toast";
 
 interface SupplyRequest {
   id: number;
@@ -31,6 +32,7 @@ export default function SupplyRequestManageListPage() {
 
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 20;
+  const toast = useCustomToast();
 
   // 권한 체크: 로그인/매니저 아니면 리다이렉트
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function SupplyRequestManageListPage() {
       const data: SupplyRequest[] = await res.json();
       setRequests(data);
     } catch (err: any) {
-      alert(`로딩 실패: ${err.message}`);
+      toast.error(`로딩 실패: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,7 @@ export default function SupplyRequestManageListPage() {
       }
       await fetchRequests();
     } catch (err: any) {
-      alert(`삭제 실패: ${err.message}`);
+      toast.error(`삭제 실패: ${err.message}`);
     }
   };
 

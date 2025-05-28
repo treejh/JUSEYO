@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useCustomToast } from "@/utils/toast";
 
 interface User {
   id: number;
@@ -24,6 +25,7 @@ const UserList: React.FC<Props> = ({
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null); // 선택된 유저 ID
   const [selectedUserName, setSelectedUserName] = useState<string>(""); // 선택된 유저 이름
   const [showCreateUI, setShowCreateUI] = useState<boolean>(false); // 채팅방 생성 UI 표시 여부
+  const toast = useCustomToast();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -97,7 +99,7 @@ const UserList: React.FC<Props> = ({
     const exists = await checkChatRoomExistence(userId);
 
     if (exists) {
-      alert("이미 존재하는 채팅방입니다.");
+      toast.error("이미 존재하는 채팅방입니다.");
       setShowCreateUI(false); // 채팅방 생성 UI 숨기기
     } else {
       setSelectedUserId(userId); // 선택된 유저 ID 설정
@@ -108,7 +110,7 @@ const UserList: React.FC<Props> = ({
 
   const createChatRoom = async () => {
     if (!selectedUserId || !selectedUserName) {
-      alert("채팅방 생성에 필요한 정보가 부족합니다.");
+      toast.error("채팅방 생성에 필요한 정보가 부족합니다.");
       return;
     }
 
@@ -133,13 +135,13 @@ const UserList: React.FC<Props> = ({
         throw new Error("채팅방 생성 중 오류가 발생했습니다.");
       }
 
-      alert("채팅방이 성공적으로 생성되었습니다!");
+      toast.success("채팅방이 성공적으로 생성되었습니다!");
       window.location.reload(); // 새로고침
       setSelectedUserId(null); // 선택된 유저 초기화
       setSelectedUserName(""); // 선택된 유저 이름 초기화
       setShowCreateUI(false); // 채팅방 생성 UI 숨기기
     } catch (err) {
-      alert("채팅방 생성 중 오류가 발생했습니다.");
+      toast.error("채팅방 생성 중 오류가 발생했습니다.");
     }
   };
 

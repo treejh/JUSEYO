@@ -6,6 +6,7 @@ import Chat from "@/components/chat/Chat";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { useCustomToast } from "@/utils/toast";
 
 interface User {
   id: number;
@@ -27,6 +28,7 @@ const ChatPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]); // 선택된 유저 정보
   const [searchQuery, setSearchQuery] = useState<string>(""); // 검색 쿼리
+  const toast = useCustomToast();
 
   // WebSocket 클라이언트 초기화
   useEffect(() => {
@@ -101,12 +103,12 @@ const ChatPage = () => {
   // 채팅방 생성
   const createChatRoom = async () => {
     if (!chatName.trim()) {
-      alert("채팅방 이름을 입력하세요.");
+      toast.warning("채팅방 이름을 입력하세요.");
       return;
     }
 
     if (selectedUserIds.length === 0) {
-      alert("유저를 선택하세요.");
+      toast.warning("유저를 선택하세요.");
       return;
     }
 
@@ -136,14 +138,14 @@ const ChatPage = () => {
         throw new Error("채팅방 생성 중 오류가 발생했습니다.");
       }
 
-      alert("채팅방이 생성되었습니다.");
+      toast.success("채팅방이 생성되었습니다.");
       setChatName(""); // 채팅방 이름 초기화
       setSelectedUserIds([]); // 선택된 유저 초기화
       closeModal(); // 모달 닫기
       window.location.reload(); // 페이지 새로고침
     } catch (error) {
       console.error("채팅방 생성 실패:", error);
-      alert("채팅방 생성에 실패했습니다.");
+      toast.error("채팅방 생성에 실패했습니다.");
     }
   };
 

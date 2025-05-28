@@ -1,4 +1,5 @@
 import { Client } from "@stomp/stompjs";
+import { useCustomToast } from "@/utils/toast";
 
 export const leaveChatRoom = async (
   client: Client | null,
@@ -9,6 +10,7 @@ export const leaveChatRoom = async (
     console.error("STOMP 연결이 활성화되지 않았습니다.");
     return;
   }
+  const toast = useCustomToast();
 
   // 1. LEAVE 메시지 발행
   const leaveMessagePayload = {
@@ -43,12 +45,13 @@ export const leaveChatRoom = async (
     }
 
     console.log("채팅방 나가기 성공");
-    alert("채팅방을 나갔습니다.");
+    toast.success("채팅방을 나갔습니다.");
+
     //window.location.href = "/chat/user"; // 채팅방 목록 등 다른 화면으로 이동
 
     window.location.reload(); // 새로고침
   } catch (error) {
     console.error("채팅방 나가기 실패:", error);
-    alert("채팅방 나가기에 실패했습니다.");
+    toast.error("채팅방 나가기에 실패했습니다.");
   }
 };
