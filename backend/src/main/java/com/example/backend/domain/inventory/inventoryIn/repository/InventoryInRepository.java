@@ -35,6 +35,15 @@ public interface InventoryInRepository extends JpaRepository<InventoryIn, Long> 
 
     List<InventoryIn> findByCreatedAtBetweenAndManagementDashboardId(LocalDateTime start, LocalDateTime end, Long managementId);
 
-
+    @Query("select new com.example.backend.domain.inventory.inventoryIn.dto.response.InventoryInResponseDto " +
+            "(i.id, i.item.id, i.item.name, i.quantity, i.inbound, i.createdAt, i.image, i.category.name) " +
+            "from InventoryIn i " +
+            "where i.managementDashboard.id = :managementId " +
+            "  and i.item.id = :itemId")
+    Page<InventoryInResponseDto> getInventoryInsByItemIdAndManagementId(
+            @Param("managementId") Long managementId,
+            @Param("itemId") Long itemId,
+            Pageable pageable
+    );
 
 }

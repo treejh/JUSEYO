@@ -157,6 +157,7 @@ public class InventoryOutService {
     @Transactional(readOnly = true)
     public Page<InventoryOutResponseDto> getOutbound(
             String search,
+            Long itemId,
             LocalDate fromDate,
             LocalDate toDate,
             int page,
@@ -192,7 +193,7 @@ public class InventoryOutService {
             LocalDate fromDate,
             LocalDate toDate
     ) {
-        return getOutbound(search, fromDate, toDate, 0, Integer.MAX_VALUE, "createdAt", "desc")
+        return getOutbound(search, null, fromDate, toDate, 0, Integer.MAX_VALUE, "createdAt", "desc")
                 .getContent();
     }
 

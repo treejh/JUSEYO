@@ -64,6 +64,7 @@ public class SecurityConfigJuseyo {
 
                         //비품
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/items/**").hasRole("MANAGER") // 비품삭제는 매니저만 가능
                         .requestMatchers(HttpMethod.GET, "/api/v1/items/**").hasAnyRole("MANAGER", "USER") //조회 추가
 
                         //부서
@@ -144,8 +145,7 @@ public class SecurityConfigJuseyo {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "https://www.app.jusey0.site"
+                "http://localhost:3000"
         ));
 
         config.addAllowedHeader("*");
