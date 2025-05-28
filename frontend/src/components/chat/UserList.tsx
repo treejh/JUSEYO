@@ -162,7 +162,7 @@ const UserList: React.FC<Props> = ({
       </div>
 
       {/* 유저 리스트 감싸는 컨테이너에 max-h와 스크롤 추가 */}
-      <div className="max-h-[500px] overflow-y-auto">
+      <div className="max-h-[600px] overflow-y-auto">
         <ul className="divide-y divide-gray-200">
           {filteredUsers.map((user) => (
             <li
