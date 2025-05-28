@@ -192,7 +192,9 @@ export default function Navigation({
           <li className="menu-item">
             <Link
               href="/item/supplyrequest/list/manage"
-              className={`menu-link ${activeMenu === "supply-request-manage" ? "active" : ""}`}
+              className={`menu-link ${
+                activeMenu === "supply-request-manage" ? "active" : ""
+              }`}
               onClick={() => onPageChange?.("supply-request-manage")}
             >
               <span className="menu-icon">📋</span>
@@ -266,7 +268,9 @@ export default function Navigation({
           <li className="menu-item submenu-item">
             <Link
               href="/item/manage"
-              className={`menu-link ${activeMenu === "item-manage" ? "active" : ""}`}
+              className={`menu-link ${
+                activeMenu === "item-manage" ? "active" : ""
+              }`}
               onClick={() => onPageChange?.("item-manage")}
             >
               <span className="menu-icon">📦</span>
@@ -300,7 +304,9 @@ export default function Navigation({
           <li className="menu-item">
             <Link
               href="/settings/approve"
-              className={`menu-link ${activeMenu === "user-management" ? "active" : ""}`}
+              className={`menu-link ${
+                activeMenu === "user-management" ? "active" : ""
+              }`}
               onClick={() => onPageChange?.("user-management")}
             >
               <span className="menu-icon">👥</span>
@@ -319,7 +325,7 @@ export default function Navigation({
       <ul className="menu-list">
         <li className="menu-item">
           <Link
-            href="/item/supplyrequest/list"
+            href="/item/supplyrequest/create"
             className={`menu-link ${activeMenu === "request" ? "active" : ""}`}
             onClick={() => onPageChange?.("request")}
           >
@@ -329,7 +335,7 @@ export default function Navigation({
         </li>
         <li className="menu-item">
           <Link
-            href="/request-history"
+            href="/item/supplyrequest/list/user"
             className={`menu-link ${
               activeMenu === "request-history" ? "active" : ""
             }`}
@@ -341,7 +347,7 @@ export default function Navigation({
         </li>
         <li className="menu-item">
           <Link
-            href="/inventory-view"
+            href="/item/user"
             className={`menu-link ${
               activeMenu === "inventory-view" ? "active" : ""
             }`}
