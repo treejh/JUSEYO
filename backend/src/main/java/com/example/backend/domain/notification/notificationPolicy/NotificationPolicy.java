@@ -14,7 +14,6 @@ public class NotificationPolicy {
             case MANAGER -> Arrays.asList(
                     NotificationType.SUPPLY_REQUEST,
                     NotificationType.SUPPLY_RETURN,
-//                    NotificationType.STOCK_REACHED,
                     NotificationType.STOCK_SHORTAGE,
                     NotificationType.RETURN_DUE_DATE_EXCEEDED,
                     NotificationType.NOT_RETURNED_YET,
@@ -22,7 +21,8 @@ public class NotificationPolicy {
                     NotificationType.ADMIN_REJECTION_ALERT,
                     NotificationType.MANAGER_APPROVAL_ALERT,
                     NotificationType.MANAGER_REJECTION_ALERT,
-                    NotificationType.NEW_CHAT
+                    NotificationType.NEW_CHAT,
+                    NotificationType.NEW_MANAGER
 
             );
             case USER -> Arrays.asList(
@@ -30,6 +30,7 @@ public class NotificationPolicy {
                     NotificationType.SUPPLY_REQUEST_REJECTED,
                     NotificationType.RETURN_DUE_SOON,
                     NotificationType.SUPPLY_REQUEST_DELAYED,
+                    NotificationType.SUPPLY_RETURN_APPROVED,
                     NotificationType.NEW_CHAT
 
 

@@ -16,21 +16,19 @@ interface Notification {
 type NotificationType =
   | "SUPPLY_REQUEST"
   | "SUPPLY_RETURN"
-  | "SUPPLY_RETURN_ALERT"
-  | "STOCK_REACHED"
   | "STOCK_SHORTAGE"
-  | "SUPPLY_REQUEST_MODIFIED"
   | "SUPPLY_REQUEST_APPROVED"
   | "SUPPLY_REQUEST_REJECTED"
   | "SUPPLY_REQUEST_DELAYED"
   | "RETURN_DUE_DATE_EXCEEDED"
   | "RETURN_DUE_SOON"
-  | "LONG_TERM_UNRETURNED_SUPPLIES"
-  | "USER_SENT_MESSAGE_TO_MANAGER"
+  | "NOT_RETURNED_YET"
   | "NEW_CHAT"
-  | "SYSTEM_MAINTENANCE"
   | "ADMIN_APPROVAL_ALERT"
-  | "MANAGER_APPROVAL_ALERT";
+  | "MANAGER_APPROVAL_ALERT"
+  | "MANAGER_REJECTION_ALERT"
+  | "ADMIN_REJECTION_ALERT"
+  | "SUPPLY_RETURN_APPROVED";
 
 interface NotificationCategory {
   label: string;
@@ -44,36 +42,31 @@ const NOTIFICATION_CATEGORIES: Record<string, NotificationCategory> = {
     types: [
       "SUPPLY_REQUEST",
       "SUPPLY_RETURN",
-      "SUPPLY_RETURN_ALERT",
-      "STOCK_REACHED",
       "STOCK_SHORTAGE",
-      "SUPPLY_REQUEST_MODIFIED",
       "SUPPLY_REQUEST_APPROVED",
       "SUPPLY_REQUEST_REJECTED",
       "SUPPLY_REQUEST_DELAYED",
+      "SUPPLY_RETURN_APPROVED",
     ],
     color: "blue",
   },
   RETURN: {
     label: "반납 관리",
-    types: [
-      "RETURN_DUE_DATE_EXCEEDED",
-      "RETURN_DUE_SOON",
-      "LONG_TERM_UNRETURNED_SUPPLIES",
-    ],
+    types: ["RETURN_DUE_DATE_EXCEEDED", "RETURN_DUE_SOON", "NOT_RETURNED_YET"],
     color: "yellow",
   },
   CHAT: {
     label: "채팅",
-    types: ["USER_SENT_MESSAGE_TO_MANAGER", "NEW_CHAT"],
+    types: ["NEW_CHAT"],
     color: "green",
   },
   SYSTEM: {
     label: "시스템",
     types: [
-      "SYSTEM_MAINTENANCE",
       "ADMIN_APPROVAL_ALERT",
       "MANAGER_APPROVAL_ALERT",
+      "MANAGER_REJECTION_ALERT",
+      "ADMIN_REJECTION_ALERT",
     ],
     color: "gray",
   },
@@ -165,7 +158,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   RETURN_DUE_DATE_EXCEEDED: {
-    label: "지정 반납일 초과",
+    label: "반납일 초과",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -174,7 +167,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   RETURN_DUE_SOON: {
-    label: "지정 반납일 임박",
+    label: "반납일 임박",
     color: "bg-yellow-100 text-yellow-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -236,6 +229,43 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
+  SUPPLY_RETURN_APPROVED: {
+    label: "비품 반납 승인",
+    color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path
+          fillRule="evenodd"
+          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+          clipRule="evenodd"
+        />
+      </svg>
+    ),
+  },
+  NOT_RETURNED_YET: {
+    label: "장기 미반납",
+    color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+};
+
+const getTimeAgo = (date: Date): string => {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return "방금 전";
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}분 전`;
+  if (diffInSeconds < 86400)
+    return `${Math.floor(diffInSeconds / 3600)}시간 전`;
+  if (diffInSeconds < 2592000)
+    return `${Math.floor(diffInSeconds / 86400)}일 전`;
+  if (diffInSeconds < 31536000)
+    return `${Math.floor(diffInSeconds / 2592000)}개월 전`;
+  return `${Math.floor(diffInSeconds / 31536000)}년 전`;
 };
 
 export function NotificationBell() {
@@ -419,6 +449,7 @@ export function NotificationBell() {
                                 );
                                 return distance === "1분 미만 전" ? "방금 전" : distance;
                               })()}
+
                             </p>
                           </div>
                           <button

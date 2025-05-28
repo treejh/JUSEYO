@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class NewManagerContext {
-    String requesterName;
+public class NewDashboardApproveOrNotContext
+{
+    private final String dashboardName;
 }

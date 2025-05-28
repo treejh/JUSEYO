@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class NewDashboardEvent {
-    String requesterName;
-    String dashboardName;
+public class NewManagerRejectedEvent {
+    Long requesterId;
+    String managerName;
 }

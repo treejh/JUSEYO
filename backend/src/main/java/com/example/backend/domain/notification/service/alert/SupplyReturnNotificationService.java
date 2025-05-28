@@ -28,7 +28,7 @@ public class SupplyReturnNotificationService {
     private final RoleService roleService;
 
     @Transactional
-    public void notifySupplyReturn(String itemName, Long itemQuantity, String returnerName, Outbound returnStatus) {
+    public void notifySupplyReturn(Long managementDashboardId, String itemName, Long itemQuantity, String returnerName, Outbound returnStatus) {
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_RETURN);
 
         SupplyReturnContext context = new SupplyReturnContext(itemName, itemQuantity, returnerName, returnStatus);
@@ -36,7 +36,7 @@ public class SupplyReturnNotificationService {
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 
         // 모든 매니저에 대한 알림 생성
-        List<User> managers = userService.findUsersByRole(managerRole);
+        List<User> managers = userService.findAllByRoleAndManagementDashboardId(managerRole,  managementDashboardId);
 
         for (User manager : managers) {
             // 조건을 확인하고 알림을 생성

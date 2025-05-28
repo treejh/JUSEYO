@@ -5,6 +5,7 @@ package com.example.backend.domain.user.service;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.department.service.DepartmentService;
+import com.example.backend.domain.notification.event.NewManagerApprovedEvent;
 import com.example.backend.domain.notification.event.NewManagerEvent;
 import com.example.backend.domain.user.dto.request.EmailRequestDto;
 import com.example.backend.domain.user.dto.request.ValidPasswordRequestDto;
@@ -143,6 +144,10 @@ public class UserService {
                 .approvalStatus(ApprovalStatus.REQUESTED)
                 .build();
         userValid(manager);
+
+        // 이니셜 매니저 대상 매니저 가입 요청 발생
+        eventPublisher.publishEvent(new NewManagerEvent(manager.getManagementDashboard().getId(), manager.getName()));
+
         return userRepository.save(manager);
     }
 
@@ -349,7 +354,8 @@ public class UserService {
 
         // 매니저 승인 알림 생성
         User user = userRepository.findById(userId).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
-        eventPublisher.publishEvent(new NewManagerEvent(user.getName()));
+        eventPublisher.publishEvent(new NewManagerApprovedEvent(userId, user.getName()));
+
     }
 
     // 매니저 거부 처리
@@ -359,7 +365,7 @@ public class UserService {
 
         // 매니저 거부 알림 생성
         User user = userRepository.findById(userId).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
-        eventPublisher.publishEvent(new NewManagerEvent(user.getName()));
+        eventPublisher.publishEvent(new NewManagerApprovedEvent(userId, user.getName()));
     }
 
     public User findById(Long userId){
@@ -839,10 +845,12 @@ public class UserService {
         }
     }
 
+    public User findUserByDashboardIdAndIsInitialManager(Long dashboardId, boolean isInitialManager) {
+        return userRepository.findByManagementDashboardIdAndInitialManager(dashboardId, true);
+    }
 
-
-
-
-
+    public List<User> findAllByRoleAndManagementDashboardId(Role role, Long mdId) {
+        return userRepository.findAllByRoleAndManagementDashboardId(role, mdId);
+    }
 
 }

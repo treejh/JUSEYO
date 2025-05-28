@@ -10,7 +10,7 @@ public class NewManagerApprovedStrategy implements NotificationStrategy {
             throw new IllegalArgumentException("Invalid context for ManagerApproved Strategy");
         }
         NewManagerContext ctx = (NewManagerContext) context;
-        return ctx.getManagerName() +" 님의 매니저 권한이 승인되었습니다.";
+        return ctx.getRequesterName() +"님의 매니저 권한이 승인되었습니다.";
     }
 
     @Override
