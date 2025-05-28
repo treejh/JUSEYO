@@ -454,7 +454,7 @@ const ChatRoomList: React.FC<Props> = ({
                   </button>
                   <button
                     className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                    onClick={() => leaveChatRoom(client, room.id, loginUserId)}
+                    onClick={() => leaveChatRoom(client, room.id, loginUserId, toast)}
                   >
                     나가기
                   </button>

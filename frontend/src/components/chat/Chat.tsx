@@ -3,6 +3,7 @@ import { Client } from "@stomp/stompjs";
 import { FaUser, FaTimes, FaDoorOpen } from "react-icons/fa"; // 아이콘 추가
 import { fetchParticipants, Participant } from "../../utils/fetchParticipants";
 import { leaveChatRoom } from "../../utils/leaveChatRoom";
+import { useCustomToast } from "@/utils/toast";
 
 interface Props {
   roomId: number;
@@ -42,6 +43,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
   const [showParticipants, setShowParticipants] = useState<boolean>(false); // 참여 유저 목록 표시 여부
   const messagesEndRef = useRef<HTMLDivElement | null>(null); // 스크롤 이동을 위한 ref
   const messageContainerRef = useRef<HTMLDivElement | null>(null); // 메시지 컨테이너 ref 추가
+  const toast = useCustomToast();
 
   // 참여 유저 목록 가져오기
   const loadParticipants = async () => {
@@ -157,7 +159,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
   //채팅방 나가기
   const handleLeaveChatRoom = async () => {
     try {
-      await leaveChatRoom(client, roomId, loginUserId);
+      await leaveChatRoom(client, roomId, loginUserId, toast);
     } catch (error) {
       console.error("채팅방 나가기 실패:", error);
     }
@@ -365,7 +367,7 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
           </button>
           <button
             className="text-gray-600 hover:text-gray-800"
-            onClick={() => leaveChatRoom(client, roomId, loginUserId)}
+            onClick={() => leaveChatRoom(client, roomId, loginUserId, toast)}
           >
             <FaDoorOpen size={24} />
           </button>
