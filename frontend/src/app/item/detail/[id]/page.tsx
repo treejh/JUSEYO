@@ -1,4 +1,3 @@
-// app/item/detail/[id]/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -41,7 +40,6 @@ export default function ItemDetailPage() {
   const [inRecords, setInRecords] = useState<InventoryMoveDto[]>([]);
   const [outRecords, setOutRecords] = useState<InventoryMoveDto[]>([]);
 
-  // 1) Fetch product
   useEffect(() => {
     if (!isLogin) {
       router.push("/login");
@@ -63,30 +61,29 @@ export default function ItemDetailPage() {
       .finally(() => setLoading(false));
   }, [id, isLogin, router]);
 
-  // 2) Fetch in/out records
   useEffect(() => {
     if (!id) return;
 
-    // 출고 내역 (내 출고만)
-    fetch(`${API_BASE}/api/v1/inventory-out/me?size=100&sort=createdAt,desc`, {
-      credentials: "include",
-    })
+    // 전체 출고 내역에서 해당 itemId만 조회
+    fetch(
+      `${API_BASE}/api/v1/inventory-out?itemId=${id}&size=100&sortField=createdAt&sortDir=desc`,
+      { credentials: "include" }
+    )
       .then((res) => {
         if (!res.ok) throw new Error("출고 내역을 불러올 수 없습니다.");
         return res.json() as Promise<{ content: InventoryMoveDto[] }>;
       })
       .then(({ content }) => {
-        const recs = content
-          .filter((r) => r.itemId === Number(id))
-          .map((r) => ({
+        setOutRecords(
+          content.map((r) => ({
             ...r,
             createdAt: r.createdAt.slice(0, 10),
-          }));
-        setOutRecords(recs);
+          }))
+        );
       })
       .catch(() => {});
 
-    // 입고 내역 (추가된 by-item 엔드포인트)
+    // 입고 내역 (by-item)
     fetch(
       `${API_BASE}/api/v1/inventory-in/by-item?itemId=${id}&page=1&size=100&sort=createdAt,desc`,
       { credentials: "include" }
@@ -96,11 +93,12 @@ export default function ItemDetailPage() {
         return res.json() as Promise<{ content: InventoryMoveDto[] }>;
       })
       .then(({ content }) => {
-        const recs = content.map((r) => ({
-          ...r,
-          createdAt: r.createdAt.slice(0, 10),
-        }));
-        setInRecords(recs);
+        setInRecords(
+          content.map((r) => ({
+            ...r,
+            createdAt: r.createdAt.slice(0, 10),
+          }))
+        );
       })
       .catch(() => {});
   }, [id]);
@@ -112,6 +110,7 @@ export default function ItemDetailPage() {
       </div>
     );
   }
+
   if (error || !product) {
     return (
       <div className="p-8 bg-gray-50 min-h-screen flex items-center justify-center">
@@ -122,7 +121,6 @@ export default function ItemDetailPage() {
     );
   }
 
-  // “5월 28일” 형태로 포맷
   const formatMonthDay = (dateString: string) => {
     const d = new Date(dateString);
     return `${d.getMonth() + 1}월 ${d.getDate()}일`;
@@ -225,28 +223,24 @@ export default function ItemDetailPage() {
             </div>
           ) : (
             <ul className="space-y-2">
-              {history.map((h, i) => {
-                const isOut = tab === "출고";
-                const sign = isOut ? "-" : "+";
-                return (
-                  <li
-                    key={i}
-                    className="flex justify-between items-center p-3 hover:bg-gray-50 rounded"
+              {history.map((h, i) => (
+                <li
+                  key={i}
+                  className="flex justify-between items-center p-3 hover:bg-gray-50 rounded"
+                >
+                  <div className="text-sm text-gray-700">
+                    {formatMonthDay(h.createdAt)}
+                  </div>
+                  <div
+                    className={`font-bold ${
+                      tab === "출고" ? "text-red-500" : "text-green-500"
+                    }`}
                   >
-                    <div className="text-sm text-gray-700">
-                      {formatMonthDay(h.createdAt)}
-                    </div>
-                    <div
-                      className={`font-bold ${
-                        isOut ? "text-red-500" : "text-green-500"
-                      }`}
-                    >
-                      {sign}
-                      {Math.abs(h.quantity)}개 {tab}
-                    </div>
-                  </li>
-                );
-              })}
+                    {tab === "출고" ? "-" : "+"}
+                    {Math.abs(h.quantity)}개 {tab}
+                  </div>
+                </li>
+              ))}
             </ul>
           )}
         </div>
