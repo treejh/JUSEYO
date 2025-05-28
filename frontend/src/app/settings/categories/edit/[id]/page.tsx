@@ -5,7 +5,7 @@
 import { Button } from '@/components/ui/button';
 import { useParams, useRouter } from 'next/navigation';
 import { FC, useEffect, useState } from 'react';
-import categoryService from '@/services/categoryService';
+import categoryService, { BusinessError } from '@/services/categoryService';
 import { toast } from 'sonner';
 
 const CategoryEditPage: FC = () => {
@@ -47,9 +47,15 @@ const CategoryEditPage: FC = () => {
       await categoryService.updateCategory(Number(params.id), { name: categoryName.trim() });
       toast.success('카테고리가 수정되었습니다.');
       router.push('/settings/categories');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error updating category:', err);
-      toast.error('카테고리 수정에 실패했습니다.');
+      if (err instanceof BusinessError) {
+        toast.error(err.message);
+      } else if (err?.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error('카테고리 수정에 실패했습니다.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -136,4 +142,4 @@ const CategoryEditPage: FC = () => {
   );
 };
 
-export default CategoryEditPage; 
+export default CategoryEditPage;
