@@ -21,6 +21,7 @@ public class NotificationStrategyFactory {
         strategyMap.put(NotificationType.SUPPLY_RETURN, new SupplyReturnStrategy());
         strategyMap.put(NotificationType.STOCK_SHORTAGE, new StockShortageStrategy());
         strategyMap.put(NotificationType.RETURN_DUE_DATE_EXCEEDED, new ReturnDueDateExceededStrategy());
+        strategyMap.put(NotificationType.NOT_RETURNED_YET, new NotReturnedYetStrategy());
 
         strategyMap.put(NotificationType.ADMIN_APPROVAL_ALERT, new NewDashboardApprovedStrategy());
         strategyMap.put(NotificationType.ADMIN_REJECTION_ALERT, new NewDashboardRejectedStrategy());

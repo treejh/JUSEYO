@@ -33,7 +33,7 @@ public class NotReturnedYetMonitoringService {
     private final UserService userService;
 
     //    @Scheduled(cron = "0 0 8 * * *") // 배포용 : 매일 오전 8시 실행
-    @Scheduled(fixedRate = 600000)   // 테스트용 : 10분마다
+    @Scheduled(fixedRate = 60000)   // 테스트용 : 1분마다
     @Transactional
     public void scheduledCheckAndNotify() {
         checkAndNotifyNotReturnedYet();

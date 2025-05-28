@@ -12,9 +12,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-@RequiredArgsConstructor
 public class NotReturnedYetStrategy implements  NotificationStrategy{
-    private final SupplyReturnRepository  supplyReturnRepository;
 
     @Override
     public String generateMessage(Object context) {

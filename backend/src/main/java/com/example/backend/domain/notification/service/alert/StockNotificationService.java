@@ -26,7 +26,7 @@ public class StockNotificationService {
     private final RoleService roleService;
 
     @Transactional
-    public void checkAndNotifyLowStock(String serialNumber, String itemName,
+    public void checkAndNotifyLowStock(Long managementDashboardId, String serialNumber, String itemName,
     Long currentQuantity, Long minimumQuantity) {
         // STOCK_SHORTAGE 전략을 가져오고
         NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.STOCK_SHORTAGE);
@@ -36,8 +36,8 @@ public class StockNotificationService {
 
         Role managerRole = roleService.findRoleByRoleType(RoleType.MANAGER);
 
-        // 모든 매니저에 대한 알림 생성
-        List<User> managers = userService.findUsersByRole(managerRole);
+        // 대시보드 별 매니저들에 대한 알림 생성
+        List<User> managers = userService.findAllByRoleAndManagementDashboardId(managerRole, managementDashboardId);
 
         for (User manager : managers) {
             // 조건을 확인하고 알림을 생성

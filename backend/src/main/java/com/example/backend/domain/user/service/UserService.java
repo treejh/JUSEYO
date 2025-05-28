@@ -849,4 +849,8 @@ public class UserService {
         return userRepository.findByManagementDashboardIdAndInitialManager(dashboardId, true);
     }
 
+    public List<User> findAllByRoleAndManagementDashboardId(Role role, Long mdId) {
+        return userRepository.findAllByRoleAndManagementDashboardId(role, mdId);
+    }
+
 }

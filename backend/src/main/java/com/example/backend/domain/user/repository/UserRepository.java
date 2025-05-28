@@ -120,9 +120,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
             Status status
     );
 
+    // 대시보드 별 이니셜 매니저 특정
     User findByManagementDashboardIdAndInitialManager(Long managementDashboardId, boolean isInitialManager);
 
-
+    // 대시보드 별 매니저들
+    List<User> findAllByRoleAndManagementDashboardId(Role role, Long managementDashboardId);
 
 
 

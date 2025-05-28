@@ -22,8 +22,10 @@ public class NotificationCleanupService {
 
     @Transactional
     public void cleanup() {
-        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
-        notificationRepository.deleteByCreatedAtBeforeAndReadStatusTrue(twoWeeksAgo); // 배포용
+//        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
+//        notificationRepository.deleteByCreatedAtBeforeAndReadStatusTrue(twoWeeksAgo); // 배포용
+        LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
+        notificationRepository.deleteByCreatedAtBeforeAndReadStatusTrue(oneMinuteAgo); // 배포용
 
     }
 }

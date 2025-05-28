@@ -29,19 +29,19 @@ public class NotificationEventListener {
     // 비품 요청 알림
     @EventListener
     public void handleSupplyRequestCreated(SupplyRequestCreatedEvent event) {
-        supplyRequestNotificationService.notifySupplyRequest(event.getItemName(), event.getRequestQuantity(), event.getRequesterName());
+        supplyRequestNotificationService.notifySupplyRequest(event.getManagementDashboardId(), event.getItemName(), event.getRequestQuantity(), event.getRequesterName());
     }
 
     // 비품 반납 알림
     @EventListener
     public void handleSupplyReturnCreated(SupplyReturnCreatedEvent event) {
-        supplyReturnNotificationService.notifySupplyReturn(event.getItemName(), event.getRequestQuantity(), event.getReturnerName(), event.getReturnStatus());
+        supplyReturnNotificationService.notifySupplyReturn(event.getManagementDashboardId(), event.getItemName(), event.getRequestQuantity(), event.getReturnerName(), event.getReturnStatus());
     }
 
     // 재고 부족 알림
     @EventListener
     public void handleStockShortage(StockShortageEvent event) {
-        stockNotificationService.checkAndNotifyLowStock(event.getSerialNumber(), event.getItemName(), event.getCurrentQuantity(), event.getMinimumQuantity());
+        stockNotificationService.checkAndNotifyLowStock(event.getManagementDashboardId(), event.getSerialNumber(), event.getItemName(), event.getCurrentQuantity(), event.getMinimumQuantity());
     }
 
     @EventListener

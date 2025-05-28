@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class SupplyReturnCreatedEvent {
+    private Long managementDashboardId;
     private final String itemName;
     private final Long requestQuantity;
     private final String returnerName;
