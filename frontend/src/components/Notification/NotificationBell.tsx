@@ -404,8 +404,18 @@ export function NotificationBell() {
             {notifications.filter((n) => !n.readStatus).length === 0 ? (
               <div className="p-8 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  <svg
+                    className="w-8 h-8 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
                   </svg>
                 </div>
                 <p className="text-gray-500 text-sm">새로운 알림이 없습니다</p>
@@ -415,7 +425,9 @@ export function NotificationBell() {
                 {notifications
                   .filter((n) => !n.readStatus)
                   .map((notification) => {
-                    const category = getNotificationCategory(notification.notificationType);
+                    const category = getNotificationCategory(
+                      notification.notificationType
+                    );
                     return (
                       <div
                         key={notification.id}
@@ -426,12 +438,15 @@ export function NotificationBell() {
                             <div className="flex items-center gap-2 mb-2">
                               <span
                                 className={`px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                                  NOTIFICATION_TYPE_LABELS[notification.notificationType]?.color || "bg-gray-100 text-gray-800"
+                                  NOTIFICATION_TYPE_LABELS[
+                                    notification.notificationType
+                                  ]?.color || "bg-gray-100 text-gray-800"
                                 } bg-opacity-50 backdrop-blur-sm`}
                               >
-                                {NOTIFICATION_TYPE_LABELS[notification.notificationType]?.icon}
-                                <span className="ml-1">
-                                  {NOTIFICATION_TYPE_LABELS[notification.notificationType]?.label || "알림"}
+                                <span>
+                                  {NOTIFICATION_TYPE_LABELS[
+                                    notification.notificationType
+                                  ]?.label || "알림"}
                                 </span>
                               </span>
                             </div>
@@ -447,9 +462,10 @@ export function NotificationBell() {
                                     locale: ko,
                                   }
                                 );
-                                return distance === "1분 미만 전" ? "방금 전" : distance;
+                                return distance === "1분 미만 전"
+                                  ? "방금 전"
+                                  : distance;
                               })()}
-
                             </p>
                           </div>
                           <button
