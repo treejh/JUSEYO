@@ -415,10 +415,17 @@ const ChatRoomList: React.FC<Props> = ({
             return (
               <li
                 key={room.id}
-                className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
+                className="flex justify-between items-center py-4 hover:bg-gray-100 cursor-pointer"
               >
                 {/* 채팅방 이름 및 부서 */}
-                <div className="flex flex-col min-w-0 flex-1">
+                <div className="flex flex-col min-w-0 flex-1 relative">
+                  {/* NEW 뱃지: 이름 위에, 오른쪽 상단에 작게 */}
+                  {newMessages[room.id] && currentRoomId !== room.id && (
+                    <span className="absolute -top-5 left-0 text-white bg-blue-500 rounded-full px-1.5 py-0.5 text-[10px] font-bold shadow">
+                      NEW
+                    </span>
+                  )}
+
                   <span className="font-medium text-gray-800 truncate">
                     {displayName}
                   </span>
@@ -428,13 +435,6 @@ const ChatRoomList: React.FC<Props> = ({
                     </span>
                   )}
                 </div>
-
-                {/* NEW 뱃지 */}
-                {newMessages[room.id] && currentRoomId !== room.id && (
-                  <span className="text-white bg-blue-500 rounded-full px-2 py-1 text-xs font-bold ml-2">
-                    NEW
-                  </span>
-                )}
 
                 {/* 버튼 영역: 고정 너비와 shrink 방지 */}
                 <div className="flex gap-2 min-w-[120px] flex-shrink-0 justify-end ml-4">
