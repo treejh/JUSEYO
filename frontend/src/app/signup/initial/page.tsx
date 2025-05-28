@@ -45,8 +45,17 @@ export default function InitialSignupPage() {
 
   const isValidEmailFormat = (email: string): boolean =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidPhoneNumberFormat = (phoneNumber: string) =>
+
+  const isValidPhoneNumberFormat = (phoneNumber: string): boolean =>
     /^010-\d{4}-\d{4}$/.test(phoneNumber);
+
+  // 추가: 이름 유효성 검증 (한글만, 최대 20자)
+  const isValidName = (name: string): boolean =>
+    name.trim() !== "" && name.length <= 20 && /^[가-힣]+$/.test(name);
+
+  // 추가: 비밀번호 유효성 검증 (영문, 숫자, 특수문자 포함 8~20자리)
+  const isValidPassword = (password: string): boolean =>
+    /^(?=.*[a-zA-Z])(?=.*\d)(?=.*\W).{8,20}$/.test(password);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
@@ -199,23 +208,57 @@ export default function InitialSignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isEmailChecked || isEmailDuplicated || !isEmailVerified)
-      return alert("이메일 인증이 완료되지 않았습니다.");
-    if (!isPhoneChecked || isPhoneDuplicated || !isPhoneVerified)
-      return alert("핸드폰 인증이 완료되지 않았습니다.");
 
-    if (
-      !formData.email ||
-      !formData.password ||
-      !formData.name ||
-      !formData.phoneNumber
-    ) {
-      alert("모든 필드를 입력해주세요.");
+    // 이메일 검증
+    if (!formData.email) {
+      alert("이메일을 입력해주세요.");
+      return;
+    }
+    if (!isValidEmailFormat(formData.email)) {
+      alert("유효한 이메일 형식이 아닙니다.");
       return;
     }
 
+    // 이름 검증
+    if (!formData.name) {
+      alert("이름은 필수입니다.");
+      return;
+    }
+    if (!isValidName(formData.name)) {
+      alert("이름은 한글만 입력 가능하며 최대 20자까지 가능합니다.");
+      return;
+    }
+
+    // 비밀번호 검증
+    if (!formData.password) {
+      alert("비밀번호를 입력해주세요.");
+      return;
+    }
+    if (!isValidPassword(formData.password)) {
+      alert("비밀번호는 영문자, 숫자, 특수문자를 포함한 8~20자리여야 합니다.");
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    // 전화번호 검증
+    if (!formData.phoneNumber) {
+      alert("전화번호를 입력해주세요.");
+      return;
+    }
+    if (!isValidPhoneNumberFormat(formData.phoneNumber)) {
+      alert("전화번호 형식은 010-1234-5678이어야 합니다.");
+      return;
+    }
+
+    if (!isEmailChecked || isEmailDuplicated || !isEmailVerified) {
+      alert("이메일 인증이 완료되지 않았습니다.");
+      return;
+    }
+    if (!isPhoneChecked || isPhoneDuplicated || !isPhoneVerified) {
+      alert("핸드폰 인증이 완료되지 않았습니다.");
       return;
     }
 
