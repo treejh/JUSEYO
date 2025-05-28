@@ -5,6 +5,7 @@ import styles from "./withdraw.module.css"; // CSS 모듈 임포트
 import Link from "next/link";
 import { useRouter } from "next/navigation"; // useRouter import 추가
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import { useCustomToast } from "@/utils/toast";
 
 export default function WithdrawalPage() {
   const router = useRouter(); // router 정의
@@ -15,6 +16,7 @@ export default function WithdrawalPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [provider, setProvider] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState(false); // 알림 모달 상태
+  const toast = useCustomToast();
 
   useEffect(() => {
     // 로그인 여부 확인
@@ -44,11 +46,11 @@ export default function WithdrawalPage() {
         throw new Error("비밀번호 인증에 실패했습니다.");
       }
 
-      alert("비밀번호 인증에 성공했습니다.");
+      toast.success("비밀번호 인증에 성공했습니다.");
       setIsAuthenticated(true); // 인증 성공 시 상태 업데이트
     } catch (error) {
       console.error(error);
-      alert("비밀번호가 일치하지 않습니다.");
+      toast.error("비밀번호가 일치하지 않습니다.");
     }
   };
 
@@ -66,7 +68,7 @@ export default function WithdrawalPage() {
       );
 
       if (response.status === 403) {
-        alert(
+        toast.error(
           "최초 매니저는 회원 탈퇴 권한이 없습니다. 관리자에게 문의해주세요."
         );
       }
@@ -75,10 +77,10 @@ export default function WithdrawalPage() {
         throw new Error("회원 탈퇴에 실패했습니다.");
       }
 
-      alert("회원 탈퇴가 성공적으로 완료되었습니다.");
+      toast.success("회원 탈퇴가 성공적으로 완료되었습니다.");
       window.location.href = "/"; // 새로고침된 상태로 메인 페이지로 이동
     } catch (error) {
-      console.error("회원 탈퇴 요청 중 오류 발생:", error);
+      toast.error("회원 탈퇴 요청 중 오류 발생:");
     }
   };
 

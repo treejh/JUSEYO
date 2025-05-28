@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import { useCustomToast } from "@/utils/toast";
 
 // 비품 아이템 타입에 반환 요구 여부 필드 추가
 interface Item {
@@ -40,6 +41,7 @@ export default function SupplyRequestCreatePage() {
     new Date().toISOString().slice(0, 10)
   );
   const [purpose, setPurpose] = useState("");
+  const toast = useCustomToast();
 
   // 전체 ACTIVE 품목 로드
   useEffect(() => {
@@ -74,13 +76,13 @@ export default function SupplyRequestCreatePage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedItem) return alert("항목을 선택해주세요.");
-    if (quantity < 1) return alert("수량을 확인해주세요.");
-    if (!purpose.trim()) return alert("목적을 입력해주세요.");
+    if (!selectedItem) return toast.error("항목을 선택해주세요.");
+    if (quantity < 1) return toast.error("수량을 확인해주세요.");
+    if (!purpose.trim()) return toast.error("목적을 입력해주세요.");
 
     // 대여 여부에 따른 필수 반환 요구 체크
     if (rental && !selectedItem.isReturnRequired) {
-      return alert("대여 비품이 아닙니다");
+      return toast.error("대여 비품이 아닙니다");
     }
 
     const payload = {
@@ -100,8 +102,9 @@ export default function SupplyRequestCreatePage() {
     });
     if (!res.ok) {
       const msg = await res.text();
-      return alert(`등록 실패: ${msg}`);
+      return toast.error(`등록 실패: ${msg}`);
     }
+    toast.success("등록 완료");
     router.push("/item/supplyrequest/list/user");
   };
 

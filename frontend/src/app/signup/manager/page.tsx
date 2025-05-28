@@ -13,6 +13,7 @@ import {
   sendPhoneAuthCode,
   verifyPhoneAuthCode,
 } from "@/utils/phoneValidation";
+import { useCustomToast } from "@/utils/toast";
 
 export default function InitialSignupPage() {
   const [formData, setFormData] = useState({
@@ -42,6 +43,7 @@ export default function InitialSignupPage() {
 
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [isPhoneLoading, setIsPhoneLoading] = useState(false);
+  const toast = useCustomToast();
 
   // 유효성 검사 함수들
   const isValidEmailFormat = (email: string): boolean =>
@@ -98,41 +100,41 @@ export default function InitialSignupPage() {
   };
 
   const handleEmailCheck = async () => {
-    if (!formData.email) return alert("이메일을 입력해주세요.");
+    if (!formData.email) return toast.error("이메일을 입력해주세요.");
     if (!isValidEmailFormat(formData.email))
-      return alert("유효한 이메일 형식이 아닙니다.");
+      return toast.error("유효한 이메일 형식이 아닙니다.");
     try {
       const isDuplicated = await checkEmailDuplication(formData.email);
       setIsEmailChecked(true);
       setIsEmailDuplicated(isDuplicated);
 
       if (isDuplicated) {
-        alert("이미 사용 중인 이메일입니다. 다시 확인해주세요.");
+        toast.error("이미 사용 중인 이메일입니다. 다시 확인해주세요.");
         setIsEmailChecked(false); // 다시 중복 확인 가능하도록 상태 초기화
       } else {
-        alert("사용 가능한 이메일입니다. 인증번호를 발급받아주세요.");
+        toast.success("사용 가능한 이메일입니다. 인증번호를 발급받아주세요.");
       }
     } catch {
-      alert("중복 확인 중 오류가 발생했습니다.");
+      toast.error("중복 확인 중 오류가 발생했습니다.");
     }
   };
 
   const handleSendAuthCode = async () => {
-    if (!formData.email) return alert("이메일을 입력해주세요.");
+    if (!formData.email) return toast.error("이메일을 입력해주세요.");
     if (!isValidEmailFormat(formData.email))
-      return alert("유효한 이메일 형식이 아닙니다.");
+      return toast.error("유효한 이메일 형식이 아닙니다.");
     try {
       setIsEmailLoading(true);
       const isSent = await sendAuthCode(formData.email);
       if (isSent) {
         setAuthCodeSent(true);
         setTimer(120);
-        alert("인증번호가 발송되었습니다. 2분 내에 입력해주세요.");
+        toast.success("인증번호가 발송되었습니다. 2분 내에 입력해주세요.");
       } else {
-        alert("인증번호 발급 실패. 다시 시도해주세요.");
+        toast.error("인증번호 발급 실패. 다시 시도해주세요.");
       }
     } catch {
-      alert("인증번호 발급 중 오류가 발생했습니다.");
+      toast.error("인증번호 발급 중 오류가 발생했습니다.");
     } finally {
       setIsEmailLoading(false);
     }
@@ -142,52 +144,52 @@ export default function InitialSignupPage() {
     try {
       const isVerified = await verifyAuthCode(formData.email, authCode);
       if (isVerified) {
-        alert("이메일 인증이 완료되었습니다.");
+        toast.success("이메일 인증이 완료되었습니다.");
         setIsEmailVerified(true);
         setAuthCodeSent(false);
       } else {
-        alert("인증번호가 일치하지 않습니다.");
+        toast.error("인증번호가 일치하지 않습니다.");
       }
     } catch {
-      alert("인증번호 확인 중 오류가 발생했습니다.");
+      toast.error("인증번호 확인 중 오류가 발생했습니다.");
     }
   };
 
   const handlePhoneCheck = async () => {
-    if (!formData.phoneNumber) return alert("전화번호를 입력해주세요.");
+    if (!formData.phoneNumber) return toast.error("전화번호를 입력해주세요.");
     if (!isValidPhoneNumberFormat(formData.phoneNumber))
-      return alert("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
+      return toast.error("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
     try {
       const isDuplicated = await checkPhoneDuplication(formData.phoneNumber);
       setIsPhoneChecked(true);
       setIsPhoneDuplicated(isDuplicated);
       if (isDuplicated) {
-        alert("이미 사용 중인 전화번호입니다. 다시 확인해주세요.");
+        toast.error("이미 사용 중인 전화번호입니다. 다시 확인해주세요.");
         setIsPhoneChecked(false); // 다시 중복 확인 가능하도록 상태 초기화
       } else {
-        alert("사용 가능한 전화번호입니다. 인증번호를 발급받아주세요.");
+        toast.success("사용 가능한 전화번호입니다. 인증번호를 발급받아주세요.");
       }
     } catch {
-      alert("전화번호 중복 확인 중 오류가 발생했습니다.");
+      toast.error("전화번호 중복 확인 중 오류가 발생했습니다.");
     }
   };
 
   const handleSendPhoneAuthCode = async () => {
-    if (!formData.phoneNumber) return alert("전화번호를 입력해주세요.");
+    if (!formData.phoneNumber) return toast.error("전화번호를 입력해주세요.");
     if (!isValidPhoneNumberFormat(formData.phoneNumber))
-      return alert("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
+      return toast.error("전화번호 형식이 올바르지 않습니다. 형식: 010-1234-5678");
     try {
       setIsPhoneLoading(true);
       const isSent = await sendPhoneAuthCode(formData.phoneNumber);
       if (isSent) {
         setPhoneAuthCodeSent(true);
         setPhoneTimer(120);
-        alert("인증번호가 발송되었습니다. 2분 내에 입력해주세요.");
+        toast.success("인증번호가 발송되었습니다. 2분 내에 입력해주세요.");
       } else {
-        alert("인증번호 발급 실패. 다시 시도해주세요.");
+        toast.error("인증번호 발급 실패. 다시 시도해주세요.");
       }
     } catch {
-      alert("인증번호 발급 중 오류가 발생했습니다.");
+      toast.error("인증번호 발급 중 오류가 발생했습니다.");
     } finally {
       setIsPhoneLoading(false);
     }
@@ -200,14 +202,14 @@ export default function InitialSignupPage() {
         phoneAuthCode
       );
       if (isVerified) {
-        alert("전화번호 인증이 완료되었습니다.");
+        toast.success("전화번호 인증이 완료되었습니다.");
         setIsPhoneVerified(true);
         setPhoneAuthCodeSent(false);
       } else {
-        alert("인증번호가 일치하지 않습니다.");
+        toast.error("인증번호가 일치하지 않습니다.");
       }
     } catch {
-      alert("인증번호 확인 중 오류가 발생했습니다.");
+      toast.error("인증번호 확인 중 오류가 발생했습니다.");
     }
   };
 
@@ -224,50 +226,50 @@ export default function InitialSignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isEmailChecked || isEmailDuplicated || !isEmailVerified)
-      return alert("이메일 인증이 완료되지 않았습니다.");
+      return toast.error("이메일 인증이 완료되지 않았습니다.");
     if (!isPhoneChecked || isPhoneDuplicated || !isPhoneVerified)
-      return alert("핸드폰 인증이 완료되지 않았습니다.");
+      return toast.error("핸드폰 인증이 완료되지 않았습니다.");
 
     // 이름 검증
     if (!formData.name) {
-      alert("이름은 필수입니다.");
+      toast.error("이름은 필수입니다.");
       return;
     }
     if (!isValidName(formData.name)) {
-      alert("이름은 한글만 입력 가능하며 최대 20자까지 가능합니다.");
+      toast.error("이름은 한글만 입력 가능하며 최대 20자까지 가능합니다.");
       return;
     }
     // 이메일 검증
     if (!formData.email) {
-      alert("이메일을 입력해주세요.");
+      toast.error("이메일을 입력해주세요.");
       return;
     }
     if (!isValidEmailFormat(formData.email)) {
-      alert("유효한 이메일 형식이 아닙니다.");
+      toast.error("유효한 이메일 형식이 아닙니다.");
       return;
     }
 
     // 비밀번호 검사
     if (!formData.password) {
-      alert("비밀번호를 입력해주세요.");
+      toast.error("비밀번호를 입력해주세요.");
       return;
     }
     if (!isValidPassword(formData.password)) {
-      alert("비밀번호는 영문자, 숫자, 특수문자를 포함한 8~20자리여야 합니다.");
+      toast.error("비밀번호는 영문자, 숫자, 특수문자를 포함한 8~20자리여야 합니다.");
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      alert("비밀번호가 일치하지 않습니다.");
+      toast.error("비밀번호가 일치하지 않습니다.");
       return;
     }
 
     // 전화번호 검사
     if (!formData.phoneNumber) {
-      alert("전화번호를 입력해주세요.");
+      toast.error("전화번호를 입력해주세요.");
       return;
     }
     if (!isValidPhoneNumberFormat(formData.phoneNumber)) {
-      alert("전화번호 형식은 010-1234-5678이어야 합니다.");
+      toast.error("전화번호 형식은 010-1234-5678이어야 합니다.");
       return;
     }
 
@@ -284,12 +286,12 @@ export default function InitialSignupPage() {
       if (!response.ok) {
         throw new Error("회원가입에 실패했습니다.");
       }
-      alert("회원가입이 완료되었습니다.");
+      toast.success("회원가입이 완료되었습니다.");
       localStorage.removeItem("managementPageName");
       localStorage.removeItem("departmentName");
       router.push("/");
     } catch (error) {
-      alert(
+      toast.error(
         error instanceof Error
           ? error.message
           : "회원가입 중 오류가 발생했습니다."
