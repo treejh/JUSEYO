@@ -57,7 +57,9 @@ public class NotificationService {
         SseEmitter emitter = emitterRepository.get(user.getId());
         if (emitter != null) {
             try {
-                emitter.send(NotificationDTO.from(saved));
+                emitter.send(SseEmitter.event()
+                        .name("notification")  // 이벤트 이름 지정
+                        .data(NotificationDTO.from(saved)));
             } catch (IOException e) {
                 emitterRepository.delete(user.getId());
                 emitter.completeWithError(e);
