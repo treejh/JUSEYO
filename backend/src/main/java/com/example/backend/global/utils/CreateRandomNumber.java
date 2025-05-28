@@ -14,6 +14,12 @@ public class CreateRandomNumber {
         return UUID.randomUUID().toString().substring(0, 10);
     }
 
+    public static String randomNumberSix() {
+        Random random = new Random();
+        int number = 100000 + random.nextInt(900000); // 100000 ~ 999999
+        return String.valueOf(number);
+    }
+
 
     //날짜 + 시간 + 랜덤번호
     public static String timeBasedRandomName() {

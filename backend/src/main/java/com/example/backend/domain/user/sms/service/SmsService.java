@@ -46,7 +46,7 @@ public class SmsService {
         this.messageService = NurigoApp.INSTANCE.initialize(apiKey, secretKey, "https://api.coolsms.co.kr");
     }
     public void sendVerificationCode(String phoneNumber) {
-        String code = CreateRandomNumber.randomNumber();
+        String code = CreateRandomNumber.randomNumberSix();
 
 
         redisService.saveData(AUTH_CODE_PREFIX + phoneNumber,
