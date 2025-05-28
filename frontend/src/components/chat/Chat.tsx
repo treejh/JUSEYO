@@ -452,22 +452,39 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
       </div>
 
       {/* 메시지 입력 영역 */}
-      <div className="flex items-center p-4 border-t border-gray-300">
-        <input
-          type="text"
-          className="flex-1 border border-gray-300 p-2 rounded-l"
-          value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          onKeyPress={handleKeyPress} // Enter 키 처리 추가
-          placeholder="메시지를 입력하세요..."
-          maxLength={200}
-        />
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-r"
-          onClick={sendMessage}
+      <div className="p-4 border-t border-gray-300 bg-gray-50 rounded-b-lg">
+        <form
+          className="flex items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            sendMessage();
+          }}
         >
-          전송
-        </button>
+          <input
+            type="text"
+            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-800 transition"
+            value={inputMessage}
+            onChange={(e) => {
+              if (e.target.value.length > 200) {
+                alert("채팅은 200글자 까지만 가능합니다.");
+                return;
+              }
+              setInputMessage(e.target.value);
+            }}
+            onKeyPress={handleKeyPress}
+            placeholder="메시지를 입력하세요..."
+            maxLength={200}
+          />
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full font-semibold shadow transition"
+          >
+            전송
+          </button>
+        </form>
+        <div className="text-right text-xs text-gray-400 mt-1 mr-25">
+          {inputMessage.length}/200
+        </div>
       </div>
     </div>
   );
