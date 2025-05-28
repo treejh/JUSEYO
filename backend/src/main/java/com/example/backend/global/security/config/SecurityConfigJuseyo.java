@@ -61,8 +61,11 @@ public class SecurityConfigJuseyo {
                         ,"/api/v1/users/validation/initialManager/**",
                                 "/api/v1/users/search/**")
                         .hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
+
                         //비품
                         .requestMatchers(HttpMethod.PUT, "/api/v1/items/**").hasRole("MANAGER") // 비품수정은 매니저만 가능
+                        .requestMatchers(HttpMethod.GET, "/api/v1/items/**").hasAnyRole("MANAGER", "USER") //조회 추가
+
                         //부서
                         .requestMatchers(HttpMethod.GET,  "/api/v1/departments/management/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/departments/**").hasRole("MANAGER")
