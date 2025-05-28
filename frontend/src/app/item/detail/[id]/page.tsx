@@ -13,7 +13,7 @@ interface Product {
   serialNumber: string;
   totalQuantity: number;
   availableQuantity: number;
-  rental: boolean; // ← 대여 가능 여부
+  isReturnRequired: boolean; // ← 백엔드 DTO에 맞춰 이름 변경
   location: string;
   createdAt: string;
   buyer: string;
@@ -45,7 +45,7 @@ export default function ItemDetailPage() {
         return res.json() as Promise<Product>;
       })
       .then((data) => {
-        // createdAt을 YYYY-MM-DD로 표시
+        // createdAt을 YYYY-MM-DD로 포맷
         const createdDate = data.createdAt.slice(0, 10);
         setProduct({ ...data, createdAt: createdDate });
       })
@@ -79,44 +79,52 @@ export default function ItemDetailPage() {
 
   return (
     <div className="flex flex-col lg:flex-row p-4 gap-6 bg-gray-50 min-h-screen">
-      {/* 좌측: 제품 상세 정보 */}
+      {/* 좌측: 제품 상세 정보 + 이미지 */}
       <div className="flex-1 bg-white rounded-xl shadow p-6">
-        <h2 className="text-2xl font-bold mb-4">제품 상세 정보</h2>
-        <div className="grid grid-cols-2 gap-y-3 text-sm text-gray-700">
-          <div className="font-medium">제품명</div>
-          <div>{product.name}</div>
+        <div className="flex gap-8">
+          {/* 제품 정보 */}
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold mb-4">제품 상세 정보</h2>
+            <div className="grid grid-cols-2 gap-y-3 text-sm text-gray-700">
+              <div className="font-medium">제품명</div>
+              <div>{product.name}</div>
 
-          <div className="font-medium">고유번호</div>
-          <div>{product.serialNumber}</div>
+              <div className="font-medium">고유번호</div>
+              <div>{product.serialNumber}</div>
 
-          <div className="font-medium">총 보유수량</div>
-          <div>{product.totalQuantity}개</div>
+              <div className="font-medium">총 보유수량</div>
+              <div>{product.totalQuantity}개</div>
 
-          <div className="font-medium">이용 가능 수량</div>
-          <div>{product.availableQuantity}개</div>
+              <div className="font-medium">이용 가능 수량</div>
+              <div>{product.availableQuantity}개</div>
 
-          <div className="font-medium">대여 여부</div>
-          <div>{product.rental ? "대여" : "비대여"}</div>
+              <div className="font-medium">대여 여부</div>
+              <div>{product.isReturnRequired ? "대여" : "비대여"}</div>
 
-          <div className="font-medium">위치</div>
-          <div>{product.location}</div>
+              <div className="font-medium">위치</div>
+              <div>{product.location}</div>
 
-          <div className="font-medium">등록일</div>
-          <div>{product.createdAt}</div>
+              <div className="font-medium">등록일</div>
+              <div>{product.createdAt}</div>
 
-          <div className="font-medium">구매처</div>
-          <div>{product.buyer}</div>
-        </div>
+              <div className="font-medium">구매처</div>
+              <div>{product.buyer}</div>
+            </div>
+          </div>
 
-        <div className="mt-6 flex justify-center">
-          <img
-            src={imgSrc}
-            alt={product.name}
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = placeholder;
-            }}
-            className="w-64 h-64 object-contain rounded"
-          />
+          {/* 제품 이미지 */}
+          <div className="w-80 flex flex-col items-center">
+            <div className="bg-gray-50 rounded-lg p-4 w-full h-80">
+              <img
+                src={imgSrc}
+                alt={product.name}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = placeholder;
+                }}
+                className="w-full h-full object-contain rounded"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
