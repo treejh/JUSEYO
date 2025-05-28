@@ -25,12 +25,16 @@ export default function ClientLayout({
   const isSignupPage = pathname.startsWith("/signup");
   const isFindPage = pathname.startsWith("/find");
   const isAdminRequestPage = pathname === "/admin/request";
+  const isTermsPage = pathname === "/terms";
+  const isPrivacyPage = pathname === "/privacy";
+  const isSupportPage = pathname === "/support";
 
-  // 로그인, 회원가입, 루트 페이지에서는 네비게이션을 표시하지 않음
+  // 로그인, 회원가입, 루트 페이지, 이용약관, 개인정보 처리방침, 고객지원 페이지에서는 네비게이션을 표시하지 않음
   const isAuthPage =
     isLoginPage || isSignupPage || isFindPage || isAdminRequestPage;
   const isRootPage = pathname === "/";
-  const shouldHideNav = isAuthPage || isRootPage;
+  const isSimplePage = isTermsPage || isPrivacyPage || isSupportPage;
+  const shouldHideNav = isAuthPage || isRootPage || isSimplePage;
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
