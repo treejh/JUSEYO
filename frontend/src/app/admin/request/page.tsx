@@ -49,14 +49,14 @@ export default function AdminRequest() {
        return;
      }
 
-     if (loginUser.role !== 'admin') {
+     if (loginUser.role !== 'ADMIN') {
        if (loginUser.managementDashboardName) {
          alert('이미 관리자 페이지가 존재합니다.');
          router.push('/');
          return;
        }
 
-       if (loginUser.role !== 'manager') {
+       if (loginUser.role !== 'MANAGER') {
          alert('관리자 페이지 생성 권한이 없습니다.');
          router.push('/');
          return;

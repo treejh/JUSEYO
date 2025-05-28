@@ -1,10 +1,16 @@
 package com.example.backend.domain.item.controller;
 
 import com.example.backend.domain.item.dto.request.ItemRequestDto;
+import com.example.backend.domain.item.dto.response.ItemCardResponseDto;
 import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemResponseDto;
 import com.example.backend.domain.item.service.ItemService;
+import com.example.backend.domain.user.entity.User;
+import com.example.backend.domain.user.service.UserService;
+import com.example.backend.global.security.jwt.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -28,6 +35,8 @@ import java.util.Map;
 public class ItemController {
 
     private final ItemService service;
+    private final TokenService tokenService;
+    private final UserService userService;
 
     @Operation(summary = "비품 등록", description = "새로운 비품을 등록합니다. (매니저 권한 필요)")
     @PreAuthorize("hasRole('MANAGER')")
@@ -103,5 +112,28 @@ public class ItemController {
     public Map<String, Boolean> existsByName(@RequestParam String name) {
         boolean exists = service.existsActiveName(name);
         return Collections.singletonMap("exists", exists);
+    }
+
+    //카테고리별 비품 조회
+    @Operation(
+            summary = "카테고리별 비품 조회",
+            description = "카테고리 ID를 기준으로 해당 카테고리에 속한 비품들을 페이지 단위로 조회합니다."
+    )
+    @GetMapping("/by-category")
+    public ResponseEntity<Page<ItemCardResponseDto>> getItemsByCategory(
+            @Parameter(name = "categoryId", description = "조회할 카테고리 ID", required = true, in = ParameterIn.QUERY)
+            @RequestParam("categoryId") Long categoryId,
+
+            @Parameter(name = "page", description = "조회할 페이지 번호 (0부터 시작)", in = ParameterIn.QUERY)
+            @RequestParam(name = "page", defaultValue = "0") int page,
+
+            @Parameter(name = "size", description = "페이지당 항목 수", in = ParameterIn.QUERY)
+            @RequestParam(name = "size", defaultValue = "10") int size
+
+    ) {
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(service.getItemsByCategory(categoryId, pageable, user));
     }
 }
