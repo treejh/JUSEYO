@@ -33,7 +33,7 @@ public class NotificationPolicy {
                     NotificationType.SUPPLY_REQUEST_DELAYED,
                     NotificationType.SUPPLY_RETURN_APPROVED,
                     NotificationType.NEW_CHAT,
-                    NotificationType.NEW_USER_APRROVED,
+                    NotificationType.NEW_USER_APPROVED,
                     NotificationType.NEW_USER_REJECTED
 
 

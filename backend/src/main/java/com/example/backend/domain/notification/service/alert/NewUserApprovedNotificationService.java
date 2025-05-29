@@ -19,7 +19,7 @@ public class NewUserApprovedNotificationService {
 
     @Transactional
     public void notifyNewUserApproved(Long requesterId, String userName) {
-        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.NEW_USER_APRROVED);
+        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.NEW_USER_APPROVED);
 
         NewUserContext context = new NewUserContext(userName);
 
@@ -30,7 +30,7 @@ public class NewUserApprovedNotificationService {
 
             // NotificationRequestDTO에 메시지 전달
             notificationService.createNotification(new NotificationRequestDTO(
-                    NotificationType.NEW_USER_APRROVED,
+                    NotificationType.NEW_USER_APPROVED,
                     msg,
                     requesterId)
             );

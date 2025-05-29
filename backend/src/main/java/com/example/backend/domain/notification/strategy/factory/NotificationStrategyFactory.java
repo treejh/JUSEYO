@@ -39,7 +39,7 @@ public class NotificationStrategyFactory {
         strategyMap.put(NotificationType.SUPPLY_REQUEST_REJECTED, new SupplyRequestRejectedStrategy());
         strategyMap.put(NotificationType.SUPPLY_REQUEST_DELAYED, new SupplyRequestDelayedStrategy());
         strategyMap.put(NotificationType.SUPPLY_RETURN_APPROVED, new SupplyReturnApprovedStrategy());
-        strategyMap.put(NotificationType.NEW_USER_APRROVED, new NewUserApprovedStrategy());
+        strategyMap.put(NotificationType.NEW_USER_APPROVED, new NewUserApprovedStrategy());
         strategyMap.put(NotificationType.NEW_USER_REJECTED, new NewUserRejectedStrategy());
 
 
