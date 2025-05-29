@@ -154,6 +154,7 @@ export default function ClientLayout({
                   readStatus: false,
                 });
               } catch (e) {
+                console.error("알림 처리 중 오류:", e);
                 console.log(`💬 [message] 텍스트 메시지: ${event.data}`);
               }
             });
