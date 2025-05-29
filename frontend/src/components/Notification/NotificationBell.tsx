@@ -307,11 +307,6 @@ export function NotificationBell() {
   const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
   const router = useRouter();
 
-  // 스토어 상태 변경 감지
-  useEffect(() => {
-    console.log("NotificationBell - 스토어 상태 변경:", notifications);
-  }, [notifications]);
-
   // BroadcastChannel 설정
   useEffect(() => {
     const channel = new BroadcastChannel("notifications");

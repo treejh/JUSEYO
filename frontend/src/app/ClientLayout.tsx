@@ -136,8 +136,7 @@ export default function ClientLayout({
                 );
 
                 // 알림 스토어에 추가
-                const store = useNotificationStore.getState();
-                store.addNotification({
+                useNotificationStore.getState().addNotification({
                   id: Number(parsed.id),
                   message: parsed.message,
                   notificationType: parsed.notificationType,
