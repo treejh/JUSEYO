@@ -60,7 +60,6 @@ public class NotReturnedYetMonitoringService {
                 // 요청 비품의 관리페이지 매니저들 특정
                 List<User> managers = userService.findAllByRoleAndManagementDashboardId(managerRole, request.getManagementDashboard().getId());
 
-
                 String msg = strategy.generateMessage(context);
 
                 // 유저 대상

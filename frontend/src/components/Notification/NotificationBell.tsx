@@ -28,7 +28,10 @@ type NotificationType =
   | "MANAGER_APPROVAL_ALERT"
   | "MANAGER_REJECTION_ALERT"
   | "ADMIN_REJECTION_ALERT"
-  | "SUPPLY_RETURN_APPROVED";
+  | "SUPPLY_RETURN_APPROVED"
+  | "NEW_USER"
+  | "NEW_USER_APPROVED"
+  | "NEW_USER_REJECTED";
 
 interface NotificationCategory {
   label: string;
@@ -67,6 +70,9 @@ const NOTIFICATION_CATEGORIES: Record<string, NotificationCategory> = {
       "MANAGER_APPROVAL_ALERT",
       "MANAGER_REJECTION_ALERT",
       "ADMIN_REJECTION_ALERT",
+      "NEW_USER",
+      "NEW_USER_APPROVED",
+      "NEW_USER_REJECTED",
     ],
     color: "gray",
   },
@@ -251,6 +257,33 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
+  NEW_USER: {
+    label: "새로운 회원",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  NEW_USER_APPROVED: {
+    label: "회원 승인",
+    color: "bg-green-100 text-green-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  NEW_USER_REJECTED: {
+    label: "회원 거부",
+    color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
 };
 
 const getTimeAgo = (date: Date): string => {
@@ -270,15 +303,38 @@ const getTimeAgo = (date: Date): string => {
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
-  const notificationRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // BroadcastChannel 설정
+  useEffect(() => {
+    const channel = new BroadcastChannel("notifications");
+
+    // 다른 탭에서 온 알림 수신
+    channel.onmessage = (event) => {
+      if (event.data.type === "MARK_AS_READ") {
+        // 읽음 처리
+        markAsRead(event.data.notificationId);
+      } else if (event.data.type === "MARK_ALL_AS_READ") {
+        // 전체 읽음 처리
+        markAllAsRead();
+      } else if (event.data.type === "NEW_NOTIFICATION") {
+        // 새 알림 추가
+        useNotificationStore.getState().addNotification(event.data.data);
+      }
+    };
+
+    return () => {
+      channel.close();
+    };
+  }, [markAsRead, markAllAsRead]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target as Node)
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -299,14 +355,22 @@ export function NotificationBell() {
           credentials: "include",
         }
       );
-      if (response.ok) {
-        markAllAsRead();
-        if (notifications.length === 0) {
-          setIsOpen(false);
-        }
+
+      if (!response.ok) {
+        throw new Error("알림 상태 변경에 실패했습니다.");
       }
-    } catch (error) {
-      console.error("Error marking all notifications as read:", error);
+
+      // 스토어 업데이트
+      markAllAsRead();
+
+      // 다른 탭에 알림
+      const channel = new BroadcastChannel("notifications");
+      channel.postMessage({
+        type: "MARK_ALL_AS_READ",
+      });
+      channel.close();
+    } catch (err) {
+      console.error("알림 상태 변경 중 오류가 발생했습니다:", err);
     }
   };
 
@@ -319,14 +383,23 @@ export function NotificationBell() {
           credentials: "include",
         }
       );
-      if (response.ok) {
-        markAsRead(notificationId);
-        if (notifications.length === 1) {
-          setIsOpen(false);
-        }
+
+      if (!response.ok) {
+        throw new Error("알림 상태 변경에 실패했습니다.");
       }
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
+
+      // 스토어 업데이트
+      markAsRead(notificationId);
+
+      // 다른 탭에 알림
+      const channel = new BroadcastChannel("notifications");
+      channel.postMessage({
+        type: "MARK_AS_READ",
+        notificationId,
+      });
+      channel.close();
+    } catch (err) {
+      console.error("알림 상태 변경 중 오류가 발생했습니다:", err);
     }
   };
 
@@ -339,7 +412,7 @@ export function NotificationBell() {
   };
 
   return (
-    <div className="relative" ref={notificationRef}>
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-gray-800 focus:outline-none mr-2 transition-all duration-200 hover:bg-gray-100 rounded-full"
@@ -404,8 +477,18 @@ export function NotificationBell() {
             {notifications.filter((n) => !n.readStatus).length === 0 ? (
               <div className="p-8 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  <svg
+                    className="w-8 h-8 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
                   </svg>
                 </div>
                 <p className="text-gray-500 text-sm">새로운 알림이 없습니다</p>
@@ -415,7 +498,9 @@ export function NotificationBell() {
                 {notifications
                   .filter((n) => !n.readStatus)
                   .map((notification) => {
-                    const category = getNotificationCategory(notification.notificationType);
+                    const category = getNotificationCategory(
+                      notification.notificationType
+                    );
                     return (
                       <div
                         key={notification.id}
@@ -426,12 +511,15 @@ export function NotificationBell() {
                             <div className="flex items-center gap-2 mb-2">
                               <span
                                 className={`px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                                  NOTIFICATION_TYPE_LABELS[notification.notificationType]?.color || "bg-gray-100 text-gray-800"
+                                  NOTIFICATION_TYPE_LABELS[
+                                    notification.notificationType
+                                  ]?.color || "bg-gray-100 text-gray-800"
                                 } bg-opacity-50 backdrop-blur-sm`}
                               >
-                                {NOTIFICATION_TYPE_LABELS[notification.notificationType]?.icon}
-                                <span className="ml-1">
-                                  {NOTIFICATION_TYPE_LABELS[notification.notificationType]?.label || "알림"}
+                                <span>
+                                  {NOTIFICATION_TYPE_LABELS[
+                                    notification.notificationType
+                                  ]?.label || "알림"}
                                 </span>
                               </span>
                             </div>
@@ -447,9 +535,10 @@ export function NotificationBell() {
                                     locale: ko,
                                   }
                                 );
-                                return distance === "1분 미만 전" ? "방금 전" : distance;
+                                return distance === "1분 미만 전"
+                                  ? "방금 전"
+                                  : distance;
                               })()}
-
                             </p>
                           </div>
                           <button

@@ -7,7 +7,7 @@ public class SupplyReturnApprovedStrategy implements NotificationStrategy {
     @Override
     public String generateMessage(Object context) {
         if (!(context instanceof SupplyReturnApprovalContext)) {
-            throw new IllegalArgumentException("Invalid context for StockShortageStrategy");
+            throw new IllegalArgumentException("Invalid context for SupplyReturnApprovedStrategy");
         }
         SupplyReturnApprovalContext ctx = (SupplyReturnApprovalContext) context;
         // context에서 아이템 이름과 재고 수량을 추출하여 메시지 생성

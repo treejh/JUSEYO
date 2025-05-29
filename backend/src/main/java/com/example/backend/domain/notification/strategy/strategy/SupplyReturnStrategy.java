@@ -7,7 +7,7 @@ public class SupplyReturnStrategy implements NotificationStrategy{
     @Override
     public String generateMessage(Object context) {
         if (!(context instanceof SupplyReturnContext)) {
-            throw new IllegalArgumentException("Invalid context for SupplyRequestStrategy");
+            throw new IllegalArgumentException("Invalid context for SupplyReturnStrategy");
         }
         SupplyReturnContext supplyContext = (SupplyReturnContext) context;
         String statusMessage = switch (supplyContext.getReturnStatus()) {

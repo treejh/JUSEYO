@@ -81,8 +81,7 @@ public class InventoryOutService {
         // 0) SupplyRequest, Category, ManagementDashboard 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
-        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+        ManagementDashboard mgmt = req.getManagementDashboard();
 
         // 1) Item 조회
         Item item = itemRepo.findById(dto.getItemId())
@@ -165,23 +164,41 @@ public class InventoryOutService {
             String sortField,
             String sortDir
     ) {
-        Long userMgmtId = tokenService.getIdFromToken();
+        // 1) 토큰에서 유저 ID 꺼내고
+        Long currentUserId = tokenService.getIdFromToken();
+        // 2) 유저 엔티티에서 매니지먼트 대시보드 ID 를 조회
+        Long userMgmtId = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND))
+                .getManagementDashboard()
+                .getId();
+
+        // 3) 그 dashboardId 로만 필터
         Specification<InventoryOut> spec = Specification.where(
-                (root, query, cb) -> cb.equal(
-                        root.get("managementDashboard").get("id"), userMgmtId)
+                (root, query, cb) ->
+                        cb.equal(root.get("managementDashboard").get("id"), userMgmtId)
         );
+
+        if (itemId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("item").get("id"), itemId));
+        }
         if (search != null && !search.isBlank()) {
-            spec = spec.and((root, query, cb) -> cb.like(
-                    root.get("item").get("name"), "%" + search + "%"));
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("item").get("name"), "%" + search + "%"));
         }
         if (fromDate != null && toDate != null) {
             LocalDateTime start = fromDate.atStartOfDay();
-            LocalDateTime end = toDate.atTime(LocalTime.MAX);
-            spec = spec.and((root, query, cb) -> cb.between(
-                    root.get("createdAt"), start, end));
+            LocalDateTime end   = toDate.atTime(LocalTime.MAX);
+            spec = spec.and((root, query, cb) ->
+                    cb.between(root.get("createdAt"), start, end));
         }
-        Sort sort = Sort.by(sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortField);
+
+        Sort sort = Sort.by(
+                sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortField
+        );
         Pageable pageable = PageRequest.of(page, size, sort);
+
         return outRepo.findAll(spec, pageable)
                 .map(this::mapToDto);
     }

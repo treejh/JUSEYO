@@ -25,6 +25,10 @@ public class NotificationEventListener {
     private final NewManagerNotificationService newManagerNotificationService;
     private final NewDashboardNotificationService newDashboardNotificationService;
 
+    private final NewUserNotificationService newUserNotificationService;
+    private final NewUserApprovedNotificationService newUserApprovedNotificationService;
+    private final NewUserRejectedNotificationService newUserRejectedNotificationService;
+
     // 매니저
     // 비품 요청 알림
     @EventListener
@@ -80,6 +84,12 @@ public class NotificationEventListener {
         newManagerRejectedNotificationService.notifyNewManagerRejected(event.getRequesterId(), event.managerName);
     }
 
+    @EventListener
+    // 회원 가입 요청 알림
+    public void handleNewUser(NewUserEvent event) {
+        newUserNotificationService.notifyNewUser(event.requesterManagementDashboardId, event.requesterName);
+    }
+
     // 회원
     // 비품 요청 승인 알림
     @EventListener
@@ -104,6 +114,16 @@ public class NotificationEventListener {
     @EventListener
     public void handleNewChat(NewChatEvent event) {
         newChatNotificationService.notifyNewChat(event.getTargetId(), event.getRoomId(), event.getSenderRole(), event.getSenderName());
+    }
+
+    @EventListener
+    public void handleNewUserApproved(NewUserApprovedEvent event) {
+        newUserApprovedNotificationService.notifyNewUserApproved(event.requesterId, event.userName);
+    }
+
+    @EventListener
+    public void handleNewUserRejected(NewUserRejectedEvent event) {
+        newUserRejectedNotificationService.notifyNewUserRejected(event.requesterId, event.userName);
     }
 
     // 추가 이벤트도 여기에 계속 추가하면 됨
