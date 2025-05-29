@@ -238,7 +238,7 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/item/iteminstance"
+              href="/item/iteminstance/manage"
               className={`menu-link ${
                 activeMenu === "iteminstance" ? "active" : ""
               }`}
@@ -336,6 +336,18 @@ export default function Navigation({
       <ul className="menu-list">
         <li className="menu-item">
           <Link
+            href="/item/user"
+            className={`menu-link ${
+              activeMenu === "inventory-view" ? "active" : ""
+            }`}
+            onClick={() => onPageChange?.("inventory-view")}
+          >
+            <span className="menu-icon">🔍</span>
+            <span>비품 조회</span>
+          </Link>
+        </li>
+        <li className="menu-item">
+          <Link
             href="/item/supplyrequest/create"
             className={`menu-link ${activeMenu === "request" ? "active" : ""}`}
             onClick={() => onPageChange?.("request")}
@@ -353,19 +365,19 @@ export default function Navigation({
             onClick={() => onPageChange?.("request-history")}
           >
             <span className="menu-icon">📋</span>
-            <span>요청 내역</span>
+            <span>비품 요청 내역</span>
           </Link>
         </li>
         <li className="menu-item">
           <Link
-            href="/item/user"
+            href="/item/iteminstance"
             className={`menu-link ${
-              activeMenu === "inventory-view" ? "active" : ""
+              activeMenu === "iteminstance" ? "active" : ""
             }`}
-            onClick={() => onPageChange?.("inventory-view")}
+            onClick={() => onPageChange?.("iteminstance")}
           >
-            <span className="menu-icon">🔍</span>
-            <span>비품 조회</span>
+            <span className="menu-icon">🏷️</span>
+            <span>개별자산관리</span>
           </Link>
         </li>
       </ul>
