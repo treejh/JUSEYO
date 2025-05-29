@@ -870,8 +870,28 @@ export default function NotificationsPage() {
                             notification.notificationType === "SUPPLY_REQUEST"
                           ) {
                             router.push("/item/supplyrequest/list/manage");
+                          } else if (
+                            notification.notificationType === "SUPPLY_RETURN"
+                          ) {
+                            router.push("/return");
+                          } else if (
+                            notification.notificationType === "STOCK_SHORTAGE"
+                          ) {
+                            router.push("/item/manage");
+                          } else if (
+                            notification.notificationType === "NEW_USER"
+                          ) {
+                            router.push("/settings/approve");
+                          } else if (
+                            notification.notificationType ===
+                              "SUPPLY_REQUEST_APPROVED" ||
+                            notification.notificationType ===
+                              "SUPPLY_REQUEST_REJECTED" ||
+                            notification.notificationType ===
+                              "SUPPLY_REQUEST_DELAYED"
+                          ) {
+                            router.push("/item/supplyrequest/list/user");
                           }
-                          // 다른 알림 타입에 대한 처리도 여기에 추가할 수 있습니다
                         }}
                       >
                         <div className="flex justify-between items-start">
