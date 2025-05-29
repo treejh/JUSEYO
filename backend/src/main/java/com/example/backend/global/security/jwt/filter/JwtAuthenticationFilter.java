@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -53,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (accessToken == null && refreshToken != null) {
             log.info("refreshToken 검사 filter !  " + refreshToken);
-            validRefreshToken(refreshToken);
+            validRefreshToken(refreshToken, response);
             log.info("refreshToken 33 " + refreshToken);
             if (StringUtils.hasText(refreshToken) && jwtTokenizer.validateRefreshToken(refreshToken)) {
                 try {
@@ -223,7 +224,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    public void validRefreshToken(String refreshToken) {
+    public void validRefreshToken(String refreshToken, HttpServletResponse response) {
         Claims claims = jwtTokenizer.parseRefreshToken(refreshToken);
 
         Long userId = claims.get("userId", Long.class);
@@ -234,8 +235,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.info("확인 22 " + refreshToken);
 
         if (savedRefreshToken == null || !refreshToken.equals(savedRefreshToken)) {
+            deleteCookie("refreshToken",response);
+            deleteCookie("accessToken",response);
             throw new BusinessLogicException(ExceptionCode.INVALID_REFRESH_TOKEN);
         }
+    }
+
+    public void deleteCookie(String name, HttpServletResponse httpServletResponse) {
+        ResponseCookie cookie = ResponseCookie.from(name, null)
+                .path("/")
+                .sameSite("Strict")
+                .secure(true)
+                .httpOnly(true)
+                .maxAge(0)
+                .build();
+
+        httpServletResponse.addHeader("Set-Cookie", cookie.toString());
     }
 
 
