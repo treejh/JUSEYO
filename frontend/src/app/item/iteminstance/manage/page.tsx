@@ -12,7 +12,7 @@ interface ItemInstance {
   outbound: string;
   status: string;
   borrowerName?: string;
-  returnDate?: string;
+  returnDate?: string; // 반납일 필드
   createdAt: string;
 }
 
@@ -34,10 +34,13 @@ export default function ItemInstanceManagePage() {
   const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
 
+  // 로그인 체크
   useEffect(() => {
     if (!isLogin) router.push("/login");
   }, [isLogin, router]);
+  if (!isLogin) return null;
 
+  // 서버에서 페이지 단위로 불러온 뒤, 최신순 정렬
   const loadInstances = async () => {
     setLoading(true);
     setError(null);
@@ -56,7 +59,7 @@ export default function ItemInstanceManagePage() {
       if (!res.ok) throw new Error(res.statusText);
       const data: Page<any> = await res.json();
 
-      const mapped = data.content
+      const mapped: ItemInstance[] = data.content
         .map((r: any) => ({
           id: r.id,
           itemName: r.itemName,
@@ -64,7 +67,6 @@ export default function ItemInstanceManagePage() {
           outbound: r.outbound,
           status: r.status,
           borrowerName: r.borrowerName ?? r.borrower_name,
-          // 반납일: top-level or nested under supplyRequest
           returnDate:
             r.returnDate ??
             r.return_date ??
@@ -87,6 +89,7 @@ export default function ItemInstanceManagePage() {
     }
   };
 
+  // 데이터 로드
   useEffect(() => {
     if (isLogin) loadInstances();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -136,7 +139,7 @@ export default function ItemInstanceManagePage() {
 
       {loading ? (
         <div className="flex justify-center p-12">
-          <div className="animate-spin h-12 w-12 border-b-2 border-blue-500 rounded-full"></div>
+          <div className="animate-spin h-12 w-12 border-b-2 border-blue-500 rounded-full" />
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow overflow-hidden">
@@ -151,7 +154,7 @@ export default function ItemInstanceManagePage() {
                     "출고 유형",
                     "상태",
                     "대여자",
-                    "반납일",
+                    "반납일", // 수량 헤더 제거
                     "생성일",
                   ].map((h) => (
                     <th
