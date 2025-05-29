@@ -261,7 +261,7 @@ const ChatPage = () => {
 
       {/* 모달 */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-gray-500/70 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative animate-fade-in">
             {/* 닫기 버튼 */}
             <button

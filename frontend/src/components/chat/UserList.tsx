@@ -204,28 +204,25 @@ const UserList: React.FC<Props> = ({
 
       {/* 채팅방 생성 UI */}
       {showCreateUI && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-          style={{ zIndex: 1000 }}
-        >
-          <div className="bg-white p-6 rounded shadow-lg w-96">
-            <h3 className="text-lg font-bold mb-2">채팅방 생성</h3>
-            <p className="text-sm mb-2">
+        <div className="fixed inset-0 bg-gray-500/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative animate-fade-in">
+            <h3 className="text-2xl font-bold mb-6 text-blue-700 text-center tracking-tight">1:1 채팅방 생성</h3>
+            <p className="text-base font-semibold text-gray-600 mb-6">
               선택된 유저: <strong>{selectedUserName}</strong>
             </p>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-3">
               <button
-                className="bg-gray-500 text-white px-4 py-2 rounded"
-                onClick={() => setShowCreateUI(false)} // 창 닫기
+                onClick={() => setShowCreateUI(false)}
+                className="px-5 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
               >
                 취소
               </button>
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded"
                 onClick={async () => {
-                  await createChatRoom(); // 채팅방 생성
-                  window.location.reload(); // 새로고침
+                  await createChatRoom();
+                  window.location.reload();
                 }}
+                className="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow"
               >
                 생성
               </button>
