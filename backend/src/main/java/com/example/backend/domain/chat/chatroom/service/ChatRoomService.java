@@ -166,7 +166,7 @@ public class ChatRoomService {
     public Page<ChatRoom> getChatRoomList(ChatRoomType chatRoomType, Pageable pageable) {
         User user = userService.findUserByToken();
 
-        return chatRoomRepository.findRoomsByUserAndRoomTypeOrderByLatestMessage(
+        return chatRoomRepository.findRoomsByUserAndRoomTypeOrderByCreatorFirstAndLatestMessage(
                 user,
                 chatRoomType,
                 List.of(ChatStatus.ENTER, ChatStatus.CREATE),
