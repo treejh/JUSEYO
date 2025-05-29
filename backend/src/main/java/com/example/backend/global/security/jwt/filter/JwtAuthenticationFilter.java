@@ -196,6 +196,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Long userId = claims.get("userId", Long.class);
         String name = claims.get("username", String.class);
         List<String> roles = claims.get("roles", List.class);
+        redisService.deleteRefreshToken(userId);
 
         long maxAgeAccessInSeconds = jwtTokenizer.accessTokenExpirationMinutes / 1000;
         long maxAgeRefreshInSeconds = jwtTokenizer.refreshTokenExpirationMinutes / 1000;
