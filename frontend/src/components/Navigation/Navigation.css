@@ -405,4 +405,66 @@
     white-space: nowrap;
     margin-left: 10px;
     z-index: 100;
+}
+
+.menu-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    background-color: #f3f4f6;
+    color: #9ca3af;
+}
+
+.menu-link.disabled:hover {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+}
+
+.menu-link.disabled .menu-icon {
+    opacity: 0.5;
+}
+
+/* 드롭다운 메뉴 스타일 */
+.submenu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    margin-top: 0.25rem;
+}
+
+.submenu-list .menu-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    margin-bottom: 0.25rem;
+}
+
+.submenu-list .menu-link:last-child {
+    margin-bottom: 0;
+}
+
+.submenu-list .menu-link:hover {
+    background-color: #ffffff;
+}
+
+.submenu-list .menu-link.active {
+    background-color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.submenu-list .menu-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 0.75rem;
+}
+
+/* 사이드바가 접혔을 때 드롭다운 메뉴 스타일 */
+.sidebar-collapsed .submenu-list {
+    display: none;
 } 
