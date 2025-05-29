@@ -46,8 +46,8 @@ export function useLoginUser() {
 
   const [isLoginUserPending, setLoginUserPending] = useState(true);
   const [loginUser, _setLoginUser] = useState<User>(() => {
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('loginUser');
+    if (typeof window !== "undefined") {
+      const savedUser = localStorage.getItem("loginUser");
       if (savedUser) {
         return JSON.parse(savedUser);
       }
@@ -57,13 +57,13 @@ export function useLoginUser() {
 
   const removeLoginUser = () => {
     _setLoginUser(createEmptyUser());
-    localStorage.removeItem('loginUser');
+    localStorage.removeItem("loginUser");
     setLoginUserPending(false);
   };
 
   const setLoginUser = (user: User) => {
     _setLoginUser(user);
-    localStorage.setItem('loginUser', JSON.stringify(user));
+    localStorage.setItem("loginUser", JSON.stringify(user));
     setLoginUserPending(false);
   };
 
@@ -93,7 +93,7 @@ export function useLoginUser() {
     isLoginUserPending: isLoginUserPending,
     setNoLoginUser: setNoLoginUser,
     isLogin,
-
+    removeLoginUser,
     logout,
     logoutAndHome,
   };
