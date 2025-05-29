@@ -5,11 +5,8 @@ import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useNotificationStore } from "@/stores/notifications";
-<<<<<<< HEAD
 import { useCustomToast } from "@/utils/toast";
-=======
 import { useRouter } from "next/navigation";
->>>>>>> 863c42ab666b656ee18dc2d783e3b294b8d41e99
 
 type NotificationType =
   | "SUPPLY_REQUEST"
@@ -536,8 +533,8 @@ export default function NotificationsPage() {
 
       if (!response.ok) {
         throw new Error("알림 상태 변경에 실패했습니다.");
-        toast.error("알림 상태 변경에 실패했습니다.");    
-      } 
+        toast.error("알림 상태 변경에 실패했습니다.");
+      }
       toast.success("모든 알림을 읽음 처리했습니다.");
 
       // 알림 스토어의 상태도 업데이트
