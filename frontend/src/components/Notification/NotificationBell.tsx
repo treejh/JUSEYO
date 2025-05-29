@@ -307,6 +307,11 @@ export function NotificationBell() {
   const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
   const router = useRouter();
 
+  // 스토어 상태 변경 감지
+  useEffect(() => {
+    console.log("NotificationBell - 스토어 상태 변경:", notifications);
+  }, [notifications]);
+
   // BroadcastChannel 설정
   useEffect(() => {
     const channel = new BroadcastChannel("notifications");
@@ -504,7 +509,15 @@ export function NotificationBell() {
                     return (
                       <div
                         key={notification.id}
-                        className="p-4 hover:bg-gray-50 transition-all duration-200"
+                        className="p-4 hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+                        onClick={() => {
+                          if (
+                            notification.notificationType === "SUPPLY_REQUEST"
+                          ) {
+                            router.push("/item/supplyrequest/list/manage");
+                          }
+                          // 다른 알림 타입에 대한 처리도 여기에 추가할 수 있습니다
+                        }}
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex-1 min-w-0">

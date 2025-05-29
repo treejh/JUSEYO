@@ -136,14 +136,23 @@ export default function ClientLayout({
                 );
 
                 // 알림 스토어에 추가
-                useNotificationStore.getState().addNotification({
+                const store = useNotificationStore.getState();
+                console.log("현재 스토어 상태:", store.notifications);
+
+                store.addNotification({
                   id: Number(parsed.id),
                   message: parsed.message,
                   notificationType: parsed.notificationType,
                   createdAt: parsed.createdAt,
                   readStatus: false,
                 });
+
+                console.log(
+                  "스토어 업데이트 후 상태:",
+                  useNotificationStore.getState().notifications
+                );
               } catch (e) {
+                console.error("알림 처리 중 오류:", e);
                 console.log(`💬 [message] 텍스트 메시지: ${event.data}`);
               }
             });
