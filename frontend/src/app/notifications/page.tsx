@@ -5,6 +5,8 @@ import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useNotificationStore } from "@/stores/notifications";
+import { useCustomToast } from "@/utils/toast";
+import { useRouter } from "next/navigation";
 
 type NotificationType =
   | "SUPPLY_REQUEST"
@@ -282,6 +284,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
 
 export default function NotificationsPage() {
   const { loginUser } = useGlobalLoginUser();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -298,6 +301,7 @@ export default function NotificationsPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const pageSize = 10;
+  const toast = useCustomToast();
 
   // 유저와 매니저에 따른 주요 알림 타입 정의
   const PRIMARY_NOTIFICATION_TYPES =
@@ -463,6 +467,7 @@ export default function NotificationsPage() {
       if (!response.ok) {
         throw new Error("알림 삭제에 실패했습니다.");
       }
+      toast.success("알림을 삭제했습니다.");
 
       fetchNotifications();
     } catch (err) {
@@ -487,6 +492,7 @@ export default function NotificationsPage() {
       await Promise.all(deletePromises);
       setSelectedNotifications([]);
       fetchNotifications();
+      toast.success("알림을 삭제했습니다.");
     } catch (err) {
       setError("알림 삭제 중 오류가 발생했습니다.");
     }
@@ -505,11 +511,13 @@ export default function NotificationsPage() {
       if (!response.ok) {
         throw new Error("읽은 알림 삭제에 실패했습니다.");
       }
+      toast.success("읽은 알림을 모두 삭제했습니다.");
 
       setShowDeleteConfirm(false);
       fetchNotifications();
     } catch (err) {
       setError("읽은 알림 삭제 중 오류가 발생했습니다.");
+      toast.error("읽은 알림 삭제 중 오류가 발생했습니다.");
     }
   };
 
@@ -525,7 +533,9 @@ export default function NotificationsPage() {
 
       if (!response.ok) {
         throw new Error("알림 상태 변경에 실패했습니다.");
+        toast.error("알림 상태 변경에 실패했습니다.");
       }
+      toast.success("모든 알림을 읽음 처리했습니다.");
 
       // 알림 스토어의 상태도 업데이트
       useNotificationStore.getState().markAllAsRead();
@@ -592,8 +602,8 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 pt-12">
+      <div className="max-w-4xl mx-auto px-4 pb-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">알림 목록</h1>
           <div className="flex gap-2">
@@ -837,14 +847,13 @@ export default function NotificationsPage() {
                 .map((notification) => (
                   <div
                     key={notification.id}
-                    className={`bg-white rounded-lg shadow p-4 cursor-pointer ${
+                    className={`bg-white rounded-lg shadow p-4 ${
                       !notification.readStatus
                         ? "border-l-4 border-blue-500"
                         : ""
                     }`}
-                    onClick={() => handleCheckboxChange(notification.id)}
                   >
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-3">
                       <input
                         type="checkbox"
                         checked={selectedNotifications.includes(
@@ -854,7 +863,37 @@ export default function NotificationsPage() {
                         className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                         onClick={(e) => e.stopPropagation()}
                       />
-                      <div className="flex-1">
+                      <div
+                        className="flex-1 min-w-0 cursor-pointer"
+                        onClick={() => {
+                          if (
+                            notification.notificationType === "SUPPLY_REQUEST"
+                          ) {
+                            router.push("/item/supplyrequest/list/manage");
+                          } else if (
+                            notification.notificationType === "SUPPLY_RETURN"
+                          ) {
+                            router.push("/return");
+                          } else if (
+                            notification.notificationType === "STOCK_SHORTAGE"
+                          ) {
+                            router.push("/item/manage");
+                          } else if (
+                            notification.notificationType === "NEW_USER"
+                          ) {
+                            router.push("/settings/approve");
+                          } else if (
+                            notification.notificationType ===
+                              "SUPPLY_REQUEST_APPROVED" ||
+                            notification.notificationType ===
+                              "SUPPLY_REQUEST_REJECTED" ||
+                            notification.notificationType ===
+                              "SUPPLY_REQUEST_DELAYED"
+                          ) {
+                            router.push("/item/supplyrequest/list/user");
+                          }
+                        }}
+                      >
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="flex items-center gap-2 mb-1">

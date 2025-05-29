@@ -110,7 +110,7 @@ public class NotificationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
-        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L);
+        SseEmitter emitter = new SseEmitter(5 * 60 * 1000L);
         emitterRepository.save(userId, emitter);
 
         emitter.onCompletion(() -> emitterRepository.delete(userId));

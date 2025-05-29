@@ -372,7 +372,14 @@ const ChatRoomList: React.FC<Props> = ({
     }
   }, [searchQuery, chatRooms, roomType, opponentInfo]);
 
-  if (loading) return <p>로딩 중...</p>;
+  if (loading) return (
+    <div className="h-full bg-white rounded-lg shadow-md p-4 flex items-center justify-center">
+      <div className="flex flex-col items-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+        <p className="text-gray-600">채팅방 목록을 불러오는 중...</p>
+      </div>
+    </div>
+  );
   if (error) return <p>{error}</p>;
 
   return (

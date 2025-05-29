@@ -504,7 +504,35 @@ export function NotificationBell() {
                     return (
                       <div
                         key={notification.id}
-                        className="p-4 hover:bg-gray-50 transition-all duration-200"
+                        className="p-4 hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+                        onClick={() => {
+                          if (
+                            notification.notificationType === "SUPPLY_REQUEST"
+                          ) {
+                            router.push("/item/supplyrequest/list/manage");
+                          } else if (
+                            notification.notificationType === "SUPPLY_RETURN"
+                          ) {
+                            router.push("/return");
+                          } else if (
+                            notification.notificationType === "STOCK_SHORTAGE"
+                          ) {
+                            router.push("/item/manage");
+                          } else if (
+                            notification.notificationType === "NEW_USER"
+                          ) {
+                            router.push("/settings/approve");
+                          } else if (
+                            notification.notificationType ===
+                              "SUPPLY_REQUEST_APPROVED" ||
+                            notification.notificationType ===
+                              "SUPPLY_REQUEST_REJECTED" ||
+                            notification.notificationType ===
+                              "SUPPLY_REQUEST_DELAYED"
+                          ) {
+                            router.push("/item/supplyrequest/list/user");
+                          }
+                        }}
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex-1 min-w-0">

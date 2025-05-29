@@ -11,7 +11,7 @@ public class SupplyRequestStrategy implements NotificationStrategy {
         }
         SupplyRequestContext supplyContext = (SupplyRequestContext) context;
 
-        return "📦 비품 요청: " + supplyContext.getRequesterName() + "님이 " +
+        return "📦 " + supplyContext.getRequesterName() + "님이 " +
                 supplyContext.getItemName() + " " + supplyContext.getRequestQuantity() + "개을(를) 요청했습니다.";
     }
 
