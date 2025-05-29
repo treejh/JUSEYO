@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useNotificationStore } from "@/stores/notifications";
 import { useCustomToast } from "@/utils/toast";
+import { useRouter } from "next/navigation";
 
 type NotificationType =
   | "SUPPLY_REQUEST"
@@ -283,6 +284,7 @@ const NOTIFICATION_TYPE_LABELS: Record<
 
 export default function NotificationsPage() {
   const { loginUser } = useGlobalLoginUser();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -531,8 +533,8 @@ export default function NotificationsPage() {
 
       if (!response.ok) {
         throw new Error("알림 상태 변경에 실패했습니다.");
-        toast.error("알림 상태 변경에 실패했습니다.");    
-      } 
+        toast.error("알림 상태 변경에 실패했습니다.");
+      }
       toast.success("모든 알림을 읽음 처리했습니다.");
 
       // 알림 스토어의 상태도 업데이트
@@ -845,14 +847,13 @@ export default function NotificationsPage() {
                 .map((notification) => (
                   <div
                     key={notification.id}
-                    className={`bg-white rounded-lg shadow p-4 cursor-pointer ${
+                    className={`bg-white rounded-lg shadow p-4 ${
                       !notification.readStatus
                         ? "border-l-4 border-blue-500"
                         : ""
                     }`}
-                    onClick={() => handleCheckboxChange(notification.id)}
                   >
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-3">
                       <input
                         type="checkbox"
                         checked={selectedNotifications.includes(
@@ -862,7 +863,17 @@ export default function NotificationsPage() {
                         className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                         onClick={(e) => e.stopPropagation()}
                       />
-                      <div className="flex-1">
+                      <div
+                        className="flex-1 min-w-0 cursor-pointer"
+                        onClick={() => {
+                          if (
+                            notification.notificationType === "SUPPLY_REQUEST"
+                          ) {
+                            router.push("/item/supplyrequest/list/manage");
+                          }
+                          // 다른 알림 타입에 대한 처리도 여기에 추가할 수 있습니다
+                        }}
+                      >
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
