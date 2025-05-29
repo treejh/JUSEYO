@@ -6,11 +6,12 @@ import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { useCustomToast } from "@/utils/toast";
 
-// 비품 아이템 타입에 반환 요구 여부 필드 추가
+// 비품 아이템 타입: 이용 가능 수량 필드 추가
 interface Item {
   id: number;
   name: string;
   isReturnRequired: boolean;
+  availableQuantity: number;
 }
 
 export default function SupplyRequestItemCreatePage() {
@@ -19,17 +20,14 @@ export default function SupplyRequestItemCreatePage() {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const { loginUser, isLogin } = useGlobalLoginUser();
   const toast = useCustomToast();
-  // URL 파라미터에서 넘어온 item id
   const prefillId = params.id ? Number(params.id) : null;
 
-  // 로그인 보장
   useEffect(() => {
     if (!isLogin) router.push("/login");
   }, [isLogin, router]);
   if (!isLogin || !loginUser) return null;
   const user = loginUser as any;
 
-  // 상태
   const [items, setItems] = useState<Item[]>([]);
   const [search, setSearch] = useState("");
   const [filtered, setFiltered] = useState<Item[]>([]);
@@ -54,7 +52,7 @@ export default function SupplyRequestItemCreatePage() {
         const list = Array.isArray(data) ? data : data.content || [];
         setItems(list);
 
-        // URL 파라미터에 prefillId 있으면, 해당 아이템을 selected 상태로
+        // prefill
         if (prefillId != null) {
           const match = list.find((it) => it.id === prefillId);
           if (match) {
@@ -93,11 +91,21 @@ export default function SupplyRequestItemCreatePage() {
   // 4) 제출
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedItem) return toast.error("항목을 선택해주세요.");  
-    if (quantity < 1) return toast.error("수량을 확인해주세요.");
-    if (!purpose.trim()) return toast.error("목적을 입력해주세요.");
+    if (!selectedItem) {
+      return toast.error("항목을 선택해주세요.");
+    }
+    // **이용 가능 수량 검증**
+    if (quantity > selectedItem.availableQuantity) {
+      return toast.error("이용 가능한 수량보다 높습니다.");
+    }
+    if (quantity < 1) {
+      return toast.error("수량을 확인해주세요.");
+    }
+    if (!purpose.trim()) {
+      return toast.error("목적을 입력해주세요.");
+    }
     if (rental && !selectedItem.isReturnRequired) {
-      return toast.error("대여 비품이 아닙니다");
+      return toast.error("대여 비품이 아닙니다.");
     }
 
     const payload = {
@@ -167,7 +175,7 @@ export default function SupplyRequestItemCreatePage() {
                       setShowDropdown(false);
                     }}
                   >
-                    {item.name}
+                    {item.name} (남은: {item.availableQuantity})
                   </li>
                 ))}
               </ul>
@@ -177,11 +185,14 @@ export default function SupplyRequestItemCreatePage() {
           {/* 수량 / 대여 여부 */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block mb-1">수량</label>
+              <label className="block mb-1">
+                수량 (최대 {selectedItem?.availableQuantity ?? "-"})
+              </label>
               <input
                 type="number"
                 className="w-full px-3 py-2 border rounded"
                 min={1}
+                max={selectedItem?.availableQuantity}
                 value={quantity}
                 onChange={(e) => setQuantity(+e.target.value)}
               />
