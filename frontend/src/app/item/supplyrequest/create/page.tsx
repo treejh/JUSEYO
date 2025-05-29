@@ -6,17 +6,19 @@ import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { useCustomToast } from "@/utils/toast";
 
-// 비품 아이템 타입에 반환 요구 여부 필드 추가
+// 비품 아이템 타입에 이용 가능 수량 필드 추가
 interface Item {
   id: number;
   name: string;
   isReturnRequired: boolean;
+  availableQuantity: number;
 }
 
 export default function SupplyRequestCreatePage() {
   const router = useRouter();
   const { loginUser, isLogin } = useGlobalLoginUser();
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL!;
+  const toast = useCustomToast();
 
   // 로그인 보장
   useEffect(() => {
@@ -41,17 +43,19 @@ export default function SupplyRequestCreatePage() {
     new Date().toISOString().slice(0, 10)
   );
   const [purpose, setPurpose] = useState("");
-  const toast = useCustomToast();
 
   // 전체 ACTIVE 품목 로드
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/items/active`, { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setItems(data.content || data))
+      .then((data: { content?: Item[] } | Item[]) => {
+        const list = Array.isArray(data) ? data : data.content || [];
+        setItems(list);
+      })
       .catch(() => setItems([]));
   }, [API_BASE]);
 
-  // 검색어 변경 시 필터링 (대여 여부 무관)
+  // 검색어 변경 시 필터링
   useEffect(() => {
     const f = items.filter((item) =>
       item.name.toLowerCase().includes(search.toLowerCase())
@@ -76,13 +80,21 @@ export default function SupplyRequestCreatePage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedItem) return toast.error("항목을 선택해주세요.");
-    if (quantity < 1) return toast.error("수량을 확인해주세요.");
-    if (!purpose.trim()) return toast.error("목적을 입력해주세요.");
-
-    // 대여 여부에 따른 필수 반환 요구 체크
+    if (!selectedItem) {
+      return toast.error("항목을 선택해주세요.");
+    }
+    // 이용 가능 수량 검증
+    if (quantity > selectedItem.availableQuantity) {
+      return toast.error("이용 가능한 수량보다 높습니다.");
+    }
+    if (quantity < 1) {
+      return toast.error("수량을 확인해주세요.");
+    }
+    if (!purpose.trim()) {
+      return toast.error("목적을 입력해주세요.");
+    }
     if (rental && !selectedItem.isReturnRequired) {
-      return toast.error("대여 비품이 아닙니다");
+      return toast.error("대여 비품이 아닙니다.");
     }
 
     const payload = {
@@ -109,123 +121,205 @@ export default function SupplyRequestCreatePage() {
   };
 
   return (
-    <main className="min-h-screen p-6 bg-gray-100">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow">
-        <div className="flex justify-between mb-6">
-          <h1 className="text-2xl font-bold">새 비품 요청</h1>
-          <Link href="/item/supplyrequest/list/user" className="text-blue-500">
-            ← 목록
-          </Link>
+    <main className="min-h-screen py-10 px-4 bg-gray-50">
+      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm">
+        {/* 헤더 섹션 */}
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">새 비품 요청</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                필요한 비품을 요청해주세요.
+              </p>
+            </div>
+            <Link
+              href="/item/supplyrequest/list/user"
+              className="inline-flex items-center px-4 py-2 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            >
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              목록으로
+            </Link>
+          </div>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block mb-1">요청자</label>
-            <input
-              className="w-full px-3 py-2 border rounded"
-              value={user.name}
-              disabled
-            />
-          </div>
-          <div ref={wrapperRef} className="relative">
-            <label className="block mb-1">품목 검색</label>
-            <input
-              className="w-full px-3 py-2 border rounded"
-              placeholder="검색어를 입력하세요"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setSelectedItem(null);
-              }}
-            />
-            {showDropdown && (
-              <ul className="absolute top-full w-full bg-white border rounded mt-1 max-h-40 overflow-auto z-10">
-                {filtered.map((item) => (
-                  <li
-                    key={item.id}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => {
-                      setSelectedItem(item);
-                      setSearch(item.name);
-                      setShowDropdown(false);
-                    }}
-                  >
-                    {item.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div className="grid grid-cols-3 gap-4">
+
+        {/* 폼 섹션 */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            {/* 요청자 */}
             <div>
-              <label className="block mb-1">수량</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                요청자
+              </label>
               <input
-                type="number"
-                className="w-full px-3 py-2 border rounded"
-                min={1}
-                value={quantity}
-                onChange={(e) => setQuantity(+e.target.value)}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500"
+                value={user.name}
+                disabled
               />
             </div>
-            <div className="col-span-2">
-              <label className="block mb-1">대여 여부</label>
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    checked={rental}
-                    onChange={() => setRental(true)}
-                    className="mr-2"
-                  />
-                  예
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    checked={!rental}
-                    onChange={() => setRental(false)}
-                    className="mr-2"
-                  />
-                  아니요
-                </label>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block mb-1">사용 일자</label>
-              <input
-                type="date"
-                className="w-full px-3 py-2 border rounded"
-                value={useDate}
-                onChange={(e) => setUseDate(e.target.value)}
-              />
-            </div>
-            {rental && (
-              <div>
-                <label className="block mb-1">반납 일자</label>
+
+            {/* 품목 검색 */}
+            <div ref={wrapperRef} className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                품목 검색
+              </label>
+              <div className="relative">
                 <input
-                  type="date"
-                  className="w-full px-3 py-2 border rounded"
-                  value={returnDate}
-                  onChange={(e) => setReturnDate(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="검색어를 입력하세요"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setSelectedItem(null);
+                  }}
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg
+                    className="h-5 w-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              {showDropdown && (
+                <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto">
+                  {filtered.map((item) => (
+                    <li
+                      key={item.id}
+                      className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setSearch(item.name);
+                        setShowDropdown(false);
+                      }}
+                    >
+                      <div className="font-medium text-gray-900">
+                        {item.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        이용 가능: {item.availableQuantity}개
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* 수량 / 대여 여부 */}
+            <div className="grid grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  수량{" "}
+                  <span className="text-sm text-gray-500">
+                    (최대 {selectedItem?.availableQuantity ?? "-"})
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  min={1}
+                  max={selectedItem?.availableQuantity}
+                  value={quantity}
+                  onChange={(e) => setQuantity(+e.target.value)}
                 />
               </div>
-            )}
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  대여 여부
+                </label>
+                <div className="flex gap-6">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      checked={rental}
+                      onChange={() => setRental(true)}
+                      className="w-4 h-4 text-[#0047AB] border-gray-300 focus:ring-[#0047AB]"
+                    />
+                    <span className="ml-2 text-gray-700">예</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      checked={!rental}
+                      onChange={() => setRental(false)}
+                      className="w-4 h-4 text-[#0047AB] border-gray-300 focus:ring-[#0047AB]"
+                    />
+                    <span className="ml-2 text-gray-700">아니요</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* 날짜 선택 */}
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  사용 일자
+                </label>
+                <input
+                  type="date"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={useDate}
+                  onChange={(e) => setUseDate(e.target.value)}
+                />
+              </div>
+              {rental && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    반납 일자
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={returnDate}
+                    onChange={(e) => setReturnDate(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 요청 사유 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                요청 사유
+              </label>
+              <textarea
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-32 resize-none"
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
+                placeholder="요청 사유를 입력해주세요"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block mb-1">요청 사유</label>
-            <textarea
-              className="w-full px-3 py-2 border rounded h-24"
-              value={purpose}
-              onChange={(e) => setPurpose(e.target.value)}
-            />
+
+          {/* 제출 버튼 */}
+          <div className="pt-4">
+            <button
+              type="submit"
+              className="w-full px-4 py-3 bg-[#0047AB] hover:bg-[#003d91] text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0047AB]"
+            >
+              요청하기
+            </button>
           </div>
-          <button
-            type="submit"
-            className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            요청하기
-          </button>
         </form>
       </div>
     </main>
