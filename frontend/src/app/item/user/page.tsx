@@ -90,67 +90,93 @@ export default function AllItemsPage() {
   );
 
   return (
-    <div className="p-8 bg-white min-h-screen">
+    <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-8">비품 조회</h1>
-
-        <div className="mb-6 relative">
-          <input
-            type="text"
-            placeholder="비품을 검색해 주세요"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setPage(0);
-            }}
-            className="w-full px-4 py-3 border border-[#2563eb] rounded-sm focus:outline-none focus:border-[#2563eb]"
-          />
-          <button
-            onClick={() => setPage(0)}
-            className="absolute right-0 top-0 h-full px-6 bg-[#2563eb] text-white hover:bg-blue-700 transition-colors"
-          >
-            검색
-          </button>
+        {/* 헤더 섹션 */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">비품 조회</h1>
+          <p className="mt-1 text-gray-500">
+            필요한 비품을 검색하고 요청할 수 있습니다.
+          </p>
         </div>
 
-        <div className="flex gap-6 mb-8 border-b">
-          <button
-            onClick={() => {
-              setSelectedCategory("전체");
-              setPage(0);
-            }}
-            className={`px-2 py-3 font-medium ${
-              selectedCategory === "전체"
-                ? "text-[#2563eb] border-b-2 border-[#2563eb]"
-                : "text-gray-600 hover:text-[#2563eb]"
-            }`}
-          >
-            전체
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setSelectedCategory(cat.name);
+        {/* 검색 섹션 */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="h-5 w-5 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="비품을 검색해 주세요"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
                 setPage(0);
               }}
-              className={`px-2 py-3 font-medium ${
-                selectedCategory === cat.name
-                  ? "text-[#2563eb] border-b-2 border-[#2563eb]"
-                  : "text-gray-600 hover:text-[#2563eb]"
+              className="w-full pl-10 pr-20 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-[#0047AB] transition-colors"
+            />
+            <button
+              onClick={() => setPage(0)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-[#0047AB] text-white rounded-lg hover:bg-[#003d91] transition-colors"
+            >
+              검색
+            </button>
+          </div>
+
+          {/* 카테고리 탭 */}
+          <div className="flex gap-1 mt-6 border-b border-gray-100">
+            <button
+              onClick={() => {
+                setSelectedCategory("전체");
+                setPage(0);
+              }}
+              className={`px-4 py-3 font-medium rounded-t-lg transition-colors ${
+                selectedCategory === "전체"
+                  ? "text-[#0047AB] border-b-2 border-[#0047AB] bg-blue-50"
+                  : "text-gray-600 hover:bg-gray-50"
               }`}
             >
-              {cat.name}
+              전체
             </button>
-          ))}
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setSelectedCategory(cat.name);
+                  setPage(0);
+                }}
+                className={`px-4 py-3 font-medium rounded-t-lg transition-colors ${
+                  selectedCategory === cat.name
+                    ? "text-[#0047AB] border-b-2 border-[#0047AB] bg-blue-50"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* 로딩 상태 */}
         {loading ? (
           <div className="flex justify-center p-12">
-            <div className="animate-spin h-8 w-8 border-2 border-[#2563eb] rounded-full border-t-transparent" />
+            <div className="animate-spin h-8 w-8 border-2 border-[#0047AB] rounded-full border-t-transparent" />
           </div>
         ) : (
-          <div className="grid grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {filteredItems.map((item) => (
               <div key={item.id} className="group cursor-pointer">
                 <div
