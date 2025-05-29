@@ -490,6 +490,7 @@ export default function NotificationsPage() {
       await Promise.all(deletePromises);
       setSelectedNotifications([]);
       fetchNotifications();
+      toast.success("알림을 삭제했습니다.");
     } catch (err) {
       setError("알림 삭제 중 오류가 발생했습니다.");
     }
