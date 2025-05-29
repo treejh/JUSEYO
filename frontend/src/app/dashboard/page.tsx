@@ -104,6 +104,34 @@ interface RentalItem {
   rentStatus: "RENTING" | "OVERDUE" | "RETURNED";
 }
 
+interface Notification {
+  id: number;
+  message: string;
+  notificationType:
+    | "SUPPLY_REQUEST"
+    | "SUPPLY_RETURN"
+    | "STOCK_SHORTAGE"
+    | "RETURN_DUE_DATE_EXCEEDED"
+    | "NOT_RETURNED_YET"
+    | "NEW_MANAGEMENT_DASHBOARD"
+    | "ADMIN_APPROVAL_ALERT"
+    | "ADMIN_REJECTION_ALERT"
+    | "NEW_MANAGER"
+    | "MANAGER_APPROVAL_ALERT"
+    | "MANAGER_REJECTION_ALERT"
+    | "NEW_USER"
+    | "SUPPLY_REQUEST_APPROVED"
+    | "SUPPLY_REQUEST_REJECTED"
+    | "SUPPLY_REQUEST_DELAYED"
+    | "RETURN_DUE_SOON"
+    | "NEW_CHAT"
+    | "SUPPLY_RETURN_APPROVED"
+    | "NEW_USER_APPROVED"
+    | "NEW_USER_REJECTED";
+  createdAt: string;
+  readStatus: boolean;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { loginUser, isLogin } = useGlobalLoginUser();
@@ -164,9 +192,11 @@ export default function DashboardPage() {
     REQUESTED: 0,
     APPROVED: 0,
     REJECTED: 0,
-    RETURN_PENDING: 0, // 반납 대기
-    RETURNED: 0, // 반납 완료
+    RETURN_PENDING: 0,
+    RETURNED: 0,
   });
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isNotificationsLoading, setIsNotificationsLoading] = useState(true);
 
   // 사용 가능한 년도 목록 계산
   const availableYears = useMemo(() => {
@@ -489,6 +519,161 @@ export default function DashboardPage() {
       default:
         return "알 수 없음";
     }
+  };
+
+  // 알림 데이터 가져오기
+  const fetchNotifications = async () => {
+    try {
+      setIsNotificationsLoading(true);
+      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+      if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
+
+      const response = await fetch(
+        `${API_URL}/api/v1/notifications?page=0&size=3`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("알림을 불러오는데 실패했습니다.");
+      }
+
+      const data = await response.json();
+      console.log("알림 데이터:", data); // 디버깅을 위한 로그 추가
+
+      if (data.notifications && Array.isArray(data.notifications)) {
+        setNotifications(data.notifications);
+      } else {
+        console.error("알림 데이터 형식이 올바르지 않습니다:", data);
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error("알림 로딩 에러:", error);
+      setNotifications([]);
+    } finally {
+      setIsNotificationsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isLogin) {
+      fetchNotifications();
+    }
+  }, [isLogin]);
+
+  // 알림 타입에 따른 스타일과 텍스트
+  const getNotificationStyle = (type: Notification["notificationType"]) => {
+    switch (type) {
+      case "SUPPLY_REQUEST_APPROVED":
+        return {
+          bgColor: "bg-green-50",
+          dotColor: "bg-green-500",
+          title: "비품 요청 승인",
+          borderColor: "border-green-200",
+          hoverBg: "hover:bg-green-100",
+        };
+      case "SUPPLY_REQUEST_REJECTED":
+        return {
+          bgColor: "bg-red-50",
+          dotColor: "bg-red-500",
+          title: "비품 요청 반려",
+          borderColor: "border-red-200",
+          hoverBg: "hover:bg-red-100",
+        };
+      case "STOCK_SHORTAGE":
+        return {
+          bgColor: "bg-red-50",
+          dotColor: "bg-red-500",
+          title: "재고 부족",
+          borderColor: "border-red-200",
+          hoverBg: "hover:bg-red-100",
+        };
+      case "RETURN_DUE_SOON":
+        return {
+          bgColor: "bg-yellow-50",
+          dotColor: "bg-yellow-500",
+          title: "반납일 임박",
+          borderColor: "border-yellow-200",
+          hoverBg: "hover:bg-yellow-100",
+        };
+      case "RETURN_DUE_DATE_EXCEEDED":
+        return {
+          bgColor: "bg-red-50",
+          dotColor: "bg-red-500",
+          title: "반납일 초과",
+          borderColor: "border-red-200",
+          hoverBg: "hover:bg-red-100",
+        };
+      case "NEW_CHAT":
+        return {
+          bgColor: "bg-green-50",
+          dotColor: "bg-green-500",
+          title: "새로운 채팅",
+          borderColor: "border-green-200",
+          hoverBg: "hover:bg-green-100",
+        };
+      case "SUPPLY_RETURN_APPROVED":
+        return {
+          bgColor: "bg-green-50",
+          dotColor: "bg-green-500",
+          title: "비품 반납 승인",
+          borderColor: "border-green-200",
+          hoverBg: "hover:bg-green-100",
+        };
+      case "SUPPLY_REQUEST_DELAYED":
+        return {
+          bgColor: "bg-yellow-50",
+          dotColor: "bg-yellow-500",
+          title: "비품 요청 처리 지연",
+          borderColor: "border-yellow-200",
+          hoverBg: "hover:bg-yellow-100",
+        };
+      case "NEW_MANAGEMENT_DASHBOARD":
+        return {
+          bgColor: "bg-purple-50",
+          dotColor: "bg-purple-500",
+          title: "관리 대시보드 생성",
+          borderColor: "border-purple-200",
+          hoverBg: "hover:bg-purple-100",
+        };
+      case "NEW_MANAGER":
+        return {
+          bgColor: "bg-indigo-50",
+          dotColor: "bg-indigo-500",
+          title: "매니저 권한 요청",
+          borderColor: "border-indigo-200",
+          hoverBg: "hover:bg-indigo-100",
+        };
+      default:
+        return {
+          bgColor: "bg-gray-50",
+          dotColor: "bg-gray-500",
+          title: "알림",
+          borderColor: "border-gray-200",
+          hoverBg: "hover:bg-gray-100",
+        };
+    }
+  };
+
+  // 상대적 시간 표시 함수
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "방금 전";
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}분 전`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}시간 전`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)}일 전`;
+    return date.toLocaleDateString();
   };
 
   if (isLoading) {
@@ -899,7 +1084,7 @@ export default function DashboardPage() {
           const getEmoji = (itemName: string) => {
             const emojiMap: { [key: string]: string } = {
               용지: "📄",
-              볼펜: "��️",
+              볼펜: "🖋️",
               포스트잇: "📊",
               프린터: "🖨️",
               클립: "🖇️",
@@ -1170,46 +1355,63 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* 알림림 */}
+          {/* 알림 */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4">알림</h2>
             <div className="space-y-4">
-              <div className="flex items-start gap-3 bg-[#E8F5E9] p-3 rounded-lg">
-                <div className="w-3 h-3 rounded-full bg-green-500 mt-1.5"></div>
-                <div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">요청 승인됨</span>
-                    <span className="text-sm text-gray-500">1시간 전</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    모니터 발주대 요청이 승인되었습니다.
-                  </p>
+              {isNotificationsLoading ? (
+                // 로딩 상태 표시
+                Array(3)
+                  .fill(null)
+                  .map((_, index) => (
+                    <div
+                      key={index}
+                      className="animate-pulse flex items-start gap-3 bg-gray-50 p-3 rounded-lg"
+                    >
+                      <div className="w-3 h-3 rounded-full bg-gray-200 mt-1.5"></div>
+                      <div className="flex-1">
+                        <div className="flex justify-between">
+                          <div className="h-4 bg-gray-200 rounded w-24"></div>
+                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        </div>
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mt-2"></div>
+                      </div>
+                    </div>
+                  ))
+              ) : notifications && notifications.length > 0 ? (
+                notifications.map((notification) => {
+                  const style = getNotificationStyle(
+                    notification.notificationType
+                  );
+                  return (
+                    <div
+                      key={notification.id}
+                      className={`flex items-start gap-4 ${style.bgColor} ${style.borderColor} ${style.hoverBg} p-4 rounded-lg border shadow-sm hover:shadow-md transition-all duration-200`}
+                    >
+                      <div
+                        className={`w-4 h-4 rounded-full ${style.dotColor} mt-1.5 flex-shrink-0`}
+                      ></div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-semibold text-gray-900">
+                            {style.title}
+                          </span>
+                          <span className="text-sm font-medium text-gray-500">
+                            {getRelativeTime(notification.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-base text-gray-700 leading-relaxed">
+                          {notification.message}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  <p>새로운 알림이 없습니다.</p>
                 </div>
-              </div>
-              <div className="flex items-start gap-3 bg-[#E3F2FD] p-3 rounded-lg">
-                <div className="w-3 h-3 rounded-full bg-blue-500 mt-1.5"></div>
-                <div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">새 비품 입고</span>
-                    <span className="text-sm text-gray-500">24시간 전</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    자주 요청하시는 A4 용지가 입고되었습니다.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 bg-[#FFEBEE] p-3 rounded-lg">
-                <div className="w-3 h-3 rounded-full bg-red-500 mt-1.5"></div>
-                <div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">요청 거부됨</span>
-                    <span className="text-sm text-gray-500">1일 전</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    투썸 매장스 물품이 예산 초과로 거부되었습니다.
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
