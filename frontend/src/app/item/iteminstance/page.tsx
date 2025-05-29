@@ -107,7 +107,7 @@ export default function ItemInstancePage() {
           개별 자산 관리
         </h1>
         <p className="text-gray-500">
-          내가 대여한 개별 자산 현황을 확인할 수 있습니다.
+          개별 자산 현황을 확인할 수 있습니다.
         </p>
       </div>
 

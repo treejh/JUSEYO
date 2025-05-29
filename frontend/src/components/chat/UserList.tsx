@@ -145,7 +145,14 @@ const UserList: React.FC<Props> = ({
     }
   };
 
-  if (loading) return <p>로딩 중...</p>;
+  if (loading) return (
+    <div className="h-full bg-white rounded-lg shadow-md p-4 flex items-center justify-center">
+      <div className="flex flex-col items-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+        <p className="text-gray-600">사용자 목록을 불러오는 중...</p>
+      </div>
+    </div>
+  );
   if (error) return <p>{error}</p>;
 
   return (
@@ -164,30 +171,27 @@ const UserList: React.FC<Props> = ({
       </div>
 
       {/* 유저 리스트 감싸는 컨테이너에 max-h와 스크롤 추가 */}
-      <div className="max-h-[600px] overflow-y-auto">
+      <div className="max-h-[800px] overflow-y-auto">
         <ul className="divide-y divide-gray-200">
           {filteredUsers.map((user) => (
             <li
               key={user.id}
-              className="flex justify-between items-center py-3 hover:bg-gray-100 cursor-pointer"
+              className="flex justify-between items-center py-3 px-2 hover:bg-gray-50 transition-colors duration-150 ease-in-out rounded-lg"
             >
               {/* 유저 정보 */}
-              <div className="flex flex-col min-w-0 flex-1 truncate">
-                <span className="font-medium text-gray-800" title={user.name}>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="font-medium text-gray-800 mb-0.5">
                   {user.name}
                 </span>
-                <span
-                  className="text-sm text-gray-500 truncate"
-                  title={user.department}
-                >
+                <span className="text-sm text-gray-500">
                   {user.department}
                 </span>
               </div>
 
-              {/* 버튼 영역: 고정 너비와 shrink 방지 */}
+              {/* 버튼 영역 */}
               <div className="flex min-w-[110px] flex-shrink-0 justify-end ml-4">
                 <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                  className="bg-blue-500 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-600 transition-colors duration-150 ease-in-out"
                   onClick={() => handleChatRoomCheck(user.id, user.name)}
                 >
                   채팅방 생성
@@ -200,28 +204,25 @@ const UserList: React.FC<Props> = ({
 
       {/* 채팅방 생성 UI */}
       {showCreateUI && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-          style={{ zIndex: 1000 }}
-        >
-          <div className="bg-white p-6 rounded shadow-lg w-96">
-            <h3 className="text-lg font-bold mb-2">채팅방 생성</h3>
-            <p className="text-sm mb-2">
+        <div className="fixed inset-0 bg-gray-500/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative animate-fade-in">
+            <h3 className="text-2xl font-bold mb-6 text-blue-700 text-center tracking-tight">1:1 채팅방 생성</h3>
+            <p className="text-base font-semibold text-gray-600 mb-6">
               선택된 유저: <strong>{selectedUserName}</strong>
             </p>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-3">
               <button
-                className="bg-gray-500 text-white px-4 py-2 rounded"
-                onClick={() => setShowCreateUI(false)} // 창 닫기
+                onClick={() => setShowCreateUI(false)}
+                className="px-5 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
               >
                 취소
               </button>
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded"
                 onClick={async () => {
-                  await createChatRoom(); // 채팅방 생성
-                  window.location.reload(); // 새로고침
+                  await createChatRoom();
+                  window.location.reload();
                 }}
+                className="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow"
               >
                 생성
               </button>

@@ -27,6 +27,8 @@ export default function Navigation({
     chat: 0,
     alert: 0,
   });
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [isPageManagementOpen, setIsPageManagementOpen] = useState(false);
   const pathname = usePathname();
 
   // 현재 경로에 따라 활성 메뉴 설정
@@ -180,9 +182,7 @@ export default function Navigation({
           <li className="menu-item">
             <Link
               href="/item/user"
-              className={`menu-link ${
-                activeMenu === "inventory" ? "active" : ""
-              }`}
+              className={`menu-link ${activeMenu === "inventory" ? "active" : ""}`}
               onClick={() => onPageChange?.("inventory")}
             >
               <span className="menu-icon">🗂️</span>
@@ -192,9 +192,7 @@ export default function Navigation({
           <li className="menu-item">
             <Link
               href="/item/supplyrequest/list/manage"
-              className={`menu-link ${
-                activeMenu === "supply-request-manage" ? "active" : ""
-              }`}
+              className={`menu-link ${activeMenu === "supply-request-manage" ? "active" : ""}`}
               onClick={() => onPageChange?.("supply-request-manage")}
             >
               <span className="menu-icon">📋</span>
@@ -214,9 +212,7 @@ export default function Navigation({
           <li className="menu-item">
             <Link
               href="/inbound"
-              className={`menu-link ${
-                activeMenu === "inbound" ? "active" : ""
-              }`}
+              className={`menu-link ${activeMenu === "inbound" ? "active" : ""}`}
               onClick={() => onPageChange?.("incoming")}
             >
               <span className="menu-icon">📥</span>
@@ -226,25 +222,11 @@ export default function Navigation({
           <li className="menu-item">
             <Link
               href="/outbound"
-              className={`menu-link ${
-                activeMenu === "outbound" ? "active" : ""
-              }`}
+              className={`menu-link ${activeMenu === "outbound" ? "active" : ""}`}
               onClick={() => onPageChange?.("outgoing")}
             >
               <span className="menu-icon">📤</span>
               <span>출고 관리</span>
-            </Link>
-          </li>
-          <li className="menu-item">
-            <Link
-              href="/item/iteminstance"
-              className={`menu-link ${
-                activeMenu === "iteminstance" ? "active" : ""
-              }`}
-              onClick={() => onPageChange?.("iteminstance")}
-            >
-              <span className="menu-icon">🏷️</span>
-              <span>개별자산관리</span>
             </Link>
           </li>
         </ul>
@@ -254,59 +236,99 @@ export default function Navigation({
         <h3 className="menu-title">관리자 설정</h3>
         <ul className="menu-list">
           <li className="menu-item">
-            <Link
-              href="/page-management"
-              className={`menu-link ${
-                activeMenu === "page-management" ? "active" : ""
+            <button
+              onClick={() => setIsPageManagementOpen(!isPageManagementOpen)}
+              className={`menu-link w-full flex justify-between items-center ${
+                activeMenu === "page-management" || activeMenu === "department" || activeMenu === "category" ? "active" : ""
               }`}
-              onClick={() => onPageChange?.("page-management")}
             >
-              <span className="menu-icon">⚙️</span>
-              <span>페이지 관리</span>
-            </Link>
+              <div className="flex items-center">
+                <span className="menu-icon">⚙️</span>
+                <span>페이지 관리</span>
+              </div>
+              <svg
+                className={`w-4 h-4 transition-transform ${isPageManagementOpen ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {isPageManagementOpen && (
+              <ul className="submenu-list mt-1">
+                <li>
+                  <Link
+                    href="/settings/departments"
+                    className={`menu-link ${activeMenu === "department" ? "active" : ""}`}
+                    onClick={() => onPageChange?.("department")}
+                  >
+                    <span className="menu-icon">🏢</span>
+                    <span>부서 관리</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/settings/categories"
+                    className={`menu-link ${activeMenu === "category" ? "active" : ""}`}
+                    onClick={() => onPageChange?.("category")}
+                  >
+                    <span className="menu-icon">📁</span>
+                    <span>카테고리 관리</span>
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
-          <li className="menu-item submenu-item">
-            <Link
-              href="/item/manage"
-              className={`menu-link ${
-                activeMenu === "item-manage" ? "active" : ""
+          <li className="menu-item">
+            <button
+              onClick={() => setIsInventoryOpen(!isInventoryOpen)}
+              className={`menu-link w-full flex justify-between items-center ${
+                activeMenu === "item-manage" || activeMenu === "iteminstance" ? "active" : ""
               }`}
-              onClick={() => onPageChange?.("item-manage")}
             >
-              <span className="menu-icon">📦</span>
-              <span>비품 관리</span>
-            </Link>
-          </li>
-          <li className="menu-item submenu-item">
-            <Link
-              href="/settings/departments"
-              className={`menu-link ${
-                activeMenu === "department" ? "active" : ""
-              }`}
-              onClick={() => onPageChange?.("department")}
-            >
-              <span className="menu-icon">🏢</span>
-              <span>부서 관리</span>
-            </Link>
-          </li>
-          <li className="menu-item submenu-item">
-            <Link
-              href="/settings/categories"
-              className={`menu-link ${
-                activeMenu === "category" ? "active" : ""
-              }`}
-              onClick={() => onPageChange?.("category")}
-            >
-              <span className="menu-icon">📁</span>
-              <span>카테고리 관리</span>
-            </Link>
+              <div className="flex items-center">
+                <span className="menu-icon">📦</span>
+                <span>비품 관리</span>
+              </div>
+              <svg
+                className={`w-4 h-4 transition-transform ${isInventoryOpen ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {isInventoryOpen && (
+              <ul className="submenu-list mt-1">
+                <li>
+                  <Link
+                    href="/item/manage"
+                    className={`menu-link ${activeMenu === "item-manage" ? "active" : ""}`}
+                    onClick={() => onPageChange?.("item-manage")}
+                  >
+                    <span className="menu-icon">📝</span>
+                    <span>비품 정보 관리</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/item/iteminstance"
+                    className={`menu-link ${activeMenu === "iteminstance" ? "active" : ""}`}
+                    onClick={() => onPageChange?.("iteminstance")}
+                  >
+                    <span className="menu-icon">🏷️</span>
+                    <span>개별 자산 관리</span>
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           <li className="menu-item">
             <Link
               href="/settings/approve"
-              className={`menu-link ${
-                activeMenu === "user-management" ? "active" : ""
-              }`}
+              className={`menu-link ${activeMenu === "user-management" ? "active" : ""}`}
               onClick={() => onPageChange?.("user-management")}
             >
               <span className="menu-icon">👥</span>
