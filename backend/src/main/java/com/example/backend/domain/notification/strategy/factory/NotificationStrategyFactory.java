@@ -31,12 +31,17 @@ public class NotificationStrategyFactory {
         strategyMap.put(NotificationType.MANAGER_REJECTION_ALERT, new NewManagerRejectedStrategy());
         strategyMap.put(NotificationType.NEW_MANAGER, new NewManagerStrategy());
 
+        strategyMap.put(NotificationType.NEW_USER, new NewUserStrategy());
+
         // 회원
         strategyMap.put(NotificationType.RETURN_DUE_SOON, new ReturnDueSoonStrategy());
         strategyMap.put(NotificationType.SUPPLY_REQUEST_APPROVED, new SupplyRequestApprovedStrategy());
         strategyMap.put(NotificationType.SUPPLY_REQUEST_REJECTED, new SupplyRequestRejectedStrategy());
         strategyMap.put(NotificationType.SUPPLY_REQUEST_DELAYED, new SupplyRequestDelayedStrategy());
         strategyMap.put(NotificationType.SUPPLY_RETURN_APPROVED, new SupplyReturnApprovedStrategy());
+        strategyMap.put(NotificationType.NEW_USER_APPROVED, new NewUserApprovedStrategy());
+        strategyMap.put(NotificationType.NEW_USER_REJECTED, new NewUserRejectedStrategy());
+
 
         // 공통
         strategyMap.put(NotificationType.NEW_CHAT, new NewChatStrategy());
