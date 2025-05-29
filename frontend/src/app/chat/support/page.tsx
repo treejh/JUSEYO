@@ -96,7 +96,7 @@ const SupportChatPage = () => {
   };
 
   return (
-    <div className="p-4 h-screen flex flex-col">
+    <div className="h-[95vh] flex flex-col p-4">
       {/* 버튼 영역 */}
       <div className="mb-4">
         <button
@@ -129,7 +129,18 @@ const SupportChatPage = () => {
               onClose={() => setSelectedRoomId(null)}
             />
           ) : (
-            <p className="text-gray-500">채팅방을 선택하세요.</p>
+            <div className="h-full flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-full h-full text-gray-400">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">고객 지원이 필요하신가요?</h3>
+              <p className="text-gray-500 max-w-sm">
+                상단의 '고객센터 채팅 생성' 버튼을 클릭하여<br />
+                새로운 문의를 시작하거나, 기존 문의 내역을 확인해보세요.
+              </p>
+            </div>
           )}
         </div>
       </div>

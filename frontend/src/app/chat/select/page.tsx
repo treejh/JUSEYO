@@ -2,8 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import LoadingScreen from "@/app/components/LoadingScreen";
+import { useState } from "react";
 
 export default function ChatSelectPage() {
+  const [loading, setLoading] = useState(false);
+
   const cards = [
     {
       href: "/chat/group",
@@ -28,37 +32,41 @@ export default function ChatSelectPage() {
     },
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-blue-100 px-4 py-30">
-      <div className="max-w-4xl mx-auto text-center mb-12">
-        <h1 className="text-3xl font-bold text-gray-800">
-          채팅 유형을 선택하세요
-        </h1>
-        <p className="text-gray-600 mt-2">상황에 맞는 채팅을 골라보세요.</p>
-      </div>
+  if (loading) return <LoadingScreen />;
 
-      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3 justify-items-center">
-        {cards.map((card) => (
-          <Link
-            key={card.href}
-            href={card.href}
-            className={`w-full max-w-xs rounded-2xl shadow-md p-6 flex flex-col items-center text-center transition-transform hover:scale-105 ${card.bg}`}
-          >
-            <div className="w-20 h-20 mb-4 relative">
-              <Image
-                src={card.image}
-                alt={card.title}
-                fill
-                className="object-contain"
-                sizes="80px"
-              />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-1">
-              {card.title}
-            </h2>
-            <p className="text-sm text-gray-600">{card.desc}</p>
-          </Link>
-        ))}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-blue-100 px-4 flex flex-col items-center overflow-auto">
+      <div className="flex flex-col items-center justify-center w-full mt-65">
+        <div className="max-w-4xl mx-auto text-center mb-4">
+          <h1 className="text-3xl font-bold text-gray-800">
+            채팅 유형을 선택하세요
+          </h1>
+          <p className="text-gray-600 mt-2">상황에 맞는 채팅을 골라보세요.</p>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3 justify-items-center w-full">
+          {cards.map((card) => (
+            <Link
+              key={card.href}
+              href={card.href}
+              className={`w-full max-w-xs rounded-2xl shadow-md p-4 flex flex-col items-center text-center transition-transform hover:scale-105 ${card.bg}`}
+            >
+              <div className="w-16 h-16 mb-2 relative">
+                <Image
+                  src={card.image}
+                  alt={card.title}
+                  fill
+                  className="object-contain"
+                  sizes="80px"
+                />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-800 mb-1">
+                {card.title}
+              </h2>
+              <p className="text-sm text-gray-600">{card.desc}</p>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

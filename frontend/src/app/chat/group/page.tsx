@@ -154,11 +154,18 @@ const ChatPage = () => {
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) return <p>로딩 중...</p>;
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex flex-col items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-3"></div>
+        <p className="text-lg text-gray-600">채팅 서비스를 준비하는 중...</p>
+      </div>
+    </div>
+  );
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="h-screen flex flex-col p-4">
+    <div className="h-[95vh] flex flex-col p-4">
       <div className="flex flex-1 gap-4">
         {/* 왼쪽: 유저 리스트 */}
         <div className="w-1/6 bg-white p-4 rounded-lg shadow-md overflow-hidden">
@@ -183,7 +190,7 @@ const ChatPage = () => {
             />
           </div>
           {/* 유저 리스트 */}
-          <ul className="space-y-4 max-h-[540px] overflow-y-auto">
+          <ul className="space-y-4 max-h-[730px] overflow-y-auto">
             {filteredUsers.map((user) => (
               <li
                 key={user.id}
@@ -233,10 +240,21 @@ const ChatPage = () => {
               roomId={selectedRoomId}
               client={client}
               loginUserId={loginUser.id}
-              onClose={() => setSelectedRoomId(null)} // 닫기 버튼 클릭 시 채팅창 닫기
+              onClose={() => setSelectedRoomId(null)}
             />
           ) : (
-            <p>채팅방을 선택하세요.</p>
+            <div className="h-full flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-full h-full text-gray-400">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">채팅을 시작해보세요!</h3>
+              <p className="text-gray-500 max-w-sm">
+                왼쪽의 채팅방 목록에서 참여할 채팅방을 선택하거나,<br />
+                새로운 채팅방을 만들어 대화를 시작할 수 있습니다.
+              </p>
+            </div>
           )}
         </div>
       </div>

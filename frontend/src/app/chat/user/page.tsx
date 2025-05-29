@@ -31,7 +31,7 @@ const ChatPage = () => {
   }, []);
 
   return (
-    <div className="p-4 h-screen flex flex-col">
+    <div className="h-[95vh] flex flex-col p-4">
       <div className="flex flex-1 gap-4">
         {/* 유저 리스트 */}
         <div className="w-1/5">
@@ -61,8 +61,17 @@ const ChatPage = () => {
               onClose={() => setSelectedRoomId(null)}
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              채팅방을 선택하세요.
+            <div className="h-full flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-full h-full text-gray-400">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">1:1 대화를 시작해보세요!</h3>
+              <p className="text-gray-500 max-w-sm">
+                왼쪽에서 대화하고 싶은 상대를 선택하거나,<br />
+                기존 채팅방에 입장하여 대화를 이어가보세요.
+              </p>
             </div>
           )}
         </div>
