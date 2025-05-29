@@ -39,7 +39,7 @@ public class InventoryOutController {
             description = "매니저 권한으로 관리 대시보드 소속 모든 출고내역을 페이징, 정렬, 검색, 날짜 필터링하여 조회합니다."
     )
     @GetMapping
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
     public ResponseEntity<Page<InventoryOutResponseDto>> getOutbound(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
