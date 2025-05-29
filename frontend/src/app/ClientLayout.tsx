@@ -49,6 +49,7 @@ export default function ClientLayout({
     isLogin,
     logout,
     logoutAndHome,
+    removeLoginUser,
   } = useLoginUser();
 
   // 사이드바 접기/펼치기 토글 함수
@@ -73,6 +74,12 @@ export default function ClientLayout({
       return;
     }
 
+    // 인증/비회원 페이지에서는 fetchUserData 실행하지 않음
+    if (isLoginPage || isSignupPage || isFindPage) {
+      removeLoginUser(); // 로그인 정보 초기화(필요시)
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
         const response = await fetch(`${API_URL}/api/v1/users/token`, {
@@ -86,9 +93,12 @@ export default function ClientLayout({
 
         if (!response.ok) {
           if (response.status === 403) {
-            setNoLoginUser();
+            removeLoginUser();
             return;
           }
+
+          toast.error("로그인이 필요합니다.");
+          router.push("/login/type");
           throw new Error(`사용자 정보 조회 실패: ${response.status}`);
         }
 
@@ -189,7 +199,7 @@ export default function ClientLayout({
     };
 
     fetchUserData();
-  }, [isLogin]); // 의존성 배열에서 setLoginUser와 setNoLoginUser 제거
+  }, [isLogin, isLoginPage, isSignupPage, isFindPage, isAdminRequestPage]);
 
   // 로그인되지 않은 사용자가 접근 시 리다이렉트
 
@@ -270,8 +280,6 @@ export default function ClientLayout({
   if (isLoginUserPending) {
     return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
   }
-
-  
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
