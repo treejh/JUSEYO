@@ -12,7 +12,7 @@ public class SupplyRequestDelayedStrategy implements NotificationStrategy {
     @Override
     public String generateMessage(Object context) {
         if (!(context instanceof SupplyRequestDelayedContext)) {
-            throw new IllegalArgumentException("Invalid context for StockShortageStrategy");
+            throw new IllegalArgumentException("Invalid context for SupplyRequestDelayedStrategy");
         }
         SupplyRequestDelayedContext ctx = (SupplyRequestDelayedContext) context;
 

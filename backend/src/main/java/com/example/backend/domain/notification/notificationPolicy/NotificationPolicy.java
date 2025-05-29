@@ -22,7 +22,8 @@ public class NotificationPolicy {
                     NotificationType.MANAGER_APPROVAL_ALERT,
                     NotificationType.MANAGER_REJECTION_ALERT,
                     NotificationType.NEW_CHAT,
-                    NotificationType.NEW_MANAGER
+                    NotificationType.NEW_MANAGER,
+                    NotificationType.NEW_USER
 
             );
             case USER -> Arrays.asList(
@@ -31,7 +32,9 @@ public class NotificationPolicy {
                     NotificationType.RETURN_DUE_SOON,
                     NotificationType.SUPPLY_REQUEST_DELAYED,
                     NotificationType.SUPPLY_RETURN_APPROVED,
-                    NotificationType.NEW_CHAT
+                    NotificationType.NEW_CHAT,
+                    NotificationType.NEW_USER_APPROVED,
+                    NotificationType.NEW_USER_REJECTED
 
 
             );

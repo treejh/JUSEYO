@@ -81,8 +81,7 @@ public class InventoryOutService {
         // 0) SupplyRequest, Category, ManagementDashboard 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
-        ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
+        ManagementDashboard mgmt = req.getManagementDashboard();
 
         // 1) Item 조회
         Item item = itemRepo.findById(dto.getItemId())

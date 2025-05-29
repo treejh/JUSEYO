@@ -40,6 +40,7 @@ export default function Navigation({
     if (pathname.includes("inbound")) return "inbound";
     if (pathname.includes("outbound")) return "outbound";
     if (pathname.includes("iteminstance")) return "iteminstance";
+    if (pathname.includes("chase")) return "chase";
     if (pathname.includes("page-management")) return "page-management";
     if (pathname.includes("department")) return "department";
     if (pathname.includes("category")) return "category";
@@ -245,6 +246,16 @@ export default function Navigation({
             >
               <span className="menu-icon">🏷️</span>
               <span>개별자산관리</span>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <Link
+              href="/item/chase"
+              className={`menu-link ${activeMenu === "chase" ? "active" : ""}`}
+              onClick={() => onPageChange?.("chase")}
+            >
+              <span className="menu-icon">🔍</span>
+              <span>비품추적</span>
             </Link>
           </li>
         </ul>

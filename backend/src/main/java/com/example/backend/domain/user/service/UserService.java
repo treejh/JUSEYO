@@ -5,8 +5,7 @@ package com.example.backend.domain.user.service;
 import com.example.backend.domain.department.entity.Department;
 import com.example.backend.domain.department.repository.DepartmentRepository;
 import com.example.backend.domain.department.service.DepartmentService;
-import com.example.backend.domain.notification.event.NewManagerApprovedEvent;
-import com.example.backend.domain.notification.event.NewManagerEvent;
+import com.example.backend.domain.notification.event.*;
 import com.example.backend.domain.user.dto.request.EmailRequestDto;
 import com.example.backend.domain.user.dto.request.ValidPasswordRequestDto;
 import com.example.backend.domain.user.dto.response.ApproveUserListForInitialManagerResponseDto;
@@ -98,6 +97,9 @@ public class UserService {
                 .role(role)
                 .build();
         userValid(user);
+
+        // 매니저들 대상 일반 회원 가입 요청 알림 발생
+        eventPublisher.publishEvent(new NewUserEvent(managementDashboard.getId(), user.getName()));
 
         return userRepository.save(user);
     }
@@ -291,13 +293,23 @@ public class UserService {
     // 일반 회원 승인 처리
     @Transactional
     public void approveUser(Long userId) {
+
         approveOrRejectUser(userId, ApprovalStatus.APPROVED);
+
+        // 회원 가입 승인 처리 알림
+        User user = findById(userId);
+        eventPublisher.publishEvent(new NewUserApprovedEvent(userId, user.getName()));
     }
 
     // 일반 회원 거부 처리
     @Transactional
     public void rejectUser(Long userId) {
+
         approveOrRejectUser(userId, ApprovalStatus.REJECTED);
+
+        // 회원 가입 거부 처리 알림
+        User user = findById(userId);
+        eventPublisher.publishEvent(new NewUserRejectedEvent(userId, user.getName()));
     }
 
 

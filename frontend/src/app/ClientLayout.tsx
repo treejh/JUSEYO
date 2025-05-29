@@ -49,6 +49,7 @@ export default function ClientLayout({
     isLogin,
     logout,
     logoutAndHome,
+    removeLoginUser,
   } = useLoginUser();
 
   // 사이드바 접기/펼치기 토글 함수
@@ -73,6 +74,12 @@ export default function ClientLayout({
       return;
     }
 
+    // 인증/비회원 페이지에서는 fetchUserData 실행하지 않음
+    if (isLoginPage || isSignupPage || isFindPage) {
+      removeLoginUser(); // 로그인 정보 초기화(필요시)
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
         const response = await fetch(`${API_URL}/api/v1/users/token`, {
@@ -86,9 +93,12 @@ export default function ClientLayout({
 
         if (!response.ok) {
           if (response.status === 403) {
-            setNoLoginUser();
+            removeLoginUser();
             return;
           }
+
+          toast.error("로그인이 필요합니다.");
+          router.push("/login/type");
           throw new Error(`사용자 정보 조회 실패: ${response.status}`);
         }
 
@@ -114,63 +124,54 @@ export default function ClientLayout({
         });
 
         // SSE 연결
-        const connectSSE = async () => {
+        const connectSSE = () => {
           try {
-            const response = await fetch(
+            const eventSource = new EventSource(
               `${API_URL}/api/v1/notifications/stream`,
-              {
-                credentials: "include",
-              }
+              { withCredentials: true }
             );
 
-            if (!response.ok) {
-              throw new Error(`SSE 연결 실패: ${response.status}`);
-            }
+            // 연결 성공 이벤트
+            eventSource.addEventListener("connect", (event) => {
+              console.log("SSE 연결 완료:", event.data);
+            });
 
-            const reader = response.body?.getReader();
-            if (!reader) {
-              throw new Error("SSE 스트림을 읽을 수 없습니다.");
-            }
+            // 알림 이벤트
+            eventSource.addEventListener("notification", (event) => {
+              try {
+                const parsed = JSON.parse(event.data);
+                console.log(
+                  `🔔 [${parsed.type || "message"}] 알림 수신:`,
+                  parsed
+                );
 
-            const decoder = new TextDecoder();
-            let buffer = "";
-
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split("\n");
-              buffer = lines.pop() || "";
-
-              for (const line of lines) {
-                if (line.trim() === "") continue;
-
-                if (line.startsWith("data:")) {
-                  const data = line.slice(5).trim();
-                  try {
-                    const parsed = JSON.parse(data);
-                    console.log(
-                      `🔔 [${parsed.type || "message"}] 알림 수신:`,
-                      parsed
-                    );
-
-                    // 알림 스토어에 추가
-                    useNotificationStore.getState().addNotification({
-                      id: Number(parsed.id),
-                      message: parsed.message,
-                      notificationType: parsed.notificationType,
-                      createdAt: parsed.createdAt,
-                      readStatus: false,
-                    });
-                  } catch (e) {
-                    console.log(`💬 [message] 텍스트 메시지: ${data}`);
-                  }
-                }
+                // 알림 스토어에 추가
+                useNotificationStore.getState().addNotification({
+                  id: Number(parsed.id),
+                  message: parsed.message,
+                  notificationType: parsed.notificationType,
+                  createdAt: parsed.createdAt,
+                  readStatus: false,
+                });
+              } catch (e) {
+                console.log(`💬 [message] 텍스트 메시지: ${event.data}`);
               }
-            }
+            });
+
+            // 에러 처리
+            eventSource.onerror = (error) => {
+              console.error("SSE 연결 오류:", error);
+              eventSource.close();
+              // 3초 후 재연결 시도
+              setTimeout(connectSSE, 3000);
+            };
+
+            // 컴포넌트 언마운트 시 연결 종료
+            return () => {
+              eventSource.close();
+            };
           } catch (error) {
-            console.error("SSE 연결 오류:", error);
+            console.error("SSE 연결 초기화 실패:", error);
             // 3초 후 재연결 시도
             setTimeout(connectSSE, 3000);
           }
@@ -189,7 +190,7 @@ export default function ClientLayout({
     };
 
     fetchUserData();
-  }, [isLogin]); // 의존성 배열에서 setLoginUser와 setNoLoginUser 제거
+  }, [isLogin, isLoginPage, isSignupPage, isFindPage, isAdminRequestPage]);
 
   // 로그인되지 않은 사용자가 접근 시 리다이렉트
 
@@ -270,8 +271,6 @@ export default function ClientLayout({
   if (isLoginUserPending) {
     return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
   }
-
-  
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
