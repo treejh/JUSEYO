@@ -365,6 +365,14 @@ public class SupplyRequestService {
         repo.delete(req);
     }
 
+    @Transactional(readOnly = true)
+    public SupplyRequestResponseDto getRequestById(Long requestId) {
+        SupplyRequest req = repo.findById(requestId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SUPPLY_REQUEST_NOT_FOUND));
+        // (권한 체크가 필요하다면 여기서 추가)
+        return mapToDto(req);
+    }
+
     private SupplyRequestResponseDto mapToDto(SupplyRequest e) {
         return SupplyRequestResponseDto.builder()
                 .id(e.getId())
