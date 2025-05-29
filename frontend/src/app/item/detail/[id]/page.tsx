@@ -12,7 +12,8 @@ interface Product {
   serialNumber: string;
   totalQuantity: number;
   availableQuantity: number;
-  rental: boolean;
+  // 백엔드의 is_return_required 컬럼과 매핑
+  isReturnRequired: boolean;
   location: string;
   createdAt: string;
   buyer: string;
@@ -40,6 +41,7 @@ export default function ItemDetailPage() {
   const [inRecords, setInRecords] = useState<InventoryMoveDto[]>([]);
   const [outRecords, setOutRecords] = useState<InventoryMoveDto[]>([]);
 
+  // 1) 제품 정보 로드
   useEffect(() => {
     if (!isLogin) {
       router.push("/login");
@@ -54,6 +56,7 @@ export default function ItemDetailPage() {
         return res.json() as Promise<Product>;
       })
       .then((data) => {
+        // 날짜만 yyyy-MM-dd
         data.createdAt = data.createdAt.slice(0, 10);
         setProduct(data);
       })
@@ -61,6 +64,7 @@ export default function ItemDetailPage() {
       .finally(() => setLoading(false));
   }, [id, isLogin, router]);
 
+  // 2) 출고/입고 내역 로드
   useEffect(() => {
     if (!id) return;
 
@@ -103,6 +107,7 @@ export default function ItemDetailPage() {
       .catch(() => {});
   }, [id]);
 
+  // 로딩/에러 화면
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -110,7 +115,6 @@ export default function ItemDetailPage() {
       </div>
     );
   }
-
   if (error || !product) {
     return (
       <div className="p-8 bg-gray-50 min-h-screen flex items-center justify-center">
@@ -136,6 +140,7 @@ export default function ItemDetailPage() {
   const history = tab === "출고" ? outRecords : inRecords;
 
   return (
+
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* 뒤로가기 버튼 */}

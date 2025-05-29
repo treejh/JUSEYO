@@ -133,9 +133,8 @@ export default function AllItemsPage() {
           </button>
           {categories.map((cat) => (
             <button
-              key={cat.id}
               onClick={() => {
-                setSelectedCategory(cat.name);
+                setSelectedCategory("전체");
                 setPage(0);
               }}
               className={`px-4 py-2 rounded-full font-medium transition-all ${
@@ -144,11 +143,28 @@ export default function AllItemsPage() {
                   : "bg-white text-gray-600 hover:bg-gray-100"
               }`}
             >
-              {cat.name}
+              전체
             </button>
-          ))}
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setSelectedCategory(cat.name);
+                  setPage(0);
+                }}
+                className={`px-4 py-3 font-medium rounded-t-lg transition-colors ${
+                  selectedCategory === cat.name
+                    ? "text-[#0047AB] border-b-2 border-[#0047AB] bg-blue-50"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* 로딩 상태 */}
         {loading ? (
           <div className="flex flex-col items-center justify-center p-12">
             <div className="animate-spin h-12 w-12 border-4 border-blue-500 rounded-full border-t-transparent mb-4" />
