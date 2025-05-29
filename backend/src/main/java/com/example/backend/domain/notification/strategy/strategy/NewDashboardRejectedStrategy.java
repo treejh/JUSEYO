@@ -11,7 +11,7 @@ public class NewDashboardRejectedStrategy implements NotificationStrategy {
     @Override
     public String generateMessage(Object context) {
         if (!(context instanceof NewDashboardApproveOrNotContext)) {
-            throw new IllegalArgumentException("Invalid context for NewChat Strategy");
+            throw new IllegalArgumentException("Invalid context for NewDashboardRejected Strategy");
         }
         NewDashboardApproveOrNotContext ctx = (NewDashboardApproveOrNotContext) context;
         return ctx.getDashboardName() + " 관리 페이지 생성이 거부되었습니다.";
