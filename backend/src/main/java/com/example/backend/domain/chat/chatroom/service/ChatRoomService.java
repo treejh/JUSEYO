@@ -9,6 +9,7 @@ import com.example.backend.domain.chat.chatroom.dto.request.ChatRoomRequestDto;
 import com.example.backend.domain.chat.chatroom.dto.response.OpponentResponseDto;
 import com.example.backend.domain.chat.chatroom.entity.ChatRoom;
 import com.example.backend.domain.chat.chatroom.repository.ChatRoomRepository;
+import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.enums.ChatRoomType;
 import com.example.backend.enums.ChatStatus;
 import com.example.backend.global.exception.BusinessLogicException;
@@ -317,6 +318,8 @@ public class ChatRoomService {
 
     public OpponentResponseDto findOpponentInfo(Long roomId) {
         User loginUser = userService.findById(tokenService.getIdFromToken());
+        ManagementDashboard managementDashboard = loginUser.getManagementDashboard();
+
         ChatRoom room = findId(roomId);
 
         List<ChatUser> chatUserList = chatUserRepository.findByChatRoom(room);
@@ -334,7 +337,9 @@ public class ChatRoomService {
                     User opponent = chatUser.getUser();
                     return new OpponentResponseDto(
                             opponent.getName(),
-                            opponent.getDepartment() != null ? opponent.getDepartment().getName() : null
+                            opponent.getDepartment() != null
+                                    ? opponent.getDepartment().getName()
+                                    : opponent.getManagementDashboard().getName() + " 매니저"
 
                     );
                 })

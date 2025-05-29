@@ -12,4 +12,5 @@ import lombok.Setter;
 public class OpponentResponseDto {
     private String name;
     private String department;
+
 }
