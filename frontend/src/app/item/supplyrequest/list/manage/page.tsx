@@ -22,6 +22,7 @@ export default function SupplyRequestManageListPage() {
   const router = useRouter();
   const { loginUser, isLogin } = useGlobalLoginUser();
   const isManager = isLogin && loginUser?.role === "MANAGER";
+  const toast = useCustomToast();
 
   const [requests, setRequests] = useState<SupplyRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -29,12 +30,12 @@ export default function SupplyRequestManageListPage() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 20;
-  const toast = useCustomToast();
 
-  // 권한 체크: 로그인/매니저 아니면 리다이렉트
+  // 로그인/매니저 권한 체크
   useEffect(() => {
     if (!isLogin) {
       router.push("/login");
@@ -43,7 +44,7 @@ export default function SupplyRequestManageListPage() {
     }
   }, [isLogin, isManager, router]);
 
-  // 전체 요청 조회
+  // 서버에서 전체 요청 불러오기
   const fetchRequests = async () => {
     setLoading(true);
     try {
@@ -51,9 +52,7 @@ export default function SupplyRequestManageListPage() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/supply-requests`,
         { credentials: "include" }
       );
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
+      if (!res.ok) throw new Error(await res.text());
       const data: SupplyRequest[] = await res.json();
       setRequests(data);
     } catch (err: any) {
@@ -63,7 +62,7 @@ export default function SupplyRequestManageListPage() {
     }
   };
 
-  // 개별 요청 삭제
+  // 요청 삭제
   const handleDeleteRequest = async (id: number) => {
     if (!confirm("정말 이 요청을 삭제하시겠습니까?")) return;
     try {
@@ -74,9 +73,7 @@ export default function SupplyRequestManageListPage() {
           credentials: "include",
         }
       );
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
+      if (!res.ok) throw new Error(await res.text());
       await fetchRequests();
     } catch (err: any) {
       toast.error(`삭제 실패: ${err.message}`);
@@ -87,7 +84,7 @@ export default function SupplyRequestManageListPage() {
     fetchRequests();
   }, []);
 
-  // 상태별 배지 색상
+  // 승인상태별 배지 색상
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case "REQUESTED":
@@ -110,11 +107,17 @@ export default function SupplyRequestManageListPage() {
   // 필터링 & 정렬
   const filteredRequests = requests
     .filter((req) => {
+      // 승인상태 필터
+      if (statusFilter !== "ALL" && req.approvalStatus !== statusFilter) {
+        return false;
+      }
+      // 상품명 키워드 필터
       if (
         !req.productName.toLowerCase().includes(searchKeyword.toLowerCase())
       ) {
         return false;
       }
+      // 작성일 필터
       const reqDate = new Date(req.createdAt);
       if (startDate && new Date(startDate) > reqDate) return false;
       if (endDate) {
@@ -201,17 +204,16 @@ export default function SupplyRequestManageListPage() {
 
         {/* 검색 / 필터 */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[300px] relative">
-              <input
-                type="text"
-                placeholder="상품명으로 검색"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="flex items-center gap-2 min-w-[500px]">
+          <div className="flex flex-wrap gap-4 items-center">
+            <input
+              type="text"
+              placeholder="상품명으로 검색"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="flex-1 min-w-[200px] pl-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+
+            <div className="flex items-center gap-2">
               <span className="text-gray-600">작성일:</span>
               <input
                 type="date"
@@ -226,20 +228,38 @@ export default function SupplyRequestManageListPage() {
                 onChange={(e) => setEndDate(e.target.value)}
                 className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
               />
-              <button
-                onClick={() => {
-                  setStartDate("");
-                  setEndDate("");
-                }}
-                className="px-3 py-2 text-gray-600 hover:text-gray-800"
-              >
-                초기화
-              </button>
             </div>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(0);
+              }}
+              className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="ALL">전체 승인상태</option>
+              <option value="REQUESTED">대기 중</option>
+              <option value="APPROVED">승인</option>
+              <option value="REJECTED">반려</option>
+            </select>
+
+            <button
+              onClick={() => {
+                setSearchKeyword("");
+                setStartDate("");
+                setEndDate("");
+                setStatusFilter("ALL");
+                setCurrentPage(0);
+              }}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              초기화
+            </button>
           </div>
         </div>
 
-        {/* 요청 테이블 */}
+        {/* 테이블 */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -325,7 +345,7 @@ export default function SupplyRequestManageListPage() {
               </tbody>
             </table>
 
-            {/* 페이지네이션 컨트롤 */}
+            {/* 페이지네이션 */}
             <div className="flex justify-end items-center space-x-2 p-4">
               <button
                 disabled={currentPage === 0}
