@@ -36,6 +36,7 @@ export default function Navigation({
     if (pathname.includes("dashboard")) return "dashboard";
     if (pathname.includes("chat")) return "chat";
     if (pathname.includes("notifications")) return "notifications";
+    if (pathname.includes("settings/approve")) return "user-management";
     if (pathname.includes("search")) return "search";
     if (pathname.includes("inventory")) return "inventory";
     if (pathname.includes("request")) return "request";
@@ -46,7 +47,6 @@ export default function Navigation({
     if (pathname.includes("page-management")) return "page-management";
     if (pathname.includes("department")) return "department";
     if (pathname.includes("category")) return "category";
-    if (pathname.includes("user-management")) return "user-management";
     if (pathname.includes("request-history")) return "request-history";
     if (pathname.includes("inventory-view")) return "inventory-view";
     if (pathname.includes("return")) return "return";
