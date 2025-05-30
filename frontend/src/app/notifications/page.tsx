@@ -14,7 +14,7 @@ type NotificationType =
   | "STOCK_SHORTAGE"
   | "RETURN_DUE_DATE_EXCEEDED"
   | "NOT_RETURNED_YET"
-  | "NEW_MANAGEMENT_DASHBOARD"
+  // | "NEW_MANAGEMENT_DASHBOARD"
   | "ADMIN_APPROVAL_ALERT"
   | "ADMIN_REJECTION_ALERT"
   | "NEW_MANAGER"
@@ -49,7 +49,7 @@ const MANAGER_NOTIFICATION_TYPES: NotificationType[] = [
   "STOCK_SHORTAGE",
   "RETURN_DUE_DATE_EXCEEDED",
   "NOT_RETURNED_YET",
-  "NEW_MANAGEMENT_DASHBOARD",
+  // "NEW_MANAGEMENT_DASHBOARD",
   "ADMIN_APPROVAL_ALERT",
   "ADMIN_REJECTION_ALERT",
   "NEW_MANAGER",
@@ -231,16 +231,6 @@ const NOTIFICATION_TYPE_LABELS: Record<
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
         <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  NEW_MANAGEMENT_DASHBOARD: {
-    label: "관리 대시보드 생성",
-    color: "bg-purple-100 text-purple-800",
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-        <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
       </svg>
     ),
   },

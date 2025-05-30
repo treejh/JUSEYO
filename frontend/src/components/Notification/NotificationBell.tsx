@@ -32,7 +32,6 @@ type NotificationType =
   | "NEW_USER"
   | "NEW_USER_APPROVED"
   | "NEW_USER_REJECTED"
-  | "NEW_MANAGEMENT_DASHBOARD"
   | "NEW_MANAGER";
 
 interface NotificationCategory {
@@ -217,15 +216,6 @@ const NOTIFICATION_TYPE_LABELS: Record<
   NOT_RETURNED_YET: {
     label: "장기 미반납 비품 목록",
     color: "bg-red-100 text-red-800",
-    icon: (
-      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  NEW_MANAGEMENT_DASHBOARD: {
-    label: "관리 대시보드",
-    color: "bg-gray-100 text-gray-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
         <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
@@ -516,15 +506,15 @@ export function NotificationBell() {
                           ) {
                             router.push("/item/supplyrequest/list/user");
                           } else if (
+                            notification.notificationType === "NEW_MANAGER"
+                          ) {
+                            router.push("/settings/approve");
+                          } /* else if (
                             notification.notificationType ===
                             "NEW_MANAGEMENT_DASHBOARD"
                           ) {
                             router.push("/dashboard");
-                          } else if (
-                            notification.notificationType === "NEW_MANAGER"
-                          ) {
-                            router.push("/settings/approve");
-                          }
+                          } */
                         }}
                       >
                         <div className="flex items-start gap-3">
