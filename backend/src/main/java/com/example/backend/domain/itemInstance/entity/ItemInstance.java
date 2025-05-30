@@ -1,5 +1,6 @@
 package com.example.backend.domain.itemInstance.entity;
 
+import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.global.auditable.Auditable;
 import com.example.backend.domain.item.entity.Item;
@@ -53,4 +54,8 @@ public class ItemInstance extends Auditable {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     private Status status=Status.ACTIVE;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supply_request_id")
+    private SupplyRequest supplyRequest;
 }

@@ -23,4 +23,5 @@ public class ItemInstanceResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private long borrowedCount;
+    private LocalDateTime returnDate;
 }
