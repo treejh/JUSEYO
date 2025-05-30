@@ -40,7 +40,7 @@ export default function Navigation({
     if (pathname.includes("search")) return "search";
     if (pathname.includes("item/supplyrequest/list/user"))
       return "supply-request-user";
-    if (pathname.includes("item/supplyrequest/list/manage"))
+    if (pathname.includes("item/supplyrequest/manage") || pathname.includes("item/supplyrequest/list/manage"))
       return "supply-request-manage";
     if (pathname.includes("/item/user")) return "inventory";
     if (pathname.includes("request")) return "request";
@@ -53,7 +53,7 @@ export default function Navigation({
     if (pathname.includes("category")) return "category";
     if (pathname.includes("request-history")) return "request-history";
     if (pathname.includes("inventory-view")) return "inventory-view";
-    if (pathname.includes("return")) return "return";
+    if (pathname.includes("item/return/manage") || pathname.includes("item/return")) return "return";
     if (pathname.includes("item/manage")) return "item-manage";
     return "";
   };

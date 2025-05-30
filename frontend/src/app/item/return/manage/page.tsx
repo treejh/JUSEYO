@@ -8,6 +8,7 @@ import Link from "next/link";
 
 interface SupplyReturn {
   id: number;
+  requestId: number | null;
   productName: string;
   quantity: number;
   purpose: string;
@@ -163,7 +164,7 @@ export default function ReturnManagePage() {
               </p>
             </div>
             <Link
-              href="/item/return/list/manage"
+              href="/item/return"
               className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0047AB]"
             >
               <svg
@@ -217,7 +218,8 @@ export default function ReturnManagePage() {
             <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">번호</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[130px] whitespace-nowrap">요청서 ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">반납 상태</th>
@@ -229,7 +231,7 @@ export default function ReturnManagePage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <div className="flex justify-center">
                         <div className="animate-spin h-12 w-12 border-b-2 border-[#0047AB] rounded-full" />
                         <p className="mt-4 text-gray-500">반납 목록을 불러오는 중...</p>
@@ -238,7 +240,7 @@ export default function ReturnManagePage() {
                   </tr>
                 ) : !pageData?.content.length ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <p className="text-gray-500">처리할 반납 요청이 없습니다.</p>
                     </td>
                   </tr>
@@ -246,10 +248,13 @@ export default function ReturnManagePage() {
                   pageData.content.map((ret, index) => (
                     <tr key={ret.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {pageData.number * pageData.size + index + 1}
+                        {(pageData?.number ?? 0) * (pageData?.size ?? 0) + index + 1}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{ret.productName}</div>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {ret.requestId || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {ret.productName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">{ret.quantity}</div>
