@@ -529,7 +529,7 @@ export default function DashboardPage() {
       if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
 
       const response = await fetch(
-        `${API_URL}/api/v1/notifications?page=0&size=3`,
+        `${API_URL}/api/v1/notifications?page=0&size=4`,
         {
           method: "GET",
           headers: {
@@ -569,94 +569,77 @@ export default function DashboardPage() {
 
   // 알림 타입에 따른 스타일과 텍스트
   const getNotificationStyle = (type: Notification["notificationType"]) => {
+    const baseStyle = "rounded-lg p-2.5 mb-1 flex items-center shadow-sm border hover:shadow-md transition-all duration-200";
+    const iconBaseStyle = "w-5 h-5 mr-2 flex-shrink-0";
+    
     switch (type) {
-      case "SUPPLY_REQUEST_APPROVED":
+      case "SUPPLY_REQUEST":
+      case "NEW_MANAGEMENT_DASHBOARD":
         return {
-          bgColor: "bg-green-50",
-          dotColor: "bg-green-500",
-          title: "비품 요청 승인",
-          borderColor: "border-green-200",
-          hoverBg: "hover:bg-green-100",
-        };
-      case "SUPPLY_REQUEST_REJECTED":
-        return {
-          bgColor: "bg-red-50",
-          dotColor: "bg-red-500",
-          title: "비품 요청 반려",
-          borderColor: "border-red-200",
-          hoverBg: "hover:bg-red-100",
+          containerStyle: `${baseStyle} bg-blue-50 border-blue-200 hover:bg-blue-100`,
+          icon: (
+            <svg className={`${iconBaseStyle} text-blue-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          )
         };
       case "STOCK_SHORTAGE":
         return {
-          bgColor: "bg-red-50",
-          dotColor: "bg-red-500",
-          title: "재고 부족",
-          borderColor: "border-red-200",
-          hoverBg: "hover:bg-red-100",
-        };
-      case "RETURN_DUE_SOON":
-        return {
-          bgColor: "bg-yellow-50",
-          dotColor: "bg-yellow-500",
-          title: "반납일 임박",
-          borderColor: "border-yellow-200",
-          hoverBg: "hover:bg-yellow-100",
+          containerStyle: `${baseStyle} bg-red-50 border-red-200 hover:bg-red-100`,
+          icon: (
+            <svg className={`${iconBaseStyle} text-red-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          )
         };
       case "RETURN_DUE_DATE_EXCEEDED":
+      case "RETURN_DUE_SOON":
         return {
-          bgColor: "bg-red-50",
-          dotColor: "bg-red-500",
-          title: "반납일 초과",
-          borderColor: "border-red-200",
-          hoverBg: "hover:bg-red-100",
+          containerStyle: `${baseStyle} bg-yellow-50 border-yellow-200 hover:bg-yellow-100`,
+          icon: (
+            <svg className={`${iconBaseStyle} text-yellow-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          )
+        };
+      case "SUPPLY_REQUEST_APPROVED":
+      case "SUPPLY_RETURN_APPROVED":
+      case "NEW_USER_APPROVED":
+        return {
+          containerStyle: `${baseStyle} bg-green-50 border-green-200 hover:bg-green-100`,
+          icon: (
+            <svg className={`${iconBaseStyle} text-green-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          )
+        };
+      case "SUPPLY_REQUEST_REJECTED":
+      case "NEW_USER_REJECTED":
+        return {
+          containerStyle: `${baseStyle} bg-red-50 border-red-200 hover:bg-red-100`,
+          icon: (
+            <svg className={`${iconBaseStyle} text-red-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          )
         };
       case "NEW_CHAT":
         return {
-          bgColor: "bg-green-50",
-          dotColor: "bg-green-500",
-          title: "새로운 채팅",
-          borderColor: "border-green-200",
-          hoverBg: "hover:bg-green-100",
-        };
-      case "SUPPLY_RETURN_APPROVED":
-        return {
-          bgColor: "bg-green-50",
-          dotColor: "bg-green-500",
-          title: "비품 반납 승인",
-          borderColor: "border-green-200",
-          hoverBg: "hover:bg-green-100",
-        };
-      case "SUPPLY_REQUEST_DELAYED":
-        return {
-          bgColor: "bg-yellow-50",
-          dotColor: "bg-yellow-500",
-          title: "비품 요청 처리 지연",
-          borderColor: "border-yellow-200",
-          hoverBg: "hover:bg-yellow-100",
-        };
-      case "NEW_MANAGEMENT_DASHBOARD":
-        return {
-          bgColor: "bg-purple-50",
-          dotColor: "bg-purple-500",
-          title: "관리 대시보드 생성",
-          borderColor: "border-purple-200",
-          hoverBg: "hover:bg-purple-100",
-        };
-      case "NEW_MANAGER":
-        return {
-          bgColor: "bg-indigo-50",
-          dotColor: "bg-indigo-500",
-          title: "매니저 권한 요청",
-          borderColor: "border-indigo-200",
-          hoverBg: "hover:bg-indigo-100",
+          containerStyle: `${baseStyle} bg-purple-50 border-purple-200 hover:bg-purple-100`,
+          icon: (
+            <svg className={`${iconBaseStyle} text-purple-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          )
         };
       default:
         return {
-          bgColor: "bg-gray-50",
-          dotColor: "bg-gray-500",
-          title: "알림",
-          borderColor: "border-gray-200",
-          hoverBg: "hover:bg-gray-100",
+          containerStyle: `${baseStyle} bg-gray-50 border-gray-200 hover:bg-gray-100`,
+          icon: (
+            <svg className={`${iconBaseStyle} text-gray-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          )
         };
     }
   };
@@ -1380,30 +1363,24 @@ export default function DashboardPage() {
                   ))
               ) : notifications && notifications.length > 0 ? (
                 notifications.map((notification) => {
-                  const style = getNotificationStyle(
-                    notification.notificationType
-                  );
+                  const { containerStyle, icon } = getNotificationStyle(notification.notificationType);
                   return (
                     <div
                       key={notification.id}
-                      className={`flex items-start gap-4 ${style.bgColor} ${style.borderColor} ${style.hoverBg} p-4 rounded-lg border shadow-sm hover:shadow-md transition-all duration-200`}
+                      className={containerStyle}
                     >
-                      <div
-                        className={`w-4 h-4 rounded-full ${style.dotColor} mt-1.5 flex-shrink-0`}
-                      ></div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-semibold text-gray-900">
-                            {style.title}
-                          </span>
-                          <span className="text-sm font-medium text-gray-500">
-                            {getRelativeTime(notification.createdAt)}
-                          </span>
-                        </div>
-                        <p className="text-base text-gray-700 leading-relaxed">
+                      {icon}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate leading-tight">
                           {notification.message}
                         </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {getRelativeTime(notification.createdAt)}
+                        </p>
                       </div>
+                      {!notification.readStatus && (
+                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full ml-2 flex-shrink-0"></span>
+                      )}
                     </div>
                   );
                 })
