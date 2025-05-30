@@ -38,7 +38,11 @@ export default function Navigation({
     if (pathname.includes("notifications")) return "notifications";
     if (pathname.includes("settings/approve")) return "user-management";
     if (pathname.includes("search")) return "search";
-    if (pathname.includes("inventory")) return "inventory";
+    if (pathname.includes("item/supplyrequest/list/user"))
+      return "supply-request-user";
+    if (pathname.includes("item/supplyrequest/list/manage"))
+      return "supply-request-manage";
+    if (pathname.includes("/item/user")) return "inventory";
     if (pathname.includes("request")) return "request";
     if (pathname.includes("inbound")) return "inbound";
     if (pathname.includes("outbound")) return "outbound";
@@ -51,8 +55,6 @@ export default function Navigation({
     if (pathname.includes("inventory-view")) return "inventory-view";
     if (pathname.includes("return")) return "return";
     if (pathname.includes("item/manage")) return "item-manage";
-    if (pathname.includes("supplyrequest/list/user"))
-      return "supply-request-manage";
     return "";
   };
 
