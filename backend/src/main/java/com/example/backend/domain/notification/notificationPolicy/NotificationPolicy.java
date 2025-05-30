@@ -11,9 +11,9 @@ public class NotificationPolicy {
 
     public static List<NotificationType> getAllowedTypesByRole(RoleType role) {
         return switch (role) {
-            case ADMIN -> Arrays.asList(
-                    NotificationType.NEW_MANAGEMENT_DASHBOARD
-            );
+//            case ADMIN -> Arrays.asList(
+//                    NotificationType.NEW_MANAGEMENT_DASHBOARD
+//            );
             case MANAGER -> Arrays.asList(
                     NotificationType.SUPPLY_REQUEST,
                     NotificationType.SUPPLY_RETURN,
