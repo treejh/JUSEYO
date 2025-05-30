@@ -413,21 +413,13 @@ export default function ReturnRequestListPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {request.approvalStatus === "REQUESTED" && (
-                          <div className="flex justify-end gap-2">
-                            <Link
-                              href={`/item/supplyeturn/edit/${request.id}`}
-                              className="text-blue-600 hover:text-blue-900"
-                            >
-                              수정
-                            </Link>
-                            <button
-                              onClick={() => handleDeleteRequest(request.id)}
-                              disabled={deleteLoadingId === request.id}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                            >
-                              {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => handleDeleteRequest(request.id)}
+                            disabled={deleteLoadingId === request.id}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          >
+                            {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
+                          </button>
                         )}
                       </td>
                     </tr>
