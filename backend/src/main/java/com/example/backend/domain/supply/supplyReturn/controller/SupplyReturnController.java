@@ -109,11 +109,12 @@ public class SupplyReturnController {
         return supplyReturnService.getUserSupplyReturns( pageable, approvalStatus);
     }
 
+    @Operation(summary = "비품 반납 삭제", description = "비품 반납서를 삭제합니다 .")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
     public ResponseEntity deleteSupplyReturn(@PathVariable(name = "id") Long id) {
         supplyReturnService.deleteSupplyReturn(id);
         return ResponseEntity.ok().build();
     }
-    
+
 }
