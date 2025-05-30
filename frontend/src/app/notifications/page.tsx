@@ -883,6 +883,10 @@ export default function NotificationsPage() {
                           ) {
                             router.push("/settings/approve");
                           } else if (
+                            notification.notificationType === "NEW_MANAGER"
+                          ) {
+                            router.push("/settings/approve");
+                          } else if (
                             notification.notificationType ===
                               "SUPPLY_REQUEST_APPROVED" ||
                             notification.notificationType ===
