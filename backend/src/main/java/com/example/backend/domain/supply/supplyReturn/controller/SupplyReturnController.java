@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -89,4 +90,31 @@ public class SupplyReturnController {
         var data = returnService.getAllReturnsForExcel();
         excelExportService.exportSupplyReturns(data, response);
     }
+    @Operation(summary = "내 비품 반납 목록 조회", description = "로그인한 사용자의 비품 반납서를 조회합니다.")
+    @GetMapping("/my")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
+    public Page<SupplyReturnResponseDto> getMySupplyReturns(
+            @Parameter(description = "페이지 번호 (1부터 시작)", example = "1")
+            @RequestParam(defaultValue = "1") int page,
+
+            @Parameter(description = "페이지 크기", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+
+            @Parameter(description = "요청 상태 (예: RETURN_PENDING, RETURNED)",
+                    schema = @Schema(implementation = ApprovalStatus.class))
+            @RequestParam(required = false) ApprovalStatus approvalStatus
+    ) {
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return supplyReturnService.getUserSupplyReturns( pageable, approvalStatus);
+    }
+
+    @Operation(summary = "비품 반납 삭제", description = "비품 반납서를 삭제합니다 .")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
+    public ResponseEntity deleteSupplyReturn(@PathVariable(name = "id") Long id) {
+        supplyReturnService.deleteSupplyReturn(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

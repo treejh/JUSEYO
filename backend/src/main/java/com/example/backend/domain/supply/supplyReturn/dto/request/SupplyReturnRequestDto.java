@@ -21,9 +21,6 @@ public class SupplyReturnRequestDto {
     @Schema(description = "회원 ID", example = "501", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long userId;
 
-    @NotNull
-    @Schema(description = "관리 페이지 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Long managementId;
 
     @NotNull
     @Schema(description = "비품 ID", example = "202", requiredMode = Schema.RequiredMode.REQUIRED)

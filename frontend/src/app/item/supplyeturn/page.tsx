@@ -4,23 +4,23 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
-interface SupplyRequest {
+interface ReturnRequest {
   id: number;
+  requestId: number | null;
   productName: string;
   quantity: number;
-  purpose: string;
-  useDate: string | null;
+  useDate: string;
   returnDate: string | null;
-  rental: boolean;
   approvalStatus: string;
+  outbound: string;
   createdAt: string;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-export default function SupplyRequestUserListPage() {
+export default function ReturnRequestListPage() {
   const { loginUser, isLogin } = useGlobalLoginUser();
-  const [requests, setRequests] = useState<SupplyRequest[]>([]);
+  const [requests, setRequests] = useState<ReturnRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [deleteLoadingId, setDeleteLoadingId] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -32,17 +32,20 @@ export default function SupplyRequestUserListPage() {
 
   const [currentPage, setCurrentPage] = useState<number>(0);
   const pageSize = 20;
+  const [totalPages, setTotalPages] = useState<number>(0);
 
-  // 내 요청 목록 조회
+  // 내 반납 요청 목록 조회
   const fetchRequests = async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/supply-requests/me`, {
+      const res = await fetch(`${API_BASE}/api/v1/supply-return/my?page=${currentPage + 1}&size=${pageSize}`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error(await res.text());
-      setRequests(await res.json());
+      const data = await res.json();
+      setRequests(data.content);
+      setTotalPages(data.totalPages);
     } catch (err: any) {
       setErrorMsg(`로딩 실패: ${err.message}`);
     } finally {
@@ -56,7 +59,7 @@ export default function SupplyRequestUserListPage() {
     setDeleteLoadingId(id);
     setErrorMsg(null);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/supply-requests/${id}`, {
+      const res = await fetch(`${API_BASE}/api/v1/supply-return/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -75,12 +78,12 @@ export default function SupplyRequestUserListPage() {
   // 로그인 시 데이터 로딩
   useEffect(() => {
     if (isLogin) fetchRequests();
-  }, [isLogin]);
+  }, [isLogin, currentPage]);
 
   // 필터 변경 시 페이지 초기화
   useEffect(() => {
     setCurrentPage(0);
-  }, [searchKeyword, startDate, endDate]);
+  }, [searchKeyword, startDate, endDate, statusFilter]);
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
@@ -114,6 +117,9 @@ export default function SupplyRequestUserListPage() {
           if (end < reqDate) return false;
         }
       }
+      if (statusFilter !== "ALL" && req.approvalStatus !== statusFilter) {
+        return false;
+      }
       return true;
     })
     .sort(
@@ -121,13 +127,7 @@ export default function SupplyRequestUserListPage() {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-  // 페이징
-  const totalPages = Math.ceil(filteredRequests.length / pageSize);
-  const startIdx = currentPage * pageSize;
-  const paginatedRequests = filteredRequests.slice(
-    startIdx,
-    startIdx + pageSize
-  );
+  const paginatedRequests = filteredRequests;
 
   const handleReset = () => {
     setSearchKeyword("");
@@ -145,14 +145,14 @@ export default function SupplyRequestUserListPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-                나의 비품 요청
+                나의 반납 요청
               </h1>
               <p className="text-gray-600">
-                내가 작성한 비품 요청 현황을 확인합니다.
+                내가 작성한 반납 요청 현황을 확인합니다.
               </p>
             </div>
             <Link
-              href="/item/supplyrequest/create"
+              href="/item/supplyeturn/create"
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#0047AB] hover:bg-[#003380] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0047AB] transition-colors duration-200 whitespace-nowrap"
             >
               <svg
@@ -213,10 +213,10 @@ export default function SupplyRequestUserListPage() {
           </div>
 
           {/* 검색 / 필터 섹션 */}
-          <div className="mt-6 bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200">
+          <div className="bg-gray-50 rounded-lg p-6 mt-6 border border-gray-200">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
+                <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">상품명</label>
                   <div className="relative">
                     <input
@@ -224,7 +224,7 @@ export default function SupplyRequestUserListPage() {
                       placeholder="상품명으로 검색"
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-gray-50"
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <svg
@@ -265,14 +265,14 @@ export default function SupplyRequestUserListPage() {
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-white"
                     />
                     <span className="text-gray-500">~</span>
                     <input
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-white"
                     />
                   </div>
                 </div>
@@ -319,15 +319,33 @@ export default function SupplyRequestUserListPage() {
             <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">번호</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">대여여부</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">사용일</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">반납일</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">상태</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">작성일</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">관리</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">
+                    번호
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[130px]">
+                    요청서 ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    상품명
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">
+                    수량
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+                    사용일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+                    반납일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
+                    상태
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+                    작성일
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">
+                    관리
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -354,23 +372,35 @@ export default function SupplyRequestUserListPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {currentPage * pageSize + index + 1}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{request.productName}</div>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {request.requestId || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{request.quantity}</div>
+                        <div className="text-sm text-gray-900">
+                          {request.productName}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{request.rental ? "대여" : "구매"}</div>
+                        <div className="text-sm text-gray-500">
+                          {request.quantity}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{formatDate(request.useDate)}</div>
+                        <div className="text-sm text-gray-500">
+                          {formatDate(request.useDate)}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{formatDate(request.returnDate)}</div>
+                        <div className="text-sm text-gray-500">
+                          {formatDate(request.returnDate)}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(request.approvalStatus)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                            request.approvalStatus
+                          )}`}
+                        >
                           {request.approvalStatus === "REQUESTED" && "대기 중"}
                           {request.approvalStatus === "APPROVED" && "승인"}
                           {request.approvalStatus === "REJECTED" && "반려"}
@@ -383,21 +413,13 @@ export default function SupplyRequestUserListPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {request.approvalStatus === "REQUESTED" && (
-                          <div className="flex justify-end gap-2">
-                            <Link
-                              href={`/item/supplyrequest/edit/${request.id}`}
-                              className="text-blue-600 hover:text-blue-900"
-                            >
-                              수정
-                            </Link>
-                            <button
-                              onClick={() => handleDeleteRequest(request.id)}
-                              disabled={deleteLoadingId === request.id}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                            >
-                              {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => handleDeleteRequest(request.id)}
+                            disabled={deleteLoadingId === request.id}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          >
+                            {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -422,7 +444,9 @@ export default function SupplyRequestUserListPage() {
               페이지 {currentPage + 1} / {totalPages}
             </span>
             <button
-              onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages - 1, currentPage + 1))
+              }
               disabled={currentPage >= totalPages - 1}
               className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -433,4 +457,4 @@ export default function SupplyRequestUserListPage() {
       </div>
     </div>
   );
-}
+} 
