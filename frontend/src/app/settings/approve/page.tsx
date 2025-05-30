@@ -193,254 +193,260 @@ export default function ApprovePage() {
   };
 
   return (
-    <div className="p-6 bg-white">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-[#0047AB]">
-          {selectedRole === "회원" ? "사용자 관리" : "매니저 관리"}
-        </h1>
-        <Link
-          href="/settings/approve/search"
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          검색하기
-        </Link>
-      </div>
-
-      {isInitialManager && (
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <label className="font-bold">역할 선택:</label>
-            <select
-              value={selectedRole}
-              onChange={(e) =>
-                setSelectedRole(e.target.value as "회원" | "매니저")
-              }
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-[1920px] mx-auto">
+        {/* 헤더 섹션 */}
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                {selectedRole === "회원" ? "사용자 관리" : "매니저 관리"}
+              </h1>
+              <p className="text-gray-600">
+                {selectedRole === "회원" ? "사용자" : "매니저"}의 승인 및 권한을 관리할 수 있습니다.
+              </p>
+            </div>
+            <Link
+              href="/settings/approve/search"
+              className="inline-flex items-center justify-center px-6 py-2 bg-[#0047AB] text-white rounded-lg hover:bg-[#003380] transition-colors duration-200 whitespace-nowrap"
             >
-              <option value="회원">회원</option>
-              <option value="매니저">매니저</option>
-            </select>
+              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              검색하기
+            </Link>
+          </div>
+
+          {/* 역할 선택 섹션 */}
+          {isInitialManager && (
+            <div className="flex flex-wrap items-center gap-4 mb-6">
+              <label className="text-gray-700 font-medium whitespace-nowrap">역할 선택:</label>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setSelectedRole("회원")}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                    selectedRole === "회원"
+                      ? "bg-[#0047AB] text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  회원
+                </button>
+                <button
+                  onClick={() => setSelectedRole("매니저")}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                    selectedRole === "매니저"
+                      ? "bg-[#0047AB] text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  매니저
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 필터 탭 */}
+          <div className="border-b border-gray-200 overflow-x-auto">
+            <nav className="flex gap-8 min-w-max">
+              <button
+                onClick={() => setFilterStatus("approve")}
+                className={`px-6 py-3 font-medium border-b-2 transition-colors duration-200 ${
+                  filterStatus === "approve"
+                    ? "text-[#0047AB] border-[#0047AB]"
+                    : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                승인된 유저
+              </button>
+              <button
+                onClick={() => setFilterStatus("reject")}
+                className={`px-6 py-3 font-medium border-b-2 transition-colors duration-200 ${
+                  filterStatus === "reject"
+                    ? "text-[#0047AB] border-[#0047AB]"
+                    : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                거절된 유저
+              </button>
+              <button
+                onClick={() => setFilterStatus("request")}
+                className={`px-6 py-3 font-medium border-b-2 transition-colors duration-200 ${
+                  filterStatus === "request"
+                    ? "text-[#0047AB] border-[#0047AB]"
+                    : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                승인 대기 유저
+              </button>
+            </nav>
           </div>
         </div>
-      )}
 
-      <div className="mb-4 flex space-x-4">
-        <button
-          onClick={() => setFilterStatus("approve")}
-          className={`px-4 py-2 rounded-lg ${
-            filterStatus === "approve"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          승인된 유저
-        </button>
-        <button
-          onClick={() => setFilterStatus("reject")}
-          className={`px-4 py-2 rounded-lg ${
-            filterStatus === "reject" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-        >
-          거절된 유저
-        </button>
-        <button
-          onClick={() => setFilterStatus("request")}
-          className={`px-4 py-2 rounded-lg ${
-            filterStatus === "request"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          요청된 유저
-        </button>
-      </div>
-
-      {/* 배치 처리 버튼 영역 */}
-      {selectedIds.length > 0 && (
-        <div className="mb-4 flex space-x-4">
-          {filterStatus === "approve" && (
-            <button
-              onClick={handleBatchReject}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-            >
-              선택한 유저 거부
-            </button>
-          )}
-          {filterStatus === "reject" && (
-            <>
-              <button
-                onClick={handleBatchApprove}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-              >
-                선택한 유저 승인
-              </button>
-              <button
-                onClick={handleBatchDelete}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-              >
-                선택한 유저 삭제
-              </button>
-            </>
-          )}
-          {filterStatus === "request" && (
-            <>
-              <button
-                onClick={handleBatchApprove}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-              >
-                선택한 유저 승인
-              </button>
-              <button
-                onClick={handleBatchReject}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-              >
-                선택한 유저 거부
-              </button>
-            </>
-          )}
-        </div>
-      )}
-
-      <table className="w-full border-collapse border border-gray-200">
-        <thead>
-          <tr className="bg-gray-100">
-            {/* 추가: 체크박스 헤더 */}
-            <th className="border border-gray-200 px-4 py-2">
-              <input
-                type="checkbox"
-                onChange={handleSelectAll}
-                checked={
-                  users.length > 0 && selectedIds.length === users.length
-                }
-              />
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left">번호</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">
-              이메일
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left">이름</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">
-              핸드폰 번호
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left">
-              부서 이름
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left">
-              요청일
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left">상태</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">액션</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.length === 0 ? (
-            <tr>
-              <td colSpan={9} className="text-center py-8 text-gray-400">
-                검색 결과가 없습니다.
-              </td>
-            </tr>
-          ) : (
-            users.map((user: any, index: number) => (
-              <tr key={user.userId} className="hover:bg-gray-50">
-                {/* 체크박스 */}
-                <td className="border border-gray-200 px-4 py-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(user.userId)}
-                    onChange={(e) => handleSelect(e, user.userId)}
-                  />
-                </td>
-                <td className="border border-gray-200 px-4 py-2">
-                  {index + 1}
-                </td>
-                <td className="border border-gray-200 px-4 py-2">
-                  {user.email}
-                </td>
-                <td className="border border-gray-200 px-4 py-2">
-                  {user.name}
-                </td>
-                <td className="border border-gray-200 px-4 py-2">
-                  {user.phoneNumber}
-                </td>
-                <td className="border border-gray-200 px-4 py-2">
-                  {user.departmentName || "N/A"}
-                </td>
-                <td className="border border-gray-200 px-4 py-2">
-                  {new Date(user.requestDate).toLocaleString("ko-KR", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </td>
-                <td className="border border-gray-200 px-4 py-2">
-                  {user.approvalStatus}
-                </td>
-                <td className="border border-gray-200 px-4 py-2 flex space-x-2">
+        {/* 테이블 섹션 */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {/* 배치 작업 버튼 */}
+          {selectedIds.length > 0 && (
+            <div className="p-4 sm:p-6 bg-gray-50 border-b border-gray-200">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <span className="text-sm text-gray-600">
+                  {selectedIds.length}명의 사용자가 선택됨
+                </span>
+                <div className="flex gap-3">
                   {filterStatus === "request" && (
                     <>
                       <button
-                        onClick={() => {
-                          handleApprove(user.userId);
-                        }}
-                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                        onClick={handleBatchApprove}
+                        className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
                       >
-                        승인
+                        일괄 승인
                       </button>
                       <button
-                        onClick={() => {
-                          handleReject(user.userId);
-                        }}
-                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                        onClick={handleBatchReject}
+                        className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
                       >
-                        거부
+                        일괄 거절
                       </button>
                     </>
                   )}
-
-                  {filterStatus === "approve" &&
-                    (user.approvalStatus === "REJECTED" ? (
-                      <span className="px-4 py-2 bg-blue-500 text-white rounded-lg">
-                        거부됨
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          handleReject(user.userId);
-                        }}
-                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                      >
-                        거부
-                      </button>
-                    ))}
-
                   {filterStatus === "reject" && (
-                    <>
-                      <button
-                        onClick={() => {
-                          handleApprove(user.userId);
-                        }}
-                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                      >
-                        승인
-                      </button>
-                      <button
-                        onClick={() => {
-                          handleDelete(user.userId);
-                        }}
-                        className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                      >
-                        삭제
-                      </button>
-                    </>
+                    <button
+                      onClick={handleBatchDelete}
+                      className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                    >
+                      일괄 삭제
+                    </button>
                   )}
-                </td>
-              </tr>
-            ))
+                  {filterStatus === "approve" && (
+                    <button
+                      onClick={handleBatchReject}
+                      className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                    >
+                      일괄 거부
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
-        </tbody>
-      </table>
+
+          {/* 테이블 */}
+          <div className="overflow-x-auto">
+            <table className="w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left w-[40px]">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.length === users.length && users.length > 0}
+                      onChange={handleSelectAll}
+                      className="rounded border-gray-300 text-[#0047AB] focus:ring-[#0047AB]"
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">이름</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이메일</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">전화번호</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">부서</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">요청일</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">작업</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.map((user) => (
+                  <tr key={user.userId} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(user.userId)}
+                        onChange={(e) => handleSelect(e, user.userId)}
+                        className="rounded border-gray-300 text-[#0047AB] focus:ring-[#0047AB]"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">{user.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">{user.phoneNumber}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">{user.departmentName || '-'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">
+                        {new Date(user.requestDate).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      {filterStatus === "request" ? (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleApprove(user.userId)}
+                            className="text-green-600 hover:text-green-900"
+                          >
+                            승인
+                          </button>
+                          <button
+                            onClick={() => handleReject(user.userId)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            거절
+                          </button>
+                        </div>
+                      ) : filterStatus === "reject" ? (
+                        <button
+                          onClick={() => handleDelete(user.userId)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          삭제
+                        </button>
+                      ) : filterStatus === "approve" ? (
+                        <button
+                          onClick={() => handleReject(user.userId)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          거부
+                        </button>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {users.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500">표시할 사용자가 없습니다.</p>
+            </div>
+          )}
+        </div>
+
+        {/* 페이지네이션 */}
+        <div className="mt-6 flex justify-center">
+          <nav className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              이전
+            </button>
+            <span className="px-6 py-2 text-gray-700">
+              페이지 {currentPage}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={users.length < 10}
+              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              다음
+            </button>
+          </nav>
+        </div>
+      </div>
     </div>
   );
 }

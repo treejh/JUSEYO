@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import Link from "next/link";
 import { useCustomToast } from "@/utils/toast";
+import { useRouter } from "next/navigation";
 
 export default function ApproveSearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,6 +14,17 @@ export default function ApproveSearchPage() {
   const { loginUser } = useGlobalLoginUser();
   const [isInitialManager, setIsInitialManager] = useState(false);
   const toast = useCustomToast();
+  const router = useRouter();
+
+  useEffect(() => {
+    // 네비게이션 상태 유지를 위해 전역 상태 업데이트
+    const updateNavigationState = () => {
+      const event = new CustomEvent('onPageChange', { detail: 'user-management' });
+      window.dispatchEvent(event);
+    };
+    
+    updateNavigationState();
+  }, []);
 
   useEffect(() => {
     const checkInitialManager = async () => {
@@ -96,207 +108,182 @@ export default function ApproveSearchPage() {
     if (e.key === "Enter") handleSearch();
   };
 
-  return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-[1920px] mx-auto bg-white rounded-lg shadow-sm p-6">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">사용자 검색</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              이름으로 {selectedRole}을 검색할 수 있습니다
-            </p>
-          </div>
-          <Link
-            href="/settings/approve"
-            className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            목록으로 돌아가기
-          </Link>
-        </div>
+  // 목록으로 돌아가기 핸들러
+  const handleGoBack = () => {
+    router.push("/settings/approve");
+  };
 
-        <div className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 sm:items-end">
-            <div className="flex-shrink-0">
-              <label className="block text-sm font-medium text-gray-700 mb-2">검색 대상</label>
-              <select
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value as "회원" | "매니저")}
-                className="w-48 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={!isInitialManager && selectedRole === "매니저"}
-              >
-                <option value="회원">회원</option>
-                {isInitialManager && <option value="매니저">매니저</option>}
-              </select>
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-[1920px] mx-auto">
+        {/* 헤더 섹션 */}
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                사용자 검색
+              </h1>
+              <p className="text-gray-600">
+                이름으로 {selectedRole}을 검색할 수 있습니다
+              </p>
             </div>
-            <div className="flex-grow">
-              <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
-              <div className="flex space-x-2">
-                <div className="relative flex-grow">
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="검색할 이름을 입력하세요"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <button
-                  onClick={handleSearch}
-                  className="inline-flex items-center px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200"
+            <button
+              onClick={handleGoBack}
+              className="inline-flex items-center justify-center px-6 py-2 bg-[#0047AB] text-white rounded-lg hover:bg-[#003380] transition-colors duration-200 whitespace-nowrap"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              목록으로 돌아가기
+            </button>
+          </div>
+
+          {/* 검색 섹션 */}
+          <div className="bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200">
+            <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 sm:items-end">
+              <div className="flex-shrink-0">
+                <label className="block text-sm font-medium text-gray-700 mb-2">검색 대상</label>
+                <select
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value as "회원" | "매니저")}
+                  className="w-48 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                  disabled={!isInitialManager && selectedRole === "매니저"}
                 >
-                  검색
-                </button>
+                  <option value="회원">회원</option>
+                  {isInitialManager && <option value="매니저">매니저</option>}
+                </select>
+              </div>
+              <div className="flex-grow">
+                <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-grow">
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="검색할 이름을 입력하세요"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent pl-10"
+                    />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSearch}
+                    className="px-6 py-2 bg-[#0047AB] text-white rounded-lg hover:bg-[#003380] transition-colors duration-200 whitespace-nowrap"
+                  >
+                    검색
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="w-full">
-            <colgroup>
-              <col className="w-[5%]"/>
-              <col className="w-[20%]"/>
-              <col className="w-[10%]"/>
-              <col className="w-[15%]"/>
-              <col className="w-[15%]"/>
-              <col className="w-[15%]"/>
-              <col className="w-[10%]"/>
-              <col className="w-[10%]"/>
-            </colgroup>
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">번호</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">이메일</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">이름</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">핸드폰 번호</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">부서 이름</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">요청일</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">상태</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">액션</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {users.length === 0 ? (
+        {/* 테이블 섹션 */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                    </svg>
-                    <p className="mt-2 text-sm">검색 결과가 없습니다.</p>
-                  </td>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">번호</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이메일</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">이름</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">전화번호</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">부서</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">요청일</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">상태</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">작업</th>
                 </tr>
-              ) : (
-                users.map((user: any, index: number) => (
-                  <tr key={user.userId} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{user.email}</div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{user.name}</div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{user.phoneNumber}</div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{user.departmentName || "N/A"}</div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {user.requestDate
-                          ? new Date(user.requestDate).toLocaleString("ko-KR", {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "-"}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        ${user.approvalStatus === "APPROVED" ? "bg-green-100 text-green-800" :
-                          user.approvalStatus === "REJECTED" ? "bg-red-100 text-red-800" :
-                          "bg-yellow-100 text-yellow-800"}`}>
-                        {user.approvalStatus}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        {user.approvalStatus === "REQUESTED" && (
-                          <>
-                            <button
-                              onClick={() => handleApprove(user.userId)}
-                              className="inline-flex items-center p-1 text-green-600 hover:text-green-900"
-                              title="승인"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleReject(user.userId)}
-                              className="inline-flex items-center p-1 text-red-600 hover:text-red-900"
-                              title="거부"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </>
-                        )}
-
-                        {user.approvalStatus === "APPROVED" && (
-                          <button
-                            onClick={() => handleReject(user.userId)}
-                            className="inline-flex items-center p-1 text-red-600 hover:text-red-900"
-                            title="거부"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        )}
-
-                        {user.approvalStatus === "REJECTED" && (
-                          <>
-                            <button
-                              onClick={() => handleApprove(user.userId)}
-                              className="inline-flex items-center p-1 text-green-600 hover:text-green-900"
-                              title="승인"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(user.userId)}
-                              className="inline-flex items-center p-1 text-gray-600 hover:text-gray-900"
-                              title="삭제"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </>
-                        )}
-                      </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-12 text-center">
+                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                      </svg>
+                      <p className="mt-2 text-gray-500">검색 결과가 없습니다.</p>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  users.map((user: any, index: number) => (
+                    <tr key={user.userId} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{user.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{user.phoneNumber}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{user.departmentName || "-"}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">
+                          {user.requestDate
+                            ? new Date(user.requestDate).toLocaleDateString()
+                            : "-"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                          ${user.approvalStatus === "APPROVED" ? "bg-green-100 text-green-800" :
+                            user.approvalStatus === "REJECTED" ? "bg-red-100 text-red-800" :
+                            "bg-yellow-100 text-yellow-800"}`}>
+                          {user.approvalStatus === "APPROVED" ? "승인됨" :
+                           user.approvalStatus === "REJECTED" ? "거부됨" :
+                           "대기중"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end gap-2">
+                          {user.approvalStatus === "REQUESTED" && (
+                            <>
+                              <button
+                                onClick={() => handleApprove(user.userId)}
+                                className="text-green-600 hover:text-green-900"
+                              >
+                                승인
+                              </button>
+                              <button
+                                onClick={() => handleReject(user.userId)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                거절
+                              </button>
+                            </>
+                          )}
+                          {user.approvalStatus === "APPROVED" && (
+                            <button
+                              onClick={() => handleReject(user.userId)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              거부
+                            </button>
+                          )}
+                          {user.approvalStatus === "REJECTED" && (
+                            <button
+                              onClick={() => handleDelete(user.userId)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              삭제
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
