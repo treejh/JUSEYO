@@ -53,8 +53,10 @@ export default function Navigation({
     if (pathname.includes("category")) return "category";
     if (pathname.includes("request-history")) return "request-history";
     if (pathname.includes("inventory-view")) return "inventory-view";
-    if (pathname.includes("item/return/manage") || pathname.includes("item/return")) return "return";
+    if (pathname.includes("item/return/manage")) return "return";
+    if (pathname.includes("item/return")) return "return";
     if (pathname.includes("item/manage")) return "item-manage";
+    if (pathname.includes("item/supplyeturn")) return "return-user";
     return "";
   };
 
@@ -172,6 +174,16 @@ export default function Navigation({
           >
             <span className="menu-icon">✏️</span>
             <span>비품 요청</span>
+          </Link>
+        </li>
+        <li className="menu-item">
+          <Link
+            href="/item/supplyeturn"
+            className={`menu-link ${activeMenu === "return-user" ? "active" : ""}`}
+            onClick={() => onPageChange?.("return-user")}
+          >
+            <span className="menu-icon">↩️</span>
+            <span>비품 반납</span>
           </Link>
         </li>
       </ul>
