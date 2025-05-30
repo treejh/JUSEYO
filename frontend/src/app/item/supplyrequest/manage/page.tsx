@@ -95,28 +95,26 @@ export default function ManageSupplyRequestsPage() {
 
           {/* 통계 섹션 */}
           <div className="bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="bg-[#0047AB]/10 rounded-lg p-4">
-                <div className="flex items-center gap-3">
-                  <svg
-                    className="w-8 h-8 text-[#0047AB]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <div>
-                    <p className="text-sm text-[#0047AB]">대기 중인 요청</p>
-                    <p className="text-2xl font-bold text-[#0047AB]">
-                      {requests.length}
-                    </p>
-                  </div>
+            <div className="bg-[#0047AB]/10 rounded-lg p-4 w-[300px]">
+              <div className="flex items-center gap-3">
+                <svg
+                  className="w-8 h-8 text-[#0047AB]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div>
+                  <p className="text-sm text-[#0047AB]">대기 중인 요청</p>
+                  <p className="text-2xl font-bold text-[#0047AB]">
+                    {requests.length}
+                  </p>
                 </div>
               </div>
             </div>

@@ -40,7 +40,7 @@ export default function Navigation({
     if (pathname.includes("search")) return "search";
     if (pathname.includes("item/supplyrequest/list/user"))
       return "supply-request-user";
-    if (pathname.includes("item/supplyrequest/list/manage"))
+    if (pathname.includes("item/supplyrequest/manage") || pathname.includes("item/supplyrequest/list/manage"))
       return "supply-request-manage";
     if (pathname.includes("/item/user")) return "inventory";
     if (pathname.includes("request")) return "request";
@@ -53,8 +53,10 @@ export default function Navigation({
     if (pathname.includes("category")) return "category";
     if (pathname.includes("request-history")) return "request-history";
     if (pathname.includes("inventory-view")) return "inventory-view";
-    if (pathname.includes("return")) return "return";
+    if (pathname.includes("item/return/manage")) return "return";
+    if (pathname.includes("item/return")) return "return";
     if (pathname.includes("item/manage")) return "item-manage";
+    if (pathname.includes("item/supplyeturn")) return "return-user";
     return "";
   };
 
@@ -174,6 +176,16 @@ export default function Navigation({
             <span>비품 요청</span>
           </Link>
         </li>
+        <li className="menu-item">
+          <Link
+            href="/item/supplyeturn"
+            className={`menu-link ${activeMenu === "return-user" ? "active" : ""}`}
+            onClick={() => onPageChange?.("return-user")}
+          >
+            <span className="menu-icon">↩️</span>
+            <span>비품 반납</span>
+          </Link>
+        </li>
       </ul>
     </div>
   );
@@ -210,9 +222,9 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/return"
+              href="/item/return"
               className={`menu-link ${activeMenu === "return" ? "active" : ""}`}
-              onClick={() => onPageChange?.("return")}
+              onClick={() => onPageChange?.("/item/return")}
             >
               <span className="menu-icon">🔄</span>
               <span>비품 반납 내역</span>

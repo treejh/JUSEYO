@@ -1,5 +1,6 @@
 package com.example.backend.domain.supply.supplyReturn.entity;
 
+import com.example.backend.enums.Status;
 import com.example.backend.global.auditable.Auditable;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.user.entity.User;
@@ -63,6 +64,10 @@ public class SupplyReturn extends Auditable {
     @Enumerated(EnumType.STRING)
     @Column(name = "outbound", nullable = false, length = 20)
     private Outbound outbound; // 현재 상태(사용가능,파손)
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
 
 
 }
