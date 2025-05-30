@@ -113,10 +113,10 @@ public class TestNotificationController {
     public void sendNewSupplyReturn() {
         Item pen = itemRepo.findByName("볼펜").get();
         Long userId = tokenService.getIdFromToken();
+
         SupplyReturnRequestDto dto = new SupplyReturnRequestDto();
         dto.setRequestId(1L);
         dto.setUserId(userId);
-        dto.setManagementId(1L);
         dto.setItemId(pen.getId());
         dto.setSerialNumber(pen.getSerialNumber());
         dto.setProductName(pen.getName());

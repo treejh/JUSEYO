@@ -55,7 +55,7 @@ public class SupplyReturnService {
         if (user == null) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
         }
-        ManagementDashboard managementDashboard = managementDashboardRepository.findById(supplyReturnRequestDto.getManagementId()).orElse(null);
+        ManagementDashboard managementDashboard = managementDashboardRepository.findById(user.getManagementDashboard().getId()).orElse(null);
         if (managementDashboard == null) {
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
@@ -95,6 +95,18 @@ public class SupplyReturnService {
             return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),pageable);
         }
     }
+
+    //특정 유저의 비품 반납서 목록 조회
+    public Page<SupplyReturnResponseDto> getUserSupplyReturns(Pageable pageable,ApprovalStatus approvalStatus) {
+        Long id=tokenService.getIdFromToken();
+        User user = userRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        if(approvalStatus==null){
+            return supplyReturnRepository.findAllSupplyReturn(user.getManagementDashboard().getId(),user.getId(),pageable);
+        }else{
+            return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),user.getId(),pageable);
+        }
+    }
+
 
     //비품 반납서 단일 조회
     public SupplyReturnResponseDto getSupplyReturn(Long id){
