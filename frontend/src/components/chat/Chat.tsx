@@ -454,39 +454,41 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
       </div>
 
       {/* 메시지 입력 영역 */}
-      <div className="p-4 border-t border-gray-300 bg-gray-50 rounded-b-lg">
+      <div className="p-4 border-t border-gray-300 bg-white rounded-b-lg">
         <form
-          className="flex items-center gap-2"
+          className="flex flex-col gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             sendMessage();
           }}
         >
-          <input
-            type="text"
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-800 transition"
-            value={inputMessage}
-            onChange={(e) => {
-              if (e.target.value.length > 200) {
-                alert("채팅은 200글자 까지만 가능합니다.");
-                return;
-              }
-              setInputMessage(e.target.value);
-            }}
-            onKeyPress={handleKeyPress}
-            placeholder="메시지를 입력하세요..."
-            maxLength={200}
-          />
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full font-semibold shadow transition"
-          >
-            전송
-          </button>
+          <div className="relative flex items-center gap-2">
+            <input
+              type="text"
+              className="flex-1 border border-gray-300 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-800 transition pr-16"
+              value={inputMessage}
+              onChange={(e) => {
+                if (e.target.value.length > 200) {
+                  alert("채팅은 200글자 까지만 가능합니다.");
+                  return;
+                }
+                setInputMessage(e.target.value);
+              }}
+              onKeyPress={handleKeyPress}
+              placeholder="메시지를 입력하세요..."
+              maxLength={200}
+            />
+            <span className="absolute right-24 text-xs text-gray-400">
+              {inputMessage.length}/200
+            </span>
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2.5 rounded-full font-semibold shadow transition flex-shrink-0"
+            >
+              전송
+            </button>
+          </div>
         </form>
-        <div className="text-right text-xs text-gray-400 mt-1 mr-25">
-          {inputMessage.length}/200
-        </div>
       </div>
     </div>
   );
