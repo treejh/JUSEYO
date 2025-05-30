@@ -41,7 +41,7 @@ export default function ItemDetailPage() {
   const [inRecords, setInRecords] = useState<InventoryMoveDto[]>([]);
   const [outRecords, setOutRecords] = useState<InventoryMoveDto[]>([]);
 
-  // 1) 제품 정보 로드
+  // 제품 정보 로드
   useEffect(() => {
     if (!isLogin) {
       router.push("/login");
@@ -56,7 +56,6 @@ export default function ItemDetailPage() {
         return res.json() as Promise<Product>;
       })
       .then((data) => {
-        // 날짜만 yyyy-MM-dd
         data.createdAt = data.createdAt.slice(0, 10);
         setProduct(data);
       })
@@ -64,11 +63,10 @@ export default function ItemDetailPage() {
       .finally(() => setLoading(false));
   }, [id, isLogin, router]);
 
-  // 2) 출고/입고 내역 로드
+  // 출고/입고 내역 로드
   useEffect(() => {
     if (!id) return;
 
-    // 전체 출고 내역에서 해당 itemId만 조회
     fetch(
       `${API_BASE}/api/v1/inventory-out?itemId=${id}&size=100&sortField=createdAt&sortDir=desc`,
       { credentials: "include" }
@@ -77,17 +75,13 @@ export default function ItemDetailPage() {
         if (!res.ok) throw new Error("출고 내역을 불러올 수 없습니다.");
         return res.json() as Promise<{ content: InventoryMoveDto[] }>;
       })
-      .then(({ content }) => {
+      .then(({ content }) =>
         setOutRecords(
-          content.map((r) => ({
-            ...r,
-            createdAt: r.createdAt.slice(0, 10),
-          }))
-        );
-      })
+          content.map((r) => ({ ...r, createdAt: r.createdAt.slice(0, 10) }))
+        )
+      )
       .catch(() => {});
 
-    // 입고 내역 (by-item)
     fetch(
       `${API_BASE}/api/v1/inventory-in/by-item?itemId=${id}&page=1&size=100&sort=createdAt,desc`,
       { credentials: "include" }
@@ -96,18 +90,14 @@ export default function ItemDetailPage() {
         if (!res.ok) throw new Error("입고 내역을 불러올 수 없습니다.");
         return res.json() as Promise<{ content: InventoryMoveDto[] }>;
       })
-      .then(({ content }) => {
+      .then(({ content }) =>
         setInRecords(
-          content.map((r) => ({
-            ...r,
-            createdAt: r.createdAt.slice(0, 10),
-          }))
-        );
-      })
+          content.map((r) => ({ ...r, createdAt: r.createdAt.slice(0, 10) }))
+        )
+      )
       .catch(() => {});
   }, [id]);
 
-  // 로딩/에러 화면
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -142,11 +132,11 @@ export default function ItemDetailPage() {
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        {/* 뒤로가기 버튼 */}
         <button
           onClick={() => router.back()}
           className="flex items-center text-gray-600 hover:text-gray-900 mb-6 group"
         >
+          {/* 뒤로가기 아이콘 */}
           <svg
             className="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform"
             fill="none"
@@ -164,7 +154,7 @@ export default function ItemDetailPage() {
         </button>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* 좌측: 제품 이미지 */}
+          {/* 이미지 */}
           <div className="lg:w-1/3">
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
               <div className="aspect-square relative">
@@ -180,7 +170,7 @@ export default function ItemDetailPage() {
             </div>
           </div>
 
-          {/* 우측: 제품 정보 */}
+          {/* 상세 정보 */}
           <div className="lg:w-2/3">
             <div className="bg-white rounded-2xl shadow-sm p-8">
               <div className="flex justify-between items-start mb-6">
@@ -214,24 +204,28 @@ export default function ItemDetailPage() {
                   상세 정보
                 </h2>
                 <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                  {/* 대여 여부 */}
                   <div>
                     <dt className="text-sm text-gray-500">대여 여부</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {product.rental ? "대여" : "비대여"}
+                      {product.isReturnRequired ? "대여" : "비대여"}
                     </dd>
                   </div>
+
                   <div>
                     <dt className="text-sm text-gray-500">보관 위치</dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       {product.location}
                     </dd>
                   </div>
+
                   <div>
                     <dt className="text-sm text-gray-500">등록일</dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       {product.createdAt}
                     </dd>
                   </div>
+
                   <div>
                     <dt className="text-sm text-gray-500">구매처</dt>
                     <dd className="mt-1 text-sm text-gray-900">
@@ -255,13 +249,12 @@ export default function ItemDetailPage() {
               )}
             </div>
 
-            {/* 입출고 내역 */}
+            {/* 입출고 내역 탭 */}
             <div className="bg-white rounded-2xl shadow-sm p-8 mt-8">
               <h2 className="text-lg font-semibold text-gray-900 mb-6">
                 입출고 내역
               </h2>
 
-              {/* 탭 */}
               <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
                 {(["출고", "입고"] as Tab[]).map((t) => (
                   <button
@@ -278,7 +271,6 @@ export default function ItemDetailPage() {
                 ))}
               </div>
 
-              {/* 내역 리스트 */}
               <div className="overflow-auto max-h-[400px]">
                 {history.length === 0 ? (
                   <div className="py-12 text-center text-gray-500">
