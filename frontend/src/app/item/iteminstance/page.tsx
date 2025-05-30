@@ -12,6 +12,7 @@ interface ItemInstance {
   outbound: string;
   status: string;
   borrowerName?: string;
+  returnDate?: string; // 반납일 필드
   createdAt: string;
 }
 
@@ -52,18 +53,36 @@ export default function ItemInstancePage() {
         keyword: search.trim(),
       });
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/item-instances?${params}`,
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
+        }/api/v1/item-instances?${params.toString()}`,
         { credentials: "include" }
       );
       if (!res.ok) throw new Error(res.statusText);
-      const data: Page<ItemInstance> = await res.json();
+      const data: Page<any> = await res.json();
 
-      // 서버에서 내려준 content 정렬
-      const sorted = data.content.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-      setInstances(sorted);
+      const mapped: ItemInstance[] = data.content
+        .map((r: any) => ({
+          id: r.id,
+          itemName: r.itemName,
+          instanceCode: r.instanceCode,
+          outbound: r.outbound,
+          status: r.status,
+          borrowerName: r.borrowerName ?? r.borrower_name,
+          returnDate:
+            r.returnDate ??
+            r.return_date ??
+            r.supplyRequest?.returnDate ??
+            r.supply_request?.return_date,
+          createdAt: r.createdAt,
+        }))
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+      setInstances(mapped);
+      setTotalPages(data.totalPages);
     } catch (e) {
       console.error(e);
       setError("자산 목록을 불러오는 데 실패했습니다.");
@@ -106,9 +125,7 @@ export default function ItemInstancePage() {
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
           개별 자산 관리
         </h1>
-        <p className="text-gray-500">
-          개별 자산 현황을 확인할 수 있습니다.
-        </p>
+        <p className="text-gray-500">개별 자산 현황을 확인할 수 있습니다.</p>
       </div>
 
       {/* 검색 */}
@@ -155,6 +172,7 @@ export default function ItemInstancePage() {
                     "인스턴스 코드",
                     "출고 유형",
                     "상태",
+                    "반납일",
                     "생성일",
                   ].map((h) => (
                     <th
@@ -172,33 +190,38 @@ export default function ItemInstancePage() {
                     key={inst.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                       {inst.id}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                       {inst.itemName}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                       {inst.instanceCode}
                     </td>
-                    <td className="px-6 py-4 text-sm">
+                    <td className="px-6 py-4 text-sm whitespace-nowrap">
                       <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                         {inst.outbound}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm">
+                    <td className="px-6 py-4 text-sm whitespace-nowrap">
                       <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
                         {inst.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                      {inst.returnDate
+                        ? new Date(inst.returnDate).toLocaleDateString("ko-KR")
+                        : "–"}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                       {new Date(inst.createdAt).toLocaleString("ko-KR")}
                     </td>
                   </tr>
                 ))}
                 {filteredByMe.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={6} className="text-center py-6 text-gray-500">
+                    <td colSpan={7} className="text-center py-6 text-gray-500">
                       대여한 자산이 없습니다.
                     </td>
                   </tr>
