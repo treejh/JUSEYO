@@ -509,6 +509,10 @@ export function NotificationBell() {
                             notification.notificationType === "NEW_MANAGER"
                           ) {
                             router.push("/settings/approve");
+                          } else if (
+                            notification.notificationType === "NEW_CHAT"
+                          ) {
+                            router.push("/chat/select");
                           } /* else if (
                             notification.notificationType ===
                             "NEW_MANAGEMENT_DASHBOARD"

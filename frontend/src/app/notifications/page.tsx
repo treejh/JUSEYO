@@ -877,6 +877,10 @@ export default function NotificationsPage() {
                           ) {
                             router.push("/settings/approve");
                           } else if (
+                            notification.notificationType === "NEW_CHAT"
+                          ) {
+                            router.push("/chat/select");
+                          } else if (
                             notification.notificationType ===
                               "SUPPLY_REQUEST_APPROVED" ||
                             notification.notificationType ===
