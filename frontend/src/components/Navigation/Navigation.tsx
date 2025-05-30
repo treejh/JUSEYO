@@ -206,9 +206,9 @@ export default function Navigation({
           </li>
           <li className="menu-item">
             <Link
-              href="/return"
+              href="/item/return"
               className={`menu-link ${activeMenu === "return" ? "active" : ""}`}
-              onClick={() => onPageChange?.("return")}
+              onClick={() => onPageChange?.("/item/return")}
             >
               <span className="menu-icon">🔄</span>
               <span>비품 반납 내역</span>

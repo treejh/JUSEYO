@@ -28,6 +28,7 @@ export default function SupplyRequestUserListPage() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   const [currentPage, setCurrentPage] = useState<number>(0);
   const pageSize = 20;
@@ -127,6 +128,14 @@ export default function SupplyRequestUserListPage() {
     startIdx,
     startIdx + pageSize
   );
+
+  const handleReset = () => {
+    setSearchKeyword("");
+    setStartDate("");
+    setEndDate("");
+    setStatusFilter("ALL");
+    setCurrentPage(0);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
@@ -234,6 +243,19 @@ export default function SupplyRequestUserListPage() {
                     </div>
                   </div>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">승인 상태</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-white"
+                  >
+                    <option value="ALL">전체</option>
+                    <option value="REQUESTED">대기 중</option>
+                    <option value="APPROVED">승인</option>
+                    <option value="REJECTED">반려</option>
+                  </select>
+                </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div>
@@ -256,11 +278,7 @@ export default function SupplyRequestUserListPage() {
                 </div>
                 <div className="flex items-end">
                   <button
-                    onClick={() => {
-                      setStartDate("");
-                      setEndDate("");
-                      setSearchKeyword("");
-                    }}
+                    onClick={handleReset}
                     className="px-6 py-2 bg-[#0047AB] text-white rounded-lg hover:bg-[#003380] transition-colors duration-200 whitespace-nowrap h-[38px]"
                   >
                     초기화
