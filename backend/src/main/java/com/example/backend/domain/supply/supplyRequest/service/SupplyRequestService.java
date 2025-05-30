@@ -378,6 +378,7 @@ public class SupplyRequestService {
                 .id(e.getId())
                 .itemId(e.getItem().getId())
                 .userId(e.getUser().getId())
+                .userName(e.getUser().getName())
                 .managementId(e.getManagementDashboard().getId())
                 .serialNumber(e.getSerialNumber())
                 .reRequest(e.getReRequest())
