@@ -153,7 +153,7 @@ export default function AllItemsPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleExcelDownload}
-                className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all"
+                className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-blue-400 text-white rounded-lg hover:bg-blue-500 transition-all"
               >
                 <svg
                   className="w-4 h-4 mr-2"
