@@ -304,6 +304,9 @@ public class ItemInstanceService {
                 .createdAt(e.getCreatedAt())
                 .modifiedAt(e.getModifiedAt())
                 .borrowedCount(lendCnt)
+                .returnDate(e.getSupplyRequest() != null
+                        ? e.getSupplyRequest().getReturnDate()
+                        : null)
                 .build();
     }
 }

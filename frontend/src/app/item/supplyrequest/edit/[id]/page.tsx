@@ -45,14 +45,13 @@ export default function SupplyRequestEditPage() {
     async function fetchRequest() {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/api/v1/supply-requests/me`, {
+        const res = await fetch(`${API_BASE}/api/v1/supply-requests/${id}`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error(await res.text());
-        const list: SupplyRequest[] = await res.json();
-        const req = list.find((r) => r.id === Number(id));
-        if (!req) throw new Error("해당 요청을 찾을 수 없습니다.");
+        const req: SupplyRequest = await res.json();
         setRequest(req);
+
         // initialize form
         setQuantity(req.quantity);
         setPurpose(req.purpose);

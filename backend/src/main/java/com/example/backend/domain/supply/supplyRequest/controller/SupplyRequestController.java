@@ -149,4 +149,14 @@ public class SupplyRequestController {
     public void deleteMyRequest(@PathVariable Long id) {
         supplyRequestService.deleteRequest(id);
     }
+
+    /**
+     * 단일 비품 요청 조회 (본인 혹은 매니저 권한)
+     */
+    @GetMapping("/{requestId}")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    public ResponseEntity<SupplyRequestResponseDto> getById(@PathVariable Long requestId) {
+        SupplyRequestResponseDto dto = supplyRequestService.getRequestById(requestId);
+        return ResponseEntity.ok(dto);
+    }
 }
