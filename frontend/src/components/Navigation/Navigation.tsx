@@ -165,8 +165,10 @@ export default function Navigation({
         <li className="menu-item">
           <Link
             href="/item/supplyrequest/list/user"
-            className={`menu-link ${activeMenu === "request" ? "active" : ""}`}
-            onClick={() => onPageChange?.("request")}
+            className={`menu-link ${
+              activeMenu === "supply-request-user" ? "active" : ""
+            }`}
+            onClick={() => onPageChange?.("supply-request-user")}
           >
             <span className="menu-icon">✏️</span>
             <span>비품 요청</span>
@@ -354,9 +356,9 @@ export default function Navigation({
           <Link
             href="/item/user"
             className={`menu-link ${
-              activeMenu === "inventory-view" ? "active" : ""
+              activeMenu === "inventory" ? "active" : ""
             }`}
-            onClick={() => onPageChange?.("inventory-view")}
+            onClick={() => onPageChange?.("inventory")}
           >
             <span className="menu-icon">🔍</span>
             <span>비품 조회</span>
