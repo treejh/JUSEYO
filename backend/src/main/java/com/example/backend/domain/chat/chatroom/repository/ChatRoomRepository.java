@@ -61,5 +61,23 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             Pageable pageable
     );
 
+    @Query("""
+    SELECT cr FROM ChatRoom cr
+    JOIN cr.chatUserList cu
+    LEFT JOIN ChatMessage cm ON cm.chatRoom = cr
+    WHERE cu.user = :user AND cr.roomType = :roomType AND cu.chatStatus IN :statuses
+    GROUP BY cr.id
+    ORDER BY 
+        MAX(CASE WHEN cu.chatStatus = 'CREATE' THEN 1 ELSE 0 END) DESC,
+        MAX(cm.createdAt) DESC NULLS LAST
+""")
+    Page<ChatRoom> findRoomsByUserAndRoomTypeOrderByCreatorFirstAndLatestMessage(
+            @Param("user") User user,
+            @Param("roomType") ChatRoomType roomType,
+            @Param("statuses") List<ChatStatus> statuses,
+            Pageable pageable
+    );
+
+
 
 }

@@ -372,14 +372,15 @@ const ChatRoomList: React.FC<Props> = ({
     }
   }, [searchQuery, chatRooms, roomType, opponentInfo]);
 
-  if (loading) return (
-    <div className="h-full bg-white rounded-lg shadow-md p-4 flex items-center justify-center">
-      <div className="flex flex-col items-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
-        <p className="text-gray-600">채팅방 목록을 불러오는 중...</p>
+  if (loading)
+    return (
+      <div className="h-full bg-white rounded-lg shadow-md p-4 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+          <p className="text-gray-600">채팅방 목록을 불러오는 중...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
   if (error) return <p>{error}</p>;
 
   return (
@@ -461,7 +462,9 @@ const ChatRoomList: React.FC<Props> = ({
                   </button>
                   <button
                     className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                    onClick={() => leaveChatRoom(client, room.id, loginUserId, toast)}
+                    onClick={() =>
+                      leaveChatRoom(client, room.id, loginUserId, toast)
+                    }
                   >
                     나가기
                   </button>

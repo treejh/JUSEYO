@@ -145,14 +145,15 @@ const UserList: React.FC<Props> = ({
     }
   };
 
-  if (loading) return (
-    <div className="h-full bg-white rounded-lg shadow-md p-4 flex items-center justify-center">
-      <div className="flex flex-col items-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
-        <p className="text-gray-600">사용자 목록을 불러오는 중...</p>
+  if (loading)
+    return (
+      <div className="h-full bg-white rounded-lg shadow-md p-4 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+          <p className="text-gray-600">사용자 목록을 불러오는 중...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
   if (error) return <p>{error}</p>;
 
   return (
@@ -173,32 +174,34 @@ const UserList: React.FC<Props> = ({
       {/* 유저 리스트 감싸는 컨테이너에 max-h와 스크롤 추가 */}
       <div className="max-h-[800px] overflow-y-auto">
         <ul className="divide-y divide-gray-200">
-          {filteredUsers.map((user) => (
-            <li
-              key={user.id}
-              className="flex justify-between items-center py-3 px-2 hover:bg-gray-50 transition-colors duration-150 ease-in-out rounded-lg"
-            >
-              {/* 유저 정보 */}
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="font-medium text-gray-800 mb-0.5">
-                  {user.name}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {user.department}
-                </span>
-              </div>
+          {[...filteredUsers]
+            .sort((a, b) => a.name.localeCompare(b.name, "ko"))
+            .map((user) => (
+              <li
+                key={user.id}
+                className="flex justify-between items-center py-3 px-2 hover:bg-gray-50 transition-colors duration-150 ease-in-out rounded-lg"
+              >
+                {/* 유저 정보 */}
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="font-medium text-gray-800 mb-0.5">
+                    {user.name}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {user.department}
+                  </span>
+                </div>
 
-              {/* 버튼 영역 */}
-              <div className="flex min-w-[110px] flex-shrink-0 justify-end ml-4">
-                <button
-                  className="bg-blue-500 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-600 transition-colors duration-150 ease-in-out"
-                  onClick={() => handleChatRoomCheck(user.id, user.name)}
-                >
-                  채팅방 생성
-                </button>
-              </div>
-            </li>
-          ))}
+                {/* 버튼 영역 */}
+                <div className="flex min-w-[110px] flex-shrink-0 justify-end ml-4">
+                  <button
+                    className="bg-blue-500 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-600 transition-colors duration-150 ease-in-out"
+                    onClick={() => handleChatRoomCheck(user.id, user.name)}
+                  >
+                    채팅방 생성
+                  </button>
+                </div>
+              </li>
+            ))}
         </ul>
       </div>
 
@@ -206,7 +209,9 @@ const UserList: React.FC<Props> = ({
       {showCreateUI && (
         <div className="fixed inset-0 bg-gray-500/70 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative animate-fade-in">
-            <h3 className="text-2xl font-bold mb-6 text-blue-700 text-center tracking-tight">1:1 채팅방 생성</h3>
+            <h3 className="text-2xl font-bold mb-6 text-blue-700 text-center tracking-tight">
+              1:1 채팅방 생성
+            </h3>
             <p className="text-base font-semibold text-gray-600 mb-6">
               선택된 유저: <strong>{selectedUserName}</strong>
             </p>

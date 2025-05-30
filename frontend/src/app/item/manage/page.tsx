@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCustomToast } from "@/utils/toast";
+import { useRouter } from "next/navigation";
 
 interface Item {
   id: number;
@@ -29,6 +30,7 @@ export default function AllItemsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const toast = useCustomToast();
+  const router = useRouter();
 
   const fetchAllItems = async () => {
     setLoading(true);
@@ -106,47 +108,64 @@ export default function AllItemsPage() {
     <main className="min-h-screen bg-gray-50 py-8 px-8">
       <div className="max-w-[1920px] mx-auto">
         {/* 헤더 */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">비품 관리</h1>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleExcelDownload}
-              className="inline-flex items-center px-4 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              엑셀 다운로드
-            </button>
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 관리</h1>
+          <div className="flex gap-4 mb-4 border-b border-gray-200">
             <Link
-              href="/item/manage/create"
-              className="inline-flex items-center px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200"
+              href="/item/manage"
+              className="px-4 py-3 font-medium text-[#0047AB] border-b-2 border-[#0047AB]"
             >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              비품 추가
+              비품 정보
             </Link>
+            <Link
+              href="/item/iteminstance/manage"
+              className="px-4 py-3 font-medium text-gray-600 hover:text-[#0047AB] border-b-2 border-transparent hover:border-[#0047AB] transition-all"
+            >
+              재고 단위
+            </Link>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-gray-600">비품 정보를 관리할 수 있습니다.</p>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={handleExcelDownload}
+                className="inline-flex items-center px-4 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200"
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                엑셀 다운로드
+              </button>
+              <Link
+                href="/item/manage/create"
+                className="inline-flex items-center px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200"
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                비품 추가
+              </Link>
+            </div>
           </div>
         </div>
 
