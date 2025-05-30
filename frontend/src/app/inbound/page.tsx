@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import Image from 'next/image';
 
 type InboundType = 'PURCHASE' | 'RETURN' | 'REPAIR' | 'REPAIR_RETURN';
 
@@ -553,41 +554,32 @@ export default function InboundPage() {
 
         {/* 이미지 모달 */}
         {selectedImage && (
-          <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-              <div 
-                className="fixed inset-0 backdrop-blur-sm bg-black/30 transition-opacity" 
-                aria-hidden="true" 
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div className="relative max-w-4xl max-h-[90vh] w-full mx-4">
+              <button
                 onClick={() => setSelectedImage(null)}
-              ></div>
-              <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-              <div className="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                <div className="absolute top-0 right-0 pt-4 pr-4 z-10">
-                  <button
-                    type="button"
-                    className="bg-white/80 backdrop-blur-sm rounded-lg p-2 text-gray-400 hover:text-gray-500 focus:outline-none transition-colors duration-200"
-                    onClick={() => setSelectedImage(null)}
-                  >
-                    <span className="sr-only">닫기</span>
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="bg-white/80 backdrop-blur-sm p-8">
-                  <div className="flex justify-center">
-                    <img
-                      src={selectedImage}
-                      alt="비품 이미지"
-                      className="max-h-[80vh] object-contain rounded-lg shadow-lg"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder-image.jpg';
-                        target.classList.add('opacity-50');
-                      }}
-                    />
-                  </div>
-                </div>
+                className="absolute -top-2 -right-2 bg-black/50 hover:bg-black/70 p-2 backdrop-blur-sm rounded-full text-white/70 hover:text-white transition-all duration-200 shadow-lg"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="flex justify-center">
+                <Image
+                  src={selectedImage}
+                  alt="비품 이미지"
+                  width={800}
+                  height={800}
+                  className="max-h-[80vh] w-auto object-contain rounded-lg"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder-image.jpg';
+                    target.classList.add('opacity-50');
+                  }}
+                />
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCustomToast } from "@/utils/toast";
 
@@ -41,12 +41,15 @@ export default function ManageSupplyRequestsPage() {
   };
 
   const updateStatus = async (id: number, action: "approve" | "reject") => {
+    if (processingIds.includes(id)) return;
+    
     setProcessingIds((prev) => [...prev, id]);
     try {
       const url = `${API_BASE}/api/v1/supply-requests/${id}/${action}`;
       const res = await fetch(url, { method: "POST", credentials: "include" });
       if (!res.ok) throw new Error(`서버 오류: ${await res.text()}`);
-      // Refresh list after action
+      
+      toast.success(action === "approve" ? "신청이 승인되었습니다." : "신청이 거절되었습니다.");
       await fetchPending();
     } catch (err: any) {
       toast.error(err.message);
@@ -60,25 +63,21 @@ export default function ManageSupplyRequestsPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-[1920px] mx-auto">
         {/* 헤더 섹션 */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                비품 요청 관리
-              </h1>
-              <p className="text-gray-500 mt-1">
-                대기 중인 비품 요청을 승인하거나 거절할 수 있습니다.
-              </p>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 신청 관리</h1>
+              <p className="text-gray-600">비품 신청 현황을 관리할 수 있습니다.</p>
             </div>
             <Link
               href="/item/supplyrequest/list/manage"
-              className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0047AB]"
             >
               <svg
-                className="w-5 h-5"
+                className="w-5 h-5 mr-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -94,28 +93,30 @@ export default function ManageSupplyRequestsPage() {
             </Link>
           </div>
 
-          {/* 통계 섹션 수정 */}
-          <div className="flex mt-6">
-            <div className="bg-blue-50 rounded-lg p-4 w-64">
-              <div className="flex items-center gap-3">
-                <svg
-                  className="w-8 h-8 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <div>
-                  <p className="text-sm text-blue-600">대기 중인 요청</p>
-                  <p className="text-2xl font-bold text-blue-900">
-                    {requests.length}
-                  </p>
+          {/* 통계 섹션 */}
+          <div className="bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="bg-[#0047AB]/10 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <svg
+                    className="w-8 h-8 text-[#0047AB]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <div>
+                    <p className="text-sm text-[#0047AB]">대기 중인 요청</p>
+                    <p className="text-2xl font-bold text-[#0047AB]">
+                      {requests.length}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -124,11 +125,13 @@ export default function ManageSupplyRequestsPage() {
 
         {/* 테이블 섹션 */}
         {loading ? (
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <div className="flex flex-col items-center justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              <p className="mt-4 text-gray-500">요청 목록을 불러오는 중...</p>
-            </div>
+          <div className="bg-white p-8 text-center rounded-lg shadow-sm">
+            <div className="animate-spin h-12 w-12 border-b-2 border-[#0047AB] rounded-full mx-auto" />
+            <p className="mt-4 text-gray-500">신청 목록을 불러오는 중...</p>
+          </div>
+        ) : requests.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <p className="text-gray-500">처리할 요청이 없습니다.</p>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -136,24 +139,15 @@ export default function ManageSupplyRequestsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    {[
-                      "ID",
-                      "상품명",
-                      "수량",
-                      "사유",
-                      "사용일",
-                      "반납일",
-                      "대여여부",
-                      "작성일",
-                      "승인 / 거절",
-                    ].map((header) => (
-                      <th
-                        key={header}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        {header}
-                      </th>
-                    ))}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수량</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사유</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사용일</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">반납일</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">대여여부</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작성일</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -179,9 +173,9 @@ export default function ManageSupplyRequestsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2 py-1 text-xs rounded-full ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             req.rental
-                              ? "bg-blue-100 text-blue-800"
+                              ? "bg-[#0047AB]/10 text-[#0047AB]"
                               : "bg-green-100 text-green-800"
                           }`}
                         >
@@ -191,36 +185,32 @@ export default function ManageSupplyRequestsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(req.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => updateStatus(req.id, "approve")}
-                          disabled={processingIds.includes(req.id)}
-                          className="px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 border border-green-200"
-                        >
-                          승인
-                        </button>
-                        <button
-                          onClick={() => updateStatus(req.id, "reject")}
-                          disabled={processingIds.includes(req.id)}
-                          className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 border border-red-200"
-                        >
-                          거절
-                        </button>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => updateStatus(req.id, "approve")}
+                            disabled={processingIds.includes(req.id)}
+                            className="text-green-600 hover:text-green-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            승인
+                          </button>
+                          <button
+                            onClick={() => updateStatus(req.id, "reject")}
+                            disabled={processingIds.includes(req.id)}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            거절
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
-            {requests.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                처리할 요청이 없습니다.
-              </div>
-            )}
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

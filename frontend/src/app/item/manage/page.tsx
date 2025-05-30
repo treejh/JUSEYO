@@ -31,6 +31,7 @@ export default function AllItemsPage() {
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const toast = useCustomToast();
   const router = useRouter();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const fetchAllItems = async () => {
     setLoading(true);
@@ -105,31 +106,33 @@ export default function AllItemsPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8 px-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-[1920px] mx-auto">
-        {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 관리</h1>
-          <div className="flex gap-4 mb-4 border-b border-gray-200">
-            <Link
-              href="/item/manage"
-              className="px-4 py-3 font-medium text-[#0047AB] border-b-2 border-[#0047AB]"
-            >
-              비품 정보
-            </Link>
-            <Link
-              href="/item/iteminstance/manage"
-              className="px-4 py-3 font-medium text-gray-600 hover:text-[#0047AB] border-b-2 border-transparent hover:border-[#0047AB] transition-all"
-            >
-              재고 단위
-            </Link>
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-gray-600">비품 정보를 관리할 수 있습니다.</p>
+        {/* 헤더 섹션 */}
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 관리</h1>
+              <div className="flex gap-4 mb-4 border-b border-gray-200">
+                <Link
+                  href="/item/manage"
+                  className="px-4 py-3 font-medium text-[#0047AB] border-b-2 border-[#0047AB]"
+                >
+                  비품 정보
+                </Link>
+                <Link
+                  href="/item/iteminstance/manage"
+                  className="px-4 py-3 font-medium text-gray-600 hover:text-[#0047AB] border-b-2 border-transparent hover:border-[#0047AB] transition-all"
+                >
+                  재고 단위
+                </Link>
+              </div>
+              <p className="text-gray-600">비품 정보를 관리할 수 있습니다.</p>
+            </div>
             <div className="flex items-center space-x-3">
               <button
                 onClick={handleExcelDownload}
-                className="inline-flex items-center px-4 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200"
+                className="inline-flex items-center px-4 py-2 text-sm bg-[#0047AB] text-white rounded-lg hover:bg-[#003380] transition-all duration-200"
               >
                 <svg
                   className="w-4 h-4 mr-2"
@@ -167,23 +170,23 @@ export default function AllItemsPage() {
               </Link>
             </div>
           </div>
-        </div>
 
-        {/* 검색 */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="relative max-w-2xl">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+          {/* 검색 섹션 */}
+          <div className="bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="비품 이름으로 검색"
+                value={searchTerm}
+                onChange={handleSearch}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+              />
             </div>
-            <input
-              type="text"
-              placeholder="비품 이름으로 검색"
-              value={searchTerm}
-              onChange={handleSearch}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
           </div>
         </div>
 
@@ -197,17 +200,8 @@ export default function AllItemsPage() {
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <colgroup>
-                  <col className="w-[5%]" />
-                  <col className="w-[25%]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[13%]" />
-                  <col className="w-[15%]" />
-                  <col className="w-[20%]" />
-                  <col className="w-[10%]" />
-                </colgroup>
-                <thead>
-                  <tr className="bg-gray-50">
+                <thead className="bg-gray-50">
+                  <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">비품 정보</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">카테고리</th>
@@ -313,6 +307,39 @@ export default function AllItemsPage() {
           </div>
         )}
       </div>
-    </main>
+
+      {/* 이미지 모달 */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] w-full mx-4">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-2 -right-2 bg-black/50 hover:bg-black/70 p-2 backdrop-blur-sm rounded-full text-white/70 hover:text-white transition-all duration-200 shadow-lg"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="flex justify-center">
+              <Image
+                src={selectedImage}
+                alt="비품 이미지"
+                width={800}
+                height={800}
+                className="max-h-[80vh] w-auto object-contain rounded-lg"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder-image.jpg';
+                  target.classList.add('opacity-50');
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
