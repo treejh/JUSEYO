@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -107,4 +108,12 @@ public class SupplyReturnController {
         Pageable pageable = PageRequest.of(page - 1, size);
         return supplyReturnService.getUserSupplyReturns( pageable, approvalStatus);
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
+    public ResponseEntity deleteSupplyReturn(@PathVariable(name = "id") Long id) {
+        supplyReturnService.deleteSupplyReturn(id);
+        return ResponseEntity.ok().build();
+    }
+    
 }

@@ -9,6 +9,7 @@ import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.repository.UserRepository;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Inbound;
+import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
 import com.example.backend.domain.inventory.inventoryIn.dto.request.InventoryInRequestDto;
@@ -90,9 +91,9 @@ public class SupplyReturnService {
         Long id=tokenService.getIdFromToken();
         User user = userRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
         if(approvalStatus==null){
-            return supplyReturnRepository.findAllSupplyReturn(user.getManagementDashboard().getId(),pageable);
+            return supplyReturnRepository.findAllSupplyReturn(user.getManagementDashboard().getId(), Status.ACTIVE,pageable);
         }else{
-            return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),pageable);
+            return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),Status.ACTIVE,pageable);
         }
     }
 
@@ -101,9 +102,9 @@ public class SupplyReturnService {
         Long id=tokenService.getIdFromToken();
         User user = userRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
         if(approvalStatus==null){
-            return supplyReturnRepository.findAllSupplyReturn(user.getManagementDashboard().getId(),user.getId(),pageable);
+            return supplyReturnRepository.findAllSupplyReturn(user.getManagementDashboard().getId(),user.getId(),Status.ACTIVE,pageable);
         }else{
-            return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),user.getId(),pageable);
+            return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),user.getId(),Status.ACTIVE,pageable);
         }
     }
 
@@ -178,5 +179,12 @@ public class SupplyReturnService {
         return supplyReturnRepository.findAll().stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    //비품 반납 삭제
+    @Transactional
+    public void deleteSupplyReturn(Long id) {
+        SupplyReturn supplyReturn=supplyReturnRepository.findById(id).orElseThrow(()-> new BusinessLogicException(ExceptionCode.SUPPLY_RETURN_NOT_FOUND));
+        supplyReturn.setStatus(Status.STOP);
     }
 }
