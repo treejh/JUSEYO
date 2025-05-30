@@ -129,194 +129,290 @@ export default function SupplyRequestUserListPage() {
   );
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* 헤더 */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-[1920px] mx-auto">
+        {/* 헤더 섹션 */}
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-bold">나의 비품 요청</h1>
-              <p className="text-gray-500 mt-1">
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                나의 비품 요청
+              </h1>
+              <p className="text-gray-600">
                 내가 작성한 비품 요청 현황을 확인합니다.
               </p>
             </div>
             <Link
               href="/item/supplyrequest/create"
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#0047AB] hover:bg-[#003380] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0047AB] transition-colors duration-200 whitespace-nowrap"
             >
-              <span className="text-lg">+</span> 신규 요청
+              <svg
+                className="mr-2 h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              신규 요청
             </Link>
           </div>
-        </div>
 
-        {/* 검색 / 필터 */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          {errorMsg && <div className="mb-4 text-red-600">{errorMsg}</div>}
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[300px] relative">
-              <input
-                type="text"
-                placeholder="상품명으로 검색"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
+          {/* 통계 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-sm text-blue-600">전체 요청</p>
+              <p className="text-2xl font-bold text-blue-900">
+                {filteredRequests.length}
+              </p>
             </div>
-            <div className="flex items-center gap-2 min-w-[500px]">
-              <span className="text-gray-600">작성일:</span>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="text-gray-600">~</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={() => {
-                  setStartDate("");
-                  setEndDate("");
-                }}
-                className="px-3 py-2 text-gray-600 hover:text-gray-800"
-              >
-                초기화
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* 테이블 */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-500">데이터를 불러오는 중...</p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    순번
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    상품명
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    수량
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    사유
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    승인상태
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    작성일
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    관리
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedRequests.map((req, idx) => (
-                  <tr key={req.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {startIdx + idx + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {req.productName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {req.quantity}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                      {req.purpose}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(
-                          req.approvalStatus
-                        )}`}
-                      >
-                        {req.approvalStatus}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(req.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
-                      {req.approvalStatus === "REQUESTED" && (
-                        <>
-                          <Link
-                            href={`/item/supplyrequest/edit/${req.id}`}
-                            className="text-blue-600 hover:underline"
-                          >
-                            수정
-                          </Link>
-                          <button
-                            onClick={() => handleDeleteRequest(req.id)}
-                            disabled={deleteLoadingId === req.id}
-                            className="text-red-600 hover:underline disabled:opacity-50"
-                          >
-                            {deleteLoadingId === req.id ? "삭제 중..." : "삭제"}
-                          </button>
-                        </>
-                      )}
-                      {req.approvalStatus !== "REQUESTED" && (
-                        <span className="text-gray-400">–</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* 페이지네이션 */}
-            <div className="flex justify-end items-center space-x-2 p-4">
-              <button
-                disabled={currentPage === 0}
-                onClick={() => setCurrentPage(0)}
-                className="px-2 py-1 border rounded disabled:opacity-50"
-              >
-                First
-              </button>
-              <button
-                disabled={currentPage === 0}
-                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                className="px-2 py-1 border rounded disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <span className="px-2">
-                Page {currentPage + 1} of {totalPages || 1}
-              </span>
-              <button
-                disabled={currentPage >= totalPages - 1}
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages - 1, p + 1))
+            <div className="bg-yellow-50 rounded-lg p-4">
+              <p className="text-sm text-yellow-600">대기 중</p>
+              <p className="text-2xl font-bold text-yellow-900">
+                {
+                  filteredRequests.filter(
+                    (r) => r.approvalStatus === "REQUESTED"
+                  ).length
                 }
-                className="px-2 py-1 border rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-              <button
-                disabled={currentPage >= totalPages - 1}
-                onClick={() => setCurrentPage(totalPages - 1)}
-                className="px-2 py-1 border rounded disabled:opacity-50"
-              >
-                Last
-              </button>
+              </p>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4">
+              <p className="text-sm text-green-600">승인</p>
+              <p className="text-2xl font-bold text-green-900">
+                {
+                  filteredRequests.filter(
+                    (r) => r.approvalStatus === "APPROVED"
+                  ).length
+                }
+              </p>
+            </div>
+            <div className="bg-red-50 rounded-lg p-4">
+              <p className="text-sm text-red-600">반려</p>
+              <p className="text-2xl font-bold text-red-900">
+                {
+                  filteredRequests.filter(
+                    (r) => r.approvalStatus === "REJECTED"
+                  ).length
+                }
+              </p>
+            </div>
+          </div>
+
+          {/* 검색 / 필터 섹션 */}
+          <div className="mt-6 bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">상품명</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="상품명으로 검색"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                    />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg
+                        className="h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">기간 선택</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                    />
+                    <span className="text-gray-500">~</span>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={() => {
+                      setStartDate("");
+                      setEndDate("");
+                      setSearchKeyword("");
+                    }}
+                    className="px-6 py-2 bg-[#0047AB] text-white rounded-lg hover:bg-[#003380] transition-colors duration-200 whitespace-nowrap h-[38px]"
+                  >
+                    초기화
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 에러 메시지 */}
+        {errorMsg && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-red-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{errorMsg}</p>
+              </div>
             </div>
           </div>
         )}
+
+        {/* 테이블 섹션 */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">번호</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">대여여부</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">사용일</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">반납일</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">상태</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">작성일</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">관리</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan={9} className="px-6 py-12 text-center">
+                      <div className="flex justify-center">
+                        <svg className="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    </td>
+                  </tr>
+                ) : paginatedRequests.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-6 py-12 text-center">
+                      <p className="text-gray-500">표시할 요청이 없습니다.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedRequests.map((request, index) => (
+                    <tr key={request.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {currentPage * pageSize + index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{request.productName}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{request.quantity}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{request.rental ? "대여" : "구매"}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{formatDate(request.useDate)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{formatDate(request.returnDate)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(request.approvalStatus)}`}>
+                          {request.approvalStatus === "REQUESTED" && "대기 중"}
+                          {request.approvalStatus === "APPROVED" && "승인"}
+                          {request.approvalStatus === "REJECTED" && "반려"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {request.approvalStatus === "REQUESTED" && (
+                          <div className="flex justify-end gap-2">
+                            <Link
+                              href={`/item/supplyrequest/edit/${request.id}`}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              수정
+                            </Link>
+                            <button
+                              onClick={() => handleDeleteRequest(request.id)}
+                              disabled={deleteLoadingId === request.id}
+                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                            >
+                              {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 페이지네이션 */}
+        <div className="mt-6 flex justify-center">
+          <nav className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+              disabled={currentPage === 0}
+              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              이전
+            </button>
+            <span className="px-6 py-2 text-gray-700">
+              페이지 {currentPage + 1} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+              disabled={currentPage >= totalPages - 1}
+              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              다음
+            </button>
+          </nav>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
