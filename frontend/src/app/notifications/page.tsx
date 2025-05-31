@@ -863,7 +863,7 @@ export default function NotificationsPage() {
                           } else if (
                             notification.notificationType === "SUPPLY_RETURN"
                           ) {
-                            router.push("/return");
+                            router.push("/item/return");
                           } else if (
                             notification.notificationType === "STOCK_SHORTAGE"
                           ) {
@@ -889,6 +889,15 @@ export default function NotificationsPage() {
                               "SUPPLY_REQUEST_DELAYED"
                           ) {
                             router.push("/item/supplyrequest/list/user");
+                          } else if (
+                            notification.notificationType === "RETURN_DUE_SOON"
+                          ) {
+                            router.push("/item/supplyreturn");
+                          } else if (
+                            notification.notificationType ===
+                            "SUPPLY_RETURN_APPROVED"
+                          ) {
+                            router.push("/item/supplyreturn");
                           }
                         }}
                       >

@@ -484,18 +484,22 @@ export function NotificationBell() {
                             notification.notificationType === "SUPPLY_REQUEST"
                           ) {
                             router.push("/item/supplyrequest/list/manage");
+                            setIsOpen(false);
                           } else if (
                             notification.notificationType === "SUPPLY_RETURN"
                           ) {
-                            router.push("/return");
+                            router.push("/item/return");
+                            setIsOpen(false);
                           } else if (
                             notification.notificationType === "STOCK_SHORTAGE"
                           ) {
                             router.push("/item/manage");
+                            setIsOpen(false);
                           } else if (
                             notification.notificationType === "NEW_USER"
                           ) {
                             router.push("/settings/approve");
+                            setIsOpen(false);
                           } else if (
                             notification.notificationType ===
                               "SUPPLY_REQUEST_APPROVED" ||
@@ -505,20 +509,29 @@ export function NotificationBell() {
                               "SUPPLY_REQUEST_DELAYED"
                           ) {
                             router.push("/item/supplyrequest/list/user");
+                            setIsOpen(false);
                           } else if (
                             notification.notificationType === "NEW_MANAGER"
                           ) {
                             router.push("/settings/approve");
+                            setIsOpen(false);
                           } else if (
                             notification.notificationType === "NEW_CHAT"
                           ) {
                             router.push("/chat/select");
-                          } /* else if (
-                            notification.notificationType ===
-                            "NEW_MANAGEMENT_DASHBOARD"
+                            setIsOpen(false);
+                          } else if (
+                            notification.notificationType === "RETURN_DUE_SOON"
                           ) {
-                            router.push("/dashboard");
-                          } */
+                            router.push("/item/supplyreturn");
+                            setIsOpen(false);
+                          } else if (
+                            notification.notificationType ===
+                            "SUPPLY_RETURN_APPROVED"
+                          ) {
+                            router.push("/item/supplyreturn");
+                            setIsOpen(false);
+                          }
                         }}
                       >
                         <div className="flex items-start gap-3">
@@ -557,7 +570,10 @@ export function NotificationBell() {
                             </p>
                           </div>
                           <button
-                            onClick={() => handleMarkAsRead(notification.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsRead(notification.id);
+                            }}
                             className="flex-shrink-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-all duration-200"
                           >
                             <svg
