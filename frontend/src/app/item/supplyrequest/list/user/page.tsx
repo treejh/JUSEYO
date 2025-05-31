@@ -203,7 +203,7 @@ export default function SupplyRequestUserListPage() {
               </p>
             </div>
             <div className="bg-red-50 rounded-lg p-4">
-              <p className="text-sm text-red-600">반려</p>
+              <p className="text-sm text-red-600">거절</p>
               <p className="text-2xl font-bold text-red-900">
                 {
                   filteredRequests.filter(
@@ -256,7 +256,7 @@ export default function SupplyRequestUserListPage() {
                     <option value="REQUESTED">대기 중</option>
                     <option value="RETURN_PENDING">반납 대기 중</option>
                     <option value="APPROVED">승인</option>
-                    <option value="REJECTED">반려</option>
+                    <option value="REJECTED">거절</option>
                   </select>
                 </div>
               </div>
@@ -322,7 +322,7 @@ export default function SupplyRequestUserListPage() {
             <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">번호</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">대여여부</th>
@@ -377,7 +377,7 @@ export default function SupplyRequestUserListPage() {
                           {request.approvalStatus === "REQUESTED" && "대기 중"}
                           {request.approvalStatus === "RETURN_PENDING" && "반납 대기 중"}
                           {request.approvalStatus === "APPROVED" && "승인"}
-                          {request.approvalStatus === "REJECTED" && "반려"}
+                          {request.approvalStatus === "REJECTED" && "거절"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
