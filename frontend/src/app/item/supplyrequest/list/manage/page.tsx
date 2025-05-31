@@ -114,9 +114,11 @@ export default function SupplyRequestManageListPage() {
       if (statusFilter !== "ALL" && req.approvalStatus !== statusFilter) {
         return false;
       }
-      // 상품명 키워드 필터
+      // 상품명 또는 요청자 이름 키워드 필터
+      const keyword = searchKeyword.toLowerCase();
       if (
-        !req.productName.toLowerCase().includes(searchKeyword.toLowerCase())
+        !req.productName.toLowerCase().includes(keyword) &&
+        !req.userName.toLowerCase().includes(keyword)
       ) {
         return false;
       }
@@ -151,10 +153,10 @@ export default function SupplyRequestManageListPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-                비품 요청 리스트
+                비품 요청 내역
               </h1>
               <p className="text-gray-600">
-                직원들의 비품 요청 현황을 확인하고 관리할 수 있습니다.
+                비품 요청 현황을 조회할 수 있습니다
               </p>
             </div>
             <Link
@@ -223,11 +225,11 @@ export default function SupplyRequestManageListPage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">상품명</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">검색어</label>
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="상품명으로 검색"
+                      placeholder="상품명 또는 요청자 이름으로 검색"
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
@@ -302,7 +304,7 @@ export default function SupplyRequestManageListPage() {
             <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">번호</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">요청자</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
