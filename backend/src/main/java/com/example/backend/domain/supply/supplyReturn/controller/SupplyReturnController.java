@@ -2,6 +2,7 @@ package com.example.backend.domain.supply.supplyReturn.controller;
 
 import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnRequestDto;
 import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnStatusUpdateRequestDto;
+import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnUpdateRequestDto;
 import com.example.backend.domain.supply.supplyReturn.service.SupplyReturnService;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.domain.excel.service.ExcelExportService;
@@ -116,5 +117,19 @@ public class SupplyReturnController {
         supplyReturnService.deleteSupplyReturn(id);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "비품 반납 수정", description = "기존 반납서의 정보를 수정합니다.")
+    @PostMapping("/{id}/update")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','USER')")
+    public SupplyReturnResponseDto updateSupplyReturn(
+            @Parameter(description = "반납서 ID", example = "12")
+            @PathVariable(name = "id") Long id,
+
+            @Parameter(description = "수정할 반납서 정보 DTO", required = true)
+            @RequestBody @Valid SupplyReturnUpdateRequestDto dto) {
+
+        return supplyReturnService.updateSupplyReturn(dto,id);
+    }
+
 
 }

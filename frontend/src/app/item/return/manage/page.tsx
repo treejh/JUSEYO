@@ -14,7 +14,7 @@ interface SupplyReturn {
   purpose: string;
   approvalStatus: string;
   createdAt: string;
-  outboundStatus: string;
+  outbound: string;
 }
 
 interface PageResponse {
@@ -34,16 +34,19 @@ export default function ReturnManagePage() {
   const [pageData, setPageData] = useState<PageResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [processingIds, setProcessingIds] = useState<number[]>([]);
-  const [deleteLoadingId, setDeleteLoadingId] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [outboundStatus, setOutboundStatus] = useState<string>("ALL");
+  const [outboundStatus, setOutboundStatus] = useState<string>("RETURN_PENDING");
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTargetId, setModalTargetId] = useState<number | null>(null);
+  const [modalFile, setModalFile] = useState<File | null>(null);
 
   // 로그인/매니저 권한 체크
   useEffect(() => {
@@ -67,7 +70,7 @@ export default function ReturnManagePage() {
       if (searchKeyword) params.append("search", searchKeyword);
       if (startDate) params.append("fromDate", startDate);
       if (endDate) params.append("toDate", endDate);
-      if (outboundStatus !== "ALL") params.append("outboundStatus", outboundStatus);
+      if (outboundStatus !== "RETURN_PENDING") params.append("outboundStatus", outboundStatus);
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/supply-return?${params.toString()}`,
@@ -111,28 +114,6 @@ export default function ReturnManagePage() {
     }
   };
 
-  // 개별 요청 삭제
-  const handleDeleteRequest = async (id: number) => {
-    if (!confirm("정말 이 요청을 삭제하시겠습니까?")) return;
-    setDeleteLoadingId(id);
-    setErrorMsg(null);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/supply-return/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
-      // 삭제 성공 후 목록 다시 불러오기
-      await fetchReturns();
-    } catch (err: any) {
-      setErrorMsg(`삭제 실패: ${err.message}`);
-    } finally {
-      setDeleteLoadingId(null);
-    }
-  };
-
   useEffect(() => {
     fetchReturns();
   }, [currentPage, searchKeyword, startDate, endDate, outboundStatus]);
@@ -143,7 +124,9 @@ export default function ReturnManagePage() {
       case "RETURN_PENDING":
         return "bg-yellow-100 text-yellow-800";
       case "RETURNED":
-        return "bg-green-100 text-green-800";
+        return "bg-green-50 text-green-600";
+      case "RETURN_REJECTED":
+        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -152,11 +135,11 @@ export default function ReturnManagePage() {
   const getOutboundStatusBadgeColor = (status: string) => {
     switch (status) {
       case "AVAILABLE":
-        return "bg-green-100 text-green-800";
+        return "bg-blue-50 text-blue-600";
       case "DAMAGED":
-        return "bg-red-100 text-red-800";
+        return "bg-red-50 text-red-600";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-50 text-gray-600";
     }
   };
 
@@ -169,7 +152,7 @@ export default function ReturnManagePage() {
     setSearchKeyword("");
     setStartDate("");
     setEndDate("");
-    setOutboundStatus("ALL");
+    setOutboundStatus("RETURN_PENDING");
     setCurrentPage(1);
   };
 
@@ -184,7 +167,7 @@ export default function ReturnManagePage() {
                 비품 반납 관리
               </h1>
               <p className="text-gray-600">
-                직원들의 비품 반납 현황을 확인하고 관리할 수 있습니다.
+                비품 반납 현황을 확인하고 관리할 수 있습니다.
               </p>
             </div>
             <Link
@@ -270,7 +253,7 @@ export default function ReturnManagePage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[130px] whitespace-nowrap">요청서 ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">반납 상태</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">반납 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">현재 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">작성일</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">관리</th>
@@ -279,7 +262,7 @@ export default function ReturnManagePage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <div className="flex justify-center">
                         <svg className="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -290,7 +273,7 @@ export default function ReturnManagePage() {
                   </tr>
                 ) : !pageData || pageData.content.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <p className="text-gray-500">표시할 반납 요청이 없습니다.</p>
                     </td>
                   </tr>
@@ -313,12 +296,13 @@ export default function ReturnManagePage() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(ret.approvalStatus)}`}>
                           {ret.approvalStatus === "RETURN_PENDING" && "반납 대기"}
                           {ret.approvalStatus === "RETURNED" && "반납 완료"}
+                          {ret.approvalStatus === "RETURN_REJECTED" && "거절"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getOutboundStatusBadgeColor(ret.outboundStatus)}`}>
-                          {ret.outboundStatus === "AVAILABLE" && "사용 가능"}
-                          {ret.outboundStatus === "DAMAGED" && "파손"}
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getOutboundStatusBadgeColor(ret.outbound)}`}>
+                          {ret.outbound === "AVAILABLE" && "사용 가능"}
+                          {ret.outbound === "DAMAGED" && "파손"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -327,15 +311,31 @@ export default function ReturnManagePage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleDeleteRequest(ret.id)}
-                            disabled={deleteLoadingId === ret.id}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                          >
-                            {deleteLoadingId === ret.id ? "삭제 중..." : "삭제"}
-                          </button>
-                        </div>
+                        {ret.approvalStatus === "RETURN_PENDING" && (
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              className="text-green-600 hover:text-green-900 cursor-pointer"
+                              onClick={() => {
+                                setModalTargetId(ret.id);
+                                setModalFile(null);
+                                setModalOpen(true);
+                              }}
+                            >
+                              승인
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm("정말 이 요청을 거절하시겠습니까?")) {
+                                  handleStatusUpdate(ret.id, "RETURN_REJECTED", new File([], "dummy.jpg"));
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              거절
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -367,6 +367,51 @@ export default function ReturnManagePage() {
                 다음
               </button>
             </nav>
+          </div>
+        )}
+
+        {/* 사진 업로드 모달 */}
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 w-screen h-screen flex items-center justify-center">
+            <div className="absolute inset-0 w-full h-full backdrop-blur-sm" />
+            <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm flex flex-col items-center">
+              <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl" onClick={() => setModalOpen(false)} aria-label="닫기">&times;</button>
+              <div className="mb-4 flex flex-col items-center">
+                <svg className="w-12 h-12 text-[#0047AB] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 002.828 2.828l6.586-6.586M16 7V3a1 1 0 00-1-1h-4a1 1 0 00-1 1v4m-4 4v6a2 2 0 002 2h6a2 2 0 002-2v-6" />
+                </svg>
+                <h2 className="text-lg font-bold mb-1">승인 사진 업로드</h2>
+                <p className="text-sm text-gray-500 mb-2 text-center">승인 처리를 위해 사진을 첨부해 주세요.<br/>이미지 파일만 업로드 가능합니다.</p>
+              </div>
+              <label className="w-full flex flex-col items-center px-4 py-6 bg-gray-50 text-blue-600 rounded-lg shadow-md tracking-wide border border-blue-200 cursor-pointer hover:bg-blue-50 transition mb-3">
+                <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-4 4h-4a1 1 0 01-1-1v-4m6 5a1 1 0 001-1v-4m-6 5a1 1 0 01-1-1v-4" />
+                </svg>
+                <span className="text-base leading-normal">사진 선택</span>
+                <input type="file" accept="image/*" className="hidden" onChange={e => setModalFile(e.target.files?.[0] || null)} />
+              </label>
+              {modalFile && <div className="mb-3 text-sm text-gray-700">선택된 파일: <span className="font-medium">{modalFile.name}</span></div>}
+              <div className="flex gap-2 w-full mt-2">
+                <button
+                  className="flex-1 px-4 py-2 rounded-lg bg-[#0047AB] text-white font-semibold hover:bg-[#003380] disabled:opacity-50 transition"
+                  disabled={!modalFile}
+                  onClick={async () => {
+                    if (modalTargetId && modalFile) {
+                      await handleStatusUpdate(modalTargetId, "RETURNED", modalFile);
+                      setModalOpen(false);
+                    }
+                  }}
+                >
+                  확인
+                </button>
+                <button
+                  className="flex-1 px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
+                  onClick={() => setModalOpen(false)}
+                >
+                  취소
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

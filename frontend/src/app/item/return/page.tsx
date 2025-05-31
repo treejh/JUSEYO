@@ -8,6 +8,7 @@ interface SupplyReturn {
   id: number;
   requestId: number | null;
   userId: number;
+  userName?: string;
   serialNumber: string | null;
   productName: string;
   quantity: number;
@@ -67,7 +68,9 @@ export default function ReturnPage() {
         const keyword = searchKeyword.toLowerCase();
         filteredData = filteredData.filter(item => 
           item.productName.toLowerCase().includes(keyword) ||
-          item.serialNumber?.toLowerCase().includes(keyword)
+          item.serialNumber?.toLowerCase().includes(keyword) ||
+          item.userName?.toLowerCase().includes(keyword) ||
+          item.requestId?.toString().includes(keyword)
         );
       }
 
@@ -163,6 +166,8 @@ export default function ReturnPage() {
         return "bg-yellow-50 text-yellow-600";
       case "RETURNED":
         return "bg-green-50 text-green-600";
+      case "REJECTED":
+        return "bg-red-50 text-red-600";
       default:
         return "bg-gray-50 text-gray-600";
     }
@@ -171,9 +176,11 @@ export default function ReturnPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case "RETURN_PENDING":
-        return "반납 대기";
+        return "반납 대기 중";
       case "RETURNED":
         return "반납 완료";
+      case "REJECTED":
+        return "반납 거절";
       default:
         return status;
     }
@@ -198,6 +205,21 @@ export default function ReturnPage() {
         return "파손";
       default:
         return outbound;
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("정말 이 반납 요청을 삭제하시겠습니까?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/supply-return/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("삭제에 실패했습니다.");
+      toast.success("삭제가 완료되었습니다.");
+      fetchReturns(currentPage, selectedStatus);
+    } catch (e: any) {
+      toast.error(e.message);
     }
   };
 
@@ -233,7 +255,7 @@ export default function ReturnPage() {
           </div>
 
           {/* 통계 섹션 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-blue-600">전체 반납</p>
               <p className="text-2xl font-bold text-blue-900">
@@ -253,8 +275,14 @@ export default function ReturnPage() {
               </p>
             </div>
             <div className="bg-red-50 rounded-lg p-4">
-              <p className="text-sm text-red-600">파손</p>
+              <p className="text-sm text-red-600">반납 거절</p>
               <p className="text-2xl font-bold text-red-900">
+                {returns.filter(item => item.approvalStatus === "REJECTED").length}
+              </p>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-4">
+              <p className="text-sm text-orange-600">파손</p>
+              <p className="text-2xl font-bold text-orange-900">
                 {returns.filter(item => item.outbound === "DAMAGED").length}
               </p>
             </div>
@@ -269,7 +297,7 @@ export default function ReturnPage() {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="상품명으로 검색"
+                      placeholder="상품명, 요청자 이름 또는 요청서ID로 검색"
                       value={searchKeyword}
                       onChange={handleSearchChange}
                       onKeyDown={handleKeyDown}
@@ -293,7 +321,7 @@ export default function ReturnPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">승인 상태</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">반납 상태</label>
                   <select
                     value={selectedStatus}
                     onChange={(e) => handleStatusChange(e.target.value)}
@@ -302,6 +330,7 @@ export default function ReturnPage() {
                     <option value="">전체</option>
                     <option value="RETURN_PENDING">반납 대기</option>
                     <option value="RETURNED">반납 완료</option>
+                    <option value="REJECTED">반납 거절</option>
                   </select>
                 </div>
                 <div>
@@ -355,8 +384,9 @@ export default function ReturnPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">요청서 ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">요청서ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">요청자명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수량</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">고유번호</th>
@@ -364,13 +394,14 @@ export default function ReturnPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">반납일</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">반납 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">현재 상태</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center">
-                      <div className="flex justify-center">
+                    <td colSpan={10} className="px-6 py-12 text-center align-middle">
+                      <div className="flex justify-center items-center min-h-[120px]">
                         <svg className="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -380,8 +411,10 @@ export default function ReturnPage() {
                   </tr>
                 ) : returns.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center">
-                      <p className="text-gray-500">반납 내역이 없습니다.</p>
+                    <td colSpan={10} className="px-6 py-12 text-center align-middle">
+                      <div className="flex justify-center items-center min-h-[120px]">
+                        <p className="text-gray-500">반납 내역이 없습니다.</p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -392,6 +425,9 @@ export default function ReturnPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {item.requestId || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.userName || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {item.productName}
@@ -417,6 +453,24 @@ export default function ReturnPage() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getOutboundBadgeStyle(item.outbound)}`}>
                           {getOutboundText(item.outbound)}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {item.approvalStatus === "RETURN_PENDING" && (
+                          <>
+                            <a
+                              href={`/item/supplyeturn/edit/${item.id}`}
+                              className="text-blue-600 hover:text-blue-900 mr-2"
+                            >
+                              수정
+                            </a>
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              삭제
+                            </button>
+                          </>
+                        )}
                       </td>
                     </tr>
                   ))

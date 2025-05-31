@@ -16,7 +16,7 @@ import java.util.List;
 public interface SupplyReturnRepository extends JpaRepository<SupplyReturn, Long> {
 
     @Query("SELECT new com.example.backend.domain.supply.supplyReturn.dto.response.SupplyReturnResponseDto " +
-            "(s.id, s.supplyRequest.id, s.user.id, s.managementDashboard.id, s.item.id, s.serialNumber, s.productName, " +
+            "(s.id, s.supplyRequest.id, s.user.id,s.user.name ,s.managementDashboard.id, s.item.id, s.serialNumber, s.productName, " +
             "s.quantity, s.useDate, s.returnDate, s.approvalStatus, s.createdAt, s.outbound) " +
             "FROM SupplyReturn s " +
             "WHERE (:managementId IS NULL OR s.managementDashboard.id = :managementId) " +
@@ -29,7 +29,7 @@ public interface SupplyReturnRepository extends JpaRepository<SupplyReturn, Long
 
 
     @Query("SELECT new com.example.backend.domain.supply.supplyReturn.dto.response.SupplyReturnResponseDto " +
-            "(s.id, s.supplyRequest.id, s.user.id, s.managementDashboard.id, s.item.id, s.serialNumber, s.productName, " +
+            "(s.id, s.supplyRequest.id, s.user.id,s.user.name , s.managementDashboard.id, s.item.id, s.serialNumber, s.productName, " +
             "s.quantity, s.useDate, s.returnDate, s.approvalStatus, s.createdAt, s.outbound) " +
             "FROM SupplyReturn s " +
             "WHERE (:approvalStatus IS NULL OR s.approvalStatus = :approvalStatus) " +
@@ -48,7 +48,7 @@ public interface SupplyReturnRepository extends JpaRepository<SupplyReturn, Long
     List<SupplyReturn> findBySupplyRequest(SupplyRequest request);
 
     @Query("SELECT new com.example.backend.domain.supply.supplyReturn.dto.response.SupplyReturnResponseDto " +
-            "(s.id, s.supplyRequest.id, s.user.id, s.managementDashboard.id, s.item.id, s.serialNumber, s.productName, " +
+            "(s.id, s.supplyRequest.id, s.user.id,s.user.name , s.managementDashboard.id, s.item.id, s.serialNumber, s.productName, " +
             "s.quantity, s.useDate, s.returnDate, s.approvalStatus, s.createdAt, s.outbound) " +
             "FROM SupplyReturn s " +
             "WHERE (:managementId IS NULL OR s.managementDashboard.id = :managementId) " +
@@ -62,7 +62,7 @@ public interface SupplyReturnRepository extends JpaRepository<SupplyReturn, Long
 
 
     @Query("SELECT new com.example.backend.domain.supply.supplyReturn.dto.response.SupplyReturnResponseDto " +
-            "(s.id, s.supplyRequest.id, s.user.id, s.managementDashboard.id, s.item.id, s.serialNumber, s.productName, " +
+            "(s.id, s.supplyRequest.id, s.user.id,s.user.name , s.managementDashboard.id, s.item.id, s.serialNumber, s.productName, " +
             "s.quantity, s.useDate, s.returnDate, s.approvalStatus, s.createdAt, s.outbound) " +
             "FROM SupplyReturn s " +
             "WHERE (:approvalStatus IS NULL OR s.approvalStatus = :approvalStatus) " +

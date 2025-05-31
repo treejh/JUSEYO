@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import { useCustomToast } from "@/utils/toast";
 
 interface ReturnRequest {
   id: number;
@@ -33,6 +34,8 @@ export default function ReturnRequestListPage() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const pageSize = 20;
   const [totalPages, setTotalPages] = useState<number>(0);
+  const toast  = useCustomToast();
+
 
   // 내 반납 요청 목록 조회
   const fetchRequests = async () => {
@@ -66,10 +69,13 @@ export default function ReturnRequestListPage() {
       if (!res.ok) {
         throw new Error(await res.text());
       }
+      toast.success("삭제되었습니다.");
+
       // 삭제 성공 후 목록 다시 불러오기
       await fetchRequests();
     } catch (err: any) {
       setErrorMsg(`삭제 실패: ${err.message}`);
+      toast.error("삭제 실패");
     } finally {
       setDeleteLoadingId(null);
     }
@@ -92,6 +98,10 @@ export default function ReturnRequestListPage() {
       case "APPROVED":
         return "bg-green-100 text-green-800";
       case "REJECTED":
+        return "bg-red-100 text-red-800";
+      case "RETURN_PENDING":
+        return "bg-yellow-100 text-yellow-800";
+      case "RETURN_REJECTED":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -180,16 +190,6 @@ export default function ReturnRequestListPage() {
                 {filteredRequests.length}
               </p>
             </div>
-            <div className="bg-yellow-50 rounded-lg p-4">
-              <p className="text-sm text-yellow-600">대기 중</p>
-              <p className="text-2xl font-bold text-yellow-900">
-                {
-                  filteredRequests.filter(
-                    (r) => r.approvalStatus === "REQUESTED"
-                  ).length
-                }
-              </p>
-            </div>
             <div className="bg-green-50 rounded-lg p-4">
               <p className="text-sm text-green-600">승인</p>
               <p className="text-2xl font-bold text-green-900">
@@ -200,12 +200,22 @@ export default function ReturnRequestListPage() {
                 }
               </p>
             </div>
+            <div className="bg-yellow-50 rounded-lg p-4">
+              <p className="text-sm text-yellow-600">반납 대기 중</p>
+              <p className="text-2xl font-bold text-yellow-900">
+                {
+                  filteredRequests.filter(
+                    (r) => r.approvalStatus === "RETURN_PENDING"
+                  ).length
+                }
+              </p>
+            </div>
             <div className="bg-red-50 rounded-lg p-4">
-              <p className="text-sm text-red-600">반려</p>
+              <p className="text-sm text-red-600">반납 거부</p>
               <p className="text-2xl font-bold text-red-900">
                 {
                   filteredRequests.filter(
-                    (r) => r.approvalStatus === "REJECTED"
+                    (r) => r.approvalStatus === "RETURN_REJECTED"
                   ).length
                 }
               </p>
@@ -221,7 +231,7 @@ export default function ReturnRequestListPage() {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="상품명으로 검색"
+                      placeholder="상품명 또는 요청서ID로 검색"
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-gray-50"
@@ -244,16 +254,16 @@ export default function ReturnRequestListPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">승인 상태</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">반납 상태</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-white"
                   >
                     <option value="ALL">전체</option>
-                    <option value="REQUESTED">대기 중</option>
-                    <option value="APPROVED">승인</option>
-                    <option value="REJECTED">반려</option>
+                    <option value="RETURN_PENDING">반납 대기 중</option>
+                    <option value="RETURNED">반납 완료</option>
+                    <option value="REJECTED">반납 거절</option>
                   </select>
                 </div>
               </div>
@@ -320,10 +330,10 @@ export default function ReturnRequestListPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">
-                    번호
+                    No
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[130px]">
-                    요청서 ID
+                    요청서ID
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     상품명
@@ -338,8 +348,9 @@ export default function ReturnRequestListPage() {
                     반납일
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
-                    상태
+                    반납 상태
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">현재 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
                     작성일
                   </th>
@@ -401,9 +412,15 @@ export default function ReturnRequestListPage() {
                             request.approvalStatus
                           )}`}
                         >
-                          {request.approvalStatus === "REQUESTED" && "대기 중"}
+                          {request.approvalStatus === "RETURN_PENDING" && "반납 대기 중"}
                           {request.approvalStatus === "APPROVED" && "승인"}
-                          {request.approvalStatus === "REJECTED" && "반려"}
+                          {request.approvalStatus === "RETURN_REJECTED" && "반납 거부"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${request.outbound === "AVAILABLE" ? "bg-blue-50 text-blue-600" : request.outbound === "DAMAGED" ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-600"}`}>
+                          {request.outbound === "AVAILABLE" && "사용 가능"}
+                          {request.outbound === "DAMAGED" && "파손"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -412,14 +429,22 @@ export default function ReturnRequestListPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {request.approvalStatus === "REQUESTED" && (
-                          <button
-                            onClick={() => handleDeleteRequest(request.id)}
-                            disabled={deleteLoadingId === request.id}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                          >
-                            {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
-                          </button>
+                        {request.approvalStatus === "RETURN_PENDING" && (
+                          <>
+                            <Link
+                              href={`/item/supplyeturn/edit/${request.id}`}
+                              className="text-blue-600 hover:text-blue-900 mr-2"
+                            >
+                              수정
+                            </Link>
+                            <button
+                              onClick={() => handleDeleteRequest(request.id)}
+                              disabled={deleteLoadingId === request.id}
+                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                            >
+                              {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
+                            </button>
+                          </>
                         )}
                       </td>
                     </tr>

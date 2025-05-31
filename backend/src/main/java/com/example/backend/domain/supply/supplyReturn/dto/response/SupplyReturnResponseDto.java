@@ -3,6 +3,7 @@ package com.example.backend.domain.supply.supplyReturn.dto.response;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Outbound;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,10 @@ public class SupplyReturnResponseDto {
 
     @Schema(description = "회원 ID", example = "501")
     private Long userId;
+
+    @Schema(description = "회원명", example = "홍길동")
+    private String userName;
+
 
     @Schema(description = "비품 ID", example = "202")
     private Long itemId;

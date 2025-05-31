@@ -13,6 +13,8 @@ interface SupplyRequest {
   productName: string;
   quantity: number;
   useDate: string;
+  createdAt: string;
+  approvalStatus?: string;
 }
 
 interface SupplyReturnRequest {
@@ -36,7 +38,14 @@ export default function CreateReturnRequestPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [supplyRequests, setSupplyRequests] = useState<SupplyRequest[]>([]);
-  const [isManualInput, setIsManualInput] = useState(false);
+
+  // 현재 시간 yyyy-MM-ddTHH:mm 포맷 (항상 한국시간)
+  const getNowDateTimeKST = () => {
+    const now = new Date();
+    // UTC+9로 보정
+    const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    return kst.toISOString().slice(0, 16);
+  };
 
   const [formData, setFormData] = useState<SupplyReturnRequest>({
     requestId: 0,
@@ -47,6 +56,7 @@ export default function CreateReturnRequestPage() {
     quantity: 1,
     maxQuantity: 1,
     useDate: "",
+    returnDate: getNowDateTimeKST(),
     outbound: "AVAILABLE",
   });
 
@@ -59,7 +69,7 @@ export default function CreateReturnRequestPage() {
         });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        setSupplyRequests(data.content || []);
+        setSupplyRequests(data || []);
       } catch (err: any) {
         setErrorMsg(`비품 요청 목록 로딩 실패: ${err.message}`);
       }
@@ -130,21 +140,9 @@ export default function CreateReturnRequestPage() {
     const { name, value } = e.target;
     
     if (name === "requestId") {
-      if (value === "manual") {
-        setIsManualInput(true);
-        setFormData(prev => ({
-          ...prev,
-          requestId: 0,
-          itemId: 0,
-          productName: "",
-          quantity: 1,
-          useDate: "",
-        }));
-      } else if (value) {
-        setIsManualInput(false);
+      if (value) {
         fetchSupplyRequestDetail(Number(value));
       } else {
-        setIsManualInput(false);
         setFormData(prev => ({
           ...prev,
           requestId: 0,
@@ -252,74 +250,13 @@ export default function CreateReturnRequestPage() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">요청서를 선택하세요</option>
-                  <option value="manual">직접 입력</option>
-                  {supplyRequests.map((request) => (
+                  {supplyRequests.filter(r => r.approvalStatus === "APPROVED").map((request) => (
                     <option key={request.id} value={request.id}>
-                      {request.id} - {request.productName} ({request.quantity}개)
+                      [{request.id}] {request.productName} - {new Date(request.createdAt).toLocaleDateString()}
                     </option>
                   ))}
                 </select>
               </div>
-
-              {isManualInput && (
-                <>
-                  <div>
-                    <label
-                      htmlFor="manualRequestId"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      비품 요청서 ID
-                    </label>
-                    <input
-                      type="number"
-                      id="manualRequestId"
-                      name="requestId"
-                      required
-                      min="1"
-                      value={formData.requestId || ""}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="itemId"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      비품 ID
-                    </label>
-                    <input
-                      type="number"
-                      id="itemId"
-                      name="itemId"
-                      required
-                      min="1"
-                      value={formData.itemId || ""}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="serialNumber"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      시리얼 번호
-                    </label>
-                    <input
-                      type="text"
-                      id="serialNumber"
-                      name="serialNumber"
-                      value={formData.serialNumber || ""}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="SN으로 시작하는 시리얼 번호"
-                    />
-                  </div>
-                </>
-              )}
 
               {/* 품목명 */}
               <div>
@@ -337,7 +274,6 @@ export default function CreateReturnRequestPage() {
                   value={formData.productName}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  readOnly={!isManualInput}
                 />
               </div>
 
@@ -347,7 +283,7 @@ export default function CreateReturnRequestPage() {
                   htmlFor="quantity"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  반납 수량 {!isManualInput && `(최대: ${formData.maxQuantity}개)`}
+                  반납 수량 {!formData.maxQuantity && `(최대: ${formData.maxQuantity}개)`}
                 </label>
                 <input
                   type="number"
@@ -355,12 +291,12 @@ export default function CreateReturnRequestPage() {
                   name="quantity"
                   required
                   min="1"
-                  max={!isManualInput ? formData.maxQuantity : undefined}
+                  max={formData.maxQuantity}
                   value={formData.quantity}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                {!isManualInput && formData.quantity > (formData.maxQuantity || 0) && (
+                {formData.quantity > (formData.maxQuantity || 0) && (
                   <p className="mt-1 text-sm text-red-600">
                     반납 수량은 요청 수량({formData.maxQuantity}개)을 초과할 수 없습니다.
                   </p>
@@ -383,7 +319,6 @@ export default function CreateReturnRequestPage() {
                   value={formData.useDate}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  readOnly={!isManualInput}
                 />
               </div>
 
@@ -399,7 +334,7 @@ export default function CreateReturnRequestPage() {
                   type="datetime-local"
                   id="returnDate"
                   name="returnDate"
-                  value={formData.returnDate || ""}
+                  value={formData.returnDate || getNowDateTimeKST()}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
