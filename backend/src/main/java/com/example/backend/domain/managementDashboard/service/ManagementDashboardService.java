@@ -6,6 +6,7 @@ import com.example.backend.domain.managementDashboard.dto.ManagementDashBoardRes
 import com.example.backend.domain.managementDashboard.dto.ManagementDashboardUpdateRequestDto;
 import com.example.backend.domain.notification.event.NewDashboardApprovedEvent;
 //import com.example.backend.domain.notification.event.NewDashboardEvent;
+import com.example.backend.domain.notification.event.NewDashboardRejectedEvent;
 import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
@@ -136,6 +137,9 @@ public class ManagementDashboardService {
                 ()-> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND)
         );
         managementDashboard.setStatus(Status.STOP);
+
+        // 대시보드 생성 반려 알림 생성
+        eventPublisher.publishEvent(new NewDashboardRejectedEvent(managementDashboard.getId(), managementDashboard.getName()));
     }
 
     //관리페이지 승인

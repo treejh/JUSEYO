@@ -30,7 +30,7 @@ public class NewDashboardApprovedNotificationService {
 
         User user = userService.findUserByDashboardIdAndIsInitialManager(dashboardId, true);
 
-        if (strategy.shouldTrigger(context)) {
+        if (strategy.shouldTrigger(context) && userService.isApprovedUser(user.getId())) {
 
             String msg = strategy.generateMessage(context);
 

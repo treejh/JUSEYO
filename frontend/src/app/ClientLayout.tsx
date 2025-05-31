@@ -140,11 +140,6 @@ export default function ClientLayout({
             eventSource.addEventListener("notification", (event) => {
               try {
                 const parsed = JSON.parse(event.data);
-                console.log(
-                  `🔔 [${parsed.type || "message"}] 알림 수신:`,
-                  parsed
-                );
-
                 // 알림 스토어에 추가
                 useNotificationStore.getState().addNotification({
                   id: Number(parsed.id),
@@ -155,7 +150,6 @@ export default function ClientLayout({
                 });
               } catch (e) {
                 console.error("알림 처리 중 오류:", e);
-                console.log(`💬 [message] 텍스트 메시지: ${event.data}`);
               }
             });
 

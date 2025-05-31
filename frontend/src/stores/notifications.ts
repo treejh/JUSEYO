@@ -20,26 +20,19 @@ interface NotificationStore {
 export const useNotificationStore = create<NotificationStore>((set) => ({
   notifications: [],
   addNotification: (notification) => {
-    console.log("새 알림 추가 시도:", notification);
-
     // 이미 존재하는 알림인지 확인
     const exists = useNotificationStore
       .getState()
       .notifications.some((n) => n.id === notification.id);
 
     if (exists) {
-      console.log("이미 존재하는 알림:", notification.id);
       return;
     }
 
     // 스토어 업데이트
-    set((state) => {
-      const newState = {
-        notifications: [notification, ...state.notifications],
-      };
-      console.log("스토어 상태 업데이트:", newState);
-      return newState;
-    });
+    set((state) => ({
+      notifications: [notification, ...state.notifications],
+    }));
 
     // 다른 탭에 알림
     const channel = new BroadcastChannel("notifications");
