@@ -208,6 +208,21 @@ export default function ReturnPage() {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("정말 이 반납 요청을 삭제하시겠습니까?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/supply-return/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("삭제에 실패했습니다.");
+      toast.success("삭제가 완료되었습니다.");
+      fetchReturns(currentPage, selectedStatus);
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-[1920px] mx-auto">
@@ -379,6 +394,7 @@ export default function ReturnPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">반납일</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">반납 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">현재 상태</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -437,6 +453,24 @@ export default function ReturnPage() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getOutboundBadgeStyle(item.outbound)}`}>
                           {getOutboundText(item.outbound)}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {item.approvalStatus === "RETURN_PENDING" && (
+                          <>
+                            <a
+                              href={`/item/supplyeturn/edit/${item.id}`}
+                              className="text-blue-600 hover:text-blue-900 mr-2"
+                            >
+                              수정
+                            </a>
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              삭제
+                            </button>
+                          </>
+                        )}
                       </td>
                     </tr>
                   ))

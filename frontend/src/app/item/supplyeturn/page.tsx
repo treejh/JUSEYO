@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
+import { useCustomToast } from "@/utils/toast";
 
 interface ReturnRequest {
   id: number;
@@ -33,6 +34,8 @@ export default function ReturnRequestListPage() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const pageSize = 20;
   const [totalPages, setTotalPages] = useState<number>(0);
+  const toast  = useCustomToast();
+
 
   // 내 반납 요청 목록 조회
   const fetchRequests = async () => {
@@ -66,10 +69,13 @@ export default function ReturnRequestListPage() {
       if (!res.ok) {
         throw new Error(await res.text());
       }
+      toast.success("삭제되었습니다.");
+
       // 삭제 성공 후 목록 다시 불러오기
       await fetchRequests();
     } catch (err: any) {
       setErrorMsg(`삭제 실패: ${err.message}`);
+      toast.error("삭제 실패");
     } finally {
       setDeleteLoadingId(null);
     }
@@ -344,6 +350,7 @@ export default function ReturnRequestListPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
                     반납 상태
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">현재 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
                     작성일
                   </th>
@@ -411,19 +418,33 @@ export default function ReturnRequestListPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${request.outbound === "AVAILABLE" ? "bg-blue-50 text-blue-600" : request.outbound === "DAMAGED" ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-600"}`}>
+                          {request.outbound === "AVAILABLE" && "사용 가능"}
+                          {request.outbound === "DAMAGED" && "파손"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">
                           {new Date(request.createdAt).toLocaleDateString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {request.approvalStatus === "REQUESTED" && (
-                          <button
-                            onClick={() => handleDeleteRequest(request.id)}
-                            disabled={deleteLoadingId === request.id}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                          >
-                            {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
-                          </button>
+                        {request.approvalStatus === "RETURN_PENDING" && (
+                          <>
+                            <Link
+                              href={`/item/supplyeturn/edit/${request.id}`}
+                              className="text-blue-600 hover:text-blue-900 mr-2"
+                            >
+                              수정
+                            </Link>
+                            <button
+                              onClick={() => handleDeleteRequest(request.id)}
+                              disabled={deleteLoadingId === request.id}
+                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                            >
+                              {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
+                            </button>
+                          </>
                         )}
                       </td>
                     </tr>

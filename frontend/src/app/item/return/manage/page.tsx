@@ -44,6 +44,10 @@ export default function ReturnManagePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTargetId, setModalTargetId] = useState<number | null>(null);
+  const [modalFile, setModalFile] = useState<File | null>(null);
+
   // 로그인/매니저 권한 체크
   useEffect(() => {
     if (!isLogin) {
@@ -309,27 +313,17 @@ export default function ReturnManagePage() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {ret.approvalStatus === "RETURN_PENDING" && (
                           <div className="flex justify-end gap-2">
-                            <label
-                              htmlFor={`image-${ret.id}`}
+                            <button
+                              type="button"
                               className="text-green-600 hover:text-green-900 cursor-pointer"
+                              onClick={() => {
+                                setModalTargetId(ret.id);
+                                setModalFile(null);
+                                setModalOpen(true);
+                              }}
                             >
                               승인
-                              <input
-                                type="file"
-                                id={`image-${ret.id}`}
-                                accept="image/*"
-                                className="hidden"
-                                onChange={async (e) => {
-                                  const file = e.target.files?.[0];
-                                  if (!file) {
-                                    toast.error("이미지를 선택해주세요.");
-                                    return;
-                                  }
-                                  await handleStatusUpdate(ret.id, "RETURNED", file);
-                                  e.target.value = ""; // 파일 입력 초기화
-                                }}
-                              />
-                            </label>
+                            </button>
                             <button
                               onClick={() => {
                                 if (confirm("정말 이 요청을 거절하시겠습니까?")) {
@@ -373,6 +367,51 @@ export default function ReturnManagePage() {
                 다음
               </button>
             </nav>
+          </div>
+        )}
+
+        {/* 사진 업로드 모달 */}
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 w-screen h-screen flex items-center justify-center">
+            <div className="absolute inset-0 w-full h-full backdrop-blur-sm" />
+            <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm flex flex-col items-center">
+              <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl" onClick={() => setModalOpen(false)} aria-label="닫기">&times;</button>
+              <div className="mb-4 flex flex-col items-center">
+                <svg className="w-12 h-12 text-[#0047AB] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 002.828 2.828l6.586-6.586M16 7V3a1 1 0 00-1-1h-4a1 1 0 00-1 1v4m-4 4v6a2 2 0 002 2h6a2 2 0 002-2v-6" />
+                </svg>
+                <h2 className="text-lg font-bold mb-1">승인 사진 업로드</h2>
+                <p className="text-sm text-gray-500 mb-2 text-center">승인 처리를 위해 사진을 첨부해 주세요.<br/>이미지 파일만 업로드 가능합니다.</p>
+              </div>
+              <label className="w-full flex flex-col items-center px-4 py-6 bg-gray-50 text-blue-600 rounded-lg shadow-md tracking-wide border border-blue-200 cursor-pointer hover:bg-blue-50 transition mb-3">
+                <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-4 4h-4a1 1 0 01-1-1v-4m6 5a1 1 0 001-1v-4m-6 5a1 1 0 01-1-1v-4" />
+                </svg>
+                <span className="text-base leading-normal">사진 선택</span>
+                <input type="file" accept="image/*" className="hidden" onChange={e => setModalFile(e.target.files?.[0] || null)} />
+              </label>
+              {modalFile && <div className="mb-3 text-sm text-gray-700">선택된 파일: <span className="font-medium">{modalFile.name}</span></div>}
+              <div className="flex gap-2 w-full mt-2">
+                <button
+                  className="flex-1 px-4 py-2 rounded-lg bg-[#0047AB] text-white font-semibold hover:bg-[#003380] disabled:opacity-50 transition"
+                  disabled={!modalFile}
+                  onClick={async () => {
+                    if (modalTargetId && modalFile) {
+                      await handleStatusUpdate(modalTargetId, "RETURNED", modalFile);
+                      setModalOpen(false);
+                    }
+                  }}
+                >
+                  확인
+                </button>
+                <button
+                  className="flex-1 px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
+                  onClick={() => setModalOpen(false)}
+                >
+                  취소
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

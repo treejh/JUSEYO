@@ -263,8 +263,6 @@ export default function SupplyRequestManageListPage() {
                   >
                     <option value="ALL">전체</option>
                     <option value="REQUESTED">대기 중</option>
-                    <option value="RETURN_PENDING">반납 대기 중</option>
-                    <option value="RETURNED">반납 완료</option>
                     <option value="APPROVED">승인</option>
                     <option value="REJECTED">거절</option>
                   </select>
