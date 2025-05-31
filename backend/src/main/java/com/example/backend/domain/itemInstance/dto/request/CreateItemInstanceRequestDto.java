@@ -1,12 +1,12 @@
 package com.example.backend.domain.itemInstance.dto.request;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class CreateItemInstanceRequestDto {
     @NotNull

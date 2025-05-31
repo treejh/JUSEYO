@@ -7,6 +7,8 @@ import com.example.backend.domain.item.dto.response.ItemCardResponseDto;
 import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemSearchProjection;
 import com.example.backend.domain.item.entity.Item;
+import com.example.backend.domain.itemInstance.dto.request.CreateItemInstanceRequestDto;
+import com.example.backend.domain.itemInstance.service.ItemInstanceService;
 import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.domain.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.enums.Status;
@@ -41,6 +43,7 @@ public class ItemService {
     private final TokenService tokenService;
     private final InventoryAnalysisService analysisService;
     private final ImageService imageService;
+    private final ItemInstanceService itemInstanceService;
 
     /**
      * 랜덤 8자리 알파벳+숫자 생성
@@ -89,6 +92,12 @@ public class ItemService {
                 .status(Status.ACTIVE)
                 .build();
         Item saved = repo.save(entity);
+
+        CreateItemInstanceRequestDto createItemInstanceRequestDto= CreateItemInstanceRequestDto.builder()
+                .itemId(saved.getId())
+                .image(saved.getImage())
+                .build();
+        itemInstanceService.createInstance(createItemInstanceRequestDto);
 
         analysisService.clearCategoryCache(); // 캐시 무효화
         return mapToDto(saved);
