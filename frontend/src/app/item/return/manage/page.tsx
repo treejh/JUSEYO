@@ -34,7 +34,6 @@ export default function ReturnManagePage() {
   const [pageData, setPageData] = useState<PageResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [processingIds, setProcessingIds] = useState<number[]>([]);
-  const [deleteLoadingId, setDeleteLoadingId] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -111,28 +110,6 @@ export default function ReturnManagePage() {
     }
   };
 
-  // 개별 요청 삭제
-  const handleDeleteRequest = async (id: number) => {
-    if (!confirm("정말 이 요청을 삭제하시겠습니까?")) return;
-    setDeleteLoadingId(id);
-    setErrorMsg(null);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/supply-return/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
-      // 삭제 성공 후 목록 다시 불러오기
-      await fetchReturns();
-    } catch (err: any) {
-      setErrorMsg(`삭제 실패: ${err.message}`);
-    } finally {
-      setDeleteLoadingId(null);
-    }
-  };
-
   useEffect(() => {
     fetchReturns();
   }, [currentPage, searchKeyword, startDate, endDate, outboundStatus]);
@@ -144,6 +121,8 @@ export default function ReturnManagePage() {
         return "bg-yellow-100 text-yellow-800";
       case "RETURNED":
         return "bg-green-100 text-green-800";
+      case "REJECTED":
+        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -279,7 +258,7 @@ export default function ReturnManagePage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <div className="flex justify-center">
                         <svg className="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -290,7 +269,7 @@ export default function ReturnManagePage() {
                   </tr>
                 ) : !pageData || pageData.content.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <p className="text-gray-500">표시할 반납 요청이 없습니다.</p>
                     </td>
                   </tr>
@@ -313,6 +292,7 @@ export default function ReturnManagePage() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(ret.approvalStatus)}`}>
                           {ret.approvalStatus === "RETURN_PENDING" && "반납 대기"}
                           {ret.approvalStatus === "RETURNED" && "반납 완료"}
+                          {ret.approvalStatus === "REJECTED" && "거절"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -327,15 +307,41 @@ export default function ReturnManagePage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleDeleteRequest(ret.id)}
-                            disabled={deleteLoadingId === ret.id}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                          >
-                            {deleteLoadingId === ret.id ? "삭제 중..." : "삭제"}
-                          </button>
-                        </div>
+                        {ret.approvalStatus === "RETURN_PENDING" && (
+                          <div className="flex justify-end gap-2">
+                            <label
+                              htmlFor={`image-${ret.id}`}
+                              className="text-blue-600 hover:text-blue-900 cursor-pointer"
+                            >
+                              승인
+                              <input
+                                type="file"
+                                id={`image-${ret.id}`}
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) {
+                                    toast.error("이미지를 선택해주세요.");
+                                    return;
+                                  }
+                                  await handleStatusUpdate(ret.id, "RETURNED", file);
+                                  e.target.value = ""; // 파일 입력 초기화
+                                }}
+                              />
+                            </label>
+                            <button
+                              onClick={() => {
+                                if (confirm("정말 이 요청을 거절하시겠습니까?")) {
+                                  handleStatusUpdate(ret.id, "REJECTED", new File([], "dummy.jpg"));
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              거절
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))

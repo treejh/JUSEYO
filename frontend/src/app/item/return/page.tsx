@@ -163,6 +163,8 @@ export default function ReturnPage() {
         return "bg-yellow-50 text-yellow-600";
       case "RETURNED":
         return "bg-green-50 text-green-600";
+      case "REJECTED":
+        return "bg-red-50 text-red-600";
       default:
         return "bg-gray-50 text-gray-600";
     }
@@ -174,6 +176,8 @@ export default function ReturnPage() {
         return "반납 대기";
       case "RETURNED":
         return "반납 완료";
+      case "REJECTED":
+        return "반납 거절";
       default:
         return status;
     }
@@ -233,7 +237,7 @@ export default function ReturnPage() {
           </div>
 
           {/* 통계 섹션 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-blue-600">전체 반납</p>
               <p className="text-2xl font-bold text-blue-900">
@@ -253,8 +257,14 @@ export default function ReturnPage() {
               </p>
             </div>
             <div className="bg-red-50 rounded-lg p-4">
-              <p className="text-sm text-red-600">파손</p>
+              <p className="text-sm text-red-600">반납 거절</p>
               <p className="text-2xl font-bold text-red-900">
+                {returns.filter(item => item.approvalStatus === "REJECTED").length}
+              </p>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-4">
+              <p className="text-sm text-orange-600">파손</p>
+              <p className="text-2xl font-bold text-orange-900">
                 {returns.filter(item => item.outbound === "DAMAGED").length}
               </p>
             </div>
@@ -302,6 +312,7 @@ export default function ReturnPage() {
                     <option value="">전체</option>
                     <option value="RETURN_PENDING">반납 대기</option>
                     <option value="RETURNED">반납 완료</option>
+                    <option value="REJECTED">반납 거절</option>
                   </select>
                 </div>
                 <div>
@@ -355,8 +366,8 @@ export default function ReturnPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">요청서 ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">요청서ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수량</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">고유번호</th>
