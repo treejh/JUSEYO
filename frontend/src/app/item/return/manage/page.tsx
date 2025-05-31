@@ -14,7 +14,7 @@ interface SupplyReturn {
   purpose: string;
   approvalStatus: string;
   createdAt: string;
-  outboundStatus: string;
+  outbound: string;
 }
 
 interface PageResponse {
@@ -39,7 +39,7 @@ export default function ReturnManagePage() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [outboundStatus, setOutboundStatus] = useState<string>("ALL");
+  const [outboundStatus, setOutboundStatus] = useState<string>("RETURN_PENDING");
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
@@ -66,7 +66,7 @@ export default function ReturnManagePage() {
       if (searchKeyword) params.append("search", searchKeyword);
       if (startDate) params.append("fromDate", startDate);
       if (endDate) params.append("toDate", endDate);
-      if (outboundStatus !== "ALL") params.append("outboundStatus", outboundStatus);
+      if (outboundStatus !== "RETURN_PENDING") params.append("outboundStatus", outboundStatus);
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/supply-return?${params.toString()}`,
@@ -120,8 +120,8 @@ export default function ReturnManagePage() {
       case "RETURN_PENDING":
         return "bg-yellow-100 text-yellow-800";
       case "RETURNED":
-        return "bg-green-100 text-green-800";
-      case "REJECTED":
+        return "bg-green-50 text-green-600";
+      case "RETURN_REJECTED":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -131,11 +131,11 @@ export default function ReturnManagePage() {
   const getOutboundStatusBadgeColor = (status: string) => {
     switch (status) {
       case "AVAILABLE":
-        return "bg-green-100 text-green-800";
+        return "bg-blue-50 text-blue-600";
       case "DAMAGED":
-        return "bg-red-100 text-red-800";
+        return "bg-red-50 text-red-600";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-50 text-gray-600";
     }
   };
 
@@ -148,7 +148,7 @@ export default function ReturnManagePage() {
     setSearchKeyword("");
     setStartDate("");
     setEndDate("");
-    setOutboundStatus("ALL");
+    setOutboundStatus("RETURN_PENDING");
     setCurrentPage(1);
   };
 
@@ -163,7 +163,7 @@ export default function ReturnManagePage() {
                 비품 반납 관리
               </h1>
               <p className="text-gray-600">
-                직원들의 비품 반납 현황을 확인하고 관리할 수 있습니다.
+                비품 반납 현황을 확인하고 관리할 수 있습니다.
               </p>
             </div>
             <Link
@@ -249,7 +249,7 @@ export default function ReturnManagePage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[130px] whitespace-nowrap">요청서 ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">반납 상태</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">반납 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">현재 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">작성일</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">관리</th>
@@ -292,13 +292,13 @@ export default function ReturnManagePage() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(ret.approvalStatus)}`}>
                           {ret.approvalStatus === "RETURN_PENDING" && "반납 대기"}
                           {ret.approvalStatus === "RETURNED" && "반납 완료"}
-                          {ret.approvalStatus === "REJECTED" && "거절"}
+                          {ret.approvalStatus === "RETURN_REJECTED" && "거절"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getOutboundStatusBadgeColor(ret.outboundStatus)}`}>
-                          {ret.outboundStatus === "AVAILABLE" && "사용 가능"}
-                          {ret.outboundStatus === "DAMAGED" && "파손"}
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getOutboundStatusBadgeColor(ret.outbound)}`}>
+                          {ret.outbound === "AVAILABLE" && "사용 가능"}
+                          {ret.outbound === "DAMAGED" && "파손"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -311,7 +311,7 @@ export default function ReturnManagePage() {
                           <div className="flex justify-end gap-2">
                             <label
                               htmlFor={`image-${ret.id}`}
-                              className="text-blue-600 hover:text-blue-900 cursor-pointer"
+                              className="text-green-600 hover:text-green-900 cursor-pointer"
                             >
                               승인
                               <input
@@ -333,7 +333,7 @@ export default function ReturnManagePage() {
                             <button
                               onClick={() => {
                                 if (confirm("정말 이 요청을 거절하시겠습니까?")) {
-                                  handleStatusUpdate(ret.id, "REJECTED", new File([], "dummy.jpg"));
+                                  handleStatusUpdate(ret.id, "RETURN_REJECTED", new File([], "dummy.jpg"));
                                 }
                               }}
                               className="text-red-600 hover:text-red-900"

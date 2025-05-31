@@ -93,6 +93,10 @@ export default function ReturnRequestListPage() {
         return "bg-green-100 text-green-800";
       case "REJECTED":
         return "bg-red-100 text-red-800";
+      case "RETURN_PENDING":
+        return "bg-yellow-100 text-yellow-800";
+      case "RETURN_REJECTED":
+        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -180,16 +184,6 @@ export default function ReturnRequestListPage() {
                 {filteredRequests.length}
               </p>
             </div>
-            <div className="bg-yellow-50 rounded-lg p-4">
-              <p className="text-sm text-yellow-600">대기 중</p>
-              <p className="text-2xl font-bold text-yellow-900">
-                {
-                  filteredRequests.filter(
-                    (r) => r.approvalStatus === "REQUESTED"
-                  ).length
-                }
-              </p>
-            </div>
             <div className="bg-green-50 rounded-lg p-4">
               <p className="text-sm text-green-600">승인</p>
               <p className="text-2xl font-bold text-green-900">
@@ -200,12 +194,22 @@ export default function ReturnRequestListPage() {
                 }
               </p>
             </div>
+            <div className="bg-yellow-50 rounded-lg p-4">
+              <p className="text-sm text-yellow-600">반납 대기 중</p>
+              <p className="text-2xl font-bold text-yellow-900">
+                {
+                  filteredRequests.filter(
+                    (r) => r.approvalStatus === "RETURN_PENDING"
+                  ).length
+                }
+              </p>
+            </div>
             <div className="bg-red-50 rounded-lg p-4">
-              <p className="text-sm text-red-600">거절</p>
+              <p className="text-sm text-red-600">반납 거부</p>
               <p className="text-2xl font-bold text-red-900">
                 {
                   filteredRequests.filter(
-                    (r) => r.approvalStatus === "REJECTED"
+                    (r) => r.approvalStatus === "RETURN_REJECTED"
                   ).length
                 }
               </p>
@@ -221,7 +225,7 @@ export default function ReturnRequestListPage() {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="상품명으로 검색"
+                      placeholder="상품명 또는 요청서ID로 검색"
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-gray-50"
@@ -244,16 +248,16 @@ export default function ReturnRequestListPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">승인 상태</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">반납 상태</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-white"
                   >
                     <option value="ALL">전체</option>
-                    <option value="REQUESTED">대기 중</option>
-                    <option value="APPROVED">승인</option>
-                    <option value="REJECTED">거절</option>
+                    <option value="RETURN_PENDING">반납 대기 중</option>
+                    <option value="RETURNED">반납 완료</option>
+                    <option value="REJECTED">반납 거절</option>
                   </select>
                 </div>
               </div>
@@ -338,7 +342,7 @@ export default function ReturnRequestListPage() {
                     반납일
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
-                    상태
+                    반납 상태
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
                     작성일
@@ -401,9 +405,9 @@ export default function ReturnRequestListPage() {
                             request.approvalStatus
                           )}`}
                         >
-                          {request.approvalStatus === "REQUESTED" && "대기 중"}
+                          {request.approvalStatus === "RETURN_PENDING" && "반납 대기 중"}
                           {request.approvalStatus === "APPROVED" && "승인"}
-                          {request.approvalStatus === "REJECTED" && "거절"}
+                          {request.approvalStatus === "RETURN_REJECTED" && "반납 거부"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

@@ -8,6 +8,7 @@ interface SupplyReturn {
   id: number;
   requestId: number | null;
   userId: number;
+  userName?: string;
   serialNumber: string | null;
   productName: string;
   quantity: number;
@@ -67,7 +68,9 @@ export default function ReturnPage() {
         const keyword = searchKeyword.toLowerCase();
         filteredData = filteredData.filter(item => 
           item.productName.toLowerCase().includes(keyword) ||
-          item.serialNumber?.toLowerCase().includes(keyword)
+          item.serialNumber?.toLowerCase().includes(keyword) ||
+          item.userName?.toLowerCase().includes(keyword) ||
+          item.requestId?.toString().includes(keyword)
         );
       }
 
@@ -173,7 +176,7 @@ export default function ReturnPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case "RETURN_PENDING":
-        return "반납 대기";
+        return "반납 대기 중";
       case "RETURNED":
         return "반납 완료";
       case "REJECTED":
@@ -279,7 +282,7 @@ export default function ReturnPage() {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="상품명으로 검색"
+                      placeholder="상품명, 요청자 이름 또는 요청서ID로 검색"
                       value={searchKeyword}
                       onChange={handleSearchChange}
                       onKeyDown={handleKeyDown}
@@ -303,7 +306,7 @@ export default function ReturnPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">승인 상태</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">반납 상태</label>
                   <select
                     value={selectedStatus}
                     onChange={(e) => handleStatusChange(e.target.value)}
@@ -368,6 +371,7 @@ export default function ReturnPage() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">요청서ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">요청자명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수량</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">고유번호</th>
@@ -380,8 +384,8 @@ export default function ReturnPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center">
-                      <div className="flex justify-center">
+                    <td colSpan={10} className="px-6 py-12 text-center align-middle">
+                      <div className="flex justify-center items-center min-h-[120px]">
                         <svg className="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -391,8 +395,10 @@ export default function ReturnPage() {
                   </tr>
                 ) : returns.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center">
-                      <p className="text-gray-500">반납 내역이 없습니다.</p>
+                    <td colSpan={10} className="px-6 py-12 text-center align-middle">
+                      <div className="flex justify-center items-center min-h-[120px]">
+                        <p className="text-gray-500">반납 내역이 없습니다.</p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -403,6 +409,9 @@ export default function ReturnPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {item.requestId || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.userName || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {item.productName}

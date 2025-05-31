@@ -92,6 +92,8 @@ export default function SupplyRequestManageListPage() {
         return "bg-yellow-100 text-yellow-800";
       case "RETURN_PENDING":
         return "bg-blue-100 text-blue-800";
+      case "RETURNED":
+        return "bg-gray-100 text-gray-800";
       case "APPROVED":
         return "bg-green-100 text-green-800";
       case "REJECTED":
@@ -118,7 +120,8 @@ export default function SupplyRequestManageListPage() {
       const keyword = searchKeyword.toLowerCase();
       if (
         !req.productName.toLowerCase().includes(keyword) &&
-        !req.userName.toLowerCase().includes(keyword)
+        !req.userName.toLowerCase().includes(keyword) &&
+        !req.id.toString().includes(keyword)
       ) {
         return false;
       }
@@ -229,7 +232,7 @@ export default function SupplyRequestManageListPage() {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="상품명 또는 요청자 이름으로 검색"
+                      placeholder="상품명, 요청자 이름 또는 요청서ID로 검색"
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
@@ -252,7 +255,7 @@ export default function SupplyRequestManageListPage() {
                   </div>
                 </div>
                 <div className="w-full sm:w-48">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">승인 상태</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">요청 상태</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -261,6 +264,7 @@ export default function SupplyRequestManageListPage() {
                     <option value="ALL">전체</option>
                     <option value="REQUESTED">대기 중</option>
                     <option value="RETURN_PENDING">반납 대기 중</option>
+                    <option value="RETURNED">반납 완료</option>
                     <option value="APPROVED">승인</option>
                     <option value="REJECTED">거절</option>
                   </select>
@@ -311,7 +315,7 @@ export default function SupplyRequestManageListPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사유</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">대여여부</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">상태</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">요청 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">작성일</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">반납일</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">관리</th>
@@ -363,6 +367,7 @@ export default function SupplyRequestManageListPage() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(request.approvalStatus)}`}>
                           {request.approvalStatus === "REQUESTED" && "대기 중"}
                           {request.approvalStatus === "RETURN_PENDING" && "반납 대기 중"}
+                          {request.approvalStatus === "RETURNED" && "반납 완료"}
                           {request.approvalStatus === "APPROVED" && "승인"}
                           {request.approvalStatus === "REJECTED" && "거절"}
                         </span>
