@@ -209,7 +209,7 @@ export default function SupplyRequestManageListPage() {
               </p>
             </div>
             <div className="bg-red-50 rounded-lg p-4">
-              <p className="text-sm text-red-600">반려</p>
+              <p className="text-sm text-red-600">거절</p>
               <p className="text-2xl font-bold text-red-900">
                 {
                   filteredRequests.filter(
@@ -262,7 +262,7 @@ export default function SupplyRequestManageListPage() {
                     <option value="REQUESTED">대기 중</option>
                     <option value="RETURN_PENDING">반납 대기 중</option>
                     <option value="APPROVED">승인</option>
-                    <option value="REJECTED">반려</option>
+                    <option value="REJECTED">거절</option>
                   </select>
                 </div>
               </div>
@@ -360,7 +360,7 @@ export default function SupplyRequestManageListPage() {
                           {request.approvalStatus === "REQUESTED" && "대기 중"}
                           {request.approvalStatus === "RETURN_PENDING" && "반납 대기 중"}
                           {request.approvalStatus === "APPROVED" && "승인"}
-                          {request.approvalStatus === "REJECTED" && "반려"}
+                          {request.approvalStatus === "REJECTED" && "거절"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
