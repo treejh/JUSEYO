@@ -12,6 +12,7 @@ public class SupplyRequestResponseDto {
     private Long id;
     private Long itemId;
     private Long userId;
+    private String userName;
     private Long managementId;
     private String serialNumber;
     private Boolean reRequest;
