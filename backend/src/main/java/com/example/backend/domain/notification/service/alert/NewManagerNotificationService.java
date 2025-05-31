@@ -28,7 +28,7 @@ public class NewManagerNotificationService {
         // 요청 매니저와 같은 대시보드의 이니셜 매니저 찾기
         User user = userService.findUserByDashboardIdAndIsInitialManager(requesterManagementDashboardId,  true);
         // 조건을 확인하고 알림을 생성
-        if (strategy.shouldTrigger(context)) {
+        if (strategy.shouldTrigger(context) && userService.isApprovedUser(user.getId())) {
             // context를 사용하여 메시지 생성
             String msg = strategy.generateMessage(context);
 

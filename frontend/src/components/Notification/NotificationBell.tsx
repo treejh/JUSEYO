@@ -485,21 +485,25 @@ export function NotificationBell() {
                           ) {
                             router.push("/item/supplyrequest/list/manage");
                             setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "SUPPLY_RETURN"
                           ) {
                             router.push("/item/return");
                             setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "STOCK_SHORTAGE"
                           ) {
                             router.push("/item/manage");
                             setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "NEW_USER"
                           ) {
                             router.push("/settings/approve");
                             setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType ===
                               "SUPPLY_REQUEST_APPROVED" ||
@@ -510,27 +514,32 @@ export function NotificationBell() {
                           ) {
                             router.push("/item/supplyrequest/list/user");
                             setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "NEW_MANAGER"
                           ) {
                             router.push("/settings/approve");
                             setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "NEW_CHAT"
                           ) {
                             router.push("/chat/select");
                             setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "RETURN_DUE_SOON"
                           ) {
                             router.push("/item/supplyreturn");
                             setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType ===
                             "SUPPLY_RETURN_APPROVED"
                           ) {
                             router.push("/item/supplyreturn");
                             setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           }
                         }}
                       >

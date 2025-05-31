@@ -40,7 +40,7 @@ public class SupplyReturnNotificationService {
 
         for (User manager : managers) {
             // 조건을 확인하고 알림을 생성
-            if (strategy.shouldTrigger(context)) {
+            if (strategy.shouldTrigger(context) && userService.isApprovedUser(manager.getId())) {
                 // context를 사용하여 메시지 생성
                 String msg = strategy.generateMessage(context);
 

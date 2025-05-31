@@ -377,7 +377,7 @@ public class UserService {
 
         // 매니저 거부 알림 생성
         User user = userRepository.findById(userId).orElseThrow(()-> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
-        eventPublisher.publishEvent(new NewManagerApprovedEvent(userId, user.getName()));
+        eventPublisher.publishEvent(new NewManagerRejectedEvent(userId, user.getName()));
     }
 
     public User findById(Long userId){
@@ -863,6 +863,12 @@ public class UserService {
 
     public List<User> findAllByRoleAndManagementDashboardId(Role role, Long mdId) {
         return userRepository.findAllByRoleAndManagementDashboardId(role, mdId);
+    }
+
+    // 유저가 승인된 유저인지 확인
+    public boolean isApprovedUser(Long userId) {
+        User user = findById(userId);
+        return user.getApprovalStatus() == ApprovalStatus.APPROVED;
     }
 
 }

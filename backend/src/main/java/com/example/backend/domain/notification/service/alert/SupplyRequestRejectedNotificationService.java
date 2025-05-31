@@ -6,6 +6,7 @@ import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
 import com.example.backend.domain.notification.strategy.context.SupplyRequestApprovalContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
+import com.example.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ public class SupplyRequestRejectedNotificationService {
 
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
+    private final UserService userService;
 
     @Transactional
     public void notifyIfApproved(Long userId, String itemName, Long itemQuantity) {
@@ -26,13 +28,13 @@ public class SupplyRequestRejectedNotificationService {
                 userId, itemName, itemQuantity
         );
 
-        if (strategy.shouldTrigger(context)) {
+        if (strategy.shouldTrigger(context) && userService.isApprovedUser(userId)) {
             String message = strategy.generateMessage(context);
 
             notificationService.createNotification(new NotificationRequestDTO(
                     NotificationType.SUPPLY_REQUEST_REJECTED,
                     message,
-                    context.getUserId()
+                    userId
             ));
         }
     }
