@@ -96,11 +96,12 @@ public class ItemService {
                 .build();
         Item saved = repo.save(entity);
 
-        CreateItemInstanceRequestDto createItemInstanceRequestDto= CreateItemInstanceRequestDto.builder()
-                .itemId(saved.getId())
-                .image(saved.getImage())
-                .build();
-        itemInstanceService.createInstance(createItemInstanceRequestDto);
+//instance 주석 코드 ( 확인용 )
+//        CreateItemInstanceRequestDto createItemInstanceRequestDto= CreateItemInstanceRequestDto.builder()
+//                .itemId(saved.getId())
+//                .image(saved.getImage())
+//                .build();
+//        itemInstanceService.createInstance(createItemInstanceRequestDto);
 
         analysisService.clearCategoryCache(); // 캐시 무효화
         return mapToDto(saved);
