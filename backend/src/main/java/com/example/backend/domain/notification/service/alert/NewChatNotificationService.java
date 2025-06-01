@@ -33,8 +33,6 @@ public class NewChatNotificationService {
             // context를 사용하여 메시지 생성
             String msg = strategy.generateMessage(context);
 
-            Map<String, Object> extraData = Map.of("chatRoomType", chatRoomType.name());
-
             // NotificationRequestDTO에 메시지 전달
             notificationService.createNotification(new NotificationRequestDTO(
                     NotificationType.NEW_CHAT,
