@@ -64,9 +64,12 @@ export default function CreateReturnRequestPage() {
   useEffect(() => {
     const fetchSupplyRequests = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/v1/supply-requests/me`, {
-          credentials: "include",
-        });
+        const res = await fetch(
+          `${API_BASE}/api/v1/supply-requests/except/me`,
+          {
+            credentials: "include",
+          }
+        );
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         setSupplyRequests(data || []);
@@ -81,13 +84,16 @@ export default function CreateReturnRequestPage() {
   // 선택한 비품 요청서의 상세 정보 가져오기
   const fetchSupplyRequestDetail = async (requestId: number) => {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/supply-requests/${requestId}`, {
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${API_BASE}/api/v1/supply-requests/${requestId}`,
+        {
+          credentials: "include",
+        }
+      );
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
         requestId: data.id,
         userId: data.userId,
@@ -138,12 +144,12 @@ export default function CreateReturnRequestPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    
+
     if (name === "requestId") {
       if (value) {
         fetchSupplyRequestDetail(Number(value));
       } else {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           requestId: 0,
           itemId: 1,
@@ -153,7 +159,7 @@ export default function CreateReturnRequestPage() {
         }));
       }
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         [name]: value,
       }));
@@ -250,11 +256,14 @@ export default function CreateReturnRequestPage() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">요청서를 선택하세요</option>
-                  {supplyRequests.filter(r => r.approvalStatus === "APPROVED").map((request) => (
-                    <option key={request.id} value={request.id}>
-                      [{request.id}] {request.productName} - {new Date(request.createdAt).toLocaleDateString()}
-                    </option>
-                  ))}
+                  {supplyRequests
+                    .filter((r) => r.approvalStatus === "APPROVED")
+                    .map((request) => (
+                      <option key={request.id} value={request.id}>
+                        [{request.id}] {request.productName} -{" "}
+                        {new Date(request.createdAt).toLocaleDateString()}
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -283,7 +292,8 @@ export default function CreateReturnRequestPage() {
                   htmlFor="quantity"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  반납 수량 {!formData.maxQuantity && `(최대: ${formData.maxQuantity}개)`}
+                  반납 수량{" "}
+                  {!formData.maxQuantity && `(최대: ${formData.maxQuantity}개)`}
                 </label>
                 <input
                   type="number"
@@ -298,7 +308,8 @@ export default function CreateReturnRequestPage() {
                 />
                 {formData.quantity > (formData.maxQuantity || 0) && (
                   <p className="mt-1 text-sm text-red-600">
-                    반납 수량은 요청 수량({formData.maxQuantity}개)을 초과할 수 없습니다.
+                    반납 수량은 요청 수량({formData.maxQuantity}개)을 초과할 수
+                    없습니다.
                   </p>
                 )}
               </div>
@@ -376,4 +387,4 @@ export default function CreateReturnRequestPage() {
       </div>
     </main>
   );
-} 
+}

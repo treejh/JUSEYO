@@ -291,6 +291,26 @@ public class SupplyRequestService {
                 .map(this::mapToDto).toList();
     }
 
+
+
+    @Transactional(readOnly = true)
+    public List<SupplyRequestResponseDto> getMyRequestsExceptReturn() {
+        Long userId = tokenService.getIdFromToken();
+
+        // 승인된 요청만 가져옴
+        List<SupplyRequest> approvedRequests = repo.findApprovedRequestsByUserId(userId);
+
+        // SupplyReturn 테이블에 존재하지 않는 요청만 필터링
+        List<SupplyRequestResponseDto> result = approvedRequests.stream()
+                .filter(request -> !supplyReturnRepository.existsBySupplyRequestId(request.getId()))
+                .map(this::mapToDto)
+                .toList();
+
+        return result;
+    }
+
+
+
     @Transactional
     public SupplyRequestResponseDto updateMyRequest(Long requestId, SupplyRequestRequestDto dto) {
         if (dto.isRental() && dto.getReturnDate() == null) {

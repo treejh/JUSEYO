@@ -159,4 +159,16 @@ public class SupplyRequestController {
         SupplyRequestResponseDto dto = supplyRequestService.getRequestById(requestId);
         return ResponseEntity.ok(dto);
     }
+
+
+    /** 반납 내역서가 생성되지 않은 내 요청 리스트 */
+    @Operation(
+            summary = "반납 내역서가 생성되지 않은 내 비품 요청 목록 조회",
+            description = "사용자 권한으로 로그인한 사용자가 본인이 요청한 비품 요청 중, 반납 내역서가 아직 생성되지 않은 목록을 조회합니다."
+    )
+    @GetMapping("/except/me")
+    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    public ResponseEntity<List<SupplyRequestResponseDto>> getMyRequestsExceptWithReturnSheet() {
+        return ResponseEntity.ok(supplyRequestService.getMyRequestsExceptReturn());
+    }
 }
