@@ -117,7 +117,9 @@ export default function ItemInstanceManagePage() {
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 관리</h1>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                비품 관리
+              </h1>
               <div className="flex gap-4 mb-4 border-b border-gray-200">
                 <Link
                   href="/item/manage"
@@ -129,10 +131,12 @@ export default function ItemInstanceManagePage() {
                   href="/item/iteminstance/manage"
                   className="px-4 py-3 font-medium text-[#0047AB] border-b-2 border-[#0047AB]"
                 >
-                  재고 단위
+                  개별 자산
                 </Link>
               </div>
-              <p className="text-gray-600">비품의 개별 자산 현황을 확인할 수 있습니다.</p>
+              <p className="text-gray-600">
+                비품의 개별 자산 현황을 확인할 수 있습니다.
+              </p>
             </div>
           </div>
 
@@ -188,11 +192,10 @@ export default function ItemInstanceManagePage() {
                 <thead className="bg-gray-50">
                   <tr>
                     {[
-                      "ID",
+                      "NO", // "ID"에서 "NO"로 변경
                       "품목명",
                       "인스턴스 코드",
                       "출고 유형",
-                      "상태",
                       "대여자",
                       "반납일",
                       "생성일",
@@ -208,13 +211,14 @@ export default function ItemInstanceManagePage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {instances.map((inst) => (
+                  {instances.map((inst, index) => (
                     <tr
                       key={inst.id}
                       className="hover:bg-gray-50 transition-colors duration-150"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {inst.id}
+                        {page * size + index + 1}{" "}
+                        {/* inst.id 대신 순차적인 번호로 변경 */}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {inst.itemName}
@@ -227,34 +231,41 @@ export default function ItemInstanceManagePage() {
                           {inst.outbound}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          inst.status === 'ACTIVE' 
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}>
-                          {inst.status === 'ACTIVE' ? '사용 가능' : '사용 불가'}
-                        </span>
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {inst.borrowerName || "–"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {inst.returnDate
-                          ? new Date(inst.returnDate).toLocaleDateString("ko-KR")
+                          ? new Date(inst.returnDate).toLocaleDateString(
+                              "ko-KR"
+                            )
                           : "–"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(inst.createdAt).toLocaleString("ko-KR")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {(inst.finalImage || inst.itemImage) ? (
+                        {inst.finalImage || inst.itemImage ? (
                           <button
-                            onClick={() => setSelectedImage(inst.finalImage || inst.itemImage || '')}
+                            onClick={() =>
+                              setSelectedImage(
+                                inst.finalImage || inst.itemImage || ""
+                              )
+                            }
                             className="text-[#0047AB] hover:text-[#003380] transition-colors duration-200"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
                             </svg>
                           </button>
                         ) : (
@@ -320,8 +331,18 @@ export default function ItemInstanceManagePage() {
               onClick={() => setSelectedImage(null)}
               className="absolute -top-2 -right-2 bg-black/50 hover:bg-black/70 p-2 backdrop-blur-sm rounded-full text-white/70 hover:text-white transition-all duration-200 shadow-lg"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
             <div className="flex justify-center">
@@ -333,8 +354,8 @@ export default function ItemInstanceManagePage() {
                 className="max-h-[80vh] w-auto object-contain rounded-lg"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder-image.jpg';
-                  target.classList.add('opacity-50');
+                  target.src = "/placeholder-image.jpg";
+                  target.classList.add("opacity-50");
                 }}
               />
             </div>

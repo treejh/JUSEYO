@@ -517,6 +517,8 @@ public class UserController {
     )
     public ResponseEntity deleteUser() {
         userService.deleteUser();
+        tokenService.deleteCookie("accessToken");
+        tokenService.deleteCookie("refreshToken");
         return new ResponseEntity<>(
                 ApiResponse.of(HttpStatus.OK.value(), " 유저 삭제 완료( stop 상태 ) "),
                 HttpStatus.OK
