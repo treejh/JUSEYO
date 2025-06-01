@@ -29,6 +29,7 @@ export default function SupplyRequestUserListPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("ALL"); // 상태 추가
 
   const [currentPage, setCurrentPage] = useState<number>(0);
   const pageSize = 20;
@@ -124,6 +125,10 @@ export default function SupplyRequestUserListPage() {
           if (end < reqDate) return false;
         }
       }
+      if (typeFilter !== "ALL") {
+        if (typeFilter === "RENTAL" && !req.rental) return false;
+        if (typeFilter === "PURCHASE" && req.rental) return false;
+      }
       return true;
     })
     .sort(
@@ -144,6 +149,7 @@ export default function SupplyRequestUserListPage() {
     setStartDate("");
     setEndDate("");
     setStatusFilter("ALL");
+    setTypeFilter("ALL"); // 추가
     setCurrentPage(0);
   };
 
@@ -183,7 +189,7 @@ export default function SupplyRequestUserListPage() {
           </div>
 
           {/* 통계 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-blue-600">전체 요청</p>
               <p className="text-2xl font-bold text-blue-900">
@@ -206,16 +212,6 @@ export default function SupplyRequestUserListPage() {
                 {
                   filteredRequests.filter(
                     (r) => r.approvalStatus === "APPROVED"
-                  ).length
-                }
-              </p>
-            </div>
-            <div className="bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-blue-600">반납대기중</p>
-              <p className="text-2xl font-bold text-blue-900">
-                {
-                  filteredRequests.filter(
-                    (r) => r.approvalStatus === "RETURN_PENDING"
                   ).length
                 }
               </p>
@@ -265,7 +261,27 @@ export default function SupplyRequestUserListPage() {
                     </div>
                   </div>
                 </div>
-                <div>
+                <div className="w-48">
+                  {" "}
+                  {/* flex-1 제거하고 w-48 추가 */}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    신청 유형
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={typeFilter}
+                      onChange={(e) => setTypeFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-white"
+                    >
+                      <option value="ALL">전체</option>
+                      <option value="RENTAL">대여</option>
+                      <option value="PURCHASE">지급</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="w-48">
+                  {" "}
+                  {/* 기존과 동일한 사이즈 */}
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     요청 상태
                   </label>
@@ -278,7 +294,6 @@ export default function SupplyRequestUserListPage() {
                     <option value="REQUESTED">대기 중</option>
                     <option value="APPROVED">승인</option>
                     <option value="REJECTED">거절</option>
-                    <option value="RETURN_PENDING">반납대기중</option>
                   </select>
                 </div>
               </div>
