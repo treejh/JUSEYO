@@ -29,6 +29,7 @@ type NotificationType =
   | "MANAGER_REJECTION_ALERT"
   | "ADMIN_REJECTION_ALERT"
   | "SUPPLY_RETURN_APPROVED"
+  | "SUPPLY_RETURN_REJECTED"
   | "NEW_USER"
   | "NEW_USER_APPROVED"
   | "NEW_USER_REJECTED"
@@ -51,6 +52,7 @@ const NOTIFICATION_CATEGORIES: Record<string, NotificationCategory> = {
       "SUPPLY_REQUEST_REJECTED",
       "SUPPLY_REQUEST_DELAYED",
       "SUPPLY_RETURN_APPROVED",
+      "SUPPLY_RETURN_REJECTED",
     ],
     color: "blue",
   },
@@ -251,6 +253,15 @@ const NOTIFICATION_TYPE_LABELS: Record<
   },
   NEW_USER_REJECTED: {
     label: "회원 거부",
+    color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  SUPPLY_RETURN_REJECTED: {
+    label: "비품 반납 거부",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -483,13 +494,13 @@ export function NotificationBell() {
                           if (
                             notification.notificationType === "SUPPLY_REQUEST"
                           ) {
-                            router.push("/item/supplyrequest/list/manage");
+                            router.push("/item/supplyrequest/manage");
                             setIsOpen(false);
                             handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "SUPPLY_RETURN"
                           ) {
-                            router.push("/item/return");
+                            router.push("/item/return/manage");
                             setIsOpen(false);
                             handleMarkAsRead(notification.id);
                           } else if (
@@ -536,6 +547,13 @@ export function NotificationBell() {
                           } else if (
                             notification.notificationType ===
                             "SUPPLY_RETURN_APPROVED"
+                          ) {
+                            router.push("/item/supplyreturn");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
+                          } else if (
+                            notification.notificationType ===
+                            "SUPPLY_RETURN_REJECTED"
                           ) {
                             router.push("/item/supplyreturn");
                             setIsOpen(false);
