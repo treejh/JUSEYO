@@ -35,10 +35,14 @@ export default function CreateItemPage() {
   React.useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories`, {
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("카테고리 목록을 불러오는데 실패했습니다.");
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories`,
+          {
+            credentials: "include",
+          }
+        );
+        if (!res.ok)
+          throw new Error("카테고리 목록을 불러오는데 실패했습니다.");
         const data = await res.json();
         setCategories(data);
       } catch (error) {
@@ -53,11 +57,13 @@ export default function CreateItemPage() {
     if (!formData.name.trim()) return;
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/items/exists?name=${encodeURIComponent(formData.name)}`,
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
+        }/api/v1/items/exists?name=${encodeURIComponent(formData.name)}`,
         { credentials: "include" }
       );
       if (!res.ok) throw new Error("중복 체크 실패");
-      const { exists } = await res.json() as { exists: boolean };
+      const { exists } = (await res.json()) as { exists: boolean };
       setNameExists(exists);
       if (exists) {
         toast.error("이미 등록된 이름입니다. 다른 이름을 입력하세요.");
@@ -67,11 +73,13 @@ export default function CreateItemPage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? Number(value) : value
+      [name]: type === "number" ? Number(value) : value,
     }));
   };
 
@@ -94,7 +102,7 @@ export default function CreateItemPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 필수 항목 검증
     if (!formData.name || !formData.categoryId) {
       toast.error("필수 항목을 입력해주세요.");
@@ -122,22 +130,36 @@ export default function CreateItemPage() {
       const formDataToSend = new FormData();
       formDataToSend.append("name", formData.name);
       formDataToSend.append("categoryId", formData.categoryId);
-      formDataToSend.append("minimumQuantity", formData.minimumQuantity.toString());
+      formDataToSend.append(
+        "minimumQuantity",
+        formData.minimumQuantity.toString()
+      );
       formDataToSend.append("totalQuantity", formData.totalQuantity.toString());
-      formDataToSend.append("availableQuantity", formData.availableQuantity.toString());
-      formDataToSend.append("isReturnRequired", formData.isReturnRequired.toString());
-      if (formData.purchaseSource) formDataToSend.append("purchaseSource", formData.purchaseSource);
-      if (formData.location) formDataToSend.append("location", formData.location);
+      formDataToSend.append(
+        "availableQuantity",
+        formData.availableQuantity.toString()
+      );
+      formDataToSend.append(
+        "isReturnRequired",
+        formData.isReturnRequired.toString()
+      );
+      if (formData.purchaseSource)
+        formDataToSend.append("purchaseSource", formData.purchaseSource);
+      if (formData.location)
+        formDataToSend.append("location", formData.location);
       if (formData.image) formDataToSend.append("image", formData.image);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/items`, {
-        method: "POST",
-        credentials: "include",
-        body: formDataToSend,
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/items`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: formDataToSend,
+        }
+      );
 
       if (!res.ok) throw new Error("비품 등록에 실패했습니다.");
-      
+
       toast.success("비품이 성공적으로 등록되었습니다.");
       router.push("/item/manage");
     } catch (error) {
@@ -154,7 +176,9 @@ export default function CreateItemPage() {
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 추가</h1>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                비품 추가
+              </h1>
               <p className="text-gray-600">새로운 비품을 등록할 수 있습니다.</p>
             </div>
           </div>
@@ -176,7 +200,7 @@ export default function CreateItemPage() {
                     onBlur={checkName}
                     placeholder="비품명을 입력하세요"
                     className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent ${
-                      nameExists ? 'border-red-500' : 'border-gray-300'
+                      nameExists ? "border-red-500" : "border-gray-300"
                     }`}
                     required
                   />
@@ -289,7 +313,10 @@ export default function CreateItemPage() {
                     onChange={handleCheckboxChange}
                     className="h-4 w-4 text-[#0047AB] focus:ring-[#0047AB] border-gray-300 rounded"
                   />
-                  <label htmlFor="isReturnRequired" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="isReturnRequired"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     반납 필수 여부
                   </label>
                 </div>
@@ -314,12 +341,22 @@ export default function CreateItemPage() {
                           type="button"
                           onClick={() => {
                             setImagePreview(null);
-                            setFormData(prev => ({ ...prev, image: null }));
+                            setFormData((prev) => ({ ...prev, image: null }));
                           }}
                           className="absolute -top-2 -right-2 bg-black/50 hover:bg-black/70 p-2 backdrop-blur-sm rounded-full text-white/70 hover:text-white transition-all duration-200 shadow-lg"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
                           </svg>
                         </button>
                       </div>

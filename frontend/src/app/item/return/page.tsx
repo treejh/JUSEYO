@@ -59,29 +59,32 @@ export default function ReturnPage() {
       if (!res.ok) throw new Error("반납 목록을 불러오는데 실패했습니다.");
 
       const data: PageResponse = await res.json();
-      
+
       // 클라이언트 사이드 필터링 적용
       let filteredData = [...data.content];
 
       // 검색어 필터링
       if (searchKeyword.trim()) {
         const keyword = searchKeyword.toLowerCase();
-        filteredData = filteredData.filter(item => 
-          item.productName.toLowerCase().includes(keyword) ||
-          item.serialNumber?.toLowerCase().includes(keyword) ||
-          item.userName?.toLowerCase().includes(keyword) ||
-          item.requestId?.toString().includes(keyword)
+        filteredData = filteredData.filter(
+          (item) =>
+            item.productName.toLowerCase().includes(keyword) ||
+            item.serialNumber?.toLowerCase().includes(keyword) ||
+            item.userName?.toLowerCase().includes(keyword) ||
+            item.requestId?.toString().includes(keyword)
         );
       }
 
       // 현재 상태(outbound) 필터링
       if (selectedOutbound) {
-        filteredData = filteredData.filter(item => item.outbound === selectedOutbound);
+        filteredData = filteredData.filter(
+          (item) => item.outbound === selectedOutbound
+        );
       }
 
       // 기간 필터링
       if (dateRange.start || dateRange.end) {
-        filteredData = filteredData.filter(item => {
+        filteredData = filteredData.filter((item) => {
           const itemDate = new Date(item.returnDate || item.useDate);
           const start = dateRange.start ? new Date(dateRange.start) : null;
           const end = dateRange.end ? new Date(dateRange.end) : null;
@@ -98,7 +101,7 @@ export default function ReturnPage() {
           return true;
         });
       }
-      
+
       setReturns(filteredData);
       // 필터링된 데이터로 페이지네이션 정보 재계산
       const filteredTotalPages = Math.ceil(filteredData.length / data.size);
@@ -113,7 +116,14 @@ export default function ReturnPage() {
 
   useEffect(() => {
     fetchReturns(currentPage, selectedStatus);
-  }, [currentPage, selectedStatus, selectedOutbound, dateRange.start, dateRange.end, searchKeyword]);
+  }, [
+    currentPage,
+    selectedStatus,
+    selectedOutbound,
+    dateRange.start,
+    dateRange.end,
+    searchKeyword,
+  ]);
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
@@ -147,7 +157,7 @@ export default function ReturnPage() {
   };
 
   const handleDateChange = (type: "start" | "end", value: string) => {
-    setDateRange(prev => ({ ...prev, [type]: value }));
+    setDateRange((prev) => ({ ...prev, [type]: value }));
     setCurrentPage(1);
   };
 
@@ -230,8 +240,12 @@ export default function ReturnPage() {
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 반납 내역</h1>
-              <p className="text-gray-600">비품 반납 현황을 조회할 수 있습니다.</p>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                비품 반납 내역
+              </h1>
+              <p className="text-gray-600">
+                비품 반납 현황을 조회할 수 있습니다.
+              </p>
             </div>
             <Link
               href="/item/return/manage"
@@ -265,25 +279,35 @@ export default function ReturnPage() {
             <div className="bg-yellow-50 rounded-lg p-4">
               <p className="text-sm text-yellow-600">반납 대기</p>
               <p className="text-2xl font-bold text-yellow-900">
-                {returns.filter(item => item.approvalStatus === "RETURN_PENDING").length}
+                {
+                  returns.filter(
+                    (item) => item.approvalStatus === "RETURN_PENDING"
+                  ).length
+                }
               </p>
             </div>
             <div className="bg-green-50 rounded-lg p-4">
               <p className="text-sm text-green-600">반납 완료</p>
               <p className="text-2xl font-bold text-green-900">
-                {returns.filter(item => item.approvalStatus === "RETURNED").length}
+                {
+                  returns.filter((item) => item.approvalStatus === "RETURNED")
+                    .length
+                }
               </p>
             </div>
             <div className="bg-red-50 rounded-lg p-4">
               <p className="text-sm text-red-600">반납 거절</p>
               <p className="text-2xl font-bold text-red-900">
-                {returns.filter(item => item.approvalStatus === "REJECTED").length}
+                {
+                  returns.filter((item) => item.approvalStatus === "REJECTED")
+                    .length
+                }
               </p>
             </div>
             <div className="bg-orange-50 rounded-lg p-4">
               <p className="text-sm text-orange-600">파손</p>
               <p className="text-2xl font-bold text-orange-900">
-                {returns.filter(item => item.outbound === "DAMAGED").length}
+                {returns.filter((item) => item.outbound === "DAMAGED").length}
               </p>
             </div>
           </div>
@@ -293,7 +317,9 @@ export default function ReturnPage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">상품명</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    상품명
+                  </label>
                   <div className="relative">
                     <input
                       type="text"
@@ -321,7 +347,9 @@ export default function ReturnPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">반납 상태</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    반납 상태
+                  </label>
                   <select
                     value={selectedStatus}
                     onChange={(e) => handleStatusChange(e.target.value)}
@@ -334,7 +362,9 @@ export default function ReturnPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">현재 상태</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    현재 상태
+                  </label>
                   <select
                     value={selectedOutbound}
                     onChange={(e) => handleOutboundChange(e.target.value)}
@@ -348,12 +378,16 @@ export default function ReturnPage() {
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">기간 선택</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    기간 선택
+                  </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="date"
                       value={dateRange.start}
-                      onChange={(e) => handleDateChange("start", e.target.value)}
+                      onChange={(e) =>
+                        handleDateChange("start", e.target.value)
+                      }
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
                     />
                     <span className="text-gray-500">~</span>
@@ -384,34 +418,78 @@ export default function ReturnPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">요청서ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">요청자명</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수량</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">고유번호</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사용일</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">반납일</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">반납 상태</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">현재 상태</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    No
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    요청서ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    요청자명
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    상품명
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    수량
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    고유번호
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    사용일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    반납일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    반납 상태
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    현재 상태
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    관리
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-12 text-center align-middle">
+                    <td
+                      colSpan={10}
+                      className="px-6 py-12 text-center align-middle"
+                    >
                       <div className="flex justify-center items-center min-h-[120px]">
-                        <svg className="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin h-8 w-8 text-gray-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                       </div>
                     </td>
                   </tr>
                 ) : returns.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-12 text-center align-middle">
+                    <td
+                      colSpan={10}
+                      className="px-6 py-12 text-center align-middle"
+                    >
                       <div className="flex justify-center items-center min-h-[120px]">
                         <p className="text-gray-500">반납 내역이 없습니다.</p>
                       </div>
@@ -442,15 +520,25 @@ export default function ReturnPage() {
                         {new Date(item.useDate).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.returnDate ? new Date(item.returnDate).toLocaleDateString() : "-"}
+                        {item.returnDate
+                          ? new Date(item.returnDate).toLocaleDateString()
+                          : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeStyle(item.approvalStatus)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeStyle(
+                            item.approvalStatus
+                          )}`}
+                        >
                           {getStatusText(item.approvalStatus)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getOutboundBadgeStyle(item.outbound)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getOutboundBadgeStyle(
+                            item.outbound
+                          )}`}
+                        >
                           {getOutboundText(item.outbound)}
                         </span>
                       </td>
@@ -501,7 +589,9 @@ export default function ReturnPage() {
                   {currentPage} / {totalPages}
                 </span>
                 <button
-                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    handlePageChange(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
@@ -521,4 +611,4 @@ export default function ReturnPage() {
       </div>
     </div>
   );
-} 
+}
