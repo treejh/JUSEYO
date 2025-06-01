@@ -24,6 +24,14 @@ export default function Home() {
       ? window.location.pathname.includes("/chat")
       : false;
 
+  // 역할 한글 변환 함수 추가
+  const getRoleKorean = (role: string) => {
+    if (role === "USER") return "회원";
+    if (role === "MANAGER") return "매니저";
+    if (role === "ADMIN") return "관리자";
+    return role;
+  };
+
   // 기능 소개 슬라이드 데이터
   const featureSlides = [
     {
@@ -166,9 +174,10 @@ export default function Home() {
     const loadParticles = async () => {
       if (!window.particlesJS) {
         const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
+        script.src =
+          "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
         script.async = true;
-        
+
         await new Promise((resolve) => {
           script.onload = resolve;
           document.body.appendChild(script);
@@ -321,7 +330,7 @@ export default function Home() {
                     </p>
                     <p className="text-slate-600">
                       <span className="font-medium text-slate-800">역할:</span>{" "}
-                      {loginUser.role}
+                      {getRoleKorean(loginUser.role)}
                     </p>
                     <p className="text-slate-600">
                       <span className="font-medium text-slate-800">
