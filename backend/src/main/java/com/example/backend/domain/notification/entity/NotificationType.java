@@ -28,6 +28,7 @@ public enum NotificationType {
     RETURN_DUE_SOON("지정 반납일 임박"),   // 지정 반납일 임박 (사용자 행동 유도)
     SUPPLY_REQUEST_DELAYED("비품 요청 처리 지연"),  // 비품 요청 처리 지연 (사용자 행동 유도)
     SUPPLY_RETURN_APPROVED("비품 반납 승인"),
+    SUPPLY_RETURN_REJECTED("비품 반납 거부"),
 
     NEW_USER_APPROVED("회원 가입 요청 승인"),
     NEW_USER_REJECTED("회원 가입 요청 거부"),
