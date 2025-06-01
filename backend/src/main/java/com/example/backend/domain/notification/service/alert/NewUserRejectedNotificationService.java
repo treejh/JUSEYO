@@ -26,7 +26,7 @@ public class NewUserRejectedNotificationService {
         NewUserContext context = new NewUserContext(userName);
 
         // 조건을 확인하고 알림을 생성
-        if (strategy.shouldTrigger(context) && userService.isApprovedUser(requesterId)) {
+        if (strategy.shouldTrigger(context) ) {
             // context를 사용하여 메시지 생성
             String msg = strategy.generateMessage(context);
 
