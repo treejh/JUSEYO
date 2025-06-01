@@ -131,7 +131,7 @@ export default function ItemInstanceManagePage() {
                   href="/item/iteminstance/manage"
                   className="px-4 py-3 font-medium text-[#0047AB] border-b-2 border-[#0047AB]"
                 >
-                  재고 단위
+                  개별 자산
                 </Link>
               </div>
               <p className="text-gray-600">
