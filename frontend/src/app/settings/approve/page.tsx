@@ -117,10 +117,19 @@ export default function ApprovePage() {
 
   const handleApprove = async (userId: number) => {
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/approve/${userId}`,
-        { method: "POST", credentials: "include" }
-      );
+      if (selectedRole === "매니저") {
+        // 매니저 승인 API 호출
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/approve/manager/${userId}`,
+          { method: "POST", credentials: "include" }
+        );
+      } else {
+        // 일반 회원 승인 API 호출
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/approve/${userId}`,
+          { method: "POST", credentials: "include" }
+        );
+      }
       location.reload();
     } catch (error) {
       toast.error("승인 처리 중 오류가 발생했습니다.");
@@ -129,11 +138,19 @@ export default function ApprovePage() {
 
   const handleReject = async (userId: number) => {
     try {
-      console.log("Rejecting userId:", userId);
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/reject/${userId}`,
-        { method: "POST", credentials: "include" }
-      );
+      if (selectedRole === "매니저") {
+        // 매니저 거부 API 호출
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/reject/manager/${userId}`,
+          { method: "POST", credentials: "include" }
+        );
+      } else {
+        // 일반 회원 거부 API 호출
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/reject/${userId}`,
+          { method: "POST", credentials: "include" }
+        );
+      }
       location.reload();
     } catch (error) {
       toast.error("거부 처리 중 오류가 발생했습니다.");
@@ -203,15 +220,26 @@ export default function ApprovePage() {
                 {selectedRole === "회원" ? "사용자 관리" : "매니저 관리"}
               </h1>
               <p className="text-gray-600">
-                {selectedRole === "회원" ? "사용자" : "매니저"}의 승인 및 권한을 관리할 수 있습니다.
+                {selectedRole === "회원" ? "사용자" : "매니저"}의 승인 및 권한을
+                관리할 수 있습니다.
               </p>
             </div>
             <Link
               href="/settings/approve/search"
               className="inline-flex items-center justify-center px-6 py-2 bg-[#0047AB] text-white rounded-lg hover:bg-[#003380] transition-colors duration-200 whitespace-nowrap"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
               검색하기
             </Link>
@@ -220,7 +248,9 @@ export default function ApprovePage() {
           {/* 역할 선택 섹션 */}
           {isInitialManager && (
             <div className="flex flex-wrap items-center gap-4 mb-6">
-              <label className="text-gray-700 font-medium whitespace-nowrap">역할 선택:</label>
+              <label className="text-gray-700 font-medium whitespace-nowrap">
+                역할 선택:
+              </label>
               <div className="flex gap-3">
                 <button
                   onClick={() => setSelectedRole("회원")}
@@ -338,17 +368,31 @@ export default function ApprovePage() {
                   <th className="px-6 py-3 text-left w-[40px]">
                     <input
                       type="checkbox"
-                      checked={selectedIds.length === users.length && users.length > 0}
+                      checked={
+                        selectedIds.length === users.length && users.length > 0
+                      }
                       onChange={handleSelectAll}
                       className="rounded border-gray-300 text-[#0047AB] focus:ring-[#0047AB]"
                     />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">이름</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이메일</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">전화번호</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">부서</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">요청일</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">작업</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
+                    이름
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    이메일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+                    전화번호
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+                    부서
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
+                    요청일
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
+                    작업
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -363,16 +407,22 @@ export default function ApprovePage() {
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {user.name}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">{user.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{user.phoneNumber}</div>
+                      <div className="text-sm text-gray-500">
+                        {user.phoneNumber}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{user.departmentName || '-'}</div>
+                      <div className="text-sm text-gray-500">
+                        {user.departmentName || "-"}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">
@@ -396,12 +446,20 @@ export default function ApprovePage() {
                           </button>
                         </div>
                       ) : filterStatus === "reject" ? (
-                        <button
-                          onClick={() => handleDelete(user.userId)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          삭제
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleApprove(user.userId)}
+                            className="text-green-600 hover:text-green-900"
+                          >
+                            승인
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.userId)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            삭제
+                          </button>
+                        </div>
                       ) : filterStatus === "approve" ? (
                         <button
                           onClick={() => handleReject(user.userId)}

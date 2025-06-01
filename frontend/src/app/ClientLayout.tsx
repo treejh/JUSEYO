@@ -264,7 +264,7 @@ export default function ClientLayout({
   ]);
 
   if (isLoginUserPending) {
-    return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
+    return <LoadingScreen message="로딩중" />;
   }
 
   return (

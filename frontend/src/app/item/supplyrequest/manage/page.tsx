@@ -196,10 +196,14 @@ export default function ManageSupplyRequestsPage() {
                         {req.purpose}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {req.useDate ?? "-"}
+                        {req.useDate
+                          ? new Date(req.useDate).toLocaleDateString()
+                          : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {req.returnDate ?? "-"}
+                        {req.returnDate
+                          ? new Date(req.returnDate).toLocaleDateString()
+                          : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
