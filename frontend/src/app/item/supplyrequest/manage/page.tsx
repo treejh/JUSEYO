@@ -42,14 +42,18 @@ export default function ManageSupplyRequestsPage() {
 
   const updateStatus = async (id: number, action: "approve" | "reject") => {
     if (processingIds.includes(id)) return;
-    
+
     setProcessingIds((prev) => [...prev, id]);
     try {
       const url = `${API_BASE}/api/v1/supply-requests/${id}/${action}`;
       const res = await fetch(url, { method: "POST", credentials: "include" });
       if (!res.ok) throw new Error(`서버 오류: ${await res.text()}`);
-      
-      toast.success(action === "approve" ? "신청이 승인되었습니다." : "신청이 거절되었습니다.");
+
+      toast.success(
+        action === "approve"
+          ? "신청이 승인되었습니다."
+          : "신청이 거절되었습니다."
+      );
       await fetchPending();
     } catch (err: any) {
       toast.error(err.message);
@@ -69,8 +73,12 @@ export default function ManageSupplyRequestsPage() {
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 신청 관리</h1>
-              <p className="text-gray-600">비품 신청 현황을 관리할 수 있습니다.</p>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                비품 신청 관리
+              </h1>
+              <p className="text-gray-600">
+                비품 신청 현황을 관리할 수 있습니다.
+              </p>
             </div>
             <Link
               href="/item/supplyrequest/list/manage"
@@ -137,15 +145,33 @@ export default function ManageSupplyRequestsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수량</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사유</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사용일</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">반납일</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">대여여부</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작성일</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      상품명
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      수량
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      사유
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      사용일
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      반납일
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      신청유형
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      작성일
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      관리
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -184,7 +210,7 @@ export default function ManageSupplyRequestsPage() {
                         {new Date(req.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                        <div className="flex justify-center space-x-2">
                           <button
                             onClick={() => updateStatus(req.id, "approve")}
                             disabled={processingIds.includes(req.id)}

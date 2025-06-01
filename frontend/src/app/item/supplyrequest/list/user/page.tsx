@@ -183,7 +183,7 @@ export default function SupplyRequestUserListPage() {
           </div>
 
           {/* 통계 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-blue-600">전체 요청</p>
               <p className="text-2xl font-bold text-blue-900">
@@ -210,6 +210,16 @@ export default function SupplyRequestUserListPage() {
                 }
               </p>
             </div>
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-sm text-blue-600">반납대기중</p>
+              <p className="text-2xl font-bold text-blue-900">
+                {
+                  filteredRequests.filter(
+                    (r) => r.approvalStatus === "RETURN_PENDING"
+                  ).length
+                }
+              </p>
+            </div>
             <div className="bg-red-50 rounded-lg p-4">
               <p className="text-sm text-red-600">거절</p>
               <p className="text-2xl font-bold text-red-900">
@@ -227,11 +237,13 @@ export default function SupplyRequestUserListPage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">상품명</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    상품명
+                  </label>
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="상품명 또는 요청서ID로 검색"
+                      placeholder="상품명으로 검색" // placeholder 수정
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
@@ -254,7 +266,9 @@ export default function SupplyRequestUserListPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">요청 상태</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    요청 상태
+                  </label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -264,12 +278,15 @@ export default function SupplyRequestUserListPage() {
                     <option value="REQUESTED">대기 중</option>
                     <option value="APPROVED">승인</option>
                     <option value="REJECTED">거절</option>
+                    <option value="RETURN_PENDING">반납대기중</option>
                   </select>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">기간 선택</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    기간 선택
+                  </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="date"
@@ -329,15 +346,30 @@ export default function SupplyRequestUserListPage() {
             <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">No</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">요청서ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">대여여부</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">요청 상태</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">작성일</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">반납일</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">관리</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">
+                    No
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    상품명
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">
+                    수량
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">
+                    신청유형
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
+                    요청 상태
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+                    작성일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+                    반납일
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">
+                    관리
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -345,9 +377,25 @@ export default function SupplyRequestUserListPage() {
                   <tr>
                     <td colSpan={9} className="px-6 py-12 text-center">
                       <div className="flex justify-center">
-                        <svg className="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin h-8 w-8 text-gray-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                       </div>
                     </td>
@@ -364,22 +412,30 @@ export default function SupplyRequestUserListPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {currentPage * pageSize + index + 1}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {request.id}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {request.productName}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{request.productName}</div>
+                        <div className="text-sm text-gray-500">
+                          {request.quantity}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{request.quantity}</div>
+                        <div className="text-sm text-gray-500">
+                          {request.rental ? "대여" : "지급"}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{request.rental ? "대여" : "구매"}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(request.approvalStatus)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                            request.approvalStatus
+                          )}`}
+                        >
                           {request.approvalStatus === "REQUESTED" && "대기 중"}
-                          {request.approvalStatus === "RETURN_PENDING" && "반납 대기 중"}
+                          {request.approvalStatus === "RETURN_PENDING" &&
+                            "반납 대기 중"}
                           {request.approvalStatus === "RETURNED" && "반납 완료"}
                           {request.approvalStatus === "APPROVED" && "승인"}
                           {request.approvalStatus === "REJECTED" && "거절"}
@@ -391,11 +447,13 @@ export default function SupplyRequestUserListPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{formatDate(request.returnDate)}</div>
+                        <div className="text-sm text-gray-500">
+                          {formatDate(request.returnDate)}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {request.approvalStatus === "REQUESTED" && (
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-center gap-2">
                             <Link
                               href={`/item/supplyrequest/edit/${request.id}`}
                               className="text-blue-600 hover:text-blue-900"
@@ -407,7 +465,9 @@ export default function SupplyRequestUserListPage() {
                               disabled={deleteLoadingId === request.id}
                               className="text-red-600 hover:text-red-900 disabled:opacity-50"
                             >
-                              {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
+                              {deleteLoadingId === request.id
+                                ? "삭제 중..."
+                                : "삭제"}
                             </button>
                           </div>
                         )}
@@ -434,7 +494,9 @@ export default function SupplyRequestUserListPage() {
               페이지 {currentPage + 1} / {totalPages}
             </span>
             <button
-              onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages - 1, currentPage + 1))
+              }
               disabled={currentPage >= totalPages - 1}
               className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
