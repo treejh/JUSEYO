@@ -320,6 +320,47 @@ export default function DashboardPage() {
     }
   };
 
+  const [myRequests, setMyRequests] = useState<SupplyRequestResponseDto[]>([]);
+  const [isMyRequestsLoading, setIsMyRequestsLoading] = useState(true);
+  const getRequestType = (rental: boolean) => (rental ? "대여" : "지급");
+
+  useEffect(() => {
+    const fetchMyRequests = async () => {
+      try {
+        setIsMyRequestsLoading(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
+
+        const res = await fetch(`${API_URL}/api/v1/supply-requests/me`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+
+        if (!res.ok) throw new Error("내 요청 내역을 불러오지 못했습니다.");
+
+        const data = await res.json();
+        // 최신순 정렬 후 5개만
+        const sorted = data
+          .sort(
+            (a: any, b: any) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+          .slice(0, 5);
+        setMyRequests(sorted);
+      } catch (e) {
+        setMyRequests([]);
+      } finally {
+        setIsMyRequestsLoading(false);
+      }
+    };
+
+    if (loginUser?.id) fetchMyRequests();
+  }, [loginUser?.id]);
+
   // 선택된 년도의 데이터만 필터링
   const filteredMonthlyData = useMemo(() => {
     return monthlySummary
@@ -569,38 +610,69 @@ export default function DashboardPage() {
 
   // 알림 타입에 따른 스타일과 텍스트
   const getNotificationStyle = (type: Notification["notificationType"]) => {
-    const baseStyle = "rounded-lg p-2.5 mb-1 flex items-center shadow-sm border hover:shadow-md transition-all duration-200";
+    const baseStyle =
+      "rounded-lg p-2.5 mb-1 flex items-center shadow-sm border hover:shadow-md transition-all duration-200";
     const iconBaseStyle = "w-5 h-5 mr-2 flex-shrink-0";
-    
+
     switch (type) {
       case "SUPPLY_REQUEST":
       case "NEW_MANAGEMENT_DASHBOARD":
         return {
           containerStyle: `${baseStyle} bg-blue-50 border-blue-200 hover:bg-blue-100`,
           icon: (
-            <svg className={`${iconBaseStyle} text-blue-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <svg
+              className={`${iconBaseStyle} text-blue-500`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
             </svg>
-          )
+          ),
         };
       case "STOCK_SHORTAGE":
         return {
           containerStyle: `${baseStyle} bg-red-50 border-red-200 hover:bg-red-100`,
           icon: (
-            <svg className={`${iconBaseStyle} text-red-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              className={`${iconBaseStyle} text-red-500`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
-          )
+          ),
         };
       case "RETURN_DUE_DATE_EXCEEDED":
       case "RETURN_DUE_SOON":
         return {
           containerStyle: `${baseStyle} bg-yellow-50 border-yellow-200 hover:bg-yellow-100`,
           icon: (
-            <svg className={`${iconBaseStyle} text-yellow-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className={`${iconBaseStyle} text-yellow-500`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
-          )
+          ),
         };
       case "SUPPLY_REQUEST_APPROVED":
       case "SUPPLY_RETURN_APPROVED":
@@ -608,38 +680,78 @@ export default function DashboardPage() {
         return {
           containerStyle: `${baseStyle} bg-green-50 border-green-200 hover:bg-green-100`,
           icon: (
-            <svg className={`${iconBaseStyle} text-green-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className={`${iconBaseStyle} text-green-500`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
-          )
+          ),
         };
       case "SUPPLY_REQUEST_REJECTED":
       case "NEW_USER_REJECTED":
         return {
           containerStyle: `${baseStyle} bg-red-50 border-red-200 hover:bg-red-100`,
           icon: (
-            <svg className={`${iconBaseStyle} text-red-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className={`${iconBaseStyle} text-red-500`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
-          )
+          ),
         };
       case "NEW_CHAT":
         return {
           containerStyle: `${baseStyle} bg-purple-50 border-purple-200 hover:bg-purple-100`,
           icon: (
-            <svg className={`${iconBaseStyle} text-purple-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <svg
+              className={`${iconBaseStyle} text-purple-500`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
-          )
+          ),
         };
       default:
         return {
           containerStyle: `${baseStyle} bg-gray-50 border-gray-200 hover:bg-gray-100`,
           icon: (
-            <svg className={`${iconBaseStyle} text-gray-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className={`${iconBaseStyle} text-gray-500`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
-          )
+          ),
         };
     }
   };
@@ -1218,6 +1330,7 @@ export default function DashboardPage() {
           };
       }
     };
+    const getRequestType = (rental: boolean) => (rental ? "대여" : "지급");
 
     // 날짜 포맷 함수
     const formatDate = (dateString: string) => {
@@ -1363,12 +1476,11 @@ export default function DashboardPage() {
                   ))
               ) : notifications && notifications.length > 0 ? (
                 notifications.map((notification) => {
-                  const { containerStyle, icon } = getNotificationStyle(notification.notificationType);
+                  const { containerStyle, icon } = getNotificationStyle(
+                    notification.notificationType
+                  );
                   return (
-                    <div
-                      key={notification.id}
-                      className={containerStyle}
-                    >
+                    <div key={notification.id} className={containerStyle}>
                       {icon}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate leading-tight">
@@ -1489,54 +1601,72 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-
-            {isLoading ? (
+            {isMyRequestsLoading ? (
               <div className="flex justify-center items-center h-48">
                 <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-gray-200 border-t-blue-600"></div>
               </div>
-            ) : userRequests.length > 0 ? (
-              <div className="space-y-5">
-                {userRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="group flex items-center justify-between p-5 rounded-xl border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all duration-300 ease-in-out"
-                  >
-                    <div className="flex items-center space-x-6">
-                      <div className="flex-shrink-0">
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center shadow-sm group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300">
-                          <span className="text-blue-600 font-bold">
-                            {request.quantity}개
-                          </span>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-blue-700 transition-colors duration-300">
-                          {request.productName}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {formatDate(request.useDate)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <span
-                        className={`
-                        px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300
-                        ${
-                          request.approvalStatus === "APPROVED"
-                            ? "bg-green-50 text-green-700 group-hover:bg-green-100"
-                            : request.approvalStatus === "REJECTED"
-                            ? "bg-red-50 text-red-700 group-hover:bg-red-100"
-                            : "bg-orange-50 text-orange-700 group-hover:bg-orange-100"
-                        }
-                      `}
-                      >
-                        {getStatusText(request.approvalStatus)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            ) : myRequests.length > 0 ? (
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-500">
+                      상품명
+                    </th>
+                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
+                      수량
+                    </th>
+                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
+                      신청유형
+                    </th>
+                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
+                      요청 상태
+                    </th>
+                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
+                      작성일
+                    </th>
+                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
+                      반납일
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myRequests.map((req) => (
+                    <tr key={req.id} className="border-b">
+                      <td className="px-4 py-2 font-medium text-gray-900">
+                        {req.productName}
+                      </td>
+                      <td className="px-4 py-2 text-center text-gray-700">
+                        {req.quantity}
+                      </td>
+                      <td className="px-4 py-2 text-center text-gray-700">
+                        {getRequestType(req.rental)}
+                      </td>
+                      <td className="px-4 py-2 text-center">
+                        <span
+                          className={`
+                  inline-block px-3 py-1 rounded-full text-xs font-semibold
+                  ${
+                    req.approvalStatus === "APPROVED"
+                      ? "bg-green-50 text-green-700"
+                      : req.approvalStatus === "REJECTED"
+                      ? "bg-red-50 text-red-700"
+                      : "bg-yellow-50 text-yellow-800"
+                  }
+                `}
+                        >
+                          {getStatusText(req.approvalStatus)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-center text-gray-700">
+                        {formatDate(req.createdAt)}
+                      </td>
+                      <td className="px-4 py-2 text-center text-gray-700">
+                        {req.returnDate ? formatDate(req.returnDate) : "-"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
                 <div className="w-16 h-16 mb-4 rounded-full bg-gray-50 flex items-center justify-center">
