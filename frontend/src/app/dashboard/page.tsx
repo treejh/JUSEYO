@@ -1590,13 +1590,13 @@ export default function DashboardPage() {
         {/* 최근 요청 내역과 개인 대여 물품 관리를 감싸는 그리드 컨테이너 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 최근 요청 내역 */}
-          <div className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+          <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                <h2 className="text-2xl font-extrabold text-gray-900 mb-1 tracking-tight">
                   최근 요청 내역
                 </h2>
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-400 text-sm font-medium">
                   최근 5건의 비품 요청 현황입니다.
                 </p>
               </div>
@@ -1606,70 +1606,68 @@ export default function DashboardPage() {
                 <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-gray-200 border-t-blue-600"></div>
               </div>
             ) : myRequests.length > 0 ? (
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-4 py-2 text-left font-semibold text-gray-500">
-                      상품명
-                    </th>
-                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
-                      수량
-                    </th>
-                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
-                      신청유형
-                    </th>
-                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
-                      요청 상태
-                    </th>
-                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
-                      작성일
-                    </th>
-                    <th className="px-4 py-2 text-center font-semibold text-gray-500">
-                      반납일
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {myRequests.map((req) => (
-                    <tr key={req.id} className="border-b">
-                      <td className="px-4 py-2 font-medium text-gray-900">
-                        {req.productName}
-                      </td>
-                      <td className="px-4 py-2 text-center text-gray-700">
-                        {req.quantity}
-                      </td>
-                      <td className="px-4 py-2 text-center text-gray-700">
-                        {getRequestType(req.rental)}
-                      </td>
-                      <td className="px-4 py-2 text-center">
-                        <span
-                          className={`
-                  inline-block px-3 py-1 rounded-full text-xs font-semibold
-                  ${
-                    req.approvalStatus === "APPROVED"
-                      ? "bg-green-50 text-green-700"
-                      : req.approvalStatus === "REJECTED"
-                      ? "bg-red-50 text-red-700"
-                      : "bg-yellow-50 text-yellow-800"
-                  }
-                `}
-                        >
-                          {getStatusText(req.approvalStatus)}
+              <div className="space-y-4">
+                {myRequests.map((req) => (
+                  <div
+                    key={req.id}
+                    className="flex items-center justify-between bg-gradient-to-r from-blue-50 via-white to-blue-50 rounded-xl shadow-sm px-6 py-4 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-blue-100">
+                        <span className="text-xl font-bold text-blue-600">
+                          📋
                         </span>
-                      </td>
-                      <td className="px-4 py-2 text-center text-gray-700">
-                        {formatDate(req.createdAt)}
-                      </td>
-                      <td className="px-4 py-2 text-center text-gray-700">
-                        {req.returnDate ? formatDate(req.returnDate) : "-"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base font-semibold text-gray-900 truncate max-w-[120px]">
+                            {req.productName}
+                          </span>
+                          <span className="text-xs text-gray-400 font-medium">
+                            × {req.quantity}
+                          </span>
+                          <span
+                            className={`
+                    ml-2 px-2 py-0.5 rounded-full text-xs font-semibold
+                    ${
+                      req.approvalStatus === "APPROVED"
+                        ? "bg-green-100 text-green-700"
+                        : req.approvalStatus === "REJECTED"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-800"
+                    }
+                  `}
+                          >
+                            {getStatusText(req.approvalStatus)}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-3 mt-1 text-xs text-gray-500">
+                          <span className="px-2 py-0.5 rounded bg-gray-100 font-medium">
+                            {getRequestType(req.rental)}
+                          </span>
+                          <span>
+                            작성일:{" "}
+                            <span className="font-semibold text-gray-700">
+                              {formatDate(req.createdAt)}
+                            </span>
+                          </span>
+                          <span>
+                            반납일:{" "}
+                            <span className="font-semibold text-gray-700">
+                              {req.returnDate
+                                ? formatDate(req.returnDate)
+                                : "-"}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-                <div className="w-16 h-16 mb-4 rounded-full bg-gray-50 flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center h-48 text-gray-300">
+                <div className="w-16 h-16 mb-4 rounded-full bg-gray-50 flex items-center justify-center shadow">
                   <svg
                     className="w-8 h-8"
                     fill="none"
@@ -1684,7 +1682,7 @@ export default function DashboardPage() {
                     />
                   </svg>
                 </div>
-                <p className="text-lg font-medium">요청 내역이 없습니다</p>
+                <p className="text-lg font-semibold">요청 내역이 없습니다</p>
                 <p className="text-sm text-gray-400 mt-1">
                   새로운 비품을 요청해보세요
                 </p>
