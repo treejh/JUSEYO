@@ -121,7 +121,7 @@ public class NotificationEventListener {
     // 새로운 채팅
     @EventListener
     public void handleNewChat(NewChatEvent event) {
-        newChatNotificationService.notifyNewChat(event.getTargetId(), event.getRoomId(), event.getSenderRole(), event.getSenderName());
+        newChatNotificationService.notifyNewChat(event.getTargetId(), event.getRoomId(), event.getSenderRole(), event.getSenderName(), event.getChatRoomType());
     }
 
     @EventListener

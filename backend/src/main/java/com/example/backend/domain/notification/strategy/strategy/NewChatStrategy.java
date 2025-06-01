@@ -14,7 +14,24 @@ public class NewChatStrategy implements NotificationStrategy {
             throw new IllegalArgumentException("Invalid context for NewChat Strategy");
         }
         NewChatContext ctx = (NewChatContext) context;
-        return ctx.getSenderRole() + " " +  ctx.getSenderName() + "님이 새로운 채팅방에 초대하셨습니다.";
+
+        String message = ctx.getSenderName() + "님이 ";
+
+        switch (ctx.getChatRoomType()) {
+            case ONE_TO_ONE:
+                message += "1:1 채팅방에 초대하셨습니다.";
+                break;
+            case GROUP:
+                message += "그룹 채팅방에 초대하셨습니다.";
+                break;
+            case SUPPORT:
+                message += "고객지원을 요청하셨습니다.";
+                break;
+            default:
+                message += "채팅방에 초대하셨습니다."; // 기본 메시지
+        }
+
+        return message;
     }
 
     @Override

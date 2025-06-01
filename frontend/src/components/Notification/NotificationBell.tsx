@@ -535,7 +535,17 @@ export function NotificationBell() {
                           } else if (
                             notification.notificationType === "NEW_CHAT"
                           ) {
-                            router.push("/chat/select");
+                            if (notification.message.includes("1:1")) {
+                              router.push("/chat/user");
+                            } else if (notification.message.includes("그룹")) {
+                              router.push("/chat/group");
+                            } else if (
+                              notification.message.includes("고객지원")
+                            ) {
+                              router.push("/chat/support");
+                            } else {
+                              router.push("/chat/select");
+                            }
                             setIsOpen(false);
                             handleMarkAsRead(notification.id);
                           } else if (
