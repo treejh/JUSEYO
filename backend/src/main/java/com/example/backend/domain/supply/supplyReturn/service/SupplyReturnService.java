@@ -1,7 +1,9 @@
 package com.example.backend.domain.supply.supplyReturn.service;
 
+import com.example.backend.domain.notification.event.SupplyRequestRejectedEvent;
 import com.example.backend.domain.notification.event.SupplyReturnApprovedEvent;
 import com.example.backend.domain.notification.event.SupplyReturnCreatedEvent;
+import com.example.backend.domain.notification.event.SupplyReturnRejectedEvent;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
 import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnUpdateRequestDto;
@@ -128,12 +130,19 @@ public class SupplyReturnService {
         supplyReturn.setApprovalStatus(dto.getApprovalStatus());
         if(dto.getApprovalStatus()==ApprovalStatus.RETURNED){
             addInbound(supplyReturn, dto.getImage());
+
+            // 비품 반납 승인 알림 발생
+            eventPublisher.publishEvent(new SupplyReturnApprovedEvent(
+                    supplyReturn.getUser().getId(), supplyReturn.getProductName(), supplyReturn.getQuantity()
+            ));
         }
 
-        // 비품 반납 승인 알림 발생
-        eventPublisher.publishEvent(new SupplyReturnApprovedEvent(
-                supplyReturn.getUser().getId(), supplyReturn.getProductName(), supplyReturn.getQuantity()
-        ));
+        // 비품 반납 거부 알림 발생
+        if(dto.getApprovalStatus()==ApprovalStatus.RETURN_REJECTED) {
+            eventPublisher.publishEvent(new SupplyReturnRejectedEvent(
+                    supplyReturn.getUser().getId(), supplyReturn.getProductName(), supplyReturn.getQuantity()
+            ));
+        }
 
         return toDto(supplyReturn);
     }
