@@ -15,7 +15,7 @@ public class NewChatStrategy implements NotificationStrategy {
         }
         NewChatContext ctx = (NewChatContext) context;
 
-        String message = ctx.getSenderRole() + " " + ctx.getSenderName() + "님이 ";
+        String message = ctx.getSenderName() + "님이 ";
 
         switch (ctx.getChatRoomType()) {
             case ONE_TO_ONE:

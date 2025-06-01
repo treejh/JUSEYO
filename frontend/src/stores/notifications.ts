@@ -6,10 +6,6 @@ interface Notification {
   notificationType: string;
   createdAt: string;
   readStatus: boolean;
-  extraData?: {
-    chatRoomType?: string;
-    [key: string]: any;
-  };
 }
 
 interface NotificationStore {
@@ -49,7 +45,7 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
   fetchNotifications: async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications?page=0&size=10`,
         {
           credentials: "include",
         }
