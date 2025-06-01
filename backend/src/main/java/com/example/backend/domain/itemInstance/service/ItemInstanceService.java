@@ -288,7 +288,7 @@ public class ItemInstanceService {
     private ItemInstanceResponseDto map(ItemInstance e) {
 
         long lendCnt = instanceRepo
-                .countByItemIdAndOutbound(e.getItem().getId(), Outbound.LEND);
+                .countByItemIdAndOutboundAndStatus(e.getItem().getId(), Outbound.LEND,Status.ACTIVE);
 
         return ItemInstanceResponseDto.builder()
                 .id(e.getId())
