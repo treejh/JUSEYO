@@ -321,7 +321,11 @@ export default function SearchPage() {
       }
 
       const data = await response.json();
-      setAssociatedItems(Array.isArray(data) ? data : []);
+      // 중복 제거
+      const uniqueAssociatedItems = Array.isArray(data) 
+        ? [...new Set(data)].filter(item => item && typeof item === 'string')
+        : [];
+      setAssociatedItems(uniqueAssociatedItems);
     } catch (error) {
       console.error("연관 검색어 로드 실패:", error);
       setAssociatedItems([]);
