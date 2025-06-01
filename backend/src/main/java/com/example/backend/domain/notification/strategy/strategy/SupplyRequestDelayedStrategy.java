@@ -16,7 +16,7 @@ public class SupplyRequestDelayedStrategy implements NotificationStrategy {
         }
         SupplyRequestDelayedContext ctx = (SupplyRequestDelayedContext) context;
 
-        return "요청하신 " + ctx.getItemName() + "의 승인이 지연되고 있습니다.(사용 1일 전)";
+        return "⚠️ 요청하신 " + ctx.getItemName() + "의 승인이 지연되고 있습니다(사용 1일 전).";
     }
 
     @Override

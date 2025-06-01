@@ -11,7 +11,7 @@ public class ReturnDueDateExceededStrategy implements NotificationStrategy {
         ReturnDueDateContext ctx = (ReturnDueDateContext) context;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String formattedDate = ctx.getReturnDate().toLocalDate().format(formatter);  // 날짜만 추출
-        return "📦 " + ctx.getItemName() + "의 반납일(" + formattedDate + ")이 지났습니다.";
+        return "📦 [" + ctx.getItemName() + "]의 반납일(" + formattedDate + ")이 지났습니다.";
     }
 
 
