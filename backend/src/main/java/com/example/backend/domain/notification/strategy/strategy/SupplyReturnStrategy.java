@@ -11,7 +11,7 @@ public class SupplyReturnStrategy implements NotificationStrategy{
         }
         SupplyReturnContext supplyContext = (SupplyReturnContext) context;
         String statusMessage = switch (supplyContext.getReturnStatus()) {
-            case DAMAGED -> "❌ 고장: ";
+            case DAMAGED -> "❌ 파손: ";
             case LOST -> "❗ 분실: ";
             default -> "📦 ";
         };
