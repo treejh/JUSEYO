@@ -16,7 +16,7 @@ interface Product {
   isReturnRequired: boolean;
   location: string;
   createdAt: string;
-  buyer: string;
+  purchaseSource: string;
   image?: string;
 }
 
@@ -229,7 +229,7 @@ export default function ItemDetailPage() {
                   <div>
                     <dt className="text-sm text-gray-500">구매처</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {product.buyer}
+                      {product.purchaseSource}
                     </dd>
                   </div>
                 </dl>
