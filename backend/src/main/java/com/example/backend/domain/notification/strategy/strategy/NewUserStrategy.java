@@ -9,7 +9,7 @@ public class NewUserStrategy implements NotificationStrategy {
             throw new IllegalArgumentException("Invalid context for NewUser Strategy");
         }
         NewUserContext ctx = (NewUserContext) context;
-        return ctx.getRequesterName() +"님으로부터 일반 회원가입 승인이 요청되었습니다.";
+        return ctx.getRequesterName() +"님으로부터 회원가입 승인이 요청되었습니다.";
     }
 
     @Override
