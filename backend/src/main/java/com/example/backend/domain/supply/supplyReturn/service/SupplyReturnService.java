@@ -4,6 +4,7 @@ import com.example.backend.domain.notification.event.SupplyReturnApprovedEvent;
 import com.example.backend.domain.notification.event.SupplyReturnCreatedEvent;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
+import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnUpdateRequestDto;
 import com.example.backend.domain.supply.supplyReturn.entity.SupplyReturn;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.repository.UserRepository;
@@ -76,6 +77,7 @@ public class SupplyReturnService {
                 .returnDate(supplyReturnRequestDto.getReturnDate())
                 .approvalStatus(ApprovalStatus.RETURN_PENDING)
                 .outbound(supplyReturnRequestDto.getOutbound())
+                .status(Status.ACTIVE)
                 .build();
         supplyReturnRepository.save(supplyReturn);
 
@@ -156,6 +158,7 @@ public class SupplyReturnService {
         SupplyReturnResponseDto supplyReturnResponseDto = SupplyReturnResponseDto.builder()
                 .id(supplyReturn.getId())
                 .requestId(supplyReturn.getSupplyRequest().getId())
+                .userName(supplyReturn.getUser().getName())
                 .userId(supplyReturn.getUser().getId())
                 .itemId(supplyReturn.getItem().getId())
                 .managementId(supplyReturn.getManagementDashboard().getId())
@@ -187,4 +190,13 @@ public class SupplyReturnService {
         SupplyReturn supplyReturn=supplyReturnRepository.findById(id).orElseThrow(()-> new BusinessLogicException(ExceptionCode.SUPPLY_RETURN_NOT_FOUND));
         supplyReturn.setStatus(Status.STOP);
     }
+
+    //비품 반납 수정
+    @Transactional
+    public SupplyReturnResponseDto updateSupplyReturn(SupplyReturnUpdateRequestDto supplyReturnUpdateRequestDto,Long id ){
+        SupplyReturn supplyReturn=supplyReturnRepository.findById(id).orElseThrow(()-> new BusinessLogicException(ExceptionCode.SUPPLY_RETURN_NOT_FOUND));
+        supplyReturn.setOutbound(supplyReturnUpdateRequestDto.getOutbound());
+        return toDto(supplyReturn);
+    }
+
 }
