@@ -425,7 +425,7 @@ const ChatRoomList: React.FC<Props> = ({
             return (
               <li
                 key={room.id}
-                className="flex justify-between items-center py-4 hover:bg-gray-100 cursor-pointer"
+                className="flex justify-between items-center py-5 hover:bg-gray-100 cursor-pointer"
               >
                 {/* 채팅방 이름 및 부서 */}
                 <div className="flex flex-col min-w-0 flex-1 relative">

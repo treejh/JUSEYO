@@ -27,6 +27,7 @@ type NotificationType =
   | "RETURN_DUE_SOON"
   | "NEW_CHAT"
   | "SUPPLY_RETURN_APPROVED"
+  | "SUPPLY_RETURN_REJECTED"
   | "NEW_USER_APPROVED"
   | "NEW_USER_REJECTED";
 
@@ -36,6 +37,7 @@ const USER_NOTIFICATION_TYPES: NotificationType[] = [
   "SUPPLY_REQUEST_APPROVED",
   "SUPPLY_REQUEST_REJECTED",
   "SUPPLY_RETURN_APPROVED",
+  "SUPPLY_RETURN_REJECTED",
   "RETURN_DUE_SOON",
   "SUPPLY_REQUEST_DELAYED",
   "NEW_CHAT",
@@ -263,6 +265,15 @@ const NOTIFICATION_TYPE_LABELS: Record<
   },
   NEW_USER_REJECTED: {
     label: "회원 거부",
+    color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  SUPPLY_RETURN_REJECTED: {
+    label: "비품 반납 거부",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -876,11 +887,11 @@ export default function NotificationsPage() {
                     onClick={() => {
                       // 알림 타입에 따라 다른 페이지로 이동
                       if (notification.notificationType === "SUPPLY_REQUEST") {
-                        router.push("/item/supplyrequest/list/manage");
+                        router.push("/item/supplyrequest/manage");
                       } else if (
                         notification.notificationType === "SUPPLY_RETURN"
                       ) {
-                        router.push("/item/return");
+                        router.push("/item/return/manage");
                       } else if (
                         notification.notificationType === "STOCK_SHORTAGE"
                       ) {

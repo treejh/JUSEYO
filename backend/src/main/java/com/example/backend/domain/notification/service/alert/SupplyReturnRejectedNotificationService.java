@@ -3,8 +3,7 @@ package com.example.backend.domain.notification.service.alert;
 import com.example.backend.domain.notification.dto.NotificationRequestDTO;
 import com.example.backend.domain.notification.entity.NotificationType;
 import com.example.backend.domain.notification.service.NotificationService;
-import com.example.backend.domain.notification.strategy.context.NewManagerContext;
-import com.example.backend.domain.notification.strategy.context.NewUserContext;
+import com.example.backend.domain.notification.strategy.context.SupplyReturnApprovalContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
 import com.example.backend.domain.user.service.UserService;
@@ -14,29 +13,28 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class NewUserRejectedNotificationService {
+public class SupplyReturnRejectedNotificationService {
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
     private final UserService userService;
 
     @Transactional
-    public void notifyNewUserRejected(Long requesterId, String userName) {
-        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.NEW_USER_REJECTED);
+    public void notifyIfRejected(Long userId, String itemName, Long itemQuantity) {
 
-        NewUserContext context = new NewUserContext(userName);
+        NotificationStrategy strategy = strategyFactory.getStrategy(NotificationType.SUPPLY_RETURN_REJECTED);
 
-        // 조건을 확인하고 알림을 생성
-        if (strategy.shouldTrigger(context) ) {
-            // context를 사용하여 메시지 생성
-            String msg = strategy.generateMessage(context);
+        SupplyReturnApprovalContext context = new SupplyReturnApprovalContext(
+                userId, itemName, itemQuantity
+        );
 
-            // NotificationRequestDTO에 메시지 전달
+        if (strategy.shouldTrigger(context) && userService.isApprovedUser(userId)) {
+            String message = strategy.generateMessage(context);
+
             notificationService.createNotification(new NotificationRequestDTO(
-                    NotificationType.NEW_USER_REJECTED,
-                    msg,
-                    requesterId)
-            );
+                    NotificationType.SUPPLY_RETURN_REJECTED,
+                    message,
+                    userId
+            ));
         }
     }
-
 }
