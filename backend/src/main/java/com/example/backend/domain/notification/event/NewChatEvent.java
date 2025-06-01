@@ -1,5 +1,6 @@
 package com.example.backend.domain.notification.event;
 
+import com.example.backend.enums.ChatRoomType;
 import com.example.backend.enums.RoleType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,4 +12,5 @@ public class NewChatEvent {
     private Long roomId;
     private RoleType senderRole;
     private String senderName;
+    private ChatRoomType chatRoomType;
 }

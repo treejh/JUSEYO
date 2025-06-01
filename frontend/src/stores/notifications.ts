@@ -6,6 +6,10 @@ interface Notification {
   notificationType: string;
   createdAt: string;
   readStatus: boolean;
+  extraData?: {
+    chatRoomType?: string;
+    [key: string]: any;
+  };
 }
 
 interface NotificationStore {
@@ -45,20 +49,21 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
   fetchNotifications: async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications?page=0&size=10`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications`,
         {
           credentials: "include",
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch notifications");
+        throw new Error("알림을 불러오는데 실패했습니다.");
       }
 
       const data = await response.json();
-      set({ notifications: data.notifications });
+      console.log("API Response for notifications:", data);
+      set({ notifications: data });
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      console.error("알림을 불러오는 중 오류가 발생했습니다:", error);
     }
   },
   markAsRead: async (id) => {

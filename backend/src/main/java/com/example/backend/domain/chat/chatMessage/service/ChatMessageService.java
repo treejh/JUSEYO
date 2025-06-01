@@ -108,7 +108,8 @@ public class ChatMessageService {
                                     userList.getUser().getId(),
                                     chatRoom.getId(),
                                     user.getRole().getRole(),
-                                    user.getName()
+                                    user.getName(),
+                                    chatRoom.getRoomType()
                             ));
                             System.out.println("================newChatEvent 실행 ================");
                         }
