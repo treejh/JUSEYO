@@ -40,7 +40,8 @@ public interface SupplyRequestRepository extends JpaRepository<SupplyRequest, Lo
     //사용자 기준으로 승인된 요청만 조회
     @Query("SELECT sr FROM SupplyRequest sr " +
             "WHERE sr.user.id = :userId " +
-            "AND sr.approvalStatus = com.example.backend.enums.ApprovalStatus.APPROVED")
+            "AND sr.approvalStatus = com.example.backend.enums.ApprovalStatus.APPROVED"
+            + " AND sr.rental = true")
     List<SupplyRequest> findApprovedRequestsByUserId(@Param("userId") Long userId);
 
 
