@@ -3,7 +3,7 @@ package com.example.backend.domain.notification.entity;
 public enum NotificationType {
 
     // 어드민
-    NEW_MANAGEMENT_DASHBOARD("새로운 관리 페이지 승인 요청 알림"),
+//    NEW_MANAGEMENT_DASHBOARD("새로운 관리 페이지 승인 요청 알림"),
 
     // 매니저 알림
     SUPPLY_REQUEST("비품 요청"),                   // (회원->매니저) 비품 요청

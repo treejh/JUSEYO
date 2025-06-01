@@ -30,7 +30,7 @@ public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long
 
     Optional<ItemInstance> findFirstByItemIdAndStatus(Long itemId, Outbound status);
 
-    long countByItemIdAndOutbound(Long itemId, Outbound outbound);
+    long countByItemIdAndOutboundAndStatus(Long itemId, Outbound outbound,Status status);
 
     @Query("SELECT i.outbound, COUNT(i) FROM ItemInstance i GROUP BY i.outbound")
     List<Object[]> countAllByOutboundGroup();
@@ -38,8 +38,12 @@ public interface ItemInstanceRepository extends JpaRepository<ItemInstance, Long
     @Query("SELECT i.outbound, COUNT(i) " +
             "FROM ItemInstance i " +
             "WHERE i.item.managementDashboard.id = :managementId " +
+            "AND i.status = :status " +
             "GROUP BY i.outbound")
-    List<Object[]> countAllByOutboundGroupAndManagementId(@Param("managementId") Long managementId);
+    List<Object[]> countAllByOutboundGroupAndManagementIdAndStatus(
+            @Param("managementId") Long managementId,
+            @Param("status") Status status);
+
 
 
 

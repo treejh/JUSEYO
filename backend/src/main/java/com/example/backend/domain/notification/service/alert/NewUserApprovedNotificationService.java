@@ -7,6 +7,7 @@ import com.example.backend.domain.notification.strategy.context.NewManagerContex
 import com.example.backend.domain.notification.strategy.context.NewUserContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
+import com.example.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NewUserApprovedNotificationService {
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
+    private final UserService userService;
 
     @Transactional
     public void notifyNewUserApproved(Long requesterId, String userName) {
@@ -24,7 +26,7 @@ public class NewUserApprovedNotificationService {
         NewUserContext context = new NewUserContext(userName);
 
         // 조건을 확인하고 알림을 생성
-        if (strategy.shouldTrigger(context)) {
+        if (strategy.shouldTrigger(context) && userService.isApprovedUser(requesterId)) {
             // context를 사용하여 메시지 생성
             String msg = strategy.generateMessage(context);
 

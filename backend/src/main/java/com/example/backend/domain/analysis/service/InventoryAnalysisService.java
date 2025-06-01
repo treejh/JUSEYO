@@ -153,7 +153,7 @@ public class InventoryAnalysisService {
 
     public Map<Outbound, Long> loadAndCacheOutboundSummary() {
         Long managementId = getManagementIdFromToken();
-        List<Object[]> results = itemInstanceRepository.countAllByOutboundGroupAndManagementId(managementId);
+        List<Object[]> results = itemInstanceRepository.countAllByOutboundGroupAndManagementIdAndStatus(managementId,Status.ACTIVE);
 
         Map<Outbound, Long> mapped = results.stream()
                 .collect(Collectors.toMap(

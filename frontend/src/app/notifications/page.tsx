@@ -14,7 +14,7 @@ type NotificationType =
   | "STOCK_SHORTAGE"
   | "RETURN_DUE_DATE_EXCEEDED"
   | "NOT_RETURNED_YET"
-  | "NEW_MANAGEMENT_DASHBOARD"
+  // | "NEW_MANAGEMENT_DASHBOARD"
   | "ADMIN_APPROVAL_ALERT"
   | "ADMIN_REJECTION_ALERT"
   | "NEW_MANAGER"
@@ -49,7 +49,7 @@ const MANAGER_NOTIFICATION_TYPES: NotificationType[] = [
   "STOCK_SHORTAGE",
   "RETURN_DUE_DATE_EXCEEDED",
   "NOT_RETURNED_YET",
-  "NEW_MANAGEMENT_DASHBOARD",
+  // "NEW_MANAGEMENT_DASHBOARD",
   "ADMIN_APPROVAL_ALERT",
   "ADMIN_REJECTION_ALERT",
   "NEW_MANAGER",
@@ -234,16 +234,6 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
-  NEW_MANAGEMENT_DASHBOARD: {
-    label: "관리 대시보드 생성",
-    color: "bg-purple-100 text-purple-800",
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-        <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
-      </svg>
-    ),
-  },
   NEW_MANAGER: {
     label: "매니저 권한 요청",
     color: "bg-indigo-100 text-indigo-800",
@@ -371,7 +361,7 @@ export default function NotificationsPage() {
 
       setNotifications(filteredNotifications);
       setTotalPages(data.totalPages);
-      setTotalElements(filteredNotifications.length);
+      setTotalElements(data.totalElements);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
@@ -873,7 +863,7 @@ export default function NotificationsPage() {
                           } else if (
                             notification.notificationType === "SUPPLY_RETURN"
                           ) {
-                            router.push("/return");
+                            router.push("/item/return");
                           } else if (
                             notification.notificationType === "STOCK_SHORTAGE"
                           ) {
@@ -883,6 +873,14 @@ export default function NotificationsPage() {
                           ) {
                             router.push("/settings/approve");
                           } else if (
+                            notification.notificationType === "NEW_MANAGER"
+                          ) {
+                            router.push("/settings/approve");
+                          } else if (
+                            notification.notificationType === "NEW_CHAT"
+                          ) {
+                            router.push("/chat/select");
+                          } else if (
                             notification.notificationType ===
                               "SUPPLY_REQUEST_APPROVED" ||
                             notification.notificationType ===
@@ -891,6 +889,15 @@ export default function NotificationsPage() {
                               "SUPPLY_REQUEST_DELAYED"
                           ) {
                             router.push("/item/supplyrequest/list/user");
+                          } else if (
+                            notification.notificationType === "RETURN_DUE_SOON"
+                          ) {
+                            router.push("/item/supplyreturn");
+                          } else if (
+                            notification.notificationType ===
+                            "SUPPLY_RETURN_APPROVED"
+                          ) {
+                            router.push("/item/supplyreturn");
                           }
                         }}
                       >

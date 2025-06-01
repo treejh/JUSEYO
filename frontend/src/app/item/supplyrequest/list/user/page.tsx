@@ -28,6 +28,7 @@ export default function SupplyRequestUserListPage() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   const [currentPage, setCurrentPage] = useState<number>(0);
   const pageSize = 20;
@@ -85,6 +86,10 @@ export default function SupplyRequestUserListPage() {
     switch (status) {
       case "REQUESTED":
         return "bg-yellow-100 text-yellow-800";
+      case "RETURN_PENDING":
+        return "bg-blue-100 text-blue-800";
+      case "RETURNED":
+        return "bg-gray-100 text-gray-800";
       case "APPROVED":
         return "bg-green-100 text-green-800";
       case "REJECTED":
@@ -102,7 +107,13 @@ export default function SupplyRequestUserListPage() {
   // 필터링 & 정렬
   const filteredRequests = requests
     .filter((req) => {
-      if (!req.productName.toLowerCase().includes(searchKeyword.toLowerCase()))
+      if (statusFilter !== "ALL" && req.approvalStatus !== statusFilter) {
+        return false;
+      }
+      if (
+        !req.productName.toLowerCase().includes(searchKeyword.toLowerCase()) &&
+        !req.id.toString().includes(searchKeyword)
+      )
         return false;
       if (startDate || endDate) {
         const reqDate = new Date(req.createdAt);
@@ -127,6 +138,14 @@ export default function SupplyRequestUserListPage() {
     startIdx,
     startIdx + pageSize
   );
+
+  const handleReset = () => {
+    setSearchKeyword("");
+    setStartDate("");
+    setEndDate("");
+    setStatusFilter("ALL");
+    setCurrentPage(0);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
@@ -192,7 +211,7 @@ export default function SupplyRequestUserListPage() {
               </p>
             </div>
             <div className="bg-red-50 rounded-lg p-4">
-              <p className="text-sm text-red-600">반려</p>
+              <p className="text-sm text-red-600">거절</p>
               <p className="text-2xl font-bold text-red-900">
                 {
                   filteredRequests.filter(
@@ -212,7 +231,7 @@ export default function SupplyRequestUserListPage() {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="상품명으로 검색"
+                      placeholder="상품명 또는 요청서ID로 검색"
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
@@ -233,6 +252,19 @@ export default function SupplyRequestUserListPage() {
                       </svg>
                     </div>
                   </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">요청 상태</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-white"
+                  >
+                    <option value="ALL">전체</option>
+                    <option value="REQUESTED">대기 중</option>
+                    <option value="APPROVED">승인</option>
+                    <option value="REJECTED">거절</option>
+                  </select>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -256,11 +288,7 @@ export default function SupplyRequestUserListPage() {
                 </div>
                 <div className="flex items-end">
                   <button
-                    onClick={() => {
-                      setStartDate("");
-                      setEndDate("");
-                      setSearchKeyword("");
-                    }}
+                    onClick={handleReset}
                     className="px-6 py-2 bg-[#0047AB] text-white rounded-lg hover:bg-[#003380] transition-colors duration-200 whitespace-nowrap h-[38px]"
                   >
                     초기화
@@ -301,14 +329,14 @@ export default function SupplyRequestUserListPage() {
             <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">번호</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[60px]">No</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">요청서ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">수량</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">대여여부</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">사용일</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">반납일</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">상태</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">요청 상태</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">작성일</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">반납일</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">관리</th>
                 </tr>
               </thead>
@@ -336,6 +364,9 @@ export default function SupplyRequestUserListPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {currentPage * pageSize + index + 1}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {request.id}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{request.productName}</div>
                       </td>
@@ -346,22 +377,21 @@ export default function SupplyRequestUserListPage() {
                         <div className="text-sm text-gray-500">{request.rental ? "대여" : "구매"}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{formatDate(request.useDate)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{formatDate(request.returnDate)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(request.approvalStatus)}`}>
                           {request.approvalStatus === "REQUESTED" && "대기 중"}
+                          {request.approvalStatus === "RETURN_PENDING" && "반납 대기 중"}
+                          {request.approvalStatus === "RETURNED" && "반납 완료"}
                           {request.approvalStatus === "APPROVED" && "승인"}
-                          {request.approvalStatus === "REJECTED" && "반려"}
+                          {request.approvalStatus === "REJECTED" && "거절"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">
                           {new Date(request.createdAt).toLocaleDateString()}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{formatDate(request.returnDate)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {request.approvalStatus === "REQUESTED" && (

@@ -4,11 +4,13 @@ import com.example.backend.domain.notification.event.SupplyReturnApprovedEvent;
 import com.example.backend.domain.notification.event.SupplyReturnCreatedEvent;
 import com.example.backend.domain.supply.supplyRequest.entity.SupplyRequest;
 import com.example.backend.domain.supply.supplyRequest.repository.SupplyRequestRepository;
+import com.example.backend.domain.supply.supplyReturn.dto.request.SupplyReturnUpdateRequestDto;
 import com.example.backend.domain.supply.supplyReturn.entity.SupplyReturn;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.repository.UserRepository;
 import com.example.backend.enums.ApprovalStatus;
 import com.example.backend.enums.Inbound;
+import com.example.backend.enums.Status;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
 import com.example.backend.domain.inventory.inventoryIn.dto.request.InventoryInRequestDto;
@@ -55,7 +57,7 @@ public class SupplyReturnService {
         if (user == null) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
         }
-        ManagementDashboard managementDashboard = managementDashboardRepository.findById(supplyReturnRequestDto.getManagementId()).orElse(null);
+        ManagementDashboard managementDashboard = managementDashboardRepository.findById(user.getManagementDashboard().getId()).orElse(null);
         if (managementDashboard == null) {
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
@@ -75,6 +77,7 @@ public class SupplyReturnService {
                 .returnDate(supplyReturnRequestDto.getReturnDate())
                 .approvalStatus(ApprovalStatus.RETURN_PENDING)
                 .outbound(supplyReturnRequestDto.getOutbound())
+                .status(Status.ACTIVE)
                 .build();
         supplyReturnRepository.save(supplyReturn);
 
@@ -90,11 +93,23 @@ public class SupplyReturnService {
         Long id=tokenService.getIdFromToken();
         User user = userRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
         if(approvalStatus==null){
-            return supplyReturnRepository.findAllSupplyReturn(user.getManagementDashboard().getId(),pageable);
+            return supplyReturnRepository.findAllSupplyReturn(user.getManagementDashboard().getId(), Status.ACTIVE,pageable);
         }else{
-            return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),pageable);
+            return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),Status.ACTIVE,pageable);
         }
     }
+
+    //특정 유저의 비품 반납서 목록 조회
+    public Page<SupplyReturnResponseDto> getUserSupplyReturns(Pageable pageable,ApprovalStatus approvalStatus) {
+        Long id=tokenService.getIdFromToken();
+        User user = userRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        if(approvalStatus==null){
+            return supplyReturnRepository.findAllSupplyReturn(user.getManagementDashboard().getId(),user.getId(),Status.ACTIVE,pageable);
+        }else{
+            return supplyReturnRepository.findAllSupplyRequestByApprovalStatusAndManagement(approvalStatus,user.getManagementDashboard().getId(),user.getId(),Status.ACTIVE,pageable);
+        }
+    }
+
 
     //비품 반납서 단일 조회
     public SupplyReturnResponseDto getSupplyReturn(Long id){
@@ -143,6 +158,7 @@ public class SupplyReturnService {
         SupplyReturnResponseDto supplyReturnResponseDto = SupplyReturnResponseDto.builder()
                 .id(supplyReturn.getId())
                 .requestId(supplyReturn.getSupplyRequest().getId())
+                .userName(supplyReturn.getUser().getName())
                 .userId(supplyReturn.getUser().getId())
                 .itemId(supplyReturn.getItem().getId())
                 .managementId(supplyReturn.getManagementDashboard().getId())
@@ -167,4 +183,20 @@ public class SupplyReturnService {
                 .map(this::toDto)
                 .toList();
     }
+
+    //비품 반납 삭제
+    @Transactional
+    public void deleteSupplyReturn(Long id) {
+        SupplyReturn supplyReturn=supplyReturnRepository.findById(id).orElseThrow(()-> new BusinessLogicException(ExceptionCode.SUPPLY_RETURN_NOT_FOUND));
+        supplyReturn.setStatus(Status.STOP);
+    }
+
+    //비품 반납 수정
+    @Transactional
+    public SupplyReturnResponseDto updateSupplyReturn(SupplyReturnUpdateRequestDto supplyReturnUpdateRequestDto,Long id ){
+        SupplyReturn supplyReturn=supplyReturnRepository.findById(id).orElseThrow(()-> new BusinessLogicException(ExceptionCode.SUPPLY_RETURN_NOT_FOUND));
+        supplyReturn.setOutbound(supplyReturnUpdateRequestDto.getOutbound());
+        return toDto(supplyReturn);
+    }
+
 }

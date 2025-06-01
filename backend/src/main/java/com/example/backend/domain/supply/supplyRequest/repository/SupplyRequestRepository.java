@@ -27,6 +27,7 @@ public interface SupplyRequestRepository extends JpaRepository<SupplyRequest, Lo
     );
 
     // 사용자별 요청 조회
+
     List<SupplyRequest> findAllByUserId(Long userId);
 
     @Query("SELECT s.approvalStatus, COUNT(s) FROM SupplyRequest s WHERE s.user.id = :userId GROUP BY s.approvalStatus")

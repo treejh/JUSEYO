@@ -6,6 +6,7 @@ import com.example.backend.domain.notification.service.NotificationService;
 import com.example.backend.domain.notification.strategy.context.NewManagerContext;
 import com.example.backend.domain.notification.strategy.factory.NotificationStrategyFactory;
 import com.example.backend.domain.notification.strategy.strategy.NotificationStrategy;
+import com.example.backend.domain.user.service.UserService;
 import com.example.backend.global.security.jwt.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class NewManagerRejectedNotificationService {
     private final NotificationStrategyFactory strategyFactory;
     private final NotificationService notificationService;
     private final TokenService tokenService;
+    private final UserService userService;
 
     @Transactional
     public void notifyNewManagerRejected(Long requesterId, String managerName) {
@@ -25,7 +27,7 @@ public class NewManagerRejectedNotificationService {
         NewManagerContext context = new NewManagerContext(managerName);
 
         // 조건을 확인하고 알림을 생성
-        if (strategy.shouldTrigger(context)) {
+        if (strategy.shouldTrigger(context) && userService.isApprovedUser(requesterId)) {
             // context를 사용하여 메시지 생성
             String msg = strategy.generateMessage(context);
 

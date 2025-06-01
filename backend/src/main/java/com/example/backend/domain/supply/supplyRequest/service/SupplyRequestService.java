@@ -118,8 +118,7 @@ public class SupplyRequestService {
         // 1) 승인 상태 변경
         req.setApprovalStatus(ApprovalStatus.APPROVED);
 
-        // 요청 승인 알림 발생
-        eventPublisher.publishEvent(new SupplyRequestApprovedEvent(req.getUser().getId(), req.getItem().getName(), req.getQuantity()));
+
 
         // 2) 자동으로 비품추적 기록 생성 (대여 vs 비대여 메시지 분기)
         String issueMsg = req.isRental()
@@ -164,6 +163,10 @@ public class SupplyRequestService {
         String issueMsg;
 
         if (newStatus == ApprovalStatus.APPROVED) {
+
+            // 요청 승인 알림 발생
+            eventPublisher.publishEvent(new SupplyRequestApprovedEvent(req.getUser().getId(), req.getItem().getName(), req.getQuantity()));
+
             // 1) 출고 처리: rental 여부에 따라 LEND 또는 ISSUE
             String outboundType = req.isRental()
                     ? Outbound.LEND.name()
@@ -378,6 +381,7 @@ public class SupplyRequestService {
                 .id(e.getId())
                 .itemId(e.getItem().getId())
                 .userId(e.getUser().getId())
+                .userName(e.getUser().getName())
                 .managementId(e.getManagementDashboard().getId())
                 .serialNumber(e.getSerialNumber())
                 .reRequest(e.getReRequest())

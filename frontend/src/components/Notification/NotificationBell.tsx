@@ -31,7 +31,8 @@ type NotificationType =
   | "SUPPLY_RETURN_APPROVED"
   | "NEW_USER"
   | "NEW_USER_APPROVED"
-  | "NEW_USER_REJECTED";
+  | "NEW_USER_REJECTED"
+  | "NEW_MANAGER";
 
 interface NotificationCategory {
   label: string;
@@ -100,36 +101,9 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
-  SUPPLY_RETURN_ALERT: {
-    label: "비품 반납 알림",
-    color: "bg-blue-100 text-blue-800",
-    icon: (
-      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  STOCK_REACHED: {
-    label: "재고 도달",
-    color: "bg-blue-100 text-blue-800",
-    icon: (
-      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
   STOCK_SHORTAGE: {
     label: "재고 부족",
     color: "bg-red-100 text-red-800",
-    icon: (
-      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  SUPPLY_REQUEST_MODIFIED: {
-    label: "비품 요청 수정",
-    color: "bg-blue-100 text-blue-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
         <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
@@ -181,36 +155,9 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
-  LONG_TERM_UNRETURNED_SUPPLIES: {
-    label: "장기 미반납",
-    color: "bg-red-100 text-red-800",
-    icon: (
-      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  USER_SENT_MESSAGE_TO_MANAGER: {
-    label: "채팅 알림",
-    color: "bg-green-100 text-green-800",
-    icon: (
-      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
   NEW_CHAT: {
-    label: "새로운 채팅",
+    label: "채팅",
     color: "bg-green-100 text-green-800",
-    icon: (
-      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
-      </svg>
-    ),
-  },
-  SYSTEM_MAINTENANCE: {
-    label: "시스템 점검",
-    color: "bg-gray-100 text-gray-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
         <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
@@ -235,6 +182,24 @@ const NOTIFICATION_TYPE_LABELS: Record<
       </svg>
     ),
   },
+  MANAGER_REJECTION_ALERT: {
+    label: "매니저 거절",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  ADMIN_REJECTION_ALERT: {
+    label: "관리 페이지 생성 반려",
+    color: "bg-gray-100 text-gray-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
   SUPPLY_RETURN_APPROVED: {
     label: "비품 반납 승인",
     color: "bg-green-100 text-green-800",
@@ -249,11 +214,20 @@ const NOTIFICATION_TYPE_LABELS: Record<
     ),
   },
   NOT_RETURNED_YET: {
-    label: "장기 미반납",
+    label: "장기 미반납 비품 목록",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
         <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  NEW_MANAGER: {
+    label: "매니저 권한 요청",
+    color: "bg-indigo-100 text-indigo-800",
+    icon: (
+      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
       </svg>
     ),
   },
@@ -510,18 +484,26 @@ export function NotificationBell() {
                             notification.notificationType === "SUPPLY_REQUEST"
                           ) {
                             router.push("/item/supplyrequest/list/manage");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "SUPPLY_RETURN"
                           ) {
-                            router.push("/return");
+                            router.push("/item/return");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "STOCK_SHORTAGE"
                           ) {
                             router.push("/item/manage");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType === "NEW_USER"
                           ) {
                             router.push("/settings/approve");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           } else if (
                             notification.notificationType ===
                               "SUPPLY_REQUEST_APPROVED" ||
@@ -531,6 +513,33 @@ export function NotificationBell() {
                               "SUPPLY_REQUEST_DELAYED"
                           ) {
                             router.push("/item/supplyrequest/list/user");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
+                          } else if (
+                            notification.notificationType === "NEW_MANAGER"
+                          ) {
+                            router.push("/settings/approve");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
+                          } else if (
+                            notification.notificationType === "NEW_CHAT"
+                          ) {
+                            router.push("/chat/select");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
+                          } else if (
+                            notification.notificationType === "RETURN_DUE_SOON"
+                          ) {
+                            router.push("/item/supplyreturn");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
+                          } else if (
+                            notification.notificationType ===
+                            "SUPPLY_RETURN_APPROVED"
+                          ) {
+                            router.push("/item/supplyreturn");
+                            setIsOpen(false);
+                            handleMarkAsRead(notification.id);
                           }
                         }}
                       >
@@ -570,7 +579,10 @@ export function NotificationBell() {
                             </p>
                           </div>
                           <button
-                            onClick={() => handleMarkAsRead(notification.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsRead(notification.id);
+                            }}
                             className="flex-shrink-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-all duration-200"
                           >
                             <svg

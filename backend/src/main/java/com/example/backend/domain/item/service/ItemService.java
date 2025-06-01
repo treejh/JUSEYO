@@ -7,6 +7,10 @@ import com.example.backend.domain.item.dto.response.ItemCardResponseDto;
 import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemSearchProjection;
 import com.example.backend.domain.item.entity.Item;
+import com.example.backend.domain.itemInstance.dto.request.CreateItemInstanceRequestDto;
+import com.example.backend.domain.itemInstance.entity.ItemInstance;
+import com.example.backend.domain.itemInstance.repository.ItemInstanceRepository;
+import com.example.backend.domain.itemInstance.service.ItemInstanceService;
 import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.domain.managementDashboard.repository.ManagementDashboardRepository;
 import com.example.backend.enums.Status;
@@ -41,6 +45,8 @@ public class ItemService {
     private final TokenService tokenService;
     private final InventoryAnalysisService analysisService;
     private final ImageService imageService;
+    private final ItemInstanceService itemInstanceService;
+    private final ItemInstanceRepository itemInstanceRepository;
 
     /**
      * 랜덤 8자리 알파벳+숫자 생성
@@ -90,32 +96,51 @@ public class ItemService {
                 .build();
         Item saved = repo.save(entity);
 
+        CreateItemInstanceRequestDto createItemInstanceRequestDto= CreateItemInstanceRequestDto.builder()
+                .itemId(saved.getId())
+                .image(saved.getImage())
+                .build();
+        itemInstanceService.createInstance(createItemInstanceRequestDto);
+
         analysisService.clearCategoryCache(); // 캐시 무효화
         return mapToDto(saved);
     }
 
     @Transactional
     public ItemResponseDto updateItem(Long id, ItemRequestDto dto) {
+        // 1) 기존 엔티티 로드
         Item entity = repo.findById(id)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
-        // category & management 조회
+        // 2) 연관 엔티티 조회
         Category category = categoryRepo.findById(dto.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         ManagementDashboard mgmt = mgmtRepo.findById(dto.getManagementId())
-                .orElseThrow(() -> new IllegalArgumentException("ManagementDashboard not found"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND));
 
-        // 필드 업데이트
+        // 3) 필드 전체 업데이트
         entity.setName(dto.getName());
+        entity.setMinimumQuantity(dto.getMinimumQuantity());
+        entity.setTotalQuantity(dto.getTotalQuantity());
+        entity.setAvailableQuantity(dto.getAvailableQuantity());
         entity.setSerialNumber(dto.getSerialNumber());
         entity.setPurchaseSource(dto.getPurchaseSource());
         entity.setLocation(dto.getLocation());
         entity.setIsReturnRequired(dto.getIsReturnRequired());
+
+        // 이미지가 넘어왔다면 저장
+        if (dto.getImage() != null && !dto.getImage().isEmpty()) {
+            String savedPath = imageService.saveImage(dto.getImage());
+            entity.setImage(savedPath);
+        }
+
+        // 카테고리·관리대시보드
         entity.setCategory(category);
         entity.setManagementDashboard(mgmt);
 
+        // 4) 저장 & DTO 반환
         Item updated = repo.save(entity);
-        analysisService.clearCategoryCache(); // 캐시 무효화
+        analysisService.clearCategoryCache(); // (필요 시)
         return mapToDto(updated);
     }
 
@@ -158,6 +183,10 @@ public class ItemService {
     public void deleteItem(Long id) {
         Item item = repo.findById(id).orElseThrow(()->new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
         item.setStatus(Status.STOP);
+        List<ItemInstance> itemInstances=itemInstanceRepository.findAllByItemIdAndStatus(item.getId(), Status.ACTIVE);
+        for(ItemInstance itemInstance:itemInstances){
+            itemInstance.setStatus(Status.STOP);
+        }
     }
 
     public ItemResponseDto mapToDto(Item e) {

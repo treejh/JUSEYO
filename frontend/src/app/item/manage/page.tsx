@@ -25,14 +25,17 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export default function AllItemsPage() {
   const [items, setItems] = useState<Item[]>([]);
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+
   const toast = useCustomToast();
   const router = useRouter();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  // (1) 전체 아이템 로드
   const fetchAllItems = async () => {
     setLoading(true);
     try {
@@ -46,12 +49,43 @@ export default function AllItemsPage() {
       const data: Item[] = await res.json();
       const active = data.filter((item) => item.status === "ACTIVE");
       setItems(active);
+
+      // 유일한 카테고리 목록
+      const cats = Array.from(new Set(active.map((it) => it.categoryName)));
+      setCategories(cats);
+
+      // 초기 필터링
       setFilteredItems(active);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  // (2) 검색어/카테고리 변경 시 필터 적용
+  useEffect(() => {
+    const term = searchTerm.toLowerCase();
+    setFilteredItems(
+      items.filter((item) => {
+        const matchesName = item.name.toLowerCase().includes(term);
+        const matchesCat =
+          selectedCategory === "" || item.categoryName === selectedCategory;
+        return matchesName && matchesCat;
+      })
+    );
+  }, [items, searchTerm, selectedCategory]);
+
+  useEffect(() => {
+    fetchAllItems();
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategory(e.target.value);
   };
 
   const handleExcelDownload = async () => {
@@ -93,46 +127,33 @@ export default function AllItemsPage() {
     }
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    setFilteredItems(
-      items.filter((item) => item.name.toLowerCase().includes(term))
-    );
-  };
-
-  useEffect(() => {
-    fetchAllItems();
-  }, []);
-
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-[1920px] mx-auto">
+    <main className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* 헤더 섹션 */}
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 관리</h1>
-              <div className="flex gap-4 mb-4 border-b border-gray-200">
-                <Link
-                  href="/item/manage"
-                  className="px-4 py-3 font-medium text-[#0047AB] border-b-2 border-[#0047AB]"
-                >
-                  비품 정보
-                </Link>
-                <Link
-                  href="/item/iteminstance/manage"
-                  className="px-4 py-3 font-medium text-gray-600 hover:text-[#0047AB] border-b-2 border-transparent hover:border-[#0047AB] transition-all"
-                >
-                  재고 단위
-                </Link>
-              </div>
-              <p className="text-gray-600">비품 정보를 관리할 수 있습니다.</p>
-            </div>
-            <div className="flex items-center space-x-3">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">비품 관리</h1>
+          <div className="flex gap-4 mb-4 border-b border-gray-200">
+            <Link
+              href="/item/manage"
+              className="px-4 py-3 font-medium text-[#0047AB] border-b-2 border-[#0047AB]"
+            >
+              비품 정보
+            </Link>
+            <Link
+              href="/item/iteminstance/manage"
+              className="px-4 py-3 font-medium text-gray-600 hover:text-[#0047AB] border-b-2 border-transparent hover:border-[#0047AB] transition-all"
+            >
+              재고 단위
+            </Link>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p className="text-gray-600">비품 정보를 관리할 수 있습니다.</p>
+            <div className="flex items-center gap-3">
               <button
                 onClick={handleExcelDownload}
-                className="inline-flex items-center px-4 py-2 text-sm bg-[#0047AB] text-white rounded-lg hover:bg-[#003380] transition-all duration-200"
+                className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-blue-400 text-white rounded-lg hover:bg-blue-500 transition-all"
               >
                 <svg
                   className="w-4 h-4 mr-2"
@@ -151,7 +172,7 @@ export default function AllItemsPage() {
               </button>
               <Link
                 href="/item/manage/create"
-                className="inline-flex items-center px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200"
+                className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-[#0047AB] text-white rounded-lg hover:bg-[#003d91] transition-all"
               >
                 <svg
                   className="w-4 h-4 mr-2"
@@ -170,22 +191,74 @@ export default function AllItemsPage() {
               </Link>
             </div>
           </div>
+        </div>
 
-          {/* 검색 섹션 */}
-          <div className="bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+        {/* 검색 + 필터 섹션 */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* 비품 검색 */}
+            <div className="lg:col-span-9">
+              <label className="block text-base font-semibold text-gray-900 mb-2">
+                비품 검색
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg
+                    className="h-5 w-5 text-[#0047AB]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="비품 이름을 입력하세요"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-[#0047AB] transition-colors hover:border-[#0047AB]/50"
+                />
               </div>
-              <input
-                type="text"
-                placeholder="비품 이름으로 검색"
-                value={searchTerm}
-                onChange={handleSearch}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
-              />
+            </div>
+
+            {/* 카테고리 드롭박스 */}
+            <div className="lg:col-span-3">
+              <label className="block text-base font-semibold text-gray-900 mb-2">
+                카테고리
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={handleCategoryChange}
+                  className="w-full px-4 py-3 text-base bg-white border-2 border-gray-200 rounded-lg appearance-none focus:ring-2 focus:ring-[#0047AB] focus:border-[#0047AB] transition-colors hover:border-[#0047AB]/50"
+                >
+                  <option value="">전체 카테고리</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat} className="py-2">
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                  <svg
+                    className="w-5 h-5 text-[#0047AB]"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -193,32 +266,54 @@ export default function AllItemsPage() {
         {/* 테이블 */}
         {loading ? (
           <div className="bg-white p-8 text-center rounded-lg shadow-sm">
-            <div className="animate-spin h-12 w-12 border-b-2 border-blue-500 rounded-full mx-auto" />
+            <div className="animate-spin h-12 w-12 border-b-2 border-[#0047AB] rounded-full mx-auto" />
             <p className="mt-4 text-gray-500">비품 목록을 불러오는 중...</p>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
+                <colgroup>
+                  <col className="w-[5%] sm:w-[5%]" />
+                  <col className="w-[30%] sm:w-[25%]" />
+                  <col className="w-[15%] sm:w-[12%]" />
+                  <col className="w-[15%] sm:w-[13%]" />
+                  <col className="w-[15%] sm:w-[15%]" />
+                  <col className="hidden sm:table-cell sm:w-[20%]" />
+                  <col className="w-[20%] sm:w-[10%]" />
+                </colgroup>
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">비품 정보</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">카테고리</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">위치</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">재고</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">등록/수정일</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                    {[
+                      "No",
+                      "비품 정보",
+                      "카테고리",
+                      "위치",
+                      "재고",
+                      "등록/수정일",
+                      "관리",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredItems.map((item, i) => (
                     <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                         {i + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
+                        <div
+                          className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                          onClick={() => router.push(`/item/detail/${item.id}`)}
+                        >
                           <div className="flex-shrink-0 h-10 w-10">
                             {item.image ? (
                               <Image
@@ -230,73 +325,96 @@ export default function AllItemsPage() {
                               />
                             ) : (
                               <div className="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
-                                <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                <svg
+                                  className="h-6 w-6 text-gray-400"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
                                 </svg>
                               </div>
                             )}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                            <div className="text-sm text-gray-500">{item.serialNumber || '-'}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {item.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {item.serialNumber || "-"}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        <span className="px-3 py-1.5 inline-flex text-sm font-medium rounded-md bg-[#E8F0FE] text-[#0047AB] border border-[#0047AB]/10">
                           {item.categoryName}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.location || '-'}
+                        {item.location || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">총 {item.totalQuantity}개</div>
-                        <div className="text-sm text-gray-500">사용 가능 {item.availableQuantity}개</div>
+                        <div className="text-sm text-gray-900">
+                          총 {item.totalQuantity}개
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          사용 가능 {item.availableQuantity}개
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div>등록: {new Date(item.createdAt).toLocaleDateString()}</div>
-                        <div>수정: {new Date(item.modifiedAt).toLocaleDateString()}</div>
+                        <div>
+                          등록: {new Date(item.createdAt).toLocaleDateString()}
+                        </div>
+                        <div>
+                          수정: {new Date(item.modifiedAt).toLocaleDateString()}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="relative">
-                          <button
-                            onClick={(e) => toggleMenu(e, item.id)}
-                            className="text-gray-400 hover:text-gray-600 rounded-full p-1 hover:bg-gray-100 transition-colors"
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            href={`/item/manage/edit/${item.id}`}
+                            className="inline-flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                           >
-                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                            </svg>
-                          </button>
-                          {openMenuId === item.id && (
-                            <div 
-                              className="absolute right-0 mt-2 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 divide-y divide-gray-100"
-                              onClick={(e) => e.stopPropagation()}
+                            <svg
+                              className="mr-1.5 h-4 w-4 text-gray-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
                             >
-                              <div className="py-1">
-                                <Link
-                                  href={`/item/manage/edit/${item.id}`}
-                                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                >
-                                  <svg className="mr-3 h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                  </svg>
-                                  수정
-                                </Link>
-                              </div>
-                              <div className="py-1">
-                                <button
-                                  onClick={() => handleDelete(item.id)}
-                                  className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                                >
-                                  <svg className="mr-3 h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                  삭제
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                            수정
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="inline-flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <svg
+                              className="mr-1.5 h-4 w-4 text-red-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                            삭제
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -307,39 +425,6 @@ export default function AllItemsPage() {
           </div>
         )}
       </div>
-
-      {/* 이미지 모달 */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-4xl max-h-[90vh] w-full mx-4">
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute -top-2 -right-2 bg-black/50 hover:bg-black/70 p-2 backdrop-blur-sm rounded-full text-white/70 hover:text-white transition-all duration-200 shadow-lg"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <div className="flex justify-center">
-              <Image
-                src={selectedImage}
-                alt="비품 이미지"
-                width={800}
-                height={800}
-                className="max-h-[80vh] w-auto object-contain rounded-lg"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder-image.jpg';
-                  target.classList.add('opacity-50');
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </main>
   );
 }
