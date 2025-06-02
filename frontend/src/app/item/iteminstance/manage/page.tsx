@@ -14,7 +14,7 @@ interface ItemInstance {
   outbound: string;
   status: string;
   borrowerName?: string;
-  returnDate?: string; // 반납일 필드
+  returnDate?: string;
   createdAt: string;
   finalImage?: string;
   itemImage?: string;
@@ -31,21 +31,57 @@ export default function ItemInstanceManagePage() {
   const { isLogin } = useGlobalLoginUser();
 
   const [instances, setInstances] = useState<ItemInstance[]>([]);
+  const [filteredInstances, setFilteredInstances] = useState<ItemInstance[]>([]);
   const [page, setPage] = useState(0);
   const size = 20;
   const [search, setSearch] = useState("");
+  const [selectedOutbound, setSelectedOutbound] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // 로그인 체크
-  useEffect(() => {
-    if (!isLogin) router.push("/login");
-  }, [isLogin, router]);
-  if (!isLogin) return null;
+  // 출고 유형 매핑
+  const OUTBOUND_TYPES = ["지급", "대여", "폐기"] as const;
+  const OUTBOUND_MAPPING = {
+    "지급": "ISSUE",
+    "대여": "RENTAL",
+    "폐기": "DISPOSAL",
+    "LEND": "대여",
+    "AVAILABLE": "사용 가능"
+  } as const;
 
-  // 서버에서 페이지 단위로 불러온 뒤, 최신순 정렬
+  // 상태 유형 매핑
+  const STATUS_TYPES = ["지급", "대여", "사용 가능"] as const;
+  const STATUS_MAPPING = {
+    "지급": "ISSUE",
+    "대여": "LEND",
+    "사용 가능": "AVAILABLE"
+  } as const;
+
+  // 출고 유형 한글 변환 함수
+  const getKoreanOutbound = (outbound: string) => {
+    switch(outbound) {
+      case "ISSUE": return "지급";
+      case "RENTAL": return "대여";
+      case "DISPOSAL": return "폐기";
+      case "LEND": return "대여";
+      case "AVAILABLE": return "사용 가능";
+      default: return outbound;
+    }
+  };
+
+  // 상태 한글 변환 함수
+  const getKoreanStatus = (status: string) => {
+    switch(status) {
+      case "LEND": return "대여";
+      case "AVAILABLE": return "사용 가능";
+      case "ACTIVE": return "사용 가능";
+      default: return status;
+    }
+  };
+
+  // 서버에서 데이터 로드
   const loadInstances = async () => {
     setLoading(true);
     setError(null);
@@ -85,8 +121,9 @@ export default function ItemInstanceManagePage() {
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-
+      
       setInstances(mapped);
+      setFilteredInstances(mapped);
       setTotalPages(data.totalPages);
     } catch (e) {
       console.error(e);
@@ -96,18 +133,40 @@ export default function ItemInstanceManagePage() {
     }
   };
 
+  // 필터링 적용
+  useEffect(() => {
+    const filtered = instances.filter(instance => {
+      const matchesStatus = !selectedOutbound || 
+        (selectedOutbound === "사용 가능" && instance.outbound === "AVAILABLE") ||
+        (selectedOutbound === "대여" && instance.outbound === "LEND") ||
+        (selectedOutbound === "지급" && instance.outbound === "ISSUE");
+
+      const matchesSearch = !search.trim() || 
+        instance.itemName.toLowerCase().includes(search.toLowerCase()) ||
+        instance.instanceCode.toLowerCase().includes(search.toLowerCase());
+
+      return matchesStatus && matchesSearch;
+    });
+    setFilteredInstances(filtered);
+  }, [instances, selectedOutbound, search]);
+
   // 데이터 로드
   useEffect(() => {
     if (isLogin) loadInstances();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search]);
+  }, [page]);
 
   const handleSearch = () => {
     setPage(0);
     loadInstances();
   };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch();
+  };
+
+  const handleOutboundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedOutbound(e.target.value);
   };
 
   return (
@@ -170,6 +229,20 @@ export default function ItemInstanceManagePage() {
                   </div>
                 </div>
               </div>
+              <div className="md:w-64">
+                <select
+                  value={selectedOutbound}
+                  onChange={handleOutboundChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent appearance-none bg-white"
+                >
+                  <option value="">전체 비품 상태</option>
+                  {STATUS_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -195,9 +268,9 @@ export default function ItemInstanceManagePage() {
                       "NO", // "ID"에서 "NO"로 변경
                       "품목명",
                       "인스턴스 코드",
+                      "비품 상태",
                       "상태",
                       "대여자",
-                      "반납일",
                       "생성일",
                       "이미지",
                     ].map((header) => (
@@ -211,7 +284,7 @@ export default function ItemInstanceManagePage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {instances.map((inst, index) => (
+                  {filteredInstances.map((inst) => (
                     <tr
                       key={inst.id}
                       className="hover:bg-gray-50 transition-colors duration-150"
@@ -228,21 +301,23 @@ export default function ItemInstanceManagePage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                          {inst.status}
+                          {getKoreanOutbound(inst.outbound)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          inst.status === 'AVAILABLE' || inst.status === 'ACTIVE'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {getKoreanStatus(inst.status)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {inst.borrowerName || "–"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {inst.returnDate
-                          ? new Date(inst.returnDate).toLocaleDateString(
-                              "ko-KR"
-                            )
-                          : "–"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(inst.createdAt).toLocaleString("ko-KR")}
+                        {new Date(inst.createdAt).toLocaleDateString("ko-KR")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {inst.finalImage || inst.itemImage ? (
