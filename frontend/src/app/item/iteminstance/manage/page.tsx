@@ -284,14 +284,13 @@ export default function ItemInstanceManagePage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredInstances.map((inst) => (
+                  {filteredInstances.map((inst, index) => (
                     <tr
                       key={inst.id}
                       className="hover:bg-gray-50 transition-colors duration-150"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {page * size + index + 1}{" "}
-                        {/* inst.id 대신 순차적인 번호로 변경 */}
+                        {page * size + index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {inst.itemName}
