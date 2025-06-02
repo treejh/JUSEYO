@@ -483,7 +483,7 @@ export default function SearchPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm">등록된 비품이 아직 없습니다.</p>
+                <div style={{ height: "2rem" }} />
               )}
             </div>
           </div>
