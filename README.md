@@ -1,5 +1,6 @@
 
-![Uploading 스크린샷 2025-06-02 오후 2.53.21.png…]()
+<img width="1497" alt="스크린샷 2025-06-02 오후 2 52 33" src="https://github.com/user-attachments/assets/b1e3a8d2-259b-4338-99ea-4f7ff70d73fa" />
+
 
 
 
