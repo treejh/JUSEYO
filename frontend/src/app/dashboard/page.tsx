@@ -335,7 +335,14 @@ export default function DashboardPage() {
 
   const [myRequests, setMyRequests] = useState<SupplyRequestResponseDto[]>([]);
   const [isMyRequestsLoading, setIsMyRequestsLoading] = useState(true);
-  const getRequestType = (rental: boolean) => (rental ? "대여" : "지급");
+  const [rentalItems, setRentalItems] = useState<RentalItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 5;
+
+  // ✅ 여기서만 관리되는 추천 상태
+  const [recommendedItems, setRecommendedItems] = useState<string[]>([]);
+  const [isRecommendedItemsLoading, setIsRecommendedItemsLoading] = useState(false);
 
   useEffect(() => {
     const fetchMyRequests = async () => {
@@ -344,35 +351,92 @@ export default function DashboardPage() {
         const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
 
-        const res = await fetch(`${API_URL}/api/v1/supply-requests/me`, {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        });
+        const [requestsRes, lentItemsRes, statusCountRes] = await Promise.all([
+          // 내 요청 내역 API 호출
+          fetch(`${API_URL}/api/v1/supply-requests/me`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }),
+          // 대여 물품 API 호출
+          fetch(
+            `${API_URL}/api/v1/supply-requests/${loginUser?.id}/lent-items?page=${currentPage}&size=${pageSize}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              credentials: "include",
+            }
+          ),
+          // 상태 카운트 API 호출
+          fetch(
+            `${API_URL}/api/v1/supply/approval-status-counts/${loginUser?.id}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              credentials: "include",
+            }
+          ),
+        ]);
 
-        if (!res.ok) throw new Error("내 요청 내역을 불러오지 못했습니다.");
+        if (!requestsRes.ok || !lentItemsRes.ok || !statusCountRes.ok) {
+          throw new Error("API 호출 중 오류가 발생했습니다.");
+        }
 
-        const data = await res.json();
+        const [requestsData, lentItemsData, statusCountData] = await Promise.all([
+          requestsRes.json(),
+          lentItemsRes.json(),
+          statusCountRes.json(),
+        ]);
+
         // 최신순 정렬 후 5개만
-        const sorted = data
+        const sorted = requestsData
           .sort(
             (a: any, b: any) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )
           .slice(0, 5);
+        
         setMyRequests(sorted);
+        setRentalItems(lentItemsData.content || []);
+        setTotalPages(lentItemsData.totalPages || 1);
+        
+        // 상태 카운트 데이터 매핑
+        const mappedStatusCounts = {
+          REQUESTED: statusCountData.REQUESTED || 0,
+          APPROVED: statusCountData.APPROVED || 0,
+          REJECTED: statusCountData.REJECTED || 0,
+          RETURN_PENDING: statusCountData.RETURN_PENDING || 0,
+          RETURNED: statusCountData.RETURNED || 0
+        };
+        setStatusCounts(mappedStatusCounts);
       } catch (e) {
+        console.error("데이터 로딩 중 오류 발생:", e);
         setMyRequests([]);
+        setRentalItems([]);
+        setStatusCounts({
+          REQUESTED: 0,
+          APPROVED: 0,
+          REJECTED: 0,
+          RETURN_PENDING: 0,
+          RETURNED: 0,
+        });
       } finally {
         setIsMyRequestsLoading(false);
+        setIsLoading(false);
       }
     };
 
     if (loginUser?.id) fetchMyRequests();
-  }, [loginUser?.id]);
+  }, [loginUser?.id, currentPage, pageSize]);
 
   // 선택된 년도의 데이터만 필터링
   const filteredMonthlyData = useMemo(() => {
