@@ -50,8 +50,6 @@ export default function SearchPage() {
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [isVisible, setIsVisible] = useState(false);
   const [isStable, setIsStable] = useState(false);
-  const [associatedItems, setAssociatedItems] = useState<string[]>([]);
-  const [isLoadingAssociated, setIsLoadingAssociated] = useState(false);
   const checkStabilityTimeout = useRef<NodeJS.Timeout | null>(null);
   const isInitialMount = useRef(true);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -218,35 +216,29 @@ export default function SearchPage() {
     setRandomItems([]); // 기존 아이템 클리어
 
     try {
-      setLoading(true);
       const response = await fetch(
         `${API_BASE}/api/v1/items/all`,
         {
           credentials: "include",
-          headers: {
-            'Content-Type': 'application/json',
-          },
         }
       );
       
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`서버 응답 오류: ${response.status} ${errorText}`);
+        throw new Error("아이템을 가져오는데 실패했습니다.");
       }
 
       const items: SearchItem[] = await response.json();
       
       if (!Array.isArray(items)) {
-        console.error('서버 응답이 배열 형식이 아닙니다:', items);
-        setRandomItems([]);
-        setIsLoadingSuggestions(false);
-        setIsStable(true);
+        console.error('Received data is not an array:', items);
         return;
       }
 
       // 유효성 검사 및 중복 제거
-      const validItems = items.filter(item => item && item.name);
-      const uniqueItems = validItems.reduce((acc: SearchItem[], current: SearchItem) => {
+      const uniqueItems = items.filter(item => {
+        if (!item || !item.name) return false;
+        return true;
+      }).reduce((acc: SearchItem[], current: SearchItem) => {
         const isDuplicate = acc.some(item => item.name === current.name);
         if (!isDuplicate) {
           acc.push(current);
@@ -255,19 +247,16 @@ export default function SearchPage() {
       }, []);
       
       // 랜덤으로 아이템 선택 (최대 5개)
-      if (uniqueItems.length > 0) {
-        const shuffled = [...uniqueItems].sort(() => 0.5 - Math.random());
-        const selectedItems = shuffled.slice(0, Math.min(SUGGESTION_COUNT, uniqueItems.length));
-        setRandomItems(selectedItems);
-      }
-
-    } catch (error) {
-      console.error("초기 데이터 로드 실패:", error);
-      setRandomItems([]);
-    } finally {
+      const shuffled = [...uniqueItems].sort(() => 0.5 - Math.random());
+      const selectedItems = shuffled.slice(0, Math.min(SUGGESTION_COUNT, uniqueItems.length));
+      
+      setRandomItems(selectedItems);
       setIsLoadingSuggestions(false);
       setIsStable(true);
-      setLoading(false);
+    } catch (error) {
+      console.error("아이템 로드 실패:", error);
+      setIsLoadingSuggestions(false);
+      setIsStable(true);
     }
   }, [resetSearchState]);
 
@@ -302,42 +291,6 @@ export default function SearchPage() {
       }
     }
   }, [isSearched, initializeSearchPage]);
-
-  // 연관 검색어 가져오기
-  const fetchAssociatedItems = async (itemName: string) => {
-    if (!itemName.trim()) return;
-    
-    setIsLoadingAssociated(true);
-    try {
-      const response = await fetch(
-        `${API_BASE}/api/v1/recommend/association?itemName=${encodeURIComponent(itemName)}`,
-        {
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("연관 검색어를 가져오는데 실패했습니다.");
-      }
-
-      const data = await response.json();
-      setAssociatedItems(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("연관 검색어 로드 실패:", error);
-      setAssociatedItems([]);
-    } finally {
-      setIsLoadingAssociated(false);
-    }
-  };
-
-  // 검색어가 변경될 때마다 연관 검색어 가져오기
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      fetchAssociatedItems(searchQuery);
-    } else {
-      setAssociatedItems([]);
-    }
-  }, [searchQuery]);
 
   // 검색 실행
   const handleSearch = async (searchText: string, page: number = 0) => {
@@ -529,7 +482,9 @@ export default function SearchPage() {
                     </button>
                   ))}
                 </div>
-              ) : null}
+              ) : (
+                <div style={{ height: "2rem" }} />
+              )}
             </div>
           </div>
         )}
@@ -537,47 +492,6 @@ export default function SearchPage() {
         {/* 검색 결과 */}
         {isSearched && (
           <div className="mt-8">
-            {/* 연관 검색어 섹션 */}
-            {associatedItems?.length > 0 && (
-              <div className="mb-8 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <div className="flex items-center gap-2 mb-3">
-                  <svg 
-                    className="w-5 h-5 text-blue-500" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  <h2 className="text-base font-medium text-gray-900">
-                    이 비품과 함께 많이 요청된 비품
-                  </h2>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {associatedItems.map((item, index) => (
-                    <button
-                      key={`associated-${index}`}
-                      onClick={() => {
-                        setSearchQuery(item);
-                        handleSearch(item);
-                      }}
-                      className="px-4 py-2 text-sm bg-white text-blue-600 rounded-full border border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm"
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-3">
-                  * 다른 사용자들이 이 비품과 함께 자주 요청한 비품들입니다
-                </p>
-              </div>
-            )}
-
             <div className="mb-6">
               <h2 className="text-lg font-medium text-gray-900">
                 &quot;{query}&quot;의 검색 결과
