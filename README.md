@@ -14,7 +14,7 @@ $ npm run dev
 ```
 [서비스 링크](https://www.app.jusey0.site/)
 
-[유튜브 링크](https://www.youtube.com)
+[유튜브 링크](https://youtu.be/FELFFBucDe0?si=ci7a4VYie4QFQ7VA)
 
 <br/>
 
