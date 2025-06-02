@@ -1,77 +1,75 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCustomToast } from "@/utils/toast";
 import Image from "next/image";
 import Link from "next/link";
 
-interface Category {
+interface Item {
   id: number;
   name: string;
+  categoryName: string;
+  minimumQuantity: number;
+  purchaseSource?: string;
+  location?: string;
+  image?: string;
+  categoryId?: number;
+  isReturnRequired: boolean;
 }
 
-export default function CreateItemPage() {
+export default function PurchaseItemPage() {
   const router = useRouter();
   const toast = useCustomToast();
   const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<Item[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [nameExists, setNameExists] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: "",
-    categoryId: "",
+    itemId: "",
+    quantity: 0,
+    itemName: "",
+    minimumQuantity: 0,
     purchaseSource: "",
     location: "",
-    image: null as File | null,
-    minimumQuantity: 0,
-    totalQuantity: 0,
     isReturnRequired: false,
-    inbound: "PURCHASE" as "PURCHASE"
+    image: null as File | null,
+    categoryId: "",
+    inbound: "RE_PURCHASE" as "RE_PURCHASE",
+    isImageModified: false
   });
 
-  // 카테고리 목록 불러오기
-  React.useEffect(() => {
-    const fetchCategories = async () => {
+  // 기존 비품 목록 불러오기
+  useEffect(() => {
+    const fetchItems = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/items/all`,
           {
             credentials: "include",
           }
         );
-        if (!res.ok)
-          throw new Error("카테고리 목록을 불러오는데 실패했습니다.");
+        if (!res.ok) throw new Error("비품 목록을 불러오는데 실패했습니다.");
         const data = await res.json();
-        setCategories(data);
+        setItems(data);
+        setFilteredItems(data);
       } catch (error) {
-        toast.error("카테고리 목록을 불러오는데 실패했습니다.");
+        toast.error("비품 목록을 불러오는데 실패했습니다.");
       }
     };
-    fetchCategories();
+    fetchItems();
   }, []);
 
-  // 이름 중복 확인
-  const checkName = async () => {
-    if (!formData.name.trim()) return;
-    try {
-      const res = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_BASE_URL
-        }/api/v1/items/exists?name=${encodeURIComponent(formData.name)}`,
-        { credentials: "include" }
-      );
-      if (!res.ok) throw new Error("중복 체크 실패");
-      const { exists } = (await res.json()) as { exists: boolean };
-      setNameExists(exists);
-      if (exists) {
-        toast.error("이미 등록된 이름입니다. 다른 이름을 입력하세요.");
-      }
-    } catch (err) {
-      toast.error("이름 중복 확인 중 오류가 발생했습니다.");
-    }
-  };
+  // 검색어에 따른 필터링
+  useEffect(() => {
+    const filtered = items.filter((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredItems(filtered);
+  }, [searchTerm, items]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -83,15 +81,10 @@ export default function CreateItemPage() {
     }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: checked }));
-  };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData((prev) => ({ ...prev, image: file }));
+      setFormData((prev) => ({ ...prev, image: file, isImageModified: true }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -100,43 +93,56 @@ export default function CreateItemPage() {
     }
   };
 
+  const handleItemSelect = async (item: Item) => {
+    setSelectedItem(item);
+    setFormData(prev => ({
+      ...prev,
+      itemId: item.id.toString(),
+      itemName: item.name,
+      minimumQuantity: item.minimumQuantity,
+      purchaseSource: item.purchaseSource || "",
+      location: item.location || "",
+      categoryId: item.categoryId?.toString() || "",
+      isReturnRequired: item.isReturnRequired,
+      image: null,
+      isImageModified: false
+    }));
+    setSearchTerm("");
+    
+    // 기존 이미지가 있다면 미리보기로 표시
+    if (item.image) {
+      const imageUrl = item.image.startsWith('http') 
+        ? item.image 
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL}${item.image.startsWith('/') ? '' : '/'}${item.image}`;
+      setImagePreview(imageUrl);
+    } else {
+      setImagePreview(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 필수 항목 검증
-    if (!formData.name || !formData.categoryId) {
+    if (!formData.itemId || formData.quantity <= 0 || !formData.purchaseSource || !formData.location) {
       toast.error("필수 항목을 입력해주세요.");
-      return;
-    }
-
-    // 이름 중복 검증
-    if (nameExists) {
-      toast.error("이미 등록된 이름입니다. 다른 이름을 입력하세요.");
-      return;
-    }
-
-    // 수량 로직 검증
-    if (formData.totalQuantity < formData.minimumQuantity) {
-      toast.error("총수량은 최소수량 이상이어야 합니다.");
-      return;
-    }
-    if (formData.totalQuantity < 0) {
-      toast.error("총수량은 0 이상이어야 합니다.");
       return;
     }
 
     setLoading(true);
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append("itemName", formData.name);
-      formDataToSend.append("categoryId", formData.categoryId);
+      formDataToSend.append("quantity", formData.quantity.toString());
+      formDataToSend.append("itemName", formData.itemName);
       formDataToSend.append("minimumQuantity", formData.minimumQuantity.toString());
-      formDataToSend.append("quantity", formData.totalQuantity.toString());
-      formDataToSend.append("purchaseSource", formData.purchaseSource || "");
-      formDataToSend.append("location", formData.location || "");
+      formDataToSend.append("purchaseSource", formData.purchaseSource);
+      formDataToSend.append("location", formData.location);
       formDataToSend.append("isReturnRequired", formData.isReturnRequired.toString());
+      formDataToSend.append("categoryId", formData.categoryId);
       formDataToSend.append("inbound", formData.inbound);
-      if (formData.image) formDataToSend.append("image", formData.image);
+      // 이미지가 수정된 경우에만 이미지 파일 전송
+      if (formData.isImageModified && formData.image) {
+        formDataToSend.append("image", formData.image);
+      }
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/register-items`,
@@ -166,9 +172,9 @@ export default function CreateItemPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-                비품 추가
+                기존 비품 추가
               </h1>
-              <p className="text-gray-600">새로운 비품을 등록할 수 있습니다.</p>
+              <p className="text-gray-600">기존 비품의 수량을 추가할 수 있습니다.</p>
             </div>
           </div>
 
@@ -179,81 +185,57 @@ export default function CreateItemPage() {
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    비품명 <span className="text-red-500">*</span>
+                    비품 선택 <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    onBlur={checkName}
-                    placeholder="비품명을 입력하세요"
-                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent ${
-                      nameExists ? "border-red-500" : "border-gray-300"
-                    }`}
-                    required
-                  />
-                  {nameExists && (
-                    <p className="mt-1 text-sm text-red-600">
-                      동일한 이름의 비품이 이미 존재합니다.
-                    </p>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="비품 이름으로 검색"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                    />
+                    {searchTerm && filteredItems.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                        {filteredItems.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => handleItemSelect(item)}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          >
+                            <div className="font-medium">{item.name}</div>
+                            <div className="text-sm text-gray-500">{item.categoryName}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {selectedItem && (
+                    <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                      <div className="font-medium text-gray-900">{selectedItem.name}</div>
+                      <div className="text-sm text-gray-500">{selectedItem.categoryName}</div>
+                    </div>
                   )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    카테고리 <span className="text-red-500">*</span>
+                    수량 <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    name="categoryId"
-                    value={formData.categoryId}
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={formData.quantity}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-white"
+                    min={1}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
                     required
-                  >
-                    <option value="">카테고리를 선택하세요</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      최소수량 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      name="minimumQuantity"
-                      value={formData.minimumQuantity}
-                      onChange={handleInputChange}
-                      min={0}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      총수량 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      name="totalQuantity"
-                      value={formData.totalQuantity}
-                      onChange={handleInputChange}
-                      min={0}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
-                      required
-                    />
-                  </div>
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    구매처
+                    구매처 <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -262,12 +244,13 @@ export default function CreateItemPage() {
                     onChange={handleInputChange}
                     placeholder="구매처를 입력하세요"
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                    required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    보관 위치
+                    보관 위치 <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -276,31 +259,15 @@ export default function CreateItemPage() {
                     onChange={handleInputChange}
                     placeholder="보관 위치를 입력하세요"
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                    required
                   />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="isReturnRequired"
-                    name="isReturnRequired"
-                    checked={formData.isReturnRequired}
-                    onChange={handleCheckboxChange}
-                    className="h-4 w-4 text-[#0047AB] focus:ring-[#0047AB] border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="isReturnRequired"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    반납 필수 여부
-                  </label>
                 </div>
               </div>
 
               {/* 오른쪽 컬럼 - 이미지 업로드 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  비품 이미지
+                  구매 이미지
                 </label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 h-full">
                   <div className="space-y-1 text-center w-full">
@@ -405,4 +372,4 @@ export default function CreateItemPage() {
       </div>
     </div>
   );
-}
+} 

@@ -30,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.time.LocalDateTime;
@@ -54,7 +55,9 @@ public class RegisterItemService {
     // 제품 구매 등록
     @Transactional
     public ItemResponseDto registerItem(PurchaseRequestDto dto) {
-        ManagementDashboard md = findDashboard(dto.getManagementId());
+        Long id=tokenService.getIdFromToken();
+        User user=userRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        ManagementDashboard md = findDashboard(user.getManagementDashboard().getId());
         Category category = findCategory(dto.getCategoryId());
 
         Item item;
@@ -84,6 +87,7 @@ public class RegisterItemService {
     }
 
     private Item createNewItem(PurchaseRequestDto dto) {
+        Category category=categoryRepo.findById(dto.getCategoryId()).orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         ItemRequestDto itemDto = ItemRequestDto.builder()
                 .name(dto.getItemName())
                 .minimumQuantity(dto.getMinimumQuantity())
@@ -94,7 +98,7 @@ public class RegisterItemService {
                 .isReturnRequired(dto.getIsReturnRequired())
                 .image(dto.getImage())
                 .categoryId(dto.getCategoryId())
-                .managementId(dto.getManagementId())
+                .managementId(category.getManagementDashboard().getId())
                 .build();
 
         return itemRepository.findById(itemService.createItem(itemDto).getId())
@@ -102,7 +106,7 @@ public class RegisterItemService {
     }
 
     private Item updateExistingItem(PurchaseRequestDto dto) {
-        Item item = itemRepository.findById(dto.getItemId())
+        Item item = itemRepository.findByName(dto.getItemName())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
         Long qty = dto.getQuantity();
@@ -111,21 +115,33 @@ public class RegisterItemService {
         item.setPurchaseDate(LocalDateTime.now());
         item.setPurchaseSource(dto.getPurchaseSource());
         item.setLocation(dto.getLocation());
-        item.setImage(imageService.updateImage(dto.getImage(), item.getImage()));
-
+        if(dto.getImage()!=null) {
+            item.setImage(imageService.updateImage(dto.getImage(), item.getImage()));
+        }
         return item;
     }
 
     private void addInboundRecord(PurchaseRequestDto dto, Item item) {
-        InventoryInRequestDto inDto = InventoryInRequestDto.builder()
-                .itemId(item.getId())
-                .quantity(dto.getQuantity())
-                .inbound(dto.getInbound())
-                .categoryId(dto.getCategoryId())
-                .managementId(dto.getManagementId())
-                .image(dto.getImage())
-                .build();
-        inventoryInService.addInbound(inDto);
+        if(dto.getImage()!=null) {
+            InventoryInRequestDto inDto = InventoryInRequestDto.builder()
+                    .itemId(item.getId())
+                    .quantity(dto.getQuantity())
+                    .inbound(dto.getInbound())
+                    .categoryId(dto.getCategoryId())
+                    .managementId(item.getManagementDashboard().getId())
+                    .image(dto.getImage())
+                    .build();
+            inventoryInService.addInbound(inDto);
+        }else{
+            InventoryInRequestDto inDto = InventoryInRequestDto.builder()
+                    .itemId(item.getId())
+                    .quantity(dto.getQuantity())
+                    .inbound(dto.getInbound())
+                    .categoryId(dto.getCategoryId())
+                    .managementId(item.getManagementDashboard().getId())
+                    .build();
+            inventoryInService.addInbound(inDto);
+        }
     }
 
     private RegisterItem buildRegisterItem(PurchaseRequestDto dto, ManagementDashboard md, Category category, Item item) {
@@ -133,7 +149,7 @@ public class RegisterItemService {
                 .managementDashboard(md)
                 .category(category)
                 .item(item)
-                .image(imageService.saveImage(dto.getImage()))
+                .image(item.getImage())
                 .quantity(dto.getQuantity())
                 .purchaseSource(dto.getPurchaseSource())
                 .purchaseDate(LocalDateTime.now())

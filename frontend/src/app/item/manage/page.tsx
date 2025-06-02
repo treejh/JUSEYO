@@ -31,6 +31,7 @@ export default function AllItemsPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
   const toast = useCustomToast();
   const router = useRouter();
@@ -78,6 +79,21 @@ export default function AllItemsPage() {
 
   useEffect(() => {
     fetchAllItems();
+  }, []);
+
+  // 드롭다운 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.add-menu-container')) {
+        setShowAddMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,25 +187,43 @@ export default function AllItemsPage() {
                 </svg>
                 엑셀 다운로드
               </button>
-              <Link
-                href="/item/manage/create"
-                className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-[#0047AB] text-white rounded-lg hover:bg-[#003d91] transition-all"
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="relative add-menu-container">
+                <button
+                  onClick={() => setShowAddMenu(!showAddMenu)}
+                  className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-[#0047AB] text-white rounded-lg hover:bg-[#003d91] transition-all"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                비품 추가
-              </Link>
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  비품 추가
+                </button>
+                {showAddMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-1">
+                    <Link
+                      href="/item/manage/create"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      새로운 비품 추가
+                    </Link>
+                    <Link
+                      href="/item/manage/purchase"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      기존 비품 추가
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
