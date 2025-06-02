@@ -27,8 +27,8 @@ export default function CreateItemPage() {
     image: null as File | null,
     minimumQuantity: 0,
     totalQuantity: 0,
-    availableQuantity: 0,
     isReturnRequired: false,
+    inbound: "PURCHASE" as "PURCHASE"
   });
 
   // 카테고리 목록 불러오기
@@ -120,37 +120,26 @@ export default function CreateItemPage() {
       toast.error("총수량은 최소수량 이상이어야 합니다.");
       return;
     }
-    if (formData.availableQuantity > formData.totalQuantity) {
-      toast.error("사용 가능 수량은 총수량 이하여야 합니다.");
+    if (formData.totalQuantity < 0) {
+      toast.error("총수량은 0 이상이어야 합니다.");
       return;
     }
 
     setLoading(true);
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append("name", formData.name);
+      formDataToSend.append("itemName", formData.name);
       formDataToSend.append("categoryId", formData.categoryId);
-      formDataToSend.append(
-        "minimumQuantity",
-        formData.minimumQuantity.toString()
-      );
-      formDataToSend.append("totalQuantity", formData.totalQuantity.toString());
-      formDataToSend.append(
-        "availableQuantity",
-        formData.availableQuantity.toString()
-      );
-      formDataToSend.append(
-        "isReturnRequired",
-        formData.isReturnRequired.toString()
-      );
-      if (formData.purchaseSource)
-        formDataToSend.append("purchaseSource", formData.purchaseSource);
-      if (formData.location)
-        formDataToSend.append("location", formData.location);
+      formDataToSend.append("minimumQuantity", formData.minimumQuantity.toString());
+      formDataToSend.append("quantity", formData.totalQuantity.toString());
+      formDataToSend.append("purchaseSource", formData.purchaseSource || "");
+      formDataToSend.append("location", formData.location || "");
+      formDataToSend.append("isReturnRequired", formData.isReturnRequired.toString());
+      formDataToSend.append("inbound", formData.inbound);
       if (formData.image) formDataToSend.append("image", formData.image);
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/items`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/register-items`,
         {
           method: "POST",
           credentials: "include",
@@ -254,20 +243,6 @@ export default function CreateItemPage() {
                       type="number"
                       name="totalQuantity"
                       value={formData.totalQuantity}
-                      onChange={handleInputChange}
-                      min={0}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      사용가능수량 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      name="availableQuantity"
-                      value={formData.availableQuantity}
                       onChange={handleInputChange}
                       min={0}
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"

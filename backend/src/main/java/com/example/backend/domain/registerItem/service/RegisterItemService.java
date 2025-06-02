@@ -30,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.time.LocalDateTime;
@@ -105,7 +106,7 @@ public class RegisterItemService {
     }
 
     private Item updateExistingItem(PurchaseRequestDto dto) {
-        Item item = itemRepository.findById(dto.getItemId())
+        Item item = itemRepository.findByName(dto.getItemName())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_NOT_FOUND));
 
         Long qty = dto.getQuantity();
@@ -114,21 +115,33 @@ public class RegisterItemService {
         item.setPurchaseDate(LocalDateTime.now());
         item.setPurchaseSource(dto.getPurchaseSource());
         item.setLocation(dto.getLocation());
-        item.setImage(imageService.updateImage(dto.getImage(), item.getImage()));
-
+        if(dto.getImage()!=null) {
+            item.setImage(imageService.updateImage(dto.getImage(), item.getImage()));
+        }
         return item;
     }
 
     private void addInboundRecord(PurchaseRequestDto dto, Item item) {
-        InventoryInRequestDto inDto = InventoryInRequestDto.builder()
-                .itemId(item.getId())
-                .quantity(dto.getQuantity())
-                .inbound(dto.getInbound())
-                .categoryId(dto.getCategoryId())
-                .managementId(item.getManagementDashboard().getId())
-                .image(dto.getImage())
-                .build();
-        inventoryInService.addInbound(inDto);
+        if(dto.getImage()!=null) {
+            InventoryInRequestDto inDto = InventoryInRequestDto.builder()
+                    .itemId(item.getId())
+                    .quantity(dto.getQuantity())
+                    .inbound(dto.getInbound())
+                    .categoryId(dto.getCategoryId())
+                    .managementId(item.getManagementDashboard().getId())
+                    .image(dto.getImage())
+                    .build();
+            inventoryInService.addInbound(inDto);
+        }else{
+            InventoryInRequestDto inDto = InventoryInRequestDto.builder()
+                    .itemId(item.getId())
+                    .quantity(dto.getQuantity())
+                    .inbound(dto.getInbound())
+                    .categoryId(dto.getCategoryId())
+                    .managementId(item.getManagementDashboard().getId())
+                    .build();
+            inventoryInService.addInbound(inDto);
+        }
     }
 
     private RegisterItem buildRegisterItem(PurchaseRequestDto dto, ManagementDashboard md, Category category, Item item) {
