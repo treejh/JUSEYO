@@ -57,7 +57,7 @@ $ npm run dev
 # 2. 팀원 소개
 
 
-| <img src="https://github.com/codefish-sea.png" width="100" > |<img width="100" alt="스크린샷 2025-06-02 오후 5 55 11" src="https://github.com/user-attachments/assets/0be9b10c-8dce-43be-ac78-1a48e6d9cbb8" /> | <img src="https://github.com/user-attachments/assets/2f199c6f-19d1-4072-adc9-bb3d88f5bd04" width="100" > | <img src="https://github.com/user-attachments/assets/903c4fd8-1c47-46e9-a660-2c42d2d0c3be" width="100"> |  <img src="https://github.com/user-attachments/assets/783f3dd6-de36-476d-a06f-0c55029c84ad" width="100">|
+| <img src="https://github.com/codefish-sea.png" width="100" > |<img width="100" alt="스크린샷 2025-06-02 오후 5 55 11" src="https://github.com/user-attachments/assets/0be9b10c-8dce-43be-ac78-1a48e6d9cbb8" /> | <img src="https://github.com/user-attachments/assets/2f199c6f-19d1-4072-adc9-bb3d88f5bd04" width="100" > | <img src="https://github.com/user-attachments/assets/903c4fd8-1c47-46e9-a660-2c42d2d0c3be" width="100"> |  <img src="https://github.com/user-attachments/assets/8d061585-b8a3-436e-a09b-d29cbbc4c36d" width="100">|
 |-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|
 | **황지윤** | **장지현** | **홍보람** | **근하람** | **이현석** |
 | 팀장       | 개발팀장     | 팀원       | 팀원       | 팀원       |
@@ -65,6 +65,7 @@ $ npm run dev
 
 <br/>
 <br/>
+
 
 
 
