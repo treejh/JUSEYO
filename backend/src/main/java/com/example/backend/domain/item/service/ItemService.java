@@ -259,7 +259,9 @@ public class ItemService {
     /** 프론트 중복체크용 */
     @Transactional(readOnly = true)
     public boolean existsActiveName(String name) {
-        return repo.findByNameAndStatus(name, Status.ACTIVE).isPresent();
+        User user = userRepo.findById(tokenService.getIdFromToken())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        return repo.findByManagementDashboardAndNameAndStatus(user.getManagementDashboard(),name, Status.ACTIVE).isPresent();
     }
 
     //카테고리별 비품 조회
