@@ -10,7 +10,7 @@ export default function LoginTypePage() {
   const handleGoToHome = () => {
     router.push("/");
   };
-  const handleTypeSelect = (type: "MANAGER" | "ADMIN") => {
+  const handleTypeSelect = (type: "MANAGER" | "USER") => {
     router.push(`/login?type=${type}`); // 로그인 유형을 쿼리 파라미터로 전달
   };
 
@@ -94,7 +94,7 @@ export default function LoginTypePage() {
 
               <button
                 className="flex flex-col items-center justify-center py-8 px-6 border-2 border-gray-100 rounded-xl bg-white hover:border-[#0047AB] hover:shadow-md transition-all group"
-                onClick={() => handleTypeSelect("ADMIN")}
+                onClick={() => handleTypeSelect("USER")}
               >
                 <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
                   <svg

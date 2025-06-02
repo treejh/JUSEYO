@@ -52,13 +52,14 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch notifications");
+        throw new Error("알림을 불러오는데 실패했습니다.");
       }
 
       const data = await response.json();
-      set({ notifications: data.notifications });
+      console.log("API Response for notifications:", data);
+      set({ notifications: data });
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      console.error("알림을 불러오는 중 오류가 발생했습니다:", error);
     }
   },
   markAsRead: async (id) => {

@@ -16,7 +16,7 @@ interface Product {
   isReturnRequired: boolean;
   location: string;
   createdAt: string;
-  buyer: string;
+  purchaseSource: string;
   image?: string;
 }
 
@@ -32,6 +32,7 @@ export default function ItemDetailPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const { isLogin } = useGlobalLoginUser();
+  const { loginUser } = useGlobalLoginUser();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -229,7 +230,7 @@ export default function ItemDetailPage() {
                   <div>
                     <dt className="text-sm text-gray-500">구매처</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {product.buyer}
+                      {product.purchaseSource}
                     </dd>
                   </div>
                 </dl>
@@ -250,58 +251,60 @@ export default function ItemDetailPage() {
             </div>
 
             {/* 입출고 내역 탭 */}
-            <div className="bg-white rounded-2xl shadow-sm p-8 mt-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                입출고 내역
-              </h2>
+            {loginUser?.role === "MANAGER" && (
+              <div className="bg-white rounded-2xl shadow-sm p-8 mt-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                  입출고 내역
+                </h2>
 
-              <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
-                {(["출고", "입고"] as Tab[]).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setTab(t)}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                      tab === t
-                        ? "bg-white text-blue-600 shadow"
-                        : "text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {t} 내역
-                  </button>
-                ))}
-              </div>
+                <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+                  {(["출고", "입고"] as Tab[]).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTab(t)}
+                      className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
+                        tab === t
+                          ? "bg-white text-blue-600 shadow"
+                          : "text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {t} 내역
+                    </button>
+                  ))}
+                </div>
 
-              <div className="overflow-auto max-h-[400px]">
-                {history.length === 0 ? (
-                  <div className="py-12 text-center text-gray-500">
-                    {tab === "출고"
-                      ? "출고 내역이 없습니다."
-                      : "입고 내역이 없습니다."}
-                  </div>
-                ) : (
-                  <ul className="divide-y divide-gray-100">
-                    {history.map((h, i) => (
-                      <li
-                        key={i}
-                        className="flex justify-between items-center py-4 hover:bg-gray-50 px-4 rounded-lg"
-                      >
-                        <div className="text-sm text-gray-600">
-                          {formatMonthDay(h.createdAt)}
-                        </div>
-                        <div
-                          className={`font-medium ${
-                            tab === "출고" ? "text-red-600" : "text-green-600"
-                          }`}
+                <div className="overflow-auto max-h-[400px]">
+                  {history.length === 0 ? (
+                    <div className="py-12 text-center text-gray-500">
+                      {tab === "출고"
+                        ? "출고 내역이 없습니다."
+                        : "입고 내역이 없습니다."}
+                    </div>
+                  ) : (
+                    <ul className="divide-y divide-gray-100">
+                      {history.map((h, i) => (
+                        <li
+                          key={i}
+                          className="flex justify-between items-center py-4 hover:bg-gray-50 px-4 rounded-lg"
                         >
-                          {tab === "출고" ? "-" : "+"}
-                          {Math.abs(h.quantity)}개
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                          <div className="text-sm text-gray-600">
+                            {formatMonthDay(h.createdAt)}
+                          </div>
+                          <div
+                            className={`font-medium ${
+                              tab === "출고" ? "text-red-600" : "text-green-600"
+                            }`}
+                          >
+                            {tab === "출고" ? "-" : "+"}
+                            {Math.abs(h.quantity)}개
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

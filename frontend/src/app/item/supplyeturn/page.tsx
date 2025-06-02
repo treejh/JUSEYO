@@ -34,17 +34,21 @@ export default function ReturnRequestListPage() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const pageSize = 20;
   const [totalPages, setTotalPages] = useState<number>(0);
-  const toast  = useCustomToast();
-
+  const toast = useCustomToast();
 
   // 내 반납 요청 목록 조회
   const fetchRequests = async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/supply-return/my?page=${currentPage + 1}&size=${pageSize}`, {
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${API_BASE}/api/v1/supply-return/my?page=${
+          currentPage + 1
+        }&size=${pageSize}`,
+        {
+          credentials: "include",
+        }
+      );
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setRequests(data.content);
@@ -227,11 +231,13 @@ export default function ReturnRequestListPage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">상품명</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    상품명
+                  </label>
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="상품명 또는 요청서ID로 검색"
+                      placeholder="상품명으로 검색"
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent bg-gray-50"
@@ -254,7 +260,9 @@ export default function ReturnRequestListPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">반납 상태</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    반납 상태
+                  </label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -269,7 +277,9 @@ export default function ReturnRequestListPage() {
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">기간 선택</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    기간 선택
+                  </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="date"
@@ -350,7 +360,9 @@ export default function ReturnRequestListPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
                     반납 상태
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">현재 상태</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
+                    현재 상태
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
                     작성일
                   </th>
@@ -364,9 +376,25 @@ export default function ReturnRequestListPage() {
                   <tr>
                     <td colSpan={9} className="px-6 py-12 text-center">
                       <div className="flex justify-center">
-                        <svg className="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin h-8 w-8 text-gray-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                       </div>
                     </td>
@@ -412,13 +440,23 @@ export default function ReturnRequestListPage() {
                             request.approvalStatus
                           )}`}
                         >
-                          {request.approvalStatus === "RETURN_PENDING" && "반납 대기 중"}
+                          {request.approvalStatus === "RETURN_PENDING" &&
+                            "반납 대기 중"}
                           {request.approvalStatus === "APPROVED" && "승인"}
-                          {request.approvalStatus === "RETURN_REJECTED" && "반납 거부"}
+                          {request.approvalStatus === "RETURN_REJECTED" &&
+                            "반납 거부"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${request.outbound === "AVAILABLE" ? "bg-blue-50 text-blue-600" : request.outbound === "DAMAGED" ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-600"}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            request.outbound === "AVAILABLE"
+                              ? "bg-blue-50 text-blue-600"
+                              : request.outbound === "DAMAGED"
+                              ? "bg-red-50 text-red-600"
+                              : "bg-gray-50 text-gray-600"
+                          }`}
+                        >
                           {request.outbound === "AVAILABLE" && "사용 가능"}
                           {request.outbound === "DAMAGED" && "파손"}
                         </span>
@@ -442,7 +480,9 @@ export default function ReturnRequestListPage() {
                               disabled={deleteLoadingId === request.id}
                               className="text-red-600 hover:text-red-900 disabled:opacity-50"
                             >
-                              {deleteLoadingId === request.id ? "삭제 중..." : "삭제"}
+                              {deleteLoadingId === request.id
+                                ? "삭제 중..."
+                                : "삭제"}
                             </button>
                           </>
                         )}
@@ -482,4 +522,4 @@ export default function ReturnRequestListPage() {
       </div>
     </div>
   );
-} 
+}

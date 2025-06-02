@@ -226,10 +226,10 @@ export default function ClientLayout({
 
     // 이미 로그인된 사용자가 인증 페이지 접근 시 알림 + 이동
     if (isLogin && isAuthPage) {
-      if (!loggedInAuthPageAlertedRef.current) {
-        toast.error("이미 로그인된 사용자 입니다.");
-        loggedInAuthPageAlertedRef.current = true;
-      }
+      // if (!loggedInAuthPageAlertedRef.current) {
+      //   toast.error("이미 로그인된 사용자 입니다.");
+      //   loggedInAuthPageAlertedRef.current = true;
+      // }
 
       // 로그인된 사용자가 로그인/회원가입/찾기 페이지 접근 시 리다이렉트
       if (isLogin && (isLoginPage || isSignupPage || isFindPage)) {
@@ -264,7 +264,7 @@ export default function ClientLayout({
   ]);
 
   if (isLoginUserPending) {
-    return <LoadingScreen message="로그인 정보를 불러오는 중입니다..." />;
+    return <LoadingScreen message="로딩중" />;
   }
 
   return (

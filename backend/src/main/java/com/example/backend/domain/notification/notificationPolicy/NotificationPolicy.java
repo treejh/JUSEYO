@@ -35,6 +35,7 @@ public class NotificationPolicy {
                     NotificationType.RETURN_DUE_SOON,
                     NotificationType.SUPPLY_REQUEST_DELAYED,
                     NotificationType.SUPPLY_RETURN_APPROVED,
+                    NotificationType.SUPPLY_RETURN_REJECTED,
                     NotificationType.NEW_CHAT,
                     NotificationType.NEW_USER_APPROVED,
                     NotificationType.NEW_USER_REJECTED

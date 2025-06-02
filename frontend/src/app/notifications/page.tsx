@@ -27,6 +27,7 @@ type NotificationType =
   | "RETURN_DUE_SOON"
   | "NEW_CHAT"
   | "SUPPLY_RETURN_APPROVED"
+  | "SUPPLY_RETURN_REJECTED"
   | "NEW_USER_APPROVED"
   | "NEW_USER_REJECTED";
 
@@ -36,6 +37,7 @@ const USER_NOTIFICATION_TYPES: NotificationType[] = [
   "SUPPLY_REQUEST_APPROVED",
   "SUPPLY_REQUEST_REJECTED",
   "SUPPLY_RETURN_APPROVED",
+  "SUPPLY_RETURN_REJECTED",
   "RETURN_DUE_SOON",
   "SUPPLY_REQUEST_DELAYED",
   "NEW_CHAT",
@@ -65,6 +67,7 @@ interface Notification {
   notificationType: NotificationType;
   createdAt: string;
   readStatus: boolean;
+  extraData?: any;
 }
 
 interface NotificationPageResponse {
@@ -263,6 +266,15 @@ const NOTIFICATION_TYPE_LABELS: Record<
   },
   NEW_USER_REJECTED: {
     label: "회원 거부",
+    color: "bg-red-100 text-red-800",
+    icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+      </svg>
+    ),
+  },
+  SUPPLY_RETURN_REJECTED: {
+    label: "비품 반납 거부",
     color: "bg-red-100 text-red-800",
     icon: (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -534,6 +546,37 @@ export default function NotificationsPage() {
       const channel = new BroadcastChannel("notifications");
       channel.postMessage({
         type: "MARK_ALL_AS_READ",
+      });
+      channel.close();
+
+      await fetchNotifications();
+    } catch (err) {
+      setError("알림 상태 변경 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/${notificationId}/read`,
+        {
+          method: "PUT",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("알림 상태 변경에 실패했습니다.");
+      }
+
+      // 알림 스토어의 상태도 업데이트
+      useNotificationStore.getState().markAsRead(notificationId);
+
+      // 다른 탭에 알림
+      const channel = new BroadcastChannel("notifications");
+      channel.postMessage({
+        type: "MARK_AS_READ",
+        notificationId,
       });
       channel.close();
 
@@ -842,6 +885,59 @@ export default function NotificationsPage() {
                         ? "border-l-4 border-blue-500"
                         : ""
                     }`}
+                    onClick={() => {
+                      // 알림 타입에 따라 다른 페이지로 이동
+                      if (notification.notificationType === "SUPPLY_REQUEST") {
+                        router.push("/item/supplyrequest/manage");
+                      } else if (
+                        notification.notificationType === "SUPPLY_RETURN"
+                      ) {
+                        router.push("/item/return/manage");
+                      } else if (
+                        notification.notificationType === "STOCK_SHORTAGE"
+                      ) {
+                        router.push("/item/manage");
+                      } else if (notification.notificationType === "NEW_USER") {
+                        router.push("/settings/approve");
+                      } else if (
+                        notification.notificationType ===
+                          "SUPPLY_REQUEST_APPROVED" ||
+                        notification.notificationType ===
+                          "SUPPLY_REQUEST_REJECTED" ||
+                        notification.notificationType ===
+                          "SUPPLY_REQUEST_DELAYED"
+                      ) {
+                        router.push("/item/supplyrequest/list/user");
+                      } else if (
+                        notification.notificationType === "NEW_MANAGER"
+                      ) {
+                        router.push("/settings/approve");
+                      } else if (notification.notificationType === "NEW_CHAT") {
+                        if (notification.message.includes("1:1")) {
+                          router.push("/chat/user");
+                        } else if (notification.message.includes("그룹")) {
+                          router.push("/chat/group");
+                        } else if (notification.message.includes("고객지원")) {
+                          router.push("/chat/support");
+                        } else {
+                          router.push("/chat/select");
+                        }
+                      } else if (
+                        notification.notificationType === "RETURN_DUE_SOON"
+                      ) {
+                        router.push("/item/supplyreturn");
+                      } else if (
+                        notification.notificationType ===
+                        "SUPPLY_RETURN_APPROVED"
+                      ) {
+                        router.push("/item/supplyreturn");
+                      }
+
+                      // 읽음 처리
+                      if (!notification.readStatus) {
+                        handleMarkAsRead(notification.id);
+                      }
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       <input
@@ -853,54 +949,7 @@ export default function NotificationsPage() {
                         className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                         onClick={(e) => e.stopPropagation()}
                       />
-                      <div
-                        className="flex-1 min-w-0 cursor-pointer"
-                        onClick={() => {
-                          if (
-                            notification.notificationType === "SUPPLY_REQUEST"
-                          ) {
-                            router.push("/item/supplyrequest/list/manage");
-                          } else if (
-                            notification.notificationType === "SUPPLY_RETURN"
-                          ) {
-                            router.push("/item/return");
-                          } else if (
-                            notification.notificationType === "STOCK_SHORTAGE"
-                          ) {
-                            router.push("/item/manage");
-                          } else if (
-                            notification.notificationType === "NEW_USER"
-                          ) {
-                            router.push("/settings/approve");
-                          } else if (
-                            notification.notificationType === "NEW_MANAGER"
-                          ) {
-                            router.push("/settings/approve");
-                          } else if (
-                            notification.notificationType === "NEW_CHAT"
-                          ) {
-                            router.push("/chat/select");
-                          } else if (
-                            notification.notificationType ===
-                              "SUPPLY_REQUEST_APPROVED" ||
-                            notification.notificationType ===
-                              "SUPPLY_REQUEST_REJECTED" ||
-                            notification.notificationType ===
-                              "SUPPLY_REQUEST_DELAYED"
-                          ) {
-                            router.push("/item/supplyrequest/list/user");
-                          } else if (
-                            notification.notificationType === "RETURN_DUE_SOON"
-                          ) {
-                            router.push("/item/supplyreturn");
-                          } else if (
-                            notification.notificationType ===
-                            "SUPPLY_RETURN_APPROVED"
-                          ) {
-                            router.push("/item/supplyreturn");
-                          }
-                        }}
-                      >
+                      <div className="flex-1 min-w-0 cursor-pointer">
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="flex items-center gap-2 mb-1">

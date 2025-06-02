@@ -22,12 +22,14 @@ public class NotificationEventListener {
     private final NewManagerApprovedNotificationService newManagerApprovedNotificationService;
     private final NewManagerRejectedNotificationService newManagerRejectedNotificationService;
     private final SupplyReturnApprovedNotificationService supplyReturnApprovedNotificationService;
+    private final SupplyReturnRejectedNotificationService supplyReturnRejectedNotificationService;
     private final NewManagerNotificationService newManagerNotificationService;
 //    private final NewDashboardNotificationService newDashboardNotificationService;
 
     private final NewUserNotificationService newUserNotificationService;
     private final NewUserApprovedNotificationService newUserApprovedNotificationService;
     private final NewUserRejectedNotificationService newUserRejectedNotificationService;
+
 
     // 매니저
     // 비품 요청 알림
@@ -109,11 +111,17 @@ public class NotificationEventListener {
         supplyReturnApprovedNotificationService.notifyIfApproved(event.getUserId(), event.getItemName(), event.getItemQuantity());
     }
 
+    // 비품 반납 거부 알림
+    @EventListener
+    public void handleSupplyReturnRejected(SupplyReturnRejectedEvent event) {
+        supplyReturnRejectedNotificationService.notifyIfRejected(event.getUserId(), event.getItemName(), event.getItemQuantity());
+    }
+
     // 기타
     // 새로운 채팅
     @EventListener
     public void handleNewChat(NewChatEvent event) {
-        newChatNotificationService.notifyNewChat(event.getTargetId(), event.getRoomId(), event.getSenderRole(), event.getSenderName());
+        newChatNotificationService.notifyNewChat(event.getTargetId(), event.getRoomId(), event.getSenderRole(), event.getSenderName(), event.getChatRoomType());
     }
 
     @EventListener

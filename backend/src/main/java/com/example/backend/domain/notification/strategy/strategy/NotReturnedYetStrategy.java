@@ -37,12 +37,11 @@ public class NotReturnedYetStrategy implements  NotificationStrategy{
 
         if (ctx.getReturnDate() == null) return false;
 
-//        // 테스트용
-//        return ctx.getReturnDate() != null &&
-//                ctx.getReturnDate().isBefore(LocalDateTime.now().minusMinutes(1));
-
 //         배포용 - 단순 날짜 비교: 반납일이 3일 이상 지났으면 알림
-        long daysOverdue = ChronoUnit.DAYS.between(ctx.getReturnDate(), LocalDate.now());
+        long daysOverdue = ChronoUnit.DAYS.between(
+                ctx.getReturnDate().toLocalDate(), // LocalDateTime → LocalDate
+                LocalDate.now()
+        );
         return daysOverdue >= 3;
     }
 }

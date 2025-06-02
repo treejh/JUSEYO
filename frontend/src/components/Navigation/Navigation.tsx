@@ -40,7 +40,10 @@ export default function Navigation({
     if (pathname.includes("search")) return "search";
     if (pathname.includes("item/supplyrequest/list/user"))
       return "supply-request-user";
-    if (pathname.includes("item/supplyrequest/manage") || pathname.includes("item/supplyrequest/list/manage"))
+    if (
+      pathname.includes("item/supplyrequest/manage") ||
+      pathname.includes("item/supplyrequest/list/manage")
+    )
       return "supply-request-manage";
     if (pathname.includes("/item/user")) return "inventory";
     if (pathname.includes("request")) return "request";
@@ -166,24 +169,14 @@ export default function Navigation({
         </li>
         <li className="menu-item">
           <Link
-            href="/item/supplyrequest/list/user"
+            href="/item/user"
             className={`menu-link ${
-              activeMenu === "supply-request-user" ? "active" : ""
+              activeMenu === "inventory" ? "active" : ""
             }`}
-            onClick={() => onPageChange?.("supply-request-user")}
+            onClick={() => onPageChange?.("inventory")}
           >
-            <span className="menu-icon">✏️</span>
-            <span>비품 요청</span>
-          </Link>
-        </li>
-        <li className="menu-item">
-          <Link
-            href="/item/supplyeturn"
-            className={`menu-link ${activeMenu === "return-user" ? "active" : ""}`}
-            onClick={() => onPageChange?.("return-user")}
-          >
-            <span className="menu-icon">↩️</span>
-            <span>비품 반납</span>
+            <span className="menu-icon">🗂️</span>
+            <span>비품 조회</span>
           </Link>
         </li>
       </ul>
@@ -198,14 +191,26 @@ export default function Navigation({
         <ul className="menu-list">
           <li className="menu-item">
             <Link
-              href="/item/user"
+              href="/item/supplyrequest/list/user"
               className={`menu-link ${
-                activeMenu === "inventory" ? "active" : ""
+                activeMenu === "supply-request-user" ? "active" : ""
               }`}
-              onClick={() => onPageChange?.("inventory")}
+              onClick={() => onPageChange?.("supply-request-user")}
             >
-              <span className="menu-icon">🗂️</span>
-              <span>비품 조회</span>
+              <span className="menu-icon">✏️</span>
+              <span>나의 비품 요청</span>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <Link
+              href="/item/supplyeturn"
+              className={`menu-link ${
+                activeMenu === "return-user" ? "active" : ""
+              }`}
+              onClick={() => onPageChange?.("return-user")}
+            >
+              <span className="menu-icon">↩️</span>
+              <span>나의 비품 반납</span>
             </Link>
           </li>
           <li className="menu-item">
@@ -366,14 +371,26 @@ export default function Navigation({
       <ul className="menu-list">
         <li className="menu-item">
           <Link
-            href="/item/user"
+            href="/item/supplyrequest/list/user"
             className={`menu-link ${
-              activeMenu === "inventory" ? "active" : ""
+              activeMenu === "supply-request-user" ? "active" : ""
             }`}
-            onClick={() => onPageChange?.("inventory")}
+            onClick={() => onPageChange?.("supply-request-user")}
           >
-            <span className="menu-icon">🔍</span>
-            <span>비품 조회</span>
+            <span className="menu-icon">✏️</span>
+            <span>나의 비품 요청</span>
+          </Link>
+        </li>
+        <li className="menu-item">
+          <Link
+            href="/item/supplyeturn"
+            className={`menu-link ${
+              activeMenu === "return-user" ? "active" : ""
+            }`}
+            onClick={() => onPageChange?.("return-user")}
+          >
+            <span className="menu-icon">↩️</span>
+            <span>나의 비품 반납</span>
           </Link>
         </li>
       </ul>

@@ -163,9 +163,14 @@ public class SupplyRequestService {
         String issueMsg;
 
         if (newStatus == ApprovalStatus.APPROVED) {
-
             // 요청 승인 알림 발생
-            eventPublisher.publishEvent(new SupplyRequestApprovedEvent(req.getUser().getId(), req.getItem().getName(), req.getQuantity()));
+            eventPublisher.publishEvent(
+                    new SupplyRequestApprovedEvent(
+                            req.getUser().getId(),
+                            req.getItem().getName(),
+                            req.getQuantity()
+                    )
+            );
 
             // 1) 출고 처리: rental 여부에 따라 LEND 또는 ISSUE
             String outboundType = req.isRental()
@@ -178,13 +183,13 @@ public class SupplyRequestService {
                     .categoryId(req.getItem().getCategory().getId())
                     .managementId(req.getItem().getManagementDashboard().getId())
                     .quantity(req.getQuantity())
-                    .outbound(outboundType)    // <-- 수정된 부분
+                    .outbound(outboundType)
                     .build();
             outService.removeOutbound(outDto);
 
             // 2) 승인 처리 분기
             if (req.isRental()) {
-                // ── 대여 승인: 인스턴스 생성 + 상태 RETURN_PENDING ──
+                // ── 대여 승인: 인스턴스 생성 ──
                 for (int i = 0; i < req.getQuantity(); i++) {
                     ItemInstance inst = ItemInstance.builder()
                             .item(req.getItem())
@@ -198,7 +203,8 @@ public class SupplyRequestService {
                             .build();
                     instanceRepo.save(inst);
                 }
-                req.setApprovalStatus(ApprovalStatus.RETURN_PENDING);
+                // 대여 승인 시에도 APPROVED 상태로 설정
+                req.setApprovalStatus(ApprovalStatus.APPROVED);
                 issueMsg = "대여 승인 자동 기록";
             } else {
                 // ── 비대여 승인: totalQuantity & availableQuantity 차감 ──
@@ -208,7 +214,6 @@ public class SupplyRequestService {
                     throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
                 }
                 item.setTotalQuantity(item.getTotalQuantity() - qty);
-                //item.setAvailableQuantity(item.getAvailableQuantity() - qty);
                 itemRepo.save(item);
 
                 req.setApprovalStatus(ApprovalStatus.APPROVED);
@@ -285,6 +290,26 @@ public class SupplyRequestService {
         return repo.findAllByUserId(userId).stream()
                 .map(this::mapToDto).toList();
     }
+
+
+
+    @Transactional(readOnly = true)
+    public List<SupplyRequestResponseDto> getMyRequestsExceptReturn() {
+        Long userId = tokenService.getIdFromToken();
+
+        // 승인된 요청만 가져옴
+        List<SupplyRequest> approvedRequests = repo.findApprovedRequestsByUserId(userId);
+
+        // SupplyReturn 테이블에 존재하지 않는 요청만 필터링
+        List<SupplyRequestResponseDto> result = approvedRequests.stream()
+                .filter(request -> !supplyReturnRepository.existsBySupplyRequestId(request.getId()))
+                .map(this::mapToDto)
+                .toList();
+
+        return result;
+    }
+
+
 
     @Transactional
     public SupplyRequestResponseDto updateMyRequest(Long requestId, SupplyRequestRequestDto dto) {

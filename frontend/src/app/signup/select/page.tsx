@@ -13,7 +13,7 @@ export default function ManagementSelectPage() {
     }
   };
   const handleBackToSelection = () => {
-    router.push("/signup/info"); // 회원 유형 선택 페이지로 이동
+    router.push("/signup"); // 회원 유형 선택 페이지로 이동
   };
 
   return (
