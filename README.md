@@ -4,6 +4,7 @@
 
 
 
+
 <br/>
 <br/>
 
@@ -56,7 +57,7 @@ $ npm run dev
 # 2. 팀원 소개
 
 
-| <img src="https://github.com/codefish-sea.png" width="100" > | <img src="https://github.com/user-attachments/assets/df80877e-4da1-4c5b-be31-9e1ef614973a" width="100"> | <img src="https://github.com/user-attachments/assets/2f199c6f-19d1-4072-adc9-bb3d88f5bd04" width="100" > | <img src="https://github.com/user-attachments/assets/903c4fd8-1c47-46e9-a660-2c42d2d0c3be" width="100"> |  <img src="https://github.com/user-attachments/assets/783f3dd6-de36-476d-a06f-0c55029c84ad" width="100">|
+| <img src="https://github.com/codefish-sea.png" width="100" > |<img width="100" alt="스크린샷 2025-06-02 오후 5 55 11" src="https://github.com/user-attachments/assets/0be9b10c-8dce-43be-ac78-1a48e6d9cbb8" /> | <img src="https://github.com/user-attachments/assets/2f199c6f-19d1-4072-adc9-bb3d88f5bd04" width="100" > | <img src="https://github.com/user-attachments/assets/903c4fd8-1c47-46e9-a660-2c42d2d0c3be" width="100"> |  <img src="https://github.com/user-attachments/assets/783f3dd6-de36-476d-a06f-0c55029c84ad" width="100">|
 |-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|
 | **황지윤** | **장지현** | **홍보람** | **근하람** | **이현석** |
 | 팀장       | 개발팀장     | 팀원       | 팀원       | 팀원       |
@@ -70,8 +71,19 @@ $ npm run dev
 # 3. Key Features (주요 기능)
 
 
-## 🔑 인증 및 보안:
-JWT 인증: 사용자 인증 및 권한 관리
+## 👥 회원가입 및 인증
+
+역할 기반 회원가입 및 JWT 인증 방식을 적용하여 보안성과 관리 편의성을 높였습니다.
+
+- 역할(Role)에 따른 회원가입:  
+  - 관리자(Admin), 일반 사용자(User)  
+  - 최초 매니저(Initial Manager), 일반 매니저(Manager)
+
+- JWT 기반 인증 및 권한 관리
+- 이메일 인증 / 휴대폰 인증 구현
+- Refresh Token을 Redis에 저장하여, RTR 방식(Refresh Token Rotation)으로 Access Token 재발급
+
+
 
 ## 📑 비품 관리
 
@@ -90,11 +102,15 @@ JWT 인증: 사용자 인증 및 권한 관리
 엑셀 내보내기: 데이터 다운로드
 
 ## 💬 채팅 기능
-실시간 채팅: 사용자 간 실시간 메시지 전송
+STOMP 기반 WebSocket으로 구현한 실시간 채팅 기능입니다.  
+1:1, 고객센터, 그룹 채팅을 지원하며, JWT 인증과 Redis, RDS를 활용한 구조입니다.
 
-채팅방 관리: 사용자별 채팅방 생성 및 관리
-
-읽음 확인: 메시지 수신 여부 확인
+- STOMP + SockJS 기반 실시간 메시지 전송
+- 1:1 / 고객센터 / 그룹 채팅방 생성 및 관리
+- JWT 쿠키 인증 기반 세션 사용자 메시지 처리
+- 메시지 RDS 저장, 채팅방 상태 Redis 관리
+- 미확인 메시지 'NEW' 뱃지 표시
+- 중복 채팅방 생성 방지
 
 ## ✨알림 기능
 권한(Role)에 따라 다양한 이벤트 발생 시 알림을 전송하도록 옵저버 패턴과 스케줄러 기반 로직을 조합하여 구현했습니다.
