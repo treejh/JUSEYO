@@ -18,6 +18,7 @@ import InventoryTable from "./inventory-table";
 import { useRouter } from "next/navigation";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 import { useCustomToast } from "@/utils/toast";
+
 // Chart.js 등록
 ChartJS.register(
   CategoryScale,
@@ -209,8 +210,8 @@ export default function DashboardPage() {
   });
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isNotificationsLoading, setIsNotificationsLoading] = useState(true);
-  const [recommendedItems, setRecommendedItems] = useState<string[]>([]);
-  const [isRecommendedItemsLoading, setIsRecommendedItemsLoading] = useState(true);
+
+
 
   // 사용 가능한 년도 목록 계산
   const availableYears = useMemo(() => {
@@ -231,7 +232,6 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      setIsRecommendedItemsLoading(true);
       const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
       if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
 
@@ -330,7 +330,6 @@ export default function DashboardPage() {
       console.error("대시보드 데이터 로딩 에러:", err);
     } finally {
       setIsLoading(false);
-      setIsRecommendedItemsLoading(false);
     }
   };
 
@@ -1120,154 +1119,97 @@ export default function DashboardPage() {
   );
 
   // 일반 사용자 대시보드 뷰
-  const UserDashboard = () => {
-    const [userRequests, setUserRequests] = useState<SupplyRequest[]>([]);
-    const [recommendedItems, setRecommendedItems] = useState<string[]>([]);
-    const [isRecommendedItemsLoading, setIsRecommendedItemsLoading] = useState(true);
-    const [rentalItems, setRentalItems] = useState<RentalItem[]>([]);
-    const [statusCounts, setStatusCounts] = useState<StatusCount>({
-      REQUESTED: 0,
-      APPROVED: 0,
-      REJECTED: 0,
-      RETURN_PENDING: 0,
-      RETURNED: 0,
-    });
-    const [isLoading, setIsLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const pageSize = 5;
 
-    useEffect(() => {
-      let isMounted = true;
+interface UserDashboardProps {
+  statusCounts: StatusCount;
+  setStatusCounts: React.Dispatch<React.SetStateAction<StatusCount>>;
+  myRequests: SupplyRequestResponseDto[];
+  setMyRequests: React.Dispatch<React.SetStateAction<SupplyRequestResponseDto[]>>;
+  loginUser: any;
+  router: any;
+}
 
-      const fetchData = async () => {
-        try {
-          setIsLoading(true);
-          setIsRecommendedItemsLoading(true);
-          const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-          if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
+const UserDashboard = ({
+  statusCounts,
+  setStatusCounts,
+  myRequests,
+  setMyRequests,
+  loginUser,
+  router,
+}: UserDashboardProps) => {
+  const [rentalItems, setRentalItems] = useState<RentalItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 5;
 
-          // 모든 API 호출을 병렬로 실행
-          const [rentalResponse, statusResponse, requestsResponse, recommendResponse] = await Promise.all([
-            // 대여 물품 API 호출
-            fetch(
-              `${API_URL}/api/v1/supply-requests/${loginUser?.id}/lent-items?page=${currentPage}&size=${pageSize}`,
-              {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  Accept: "application/json",
-                },
-                credentials: "include",
-              }
-            ),
-            // 상태 카운트 API 호출
-            fetch(
-              `${API_URL}/api/v1/supply-requests/status-count/${loginUser?.id}`,
-              {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  Accept: "application/json",
-                },
-                credentials: "include",
-              }
-            ),
-            // 요청 내역 API 호출
-            fetch(`${API_URL}/api/v1/supply-requests/me`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              credentials: "include",
-            }),
-            // 추천 비품 API 호출
-            fetch(`${API_URL}/api/v1/recommend?userId=${loginUser?.id}`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              credentials: "include",
-            }),
-          ]);
+  // ✅ 여기서만 관리되는 추천 상태
+  const [recommendedItems, setRecommendedItems] = useState<string[]>([]);
+  const [isRecommendedItemsLoading, setIsRecommendedItemsLoading] = useState(false);
 
-          if (!isMounted) return;
+  useEffect(() => {
 
-          // 403 에러 체크
-          if ([rentalResponse, statusResponse, requestsResponse, recommendResponse].some(res => res.status === 403)) {
-            router.replace("/login");
-            return;
-          }
+  if (isRecommendedItemsLoading || recommendedItems.length > 0) {
+    return;
+  }
 
-          // 응답 상태 체크
-          if (!rentalResponse.ok || !statusResponse.ok || !requestsResponse.ok || !recommendResponse.ok) {
-            throw new Error("데이터를 불러오는데 실패했습니다.");
-          }
+  if (!loginUser?.id) return;
 
-          // 모든 응답 데이터를 병렬로 파싱
-          const [rentalData, statusData, requestsData, recommendData] = await Promise.all([
-            rentalResponse.json(),
-            statusResponse.json(),
-            requestsResponse.json(),
-            recommendResponse.json(),
-          ]);
+  setIsRecommendedItemsLoading(true);
 
-          if (!isMounted) return;
+  (async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+      if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
 
-          // 대여 물품 데이터 설정
-          setRentalItems(
-            rentalData.content.map((item: any) => ({
-              itemName: item.itemName,
-              useDate: item.useDate,
-              returnDate: item.returnDate,
-              rentStatus: item.rentStatus,
-            }))
-          );
-          setTotalPages(rentalData.totalPages);
-
-          // 상태 카운트 설정
-          setStatusCounts({
-            REQUESTED: statusData.REQUESTED || 0,
-            APPROVED: statusData.APPROVED || 0,
-            REJECTED: statusData.REJECTED || 0,
-            RETURN_PENDING: statusData.RETURN_PENDING || 0,
-            RETURNED: statusData.RETURNED || 0,
-          });
-
-          // 요청 내역 설정
-          const sortedRequests = requestsData
-            .sort((a: any, b: any) => {
-              const dateA = new Date(b.createdAt).getTime();
-              const dateB = new Date(a.createdAt).getTime();
-              return dateA - dateB;
-            })
-            .slice(0, 5);
-          setMyRequests(sortedRequests);
-
-          // 추천 비품 설정
-          setRecommendedItems(recommendData);
-
-        } catch (error) {
-          console.error("데이터 로딩 중 오류 발생:", error);
-          if (error instanceof Error && error.message === "사용자 정보가 없습니다.") {
-            router.replace("/login");
-          }
-        } finally {
-          if (isMounted) {
-            setIsLoading(false);
-            setIsRecommendedItemsLoading(false);
-          }
+      const recommendRes = await fetch(
+        `${API_URL}/api/v1/recommend?userId=${loginUser.id}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
         }
-      };
+      );
+      if (!recommendRes.ok) {
+        throw new Error("추천 비품을 불러오는데 실패했습니다.");
+      }
 
-      fetchData();
+      const recommendData: string[] = await recommendRes.json();
 
-      return () => {
-        isMounted = false;
-      };
-    }, [loginUser?.id, router, currentPage]);
+
+       // ─── 중복 제거 로직 시작 ───
+      // 1) 앞뒤 공백 제거
+      const trimmed = recommendData.map(item => item.trim());
+
+      // 2) 내부 공백을 모두 제거한 값을 키로 삼아 중복 제거 (소문자 통일)
+      const seen = new Set<string>();
+      const uniqueItems = trimmed.reduce<string[]>((acc, item) => {
+        const key = item.replace(/\s+/g, "").toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          acc.push(item);
+        }
+        return acc;
+      }, []);
+      // ─── 중복 제거 로직 끝 ───
+
+      setRecommendedItems(uniqueItems);
+    } catch (e) {
+      console.error("📛 추천 불러오기 실패:", e);
+      setRecommendedItems([]);
+    } finally {
+      setIsRecommendedItemsLoading(false);
+    }
+  })();
+}, [
+  loginUser?.id,
+  isRecommendedItemsLoading,
+  recommendedItems.length,
+  router,
+]);
 
     // 페이지 변경 핸들러
     const handlePageChange = (page: number) => {
@@ -1483,8 +1425,9 @@ export default function DashboardPage() {
 
           {/* 사용자 맞춤 추천 비품 */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">
-              사용자 맞춤 추천 비품
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <span>사용자 맞춤 추천 비품</span>
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">맞춤 추천</span>
             </h2>
             <div className="grid grid-cols-3 gap-4">
               {isRecommendedItemsLoading ? (
@@ -1494,10 +1437,12 @@ export default function DashboardPage() {
                   .map((_, index) => (
                     <div
                       key={index}
-                      className="bg-gray-50 p-3 rounded-lg text-center animate-pulse"
+                      className="bg-gray-50 p-4 rounded-lg animate-pulse flex flex-col justify-between min-h-[80px]"
                     >
-                      <div className="w-12 h-12 mx-auto mb-2 bg-gray-200 rounded-full"></div>
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+                      <div className="space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      </div>
                     </div>
                   ))
               ) : recommendedItems.length > 0 ? (
@@ -1505,15 +1450,25 @@ export default function DashboardPage() {
                   <div
                     key={index}
                     onClick={() => router.push(`/item/supplyrequest/create`)}
-                    className="bg-gray-50 p-3 rounded-lg text-center cursor-pointer hover:bg-gray-100 transition-all duration-300"
+                    className="bg-white p-4 rounded-lg cursor-pointer transition-all duration-200 border-2 border-gray-100 hover:border-blue-300 hover:bg-blue-50 flex flex-col justify-between min-h-[80px] relative group"
                   >
-                    <span className="text-2xl mb-2 block">📦</span>
-                    <span className="text-sm line-clamp-1">{item}</span>
+                    <p className="text-gray-800 font-medium text-sm mb-2 line-clamp-2">{item}</p>
+                    <div className="flex items-center justify-end">
+                      <span className="text-xs font-medium text-blue-600 flex items-center gap-1 group-hover:text-blue-700">
+                        신청하기
+                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </span>
+                    </div>
                   </div>
                 ))
               ) : (
-                <div className="col-span-3 text-center py-8 text-gray-500">
-                  <p>추천 비품이 없습니다.</p>
+                <div className="col-span-3 text-center py-8">
+                  <div className="bg-gray-50 rounded-lg p-6 max-w-sm mx-auto">
+                    <p className="text-gray-800 font-medium">추천 비품이 없습니다</p>
+                    <p className="text-sm text-gray-500 mt-1">새로운 비품을 요청해보세요!</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -1792,12 +1747,19 @@ export default function DashboardPage() {
 
   // 권한에 따라 다른 대시보드 렌더링
   return (
-    <>
-      {loginUser.role === "ADMIN" || loginUser.role === "MANAGER" ? (
-        <ManagerDashboard />
-      ) : (
-        <UserDashboard />
-      )}
-    </>
-  );
+  <>
+    {loginUser.role === "ADMIN" || loginUser.role === "MANAGER" ? (
+      <ManagerDashboard />
+    ) : (
+      <UserDashboard
+        statusCounts={statusCounts}
+        setStatusCounts={setStatusCounts}
+        myRequests={myRequests}
+        setMyRequests={setMyRequests}
+        loginUser={loginUser}
+        router={router}
+      />
+    )}
+  </>
+  )
 }
