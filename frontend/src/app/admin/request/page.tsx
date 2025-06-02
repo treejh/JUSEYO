@@ -7,9 +7,14 @@ import { useLoginUser } from "@/stores/auth/loginMember";
 import { useCustomToast } from "@/utils/toast";
 
 interface ApiResponse {
-  success: boolean;
-  message?: string;
-  data?: any;
+  id: number;
+  name: string;
+  owner: string;
+  companyName: string;
+  businessNumber: string;
+  status: string;
+  approval: string;
+  createdAt: string;
 }
 
 interface BizCheckResponse {
@@ -139,7 +144,7 @@ export default function AdminRequest() {
       
       const bizInfo = result.data[0];
       
-      if (bizInfo.tax_type.includes('국세청에 등록되지 않은')) {
+      if (bizInfo.tax_type === "국세청에 등록되지 않은 사업자등록번호입니다.") {
         throw new Error('국세청에 등록되지 않은 사업자등록번호입니다');
       }
 
@@ -173,13 +178,9 @@ export default function AdminRequest() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error('관리 페이지 등록에 실패했습니다');
-      }
-
       const result: ApiResponse = await response.json();
 
-      if (result.success) {
+      if (result.id) {
         if (loginUser) {
           const updatedUser = {
             ...loginUser,
@@ -191,7 +192,7 @@ export default function AdminRequest() {
         toast.success('관리자 페이지가 성공적으로 생성되었습니다');
         router.push('/settings/departments');
       } else {
-        setErrors({ submit: result.message || '관리 페이지 등록에 실패했습니다' });
+        setErrors({ submit: '관리 페이지 등록에 실패했습니다' });
       }
     } catch (error: any) {
       setErrors({ submit: error.message || '요청 처리 중 오류가 발생했습니다' });
