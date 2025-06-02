@@ -74,17 +74,32 @@ public class InventoryInService {
         if(managementDashboard==null){
             throw new BusinessLogicException(ExceptionCode.MANAGEMENT_DASHBOARD_NOT_FOUND);
         }
-        InventoryIn inbound = InventoryIn.builder()
-                .item(item)
-                .quantity(dto.getQuantity())
-                .inbound(dto.getInbound())
-                .supplyReturn(supplyReturn)
-                .category(item.getCategory())
-                .managementDashboard(managementDashboard)
-                .quantity(dto.getQuantity())
-                .image(imageService.saveImage(dto.getImage()))
-                .build();
-        InventoryIn savedInbound = inRepo.save(inbound);
+        InventoryIn savedInbound=null;
+        if(dto.getInbound()==Inbound.RE_PURCHASE&&dto.getImage()==null) {
+            InventoryIn inbound = InventoryIn.builder()
+                    .item(item)
+                    .quantity(dto.getQuantity())
+                    .inbound(dto.getInbound())
+                    .supplyReturn(supplyReturn)
+                    .category(item.getCategory())
+                    .managementDashboard(managementDashboard)
+                    .quantity(dto.getQuantity())
+                    .image(item.getImage())
+                    .build();
+             savedInbound = inRepo.save(inbound);
+        }else {
+            InventoryIn inbound = InventoryIn.builder()
+                    .item(item)
+                    .quantity(dto.getQuantity())
+                    .inbound(dto.getInbound())
+                    .supplyReturn(supplyReturn)
+                    .category(item.getCategory())
+                    .managementDashboard(managementDashboard)
+                    .quantity(dto.getQuantity())
+                    .image(imageService.saveImage(dto.getImage()))
+                    .build();
+             savedInbound = inRepo.save(inbound);
+        }
 
         // 3) 개별자산단위 자동 생성/반납 처리
         if (savedInbound.getInbound() == Inbound.PURCHASE||savedInbound.getInbound() == Inbound.RE_PURCHASE) {

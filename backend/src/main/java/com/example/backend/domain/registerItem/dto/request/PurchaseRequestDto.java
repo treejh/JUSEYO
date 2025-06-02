@@ -15,9 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Schema(description = "비품 구매 요청 DTO")
 public class PurchaseRequestDto {
 
-    @Schema(description = "비품 ID (재구매 시 비품 ID 필수)", example = "1001")
-    private Long itemId;
-
     @NotNull
     @Schema(description = "요청 수량", required = true, example = "10")
     private Long quantity;
@@ -50,11 +47,7 @@ public class PurchaseRequestDto {
     private Long categoryId;
 
     @NotNull
-    @Schema(description = "관리 페이지 ID", example = "2")
-    private Long managementId;
-
-    @NotNull
-    @Schema(description = "구매 유형 (첫구매 / 재구매)", example = "FIRST_PURCHASE")
+    @Schema(description = "구매 유형 (첫구매 / 재구매)")
     private Inbound inbound;
 
     // 생성자, Getter, Setter (생략)

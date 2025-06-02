@@ -31,6 +31,7 @@ export default function AllItemsPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
   const toast = useCustomToast();
   const router = useRouter();
@@ -78,6 +79,21 @@ export default function AllItemsPage() {
 
   useEffect(() => {
     fetchAllItems();
+  }, []);
+
+  // 드롭다운 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.add-menu-container')) {
+        setShowAddMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,28 +144,29 @@ export default function AllItemsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-[1920px] mx-auto">
         {/* 헤더 섹션 */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">비품 관리</h1>
-          <div className="flex gap-4 mb-4 border-b border-gray-200">
-            <Link
-              href="/item/manage"
-              className="px-4 py-3 font-medium text-[#0047AB] border-b-2 border-[#0047AB]"
-            >
-              비품 정보
-            </Link>
-            <Link
-              href="/item/iteminstance/manage"
-              className="px-4 py-3 font-medium text-gray-600 hover:text-[#0047AB] border-b-2 border-transparent hover:border-[#0047AB] transition-all"
-            >
-              재고 단위
-            </Link>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <p className="text-gray-600">비품 정보를 관리할 수 있습니다.</p>
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">비품 관리</h1>
+              <div className="flex gap-4 mb-4 border-b border-gray-200">
+                <Link
+                  href="/item/manage"
+                  className="px-4 py-3 font-medium text-[#0047AB] border-b-2 border-[#0047AB]"
+                >
+                  비품 정보
+                </Link>
+                <Link
+                  href="/item/iteminstance/manage"
+                  className="px-4 py-3 font-medium text-gray-600 hover:text-[#0047AB] border-b-2 border-transparent hover:border-[#0047AB] transition-all"
+                >
+                  재고 단위
+                </Link>
+              </div>
+              <p className="text-gray-600">비품 정보를 관리할 수 있습니다.</p>
+            </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleExcelDownload}
@@ -170,73 +187,82 @@ export default function AllItemsPage() {
                 </svg>
                 엑셀 다운로드
               </button>
-              <Link
-                href="/item/manage/create"
-                className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-[#0047AB] text-white rounded-lg hover:bg-[#003d91] transition-all"
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="relative add-menu-container">
+                <button
+                  onClick={() => setShowAddMenu(!showAddMenu)}
+                  className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-[#0047AB] text-white rounded-lg hover:bg-[#003d91] transition-all"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                비품 추가
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* 검색 + 필터 섹션 */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* 비품 검색 */}
-            <div className="lg:col-span-9">
-              <label className="block text-base font-semibold text-gray-900 mb-2">
-                비품 검색
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <svg
-                    className="h-5 w-5 text-[#0047AB]"
+                    className="w-4 h-4 mr-2"
                     fill="none"
-                    viewBox="0 0 24 24"
                     stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                     />
                   </svg>
-                </div>
-                <input
-                  type="text"
-                  placeholder="비품 이름을 입력하세요"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-[#0047AB] transition-colors hover:border-[#0047AB]/50"
-                />
+                  비품 추가
+                </button>
+                {showAddMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-1">
+                    <Link
+                      href="/item/manage/create"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      새로운 비품 추가
+                    </Link>
+                    <Link
+                      href="/item/manage/purchase"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      기존 비품 추가
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
+          </div>
 
-            {/* 카테고리 드롭박스 */}
-            <div className="lg:col-span-3">
-              <label className="block text-base font-semibold text-gray-900 mb-2">
-                카테고리
-              </label>
-              <div className="relative">
+          {/* 검색 + 필터 섹션 */}
+          <div className="bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* 비품 검색 */}
+              <div className="flex-1">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="비품 이름을 입력하세요"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              {/* 카테고리 드롭박스 */}
+              <div className="md:w-64">
                 <select
                   value={selectedCategory}
                   onChange={handleCategoryChange}
-                  className="w-full px-4 py-3 text-base bg-white border-2 border-gray-200 rounded-lg appearance-none focus:ring-2 focus:ring-[#0047AB] focus:border-[#0047AB] transition-colors hover:border-[#0047AB]/50"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0047AB] focus:border-transparent appearance-none bg-white"
                 >
                   <option value="">전체 카테고리</option>
                   {categories.map((cat) => (
@@ -245,19 +271,6 @@ export default function AllItemsPage() {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                  <svg
-                    className="w-5 h-5 text-[#0047AB]"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
               </div>
             </div>
           </div>
@@ -425,6 +438,6 @@ export default function AllItemsPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
