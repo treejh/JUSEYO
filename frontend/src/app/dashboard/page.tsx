@@ -335,10 +335,6 @@ export default function DashboardPage() {
 
   const [myRequests, setMyRequests] = useState<SupplyRequestResponseDto[]>([]);
   const [isMyRequestsLoading, setIsMyRequestsLoading] = useState(true);
-  const [rentalItems, setRentalItems] = useState<RentalItem[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 5;
 
   // ✅ 여기서만 관리되는 추천 상태
   const [recommendedItems, setRecommendedItems] = useState<string[]>([]);
@@ -351,7 +347,7 @@ export default function DashboardPage() {
         const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
 
-        const [requestsRes, lentItemsRes, statusCountRes] = await Promise.all([
+        const [requestsRes, lentItemsRes] = await Promise.all([
           // 내 요청 내역 API 호출
           fetch(`${API_URL}/api/v1/supply-requests/me`, {
             method: "GET",
@@ -361,18 +357,6 @@ export default function DashboardPage() {
               Accept: "application/json",
             },
           }),
-          // 대여 물품 API 호출
-          fetch(
-            `${API_URL}/api/v1/supply-requests/${loginUser?.id}/lent-items?page=${currentPage}&size=${pageSize}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              credentials: "include",
-            }
-          ),
           // 상태 카운트 API 호출
           fetch(
             `${API_URL}/api/v1/supply/approval-status-counts/${loginUser?.id}`,
@@ -387,14 +371,13 @@ export default function DashboardPage() {
           ),
         ]);
 
-        if (!requestsRes.ok || !lentItemsRes.ok || !statusCountRes.ok) {
+        if (!requestsRes.ok || !lentItemsRes.ok) {
           throw new Error("API 호출 중 오류가 발생했습니다.");
         }
 
-        const [requestsData, lentItemsData, statusCountData] = await Promise.all([
+        const [requestsData, statusCountData] = await Promise.all([
           requestsRes.json(),
           lentItemsRes.json(),
-          statusCountRes.json(),
         ]);
 
         // 최신순 정렬 후 5개만
@@ -406,22 +389,20 @@ export default function DashboardPage() {
           .slice(0, 5);
         
         setMyRequests(sorted);
-        setRentalItems(lentItemsData.content || []);
-        setTotalPages(lentItemsData.totalPages || 1);
         
+
         // 상태 카운트 데이터 매핑
         const mappedStatusCounts = {
           REQUESTED: statusCountData.REQUESTED || 0,
           APPROVED: statusCountData.APPROVED || 0,
           REJECTED: statusCountData.REJECTED || 0,
           RETURN_PENDING: statusCountData.RETURN_PENDING || 0,
-          RETURNED: statusCountData.RETURNED || 0
+          RETURNED: statusCountData.RETURNED || 0,
         };
         setStatusCounts(mappedStatusCounts);
       } catch (e) {
         console.error("데이터 로딩 중 오류 발생:", e);
         setMyRequests([]);
-        setRentalItems([]);
         setStatusCounts({
           REQUESTED: 0,
           APPROVED: 0,
@@ -435,8 +416,10 @@ export default function DashboardPage() {
       }
     };
 
-    if (loginUser?.id) fetchMyRequests();
-  }, [loginUser?.id, currentPage, pageSize]);
+    if (loginUser?.id) {
+      fetchMyRequests();
+    }
+  }, [loginUser?.id]);
 
   // 선택된 년도의 데이터만 필터링
   const filteredMonthlyData = useMemo(() => {
@@ -1210,6 +1193,49 @@ const UserDashboard = ({
   // ✅ 여기서만 관리되는 추천 상태
   const [recommendedItems, setRecommendedItems] = useState<string[]>([]);
   const [isRecommendedItemsLoading, setIsRecommendedItemsLoading] = useState(false);
+
+    useEffect(() => {
+    const fetchRentalItems = async () => {
+      try {
+        setIsLoading(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
+
+        const response = await fetch(
+          `${API_URL}/api/v1/supply-requests/${loginUser?.id}/lent-items?page=${currentPage}&size=${pageSize}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            credentials: "include",
+          }
+        );
+        if (!response.ok) {
+          if (response.status === 403) {
+            router.replace("/login");
+            throw new Error("로그인이 필요합니다.");
+          }
+          throw new Error("대여 내역을 불러오는데 실패했습니다.");
+        }
+
+        const data = await response.json();
+        setRentalItems(data.content || []);
+        setTotalPages(data.totalPages || 1);
+      } catch (error) {
+        console.error("렌탈 내역 로딩 에러:", error);
+        setRentalItems([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // 로그인된 사용자가 있을 때만 API 호출
+    if (loginUser?.id) {
+      fetchRentalItems();
+    }
+  }, [loginUser?.id, currentPage, pageSize, router]);
 
   useEffect(() => {
 
