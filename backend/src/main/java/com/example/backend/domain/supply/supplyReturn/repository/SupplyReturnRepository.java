@@ -76,6 +76,9 @@ public interface SupplyReturnRepository extends JpaRepository<SupplyReturn, Long
             @Param("status") Status status,
             Pageable pageable);
 
+    @Query("SELECT s.approvalStatus, COUNT(s) FROM SupplyReturn s WHERE s.user.id = :userId GROUP BY s.approvalStatus")
+    List<Object[]> countByApprovalStatusByUserId(@Param("userId") Long userId);
+
 
 
 

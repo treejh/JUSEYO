@@ -114,6 +114,9 @@ public class SecurityConfigJuseyo {
                         .requestMatchers(HttpMethod.POST, "/api/v1/chase-items/chase-items").hasAnyRole("MANAGER","ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/chase-items/**").hasAnyRole("MANAGER","ADMIN")
 
+                        //요청 카운트
+                        .requestMatchers(HttpMethod.GET, "/api/v1/supply/**").hasAnyRole("USER","MANAGER","ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(userStatusCheckFilter, UsernamePasswordAuthenticationFilter.class) // UserStatusCheckFilter 추가
