@@ -86,7 +86,15 @@ interface SupplyRequest {
   productName: string;
   quantity: number;
   useDate: string;
-  approvalStatus: "REQUESTED" | "APPROVED" | "REJECTED";
+  approvalStatus:
+    | "REQUESTED"
+    | "APPROVED"
+    | "REJECTED"
+    | "RETURN_PENDING"
+    | "RETURNED";
+  rental: boolean;
+  returnDate?: string;
+  createdAt: string;
 }
 
 interface StatusCount {
@@ -130,6 +138,30 @@ interface Notification {
     | "NEW_USER_REJECTED";
   createdAt: string;
   readStatus: boolean;
+}
+
+interface SupplyRequestResponseDto {
+  id: number;
+  itemId: number;
+  userId: number;
+  userName: string;
+  managementId: number;
+  serialNumber: string;
+  reRequest: boolean;
+  productName: string;
+  quantity: number;
+  purpose: string;
+  useDate: string;
+  returnDate: string | null;
+  rental: boolean;
+  approvalStatus:
+    | "REQUESTED"
+    | "APPROVED"
+    | "REJECTED"
+    | "RETURN_PENDING"
+    | "RETURNED";
+  createdAt: string;
+  modifiedAt: string;
 }
 
 export default function DashboardPage() {
@@ -346,12 +378,13 @@ export default function DashboardPage() {
         // 최신순 정렬 후 5개만
         const sorted = data
           .sort(
-            (a: any, b: any) =>
+            (a: SupplyRequestResponseDto, b: SupplyRequestResponseDto) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )
           .slice(0, 5);
         setMyRequests(sorted);
       } catch (e) {
+        console.error("요청 내역 로딩 에러:", e);
         setMyRequests([]);
       } finally {
         setIsMyRequestsLoading(false);
@@ -557,6 +590,10 @@ export default function DashboardPage() {
         return "승인됨";
       case "REJECTED":
         return "거부됨";
+      case "RETURN_PENDING":
+        return "반납 대기중";
+      case "RETURNED":
+        return "반납 완료";
       default:
         return "알 수 없음";
     }
@@ -1125,6 +1162,36 @@ export default function DashboardPage() {
           const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
           if (!API_URL) throw new Error("API URL이 설정되지 않았습니다.");
 
+          // 상태 카운트 API 호출
+          const statusResponse = await fetch(
+            `${API_URL}/api/v1/supply-requests/status-count/${loginUser?.id}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              credentials: "include",
+            }
+          );
+
+          if (!statusResponse.ok) {
+            throw new Error("상태 카운트를 불러오는데 실패했습니다.");
+          }
+
+          const statusData = await statusResponse.json();
+          console.log("상태 카운트 데이터:", statusData); // 디버깅용 로그
+
+          if (isMounted) {
+            setStatusCounts({
+              REQUESTED: statusData.REQUESTED || 0,
+              APPROVED: statusData.APPROVED || 0,
+              REJECTED: statusData.REJECTED || 0,
+              RETURN_PENDING: statusData.RETURN_PENDING || 0,
+              RETURNED: statusData.RETURNED || 0,
+            });
+          }
+
           // 대여 물품 API 호출
           const rentalResponse = await fetch(
             `${API_URL}/api/v1/supply-requests/${loginUser?.id}/lent-items?page=${currentPage}&size=${pageSize}`,
@@ -1156,7 +1223,7 @@ export default function DashboardPage() {
             setTotalPages(rentalData.totalPages);
           }
 
-          // 추천 비품 API 호출 추가
+          // 추천 비품 API 호출
           const recommendResponse = await fetch(
             `${API_URL}/api/v1/recommend?userId=${loginUser?.id}`,
             {
@@ -1207,69 +1274,6 @@ export default function DashboardPage() {
               }))
             );
           }
-
-          // 두 API 호출을 병렬로 처리
-          const [statusResponse, requestsResponse] = await Promise.all([
-            fetch(
-              `${API_URL}/api/v1/supply-requests/status-count/${loginUser?.id}`,
-              {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  Accept: "application/json",
-                },
-                credentials: "include",
-              }
-            ),
-            fetch(`${API_URL}/api/v1/supply-requests/me`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              credentials: "include",
-            }),
-          ]);
-
-          if (!isMounted) return;
-
-          if (
-            statusResponse.status === 403 ||
-            requestsResponse.status === 403
-          ) {
-            router.replace("/login");
-            return;
-          }
-
-          if (!statusResponse.ok || !requestsResponse.ok) {
-            throw new Error("데이터를 불러오는데 실패했습니다.");
-          }
-
-          const [statusData, requestsData] = await Promise.all([
-            statusResponse.json(),
-            requestsResponse.json(),
-          ]);
-
-          if (!isMounted) return;
-
-          setStatusCounts({
-            REQUESTED: statusData.REQUESTED || 0,
-            APPROVED: statusData.APPROVED || 0,
-            REJECTED: statusData.REJECTED || 0,
-            RETURN_PENDING: statusData.RETURN_PENDING || 0,
-            RETURNED: statusData.RETURNED || 0,
-          });
-
-          // 날짜 기준으로 정렬하여 최신 5개만 선택
-          const sortedRequests = requestsData
-            .sort((a: SupplyRequest, b: SupplyRequest) => {
-              const dateA = new Date(a.useDate).getTime() || 0;
-              const dateB = new Date(b.useDate).getTime() || 0;
-              return dateB - dateA;
-            })
-            .slice(0, 5);
-
-          setUserRequests(sortedRequests);
         } catch (error) {
           console.error("데이터 로딩 중 오류 발생:", error);
           if (
@@ -1290,7 +1294,7 @@ export default function DashboardPage() {
       return () => {
         isMounted = false;
       };
-    }, [loginUser?.id, router, currentPage]); // currentPage 의존성 추가
+    }, [loginUser?.id, router, currentPage]);
 
     // 페이지 변경 핸들러
     const handlePageChange = (page: number) => {
