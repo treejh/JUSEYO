@@ -353,13 +353,22 @@ public class SupplyRequestService {
     public Map<ApprovalStatus, Long> getSupplyRequestCountsByApprovalStatus(Long userId) {
         List<Object[]> results = repo.countByApprovalStatusByUserId(userId);
         Map<ApprovalStatus, Long> countMap = new HashMap<>();
+
+        // 모든 상태를 0으로 초기화
+        for (ApprovalStatus status : ApprovalStatus.values()) {
+            countMap.put(status, 0L);
+        }
+
+        // 실제 데이터로 업데이트
         for (Object[] result : results) {
             ApprovalStatus status = (ApprovalStatus) result[0];
             Long count = (Long) result[1];
             countMap.put(status, count);
         }
+
         return countMap;
     }
+
 
     @Transactional(readOnly = true)
     public Page<LentItemDto> getLentItems(Long userId, Pageable pageable) {
