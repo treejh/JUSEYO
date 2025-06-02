@@ -160,7 +160,7 @@ JWT 인증: 사용자 인증 및 권한 관리
     
     
 ## 6-2 ERD
-    
+![Image](https://github.com/user-attachments/assets/db0a298f-f5e6-4a5c-917a-ea8923600a3e)
 <br/>
 <br/>
 # 7. Project Structure (프로젝트 구조) 
@@ -366,35 +366,3 @@ infra/
 
 <br/>
 
------------------------------------------------------------------------------------
-<img src="https://capsule-render.vercel.app/api?type=waving&&color=0:C9E6F0,100:78B3CE&height=300&section=header&text=RE:cord&fontColor=FFFFFF&fontSize=90" style="width: 100%; height: auto;" />
-
-![Image](https://github.com/user-attachments/assets/d39a6389-90ef-4a1f-b896-7abff7d848f8)
----
-
-
-
-## 🎥 유튜브 시연 영상
-
-📺 [https://youtu.be/pr629YElCp4](https://youtu.be/pr629YElCp4)
-
----
-
-
-
----
-
-## 📝 프로젝트 개요
-
-### 📌 DB ERD
-
-<img width="1414" alt="ERD" src="https://github.com/user-attachments/assets/206afb94-a902-4eae-86d3-b012c89ec8de" />
-
----
-
-### 📑 API 명세서 (Swagger)
-
-> Swagger를 통해 API 목록을 확인할 수 있습니다.
-
-- 🔗 [Swagger API 문서 보러가기](https://api.blog.re-cord.site/swagger-ui/index.html)
----
