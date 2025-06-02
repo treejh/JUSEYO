@@ -149,7 +149,7 @@ public class RegisterItemService {
                 .managementDashboard(md)
                 .category(category)
                 .item(item)
-                .image(imageService.saveImage(dto.getImage()))
+                .image(item.getImage())
                 .quantity(dto.getQuantity())
                 .purchaseSource(dto.getPurchaseSource())
                 .purchaseDate(LocalDateTime.now())
