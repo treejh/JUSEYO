@@ -4,6 +4,7 @@ import com.example.backend.domain.item.dto.response.ItemLiteResponseDto;
 import com.example.backend.domain.item.dto.response.ItemResponseDto;
 import com.example.backend.domain.item.dto.response.ItemSearchProjection;
 import com.example.backend.domain.item.entity.Item;
+import com.example.backend.domain.managementDashboard.entity.ManagementDashboard;
 import com.example.backend.enums.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     // 이름으로 비품 조회
     Optional<Item> findByNameAndStatus(String name, Status status);
+
+    Optional<Item> findByManagementDashboardAndNameAndStatus(ManagementDashboard managementDashboard, String name, Status status);
 
     // 관리페이지별 비품 목록 조회
     List<Item> findAllByManagementDashboardIdAndStatus(Long managementDashboardId, Status status);
