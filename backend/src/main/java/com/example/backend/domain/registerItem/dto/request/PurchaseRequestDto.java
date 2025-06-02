@@ -50,10 +50,6 @@ public class PurchaseRequestDto {
     private Long categoryId;
 
     @NotNull
-    @Schema(description = "관리 페이지 ID", example = "2")
-    private Long managementId;
-
-    @NotNull
     @Schema(description = "구매 유형 (첫구매 / 재구매)", example = "FIRST_PURCHASE")
     private Inbound inbound;
 

@@ -54,7 +54,9 @@ public class RegisterItemService {
     // 제품 구매 등록
     @Transactional
     public ItemResponseDto registerItem(PurchaseRequestDto dto) {
-        ManagementDashboard md = findDashboard(dto.getManagementId());
+        Long id=tokenService.getIdFromToken();
+        User user=userRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        ManagementDashboard md = findDashboard(user.getManagementDashboard().getId());
         Category category = findCategory(dto.getCategoryId());
 
         Item item;
@@ -84,6 +86,7 @@ public class RegisterItemService {
     }
 
     private Item createNewItem(PurchaseRequestDto dto) {
+        Category category=categoryRepo.findById(dto.getCategoryId()).orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         ItemRequestDto itemDto = ItemRequestDto.builder()
                 .name(dto.getItemName())
                 .minimumQuantity(dto.getMinimumQuantity())
@@ -94,7 +97,7 @@ public class RegisterItemService {
                 .isReturnRequired(dto.getIsReturnRequired())
                 .image(dto.getImage())
                 .categoryId(dto.getCategoryId())
-                .managementId(dto.getManagementId())
+                .managementId(category.getManagementDashboard().getId())
                 .build();
 
         return itemRepository.findById(itemService.createItem(itemDto).getId())
@@ -122,7 +125,7 @@ public class RegisterItemService {
                 .quantity(dto.getQuantity())
                 .inbound(dto.getInbound())
                 .categoryId(dto.getCategoryId())
-                .managementId(dto.getManagementId())
+                .managementId(item.getManagementDashboard().getId())
                 .image(dto.getImage())
                 .build();
         inventoryInService.addInbound(inDto);

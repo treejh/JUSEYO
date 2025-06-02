@@ -195,7 +195,7 @@ export default function ItemInstanceManagePage() {
                       "NO", // "ID"에서 "NO"로 변경
                       "품목명",
                       "인스턴스 코드",
-                      "출고 유형",
+                      "상태",
                       "대여자",
                       "반납일",
                       "생성일",
@@ -228,7 +228,7 @@ export default function ItemInstanceManagePage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                          {inst.outbound}
+                          {inst.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

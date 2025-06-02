@@ -189,31 +189,48 @@ public class SupplyRequestService {
 
             // 2) 승인 처리 분기
             if (req.isRental()) {
-                // ── 대여 승인: 인스턴스 생성 ──
+                Item item = req.getItem();
+                // ── 대여 승인: 사용 가능한 상태인 인스턴스 갯수 만큼 대여 처리 , 사용 가능 수량 차감 ──
                 for (int i = 0; i < req.getQuantity(); i++) {
-                    ItemInstance inst = ItemInstance.builder()
-                            .item(req.getItem())
-                            .instanceCode(generateInstanceCode(req.getItem()))
-                            .outbound(Outbound.LEND)
-                            .status(Status.ACTIVE)
-                            .image(req.getItem().getImage())
-                            .finalImage(req.getItem().getImage())
-                            .borrower(req.getUser())
-                            .supplyRequest(req)
-                            .build();
-                    instanceRepo.save(inst);
+                    ItemInstance inst = instanceRepo
+                            .findFirstByItemIdAndOutboundAndStatus(item.getId(), Outbound.AVAILABLE, Status.ACTIVE)
+                            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+                    UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
+                    upd.setOutbound(Outbound.LEND);
+                    upd.setFinalImage(item.getImage());
+                    instanceService.updateStatus(inst.getId(), upd);
                 }
+
+                long qty = req.getQuantity();
+
+                if (item.getTotalQuantity() < qty || item.getAvailableQuantity() < qty) {
+                    throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
+                }
+                item.setAvailableQuantity(item.getAvailableQuantity() - qty);
+                itemRepo.save(item);
+
                 // 대여 승인 시에도 APPROVED 상태로 설정
                 req.setApprovalStatus(ApprovalStatus.APPROVED);
                 issueMsg = "대여 승인 자동 기록";
             } else {
-                // ── 비대여 승인: totalQuantity & availableQuantity 차감 ──
                 Item item = req.getItem();
+                // ── 비대여 승인 ──
+                for (int i = 0; i < req.getQuantity(); i++) {
+                    ItemInstance inst = instanceRepo
+                            .findFirstByItemIdAndOutboundAndStatus(item.getId(), Outbound.AVAILABLE, Status.ACTIVE)
+                            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ITEM_INSTANCE_NOT_FOUND));
+                    UpdateItemInstanceStatusRequestDto upd = new UpdateItemInstanceStatusRequestDto();
+                    upd.setOutbound(Outbound.LEND);
+                    upd.setFinalImage(item.getImage());
+                    instanceService.updateStatus(inst.getId(), upd);
+                }
+
                 long qty = req.getQuantity();
+
                 if (item.getTotalQuantity() < qty || item.getAvailableQuantity() < qty) {
                     throw new BusinessLogicException(ExceptionCode.INSUFFICIENT_STOCK);
                 }
-                item.setTotalQuantity(item.getTotalQuantity() - qty);
+                item.setAvailableQuantity(item.getAvailableQuantity() - qty);
                 itemRepo.save(item);
 
                 req.setApprovalStatus(ApprovalStatus.APPROVED);
