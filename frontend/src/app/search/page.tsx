@@ -291,7 +291,6 @@ export default function SearchPage() {
       }
     }
   }, [isSearched, initializeSearchPage]);
-
   // 검색 실행
   const handleSearch = async (searchText: string, page: number = 0) => {
     if (!searchText.trim()) {
