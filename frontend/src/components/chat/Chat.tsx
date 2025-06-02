@@ -332,12 +332,12 @@ const Chat: React.FC<Props> = ({ roomId, client, loginUserId, onClose }) => {
             title={
               roomInfo?.roomType === "GROUP"
                 ? roomInfo.roomName
-                : `${opponentInfo?.name || "종료된 채팅방"} 채팅방`
+                : `${opponentInfo?.name || "종료된 "} 채팅방`
             }
           >
             {roomInfo?.roomType === "GROUP"
               ? roomInfo.roomName
-              : `${opponentInfo?.name || "종료된 채팅방"} 채팅방`}
+              : `${opponentInfo?.name || "종료된 "} 채팅방`}
           </h2>
           {roomInfo?.roomType !== "GROUP" && opponentInfo?.department && (
             <p
