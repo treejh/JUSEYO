@@ -20,7 +20,6 @@ import {
 } from "@/utils/phoneValidation";
 import { useCustomToast } from "@/utils/toast";
 
-
 const UserProfilePage = () => {
   const { loginUser } = useGlobalLoginUser(); // 현재 로그인한 유저 정보
   const [isEmailLoading, setIsEmailLoading] = useState(false);
@@ -56,7 +55,7 @@ const UserProfilePage = () => {
   const [phoneAuthCode, setPhoneAuthCode] = useState(""); // 핸드폰 인증 코드
   const [isPhoneAuthLoading, setIsPhoneAuthLoading] = useState(false); // 로딩 상태
   const [phoneTimer, setPhoneTimer] = useState(120); // 2분 타이머
-  const toast  = useCustomToast();
+  const toast = useCustomToast();
 
   const handleSaveName = async () => {
     try {
@@ -65,7 +64,9 @@ const UserProfilePage = () => {
       setUserInfo((prev) => ({ ...prev, name: data.data.name }));
       setIsEditing((prev) => ({ ...prev, name: false }));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(
+        error instanceof Error ? error.message : "오류가 발생했습니다."
+      );
     }
   };
 
@@ -102,7 +103,9 @@ const UserProfilePage = () => {
         }
       }, 1000);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(
+        error instanceof Error ? error.message : "오류가 발생했습니다."
+      );
       setIsEmailChecked(false); // 실패 시 재확인 가능하게
     } finally {
       setIsEmailLoading(false);
@@ -116,7 +119,9 @@ const UserProfilePage = () => {
       toast.success("인증이 완료되었습니다.");
       setIsVerified(true);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(
+        error instanceof Error ? error.message : "오류가 발생했습니다."
+      );
     }
   };
 
@@ -134,7 +139,9 @@ const UserProfilePage = () => {
       setIsVerified(false); // 인증 상태 초기화
       setIsEmailChecked(false); // 이메일 중복 확인 상태 초기화
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(
+        error instanceof Error ? error.message : "오류가 발생했습니다."
+      );
     }
   };
 
@@ -145,7 +152,9 @@ const UserProfilePage = () => {
       setUserInfo((prev) => ({ ...prev, phoneNumber: data.data.phoneNumber }));
       setIsEditing((prev) => ({ ...prev, phoneNumber: false }));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(
+        error instanceof Error ? error.message : "오류가 발생했습니다."
+      );
     }
   };
 
@@ -157,7 +166,9 @@ const UserProfilePage = () => {
       setConfirmPassword("");
       setCurrentPassword("");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(
+        error instanceof Error ? error.message : "오류가 발생했습니다."
+      );
     }
   };
 
@@ -166,7 +177,9 @@ const UserProfilePage = () => {
       !userInfo.phoneNumber ||
       !/^\d{3}-\d{4}-\d{4}$/.test(userInfo.phoneNumber)
     ) {
-      toast.error("올바른 핸드폰 번호 형식을 입력해주세요. (예: 010-1234-5678)");
+      toast.error(
+        "올바른 핸드폰 번호 형식을 입력해주세요. (예: 010-1234-5678)"
+      );
       return;
     }
 
@@ -189,7 +202,9 @@ const UserProfilePage = () => {
         });
       }, 1000);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(
+        error instanceof Error ? error.message : "오류가 발생했습니다."
+      );
       setIsPhoneChecked(false); // 실패 시 재확인 가능하게
     } finally {
       setIsPhoneAuthLoading(false);
@@ -225,7 +240,9 @@ const UserProfilePage = () => {
       setIsPhoneVerified(false); // 인증 상태 초기화
       setIsPhoneChecked(false); // 핸드폰 중복 확인 상태 초기화
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "오류가 발생했습니다.");
+      toast.error(
+        error instanceof Error ? error.message : "오류가 발생했습니다."
+      );
     }
   };
 
@@ -277,7 +294,7 @@ const UserProfilePage = () => {
         <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
           <h3 className="text-sm font-medium text-gray-500">이름</h3>
           {isEditing.name ? (
-            <div className="flex gap-2 mt-2">
+            <div className="flex flex-row gap-2 mt-2">
               <input
                 type="text"
                 value={userInfo.name}
@@ -288,7 +305,7 @@ const UserProfilePage = () => {
               />
               <button
                 onClick={handleSaveName}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                className=" whitespace-nowrap px-4 py-2 bg-blue-500 text-white rounded-lg"
               >
                 저장
               </button>
@@ -297,7 +314,7 @@ const UserProfilePage = () => {
                   setUserInfo((prev) => ({ ...prev, name: loginUser.name })); // 초기 값으로 복원
                   setIsEditing((prev) => ({ ...prev, name: false })); // 수정 모드 종료
                 }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg"
+                className=" whitespace-nowrap px-4 py-2 bg-gray-300 text-gray-700 rounded-lg"
               >
                 취소
               </button>
