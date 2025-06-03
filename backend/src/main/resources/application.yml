@@ -37,7 +37,7 @@ spring:
         enabled: true
 
 recommend:
-  flask-url: https://www.app.jusey0.site:5000
+  flask-url: http://api.jusey0.site:5000/
 
 
 
@@ -54,7 +54,7 @@ custom:
     frontUrl: "http://${custom.dev.cookieDomain}:3000"
     backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
   prod:
-    cookieDomain: booktri.site #api.booktri.site
+    cookieDomain: jusey0.site #api.booktri.site
     frontUrl: "https://www.${custom.prod.cookieDomain}"
     backUrl: "https://api.${custom.prod.cookieDomain}"
   site:
