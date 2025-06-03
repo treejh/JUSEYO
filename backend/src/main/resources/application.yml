@@ -37,7 +37,7 @@ spring:
         enabled: true
 
 recommend:
-  flask-url: http://flask-recommender:5000/
+  flask-url: https://www.app.jusey0.site:5000
 
 
 
