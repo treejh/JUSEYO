@@ -204,7 +204,9 @@ export default function ClientLayout({
         toast.error("요청 상태중인 유저 입니다");
         requestedAlertedRef.current = true;
       }
-      router.replace("/");
+      setTimeout(() => {
+        router.replace("/");
+      }, 3000); // 3초 후 이동
       return;
     }
 
