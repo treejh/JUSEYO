@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s # 15초마다 스크랩
+
+scrape_configs:
+  - job_name: "prometheus"
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ["host.docker.internal:8080"]
+## Prometheus가 로컬(Spring Boot 앱) localhost:8080을 직접 접근x
+## 도커 컨테이너 → 로컬 호스트 통신은 host.docker.internal 사용
