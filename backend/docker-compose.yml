@@ -77,16 +77,17 @@ services:
     image: grafana/k6
     container_name: juseyo-k6
     volumes:
-      - ./k6:/scripts  # k6 테스트 스크립트 디렉토리 마운트
+      - ./k6:/scripts
     command: run /scripts/load-test.js
     environment:
       K6_OUT: prometheus
     depends_on:
-      - juseyo-prometheus
-      - juseyo-redis
-      - juseyo-mysql-container
+      - prometheus
+      - redis
+      - mysql
     networks:
       - juseyo-network
+
 
 
 

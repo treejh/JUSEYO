@@ -7,7 +7,7 @@ export const options = {
 };
 
 export default function () {
-    const res = http.get('http://host.docker.internal:8080/api/v1/some-endpoint');
+    const res = http.get('http://host.docker.internal:8080/actuator/health');
     check(res, { 'status was 200': (r) => r.status === 200 });
     sleep(1); // 1초 대기
 }
