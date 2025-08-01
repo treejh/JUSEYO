@@ -1,4 +1,4 @@
-version: '3' # Docker Compose 버전 명시
+#version: '3' # Docker Compose 버전 명시
 
 services:
   mysql:
@@ -43,16 +43,65 @@ services:
       context: ./recommendation-app
     container_name: flask-recommender
     ports:
-      - "5000:5000"
+      - "5001:5000"
     restart: unless-stopped
     networks:
       - juseyo-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --web.enable-remote-write-receiver
+      - --enable-feature=native-histograms
+      - --config.file=/etc/prometheus/prometheus.yml
+    container_name: juseyo-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - juseyo-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: juseyo-grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - juseyo-network
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  k6:
+    image: grafana/k6
+    container_name: juseyo-k6
+    volumes:
+      - ./k6:/scripts
+    command: run /scripts/load-test.js
+    environment:
+      K6_OUT: experimental-prometheus-rw
+      K6_PROMETHEUS_RW_SERVER_URL: http://prometheus:9090/api/v1/write
+      K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM: "true"
+
+    depends_on:
+      - prometheus
+      - redis
+      - mysql
+    networks:
+      - juseyo-network
+
 
 
 
 volumes:
   mysql-data:
   redis-data:
+  grafana-data:
 
 networks:
   juseyo-network:

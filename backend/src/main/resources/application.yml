@@ -62,3 +62,20 @@ custom:
     cookieDomain: "${custom.dev.cookieDomain}"
     frontUrl: "${custom.dev.frontUrl}"
     backUrl: "${custom.dev.backUrl}"
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+          - loggers
+          - threaddump
+          - prometheus # 추가
+    metrics:
+      export:
+        prometheus:
+          enabled: true

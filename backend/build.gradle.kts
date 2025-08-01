@@ -89,6 +89,10 @@ dependencies {
     //누리고
     implementation("net.nurigo:sdk:4.2.7") // 누리고 SDK
 
+    //프로메테우스
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+
 }
 
 
@@ -119,4 +123,5 @@ tasks.withType<Test> {
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     mainClass.set("com.example.backend.BackendApplication")
+
 }
