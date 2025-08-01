@@ -50,6 +50,10 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    command:
+      - --web.enable-remote-write-receiver
+      - --enable-feature=native-histograms
+      - --config.file=/etc/prometheus/prometheus.yml
     container_name: juseyo-prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
@@ -58,7 +62,7 @@ services:
     networks:
       - juseyo-network
     extra_hosts:
-      - "host.docker.internal:host-gateway" # 🔥 이거 추가됨!
+      - "host.docker.internal:host-gateway"
 
   grafana:
     image: grafana/grafana:latest
@@ -80,7 +84,10 @@ services:
       - ./k6:/scripts
     command: run /scripts/load-test.js
     environment:
-      K6_OUT: prometheus
+      K6_OUT: experimental-prometheus-rw
+      K6_PROMETHEUS_RW_SERVER_URL: http://prometheus:9090/api/v1/write
+      K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM: "true"
+
     depends_on:
       - prometheus
       - redis

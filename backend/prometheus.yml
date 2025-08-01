@@ -8,3 +8,7 @@ scrape_configs:
       - targets: ["host.docker.internal:8080"]
 ## Prometheus가 로컬(Spring Boot 앱) localhost:8080을 직접 접근x
 ## 도커 컨테이너 → 로컬 호스트 통신은 host.docker.internal 사용
+  - job_name: 'k6'
+    static_configs:
+      - targets: [ 'k6:5667' ]
+
