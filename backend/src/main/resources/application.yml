@@ -81,3 +81,8 @@ management:
       export:
         prometheus:
           enabled: true
+
+#redisson:
+#  config: |
+#    singleServerConfig:
+#      address: "redis://localhost:6379"
