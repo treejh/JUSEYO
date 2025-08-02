@@ -185,12 +185,10 @@ public class ChatMessageService {
 
         List<ChatResponseDto> cached = chatMessageRedisService.getCachedMessages(roomId, pageable.getPageNumber());
 
-        // 🔁 캐시 HIT → 락 안 거치고 바로 반환
-        if (cached != null && !cached.isEmpty()) {
+        // ✅ null만 MISS → empty 포함해서 HIT
+        if (cached != null) {
             return new PageImpl<>(cached, pageable, cached.size());
         }
-
-        // 실제 메시지가 없다는 표시를 Redis에 남김 → 예: "__empty__" 같은 마커
 
         // 🔒 캐시 MISS → 락 거는 메서드 따로 분리
         return getChatMessageWithLock(roomId, pageable);

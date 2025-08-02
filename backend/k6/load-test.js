@@ -8,7 +8,7 @@ export const options = {
 
 const BASE_URL = 'http://host.docker.internal:8080';
 const LOGIN_ENDPOINT = `${BASE_URL}/api/v1/users/login`;
-const CHAT_ENDPOINT = (roomId, page, size = 20) => `${BASE_URL}/api/v1/chats/${roomId}?page=${page}&size=${size}`;
+const CHAT_ENDPOINT = (roomId, page, size = 10) => `${BASE_URL}/api/v1/chats/${roomId}?page=${page}&size=${size}`;
 
 // 로그인 후 Authorization 헤더에서 accessToken 추출
 export function setup() {
@@ -36,7 +36,7 @@ export function setup() {
 
 export default function (data) {
     const roomId = 1;
-    const page = Math.floor(Math.random() * 5); // page=0~4
+    const page = Math.floor(Math.random() * 4) + 1; // page = 1~4
 
     const res = http.get(CHAT_ENDPOINT(roomId, page), {
         headers: {
@@ -46,9 +46,23 @@ export default function (data) {
 
     check(res, {
         '✅ 200 OK': (r) => r.status === 200,
-        '✅ contains messages': (r) =>
-            r.body && (r.body.includes('message') || r.body.includes('content')),
+        '✅ 응답 구조 확인 (data.content 존재)': (r) => {
+            try {
+                const json = JSON.parse(r.body);
+                const exists = json.data && Array.isArray(json.data.content);
+                if (!exists) {
+                    // console.error(`❌ content 필드 누락 또는 비정상 구조: ${r.body}`);
+                } else if (json.data.content.length === 0) {
+                    //console.log(`ℹ️ 빈 content 배열 (정상 처리): page=${json.data.pageable?.pageNumber}`);
+                }
+                return exists;
+            } catch (e) {
+                console.error(`❌ JSON 파싱 실패: ${r.body}`);
+                return false;
+            }
+        }
     });
+
     sleep(1);
 }
 

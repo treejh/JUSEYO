@@ -62,7 +62,6 @@ public class ChatMessageController {
                                             @RequestParam(name = "page", defaultValue = "1") int page,
                                             @RequestParam(name="size", defaultValue = "20") int size) {
 
-
         Page<ChatResponseDto> responseMessage = chatMessageService.getChatMessage(roomId,
                 PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
 

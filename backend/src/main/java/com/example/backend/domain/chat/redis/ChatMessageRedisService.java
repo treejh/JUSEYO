@@ -4,6 +4,7 @@ import com.example.backend.domain.chat.chatMessage.dto.response.ChatResponseDto;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,19 @@ public class ChatMessageRedisService {
     public List<ChatResponseDto> getCachedMessages(Long roomId, int page) {
         String key = getMessageCacheKey(roomId, page);
         List<Object> cached = chatMessageRedisTemplate.opsForList().range(key, 0, -1);
+
         if (cached == null || cached.isEmpty()) return null;
-        return cached.stream().map(obj -> (ChatResponseDto) obj).toList();
+
+        // ❗ "__empty__" 마커 확인 (직렬화 방식에 따라 문자열 비교 주의)
+        if (cached.size() == 1 && cached.get(0) instanceof String str && "__empty__".equals(str)) {
+            return Collections.emptyList();
+        }
+
+        // ✅ 안전하게 캐스팅
+        return cached.stream()
+                .filter(ChatResponseDto.class::isInstance)
+                .map(ChatResponseDto.class::cast)
+                .toList();
     }
 
 
@@ -47,7 +59,6 @@ public class ChatMessageRedisService {
             return;
         }
 
-        String key = getMessageCacheKey(roomId, page);
 
         // 기존 데이터 제거 후 새로 삽입
         chatMessageRedisTemplate.delete(key);
