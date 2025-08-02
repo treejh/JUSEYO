@@ -11,6 +11,7 @@ import com.example.backend.domain.chat.chatUser.entity.ChatUser;
 import com.example.backend.domain.chat.chatUser.repository.ChatUserRepository;
 import com.example.backend.domain.chat.chatroom.entity.ChatRoom;
 import com.example.backend.domain.chat.chatroom.service.ChatRoomService;
+import com.example.backend.domain.chat.redis.RedisCacheLock;
 import com.example.backend.enums.ChatMessageStatus;
 import com.example.backend.enums.ChatStatus;
 import com.example.backend.global.exception.BusinessLogicException;
@@ -20,12 +21,14 @@ import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.service.UserService;
 import com.example.backend.global.utils.dto.ApiResponse;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -147,24 +150,43 @@ public class ChatMessageService {
         return chatMessageRepository.save(chatMessage);
     }
 
-    public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable){
+//    public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable){
+//        User user = userService.findById(tokenService.getIdFromToken());
+//        ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
+//
+//        //참여중인 채팅방 아니면 메시지 조회 못함
+//        if(chatUserRepository.findByUserAndChatRoom(user,chatRoom).isEmpty()){
+//            throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
+//        }
+//        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom,pageable);
+//
+//        return chatMessagePage.map(ChatResponseDto::new);
+//    }
+
+    @RedisCacheLock(key = "#roomId")
+    public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable) {
         User user = userService.findById(tokenService.getIdFromToken());
         ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
 
-        //참여중인 채팅방 아니면 메시지 조회 못함
-        if(chatUserRepository.findByUserAndChatRoom(user,chatRoom).isEmpty()){
+        if (chatUserRepository.findByUserAndChatRoom(user, chatRoom).isEmpty()) {
             throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
-        };
-        List<ChatResponseDto> cached = redisTemplate.opsForList().range(key, 0, -1);
-        if (cached != null && !cached.isEmpty()) return cached; // 캐시 HIT
+        }
 
+        String redisKey = "chatroom:" + roomId + ":messages:page:0";
+        List<ChatResponseDto> cached = redisTemplate.opsForList().range(redisKey, 0, -1);
+        if (cached != null && !cached.isEmpty()) {
+            return new PageImpl<>(cached, pageable, cached.size());
+        }
 
-        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom,pageable);
+        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom, pageable);
+        List<ChatResponseDto> result = chatMessagePage.map(ChatResponseDto::new).toList();
 
-        return chatMessagePage.map(ChatResponseDto::new);
+        redisTemplate.opsForList().rightPushAll(redisKey, result.toArray());
+        redisTemplate.expire(redisKey, Duration.ofSeconds(60));
 
-
+        return new PageImpl<>(result, pageable, result.size());
     }
+
 
 
 }

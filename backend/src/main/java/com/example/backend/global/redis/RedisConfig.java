@@ -1,5 +1,6 @@
 package com.example.backend.global.redis;
 
+import com.example.backend.domain.chat.chatMessage.dto.response.ChatResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,6 +59,25 @@ public class RedisConfig {
 
         return template;
     }
+
+    /**
+     * 채팅 메시지 전용 RedisTemplate 설정
+     * - 키: String
+     * - 값: ChatResponseDto
+     *
+     * ✅ GenericJackson2JsonRedisSerializer를 사용하여 객체를 JSON 형태로 직렬화하여 저장
+     * ✅ Redis에서 꺼낼 때도 자동으로 역직렬화됨
+     * ✅ 채팅 메시지 캐시를 저장할 때 타입 안전성 보장
+     */
+    @Bean
+    public RedisTemplate<String, ChatResponseDto> chatMessageRedisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, ChatResponseDto> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer()); // JSON 직렬화
+        return template;
+    }
+
 
 
 }
