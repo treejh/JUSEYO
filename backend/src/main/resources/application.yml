@@ -1,6 +1,8 @@
 server:
   port: 8080
   tomcat:
+    max-threads: 500
+    accept-count: 1000
     max-http-form-post-size: -1
     max-swallow-size: -1
 
