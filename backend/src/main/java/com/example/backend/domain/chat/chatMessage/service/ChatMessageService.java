@@ -155,19 +155,6 @@ public class ChatMessageService {
         return chatMessageRepository.save(chatMessage);
     }
 
-//    public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable){
-//        User user = userService.findById(tokenService.getIdFromToken());
-//        ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
-//
-//        //참여중인 채팅방 아니면 메시지 조회 못함
-//        if(chatUserRepository.findByUserAndChatRoom(user,chatRoom).isEmpty()){
-//            throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
-//        }
-//        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom,pageable);
-//
-//        return chatMessagePage.map(ChatResponseDto::new);
-//    }
-
     @RedisCacheLock(key = "'chatroom:' + #roomId + ':messages:page:0'")
     public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable) {
         User user = userService.findById(tokenService.getIdFromToken());

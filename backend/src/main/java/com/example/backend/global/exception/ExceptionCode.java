@@ -32,6 +32,7 @@ public enum ExceptionCode {
     NOT_ENTER_CHAT_ROOM(404,"참여중인 채팅방이 아닙니다."),
     ALREADY_ENTER_CHAT_ROOM(403,"이미 채팅방에 입장했습니다."),
     FILTER_ACCESS_DENIED(403, "접근이 거부되었습니다. 권한이 부족합니다."),
+    REDIS_LOCK_INTERRUPTED(500, "Redisson 락 처리 중 인터럽트 발생"),
 
     //유저 예외 처리
     NOT_INITIAL_MANAGER(403, "해당 기능은 최초 생성 매니저만 사용할 수 있습니다."),
