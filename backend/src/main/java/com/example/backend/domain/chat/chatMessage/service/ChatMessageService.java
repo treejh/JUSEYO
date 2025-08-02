@@ -11,6 +11,7 @@ import com.example.backend.domain.chat.chatUser.entity.ChatUser;
 import com.example.backend.domain.chat.chatUser.repository.ChatUserRepository;
 import com.example.backend.domain.chat.chatroom.entity.ChatRoom;
 import com.example.backend.domain.chat.chatroom.service.ChatRoomService;
+import com.example.backend.domain.chat.redis.ChatMessageRedisService;
 import com.example.backend.domain.chat.redis.RedisCacheLock;
 import com.example.backend.enums.ChatMessageStatus;
 import com.example.backend.enums.ChatStatus;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -48,7 +50,10 @@ public class ChatMessageService {
     private final TokenService tokenService;
 
 
-    private final RedisTemplate redisTemplate;
+    @Autowired
+    private RedisTemplate<String, ChatResponseDto> chatMessageRedisTemplate;
+
+    private final ChatMessageRedisService chatMessageRedisService;
 
     // for 알림
     private final ApplicationEventPublisher eventPublisher;
@@ -163,7 +168,7 @@ public class ChatMessageService {
 //        return chatMessagePage.map(ChatResponseDto::new);
 //    }
 
-    @RedisCacheLock(key = "#roomId")
+    @RedisCacheLock(key = "'chatroom:' + #roomId + ':messages:page:0'")
     public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable) {
         User user = userService.findById(tokenService.getIdFromToken());
         ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
@@ -172,17 +177,23 @@ public class ChatMessageService {
             throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
         }
 
-        String redisKey = "chatroom:" + roomId + ":messages:page:0";
-        List<ChatResponseDto> cached = redisTemplate.opsForList().range(redisKey, 0, -1);
+        String redisKey = chatMessageRedisService.getChatMessageCacheKey(roomId);
+        List<ChatResponseDto> cached = chatMessageRedisTemplate.opsForList().range(redisKey, 0, -1);
+
+        // 락을 잡은 뒤에도 누군가 캐시를 넣었을 수 있으니 다시 확인 (더블 체크)
         if (cached != null && !cached.isEmpty()) {
+            //캐시 HIT일 경우: 가져온 메시지 리스트를 바로 응답
+            //PageImpl은 Spring Data의 페이지 응답 객체
             return new PageImpl<>(cached, pageable, cached.size());
         }
 
+        //아니면 DB에서 조회
         Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom, pageable);
         List<ChatResponseDto> result = chatMessagePage.map(ChatResponseDto::new).toList();
 
-        redisTemplate.opsForList().rightPushAll(redisKey, result.toArray());
-        redisTemplate.expire(redisKey, Duration.ofSeconds(60));
+        chatMessageRedisTemplate.opsForList().rightPushAll(redisKey, result.toArray(new ChatResponseDto[0]));
+        //TTL 설정: 60초 후 캐시 자동 삭제
+        chatMessageRedisTemplate.expire(redisKey, Duration.ofSeconds(chatMessageRedisService.messageTTL));
 
         return new PageImpl<>(result, pageable, result.size());
     }

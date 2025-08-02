@@ -3,9 +3,11 @@ package com.example.backend.domain.chat.redis;
 import com.example.backend.domain.chat.chatMessage.dto.response.ChatResponseDto;
 import java.time.Duration;
 import java.util.List;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,10 @@ public class ChatMessageRedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedissonClient redissonClient;
+
+    @Getter
+    @Value("${redis-custom.chat-message-TTL}")
+    public int messageTTL;
 
 
     private String getMessageCacheKey(Long roomId) {
@@ -38,4 +44,9 @@ public class ChatMessageRedisService {
     public RLock getMessageLock(Long roomId) {
         return redissonClient.getLock("lock:chatroom:" + roomId + ":page:0");
     }
+
+    public String getChatMessageCacheKey(Long roomId) {
+        return "chatroom:" + roomId + ":messages:page:0";
+    }
+
 }

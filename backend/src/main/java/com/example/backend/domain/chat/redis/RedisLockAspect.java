@@ -25,7 +25,6 @@ import org.springframework.util.StopWatch;
 public class RedisLockAspect {
 
     private final RedissonClient redissonClient;
-    private final RedisTemplate<String, Object> redisTemplate;
 
     @Around("@annotation(redisCacheLock)")
     public Object around(ProceedingJoinPoint joinPoint, RedisCacheLock redisCacheLock) throws Throwable {
@@ -35,16 +34,15 @@ public class RedisLockAspect {
         boolean locked = false;
         StopWatch sw = new StopWatch();
         sw.start();
-
+        //true -> 락 획득 성공
+        locked = lock.tryLock(redisCacheLock.waitTime(), redisCacheLock.leaseTime(), TimeUnit.SECONDS);
         try {
-            locked = lock.tryLock(redisCacheLock.waitTime(), redisCacheLock.leaseTime(), TimeUnit.SECONDS);
-
             if (!locked) {
                 // 락 못 잡았으면 Redis 재확인 or fallback 처리는 서비스단에서
                 throw new IllegalStateException("Redis Lock 획득 실패");
             }
 
-            return joinPoint.proceed(); // 핵심 로직 실행
+            return joinPoint.proceed(); // 핵심 로직 실행 -> getChatMessage())실행하는거임
 
         } finally {
             if (locked && lock.isHeldByCurrentThread()) {
