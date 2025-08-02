@@ -374,7 +374,7 @@ public class UserController {
     )
     public ResponseEntity<?> getRequestManager(@RequestParam String managementDashboardName
             , @RequestParam(name = "page", defaultValue = "1") int page,
-                                               @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                @RequestParam(name = "size", defaultValue = "10") int size) {
 
         Page<User> approveUserList = userService.getRequestManagerList(managementDashboardName,
                 PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt")));

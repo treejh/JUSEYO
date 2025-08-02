@@ -82,10 +82,13 @@ services:
     container_name: juseyo-k6
     volumes:
       - ./k6:/scripts
-    command: run /scripts/load-test.js
+    command:
+      - run
+      - --summary-trend-stats=avg,p95,min,max
+      - /scripts/load-test.js
     environment:
       K6_OUT: experimental-prometheus-rw
-      K6_PROMETHEUS_RW_SERVER_URL: http://prometheus:9090/api/v1/write
+      K6_PROMETHEUS_RW_SERVER_URL: http://juseyo-prometheus:9090/api/v1/write
       K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM: "true"
 
     depends_on:
