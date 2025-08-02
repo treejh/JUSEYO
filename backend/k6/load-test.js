@@ -36,7 +36,7 @@ export function setup() {
 
 export default function (data) {
     const roomId = 1;
-    const page = Math.floor(Math.random() * 3); // page=0~2
+    const page = Math.floor(Math.random() * 5); // page=0~4
 
     const res = http.get(CHAT_ENDPOINT(roomId, page), {
         headers: {

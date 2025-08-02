@@ -4,6 +4,7 @@ import com.example.backend.domain.chat.chatMessage.dto.response.ChatResponseDto;
 import com.example.backend.global.exception.BusinessLogicException;
 import com.example.backend.global.exception.ExceptionCode;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,8 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -32,7 +35,7 @@ public class RedisLockAspect {
     private final RedissonClient redissonClient;
 
     @Autowired
-    private RedisTemplate<String, ChatResponseDto> chatMessageRedisTemplate;
+    private RedisTemplate<String, Object> chatMessageRedisTemplate;
 
     @Value("${redis-custom.lock-retry}")
     private int lockRetry;
@@ -48,6 +51,7 @@ public class RedisLockAspect {
     public Object around(ProceedingJoinPoint joinPoint, RedisCacheLock redisCacheLock) throws Throwable {
         String lockKey = resolveKey(joinPoint, redisCacheLock.key());
         RLock lock = redissonClient.getLock("lock:" + lockKey);
+
         boolean locked = false;
 
         StopWatch sw = new StopWatch();
@@ -90,17 +94,26 @@ public class RedisLockAspect {
      * 캐시 키 재조회 로직 - 락 실패 시 일정 시간 대기하며 재시도
      */
     private Object retryGetFromRedis(String redisKey) throws InterruptedException {
+        String actualDataKey = redisKey.replaceFirst("^lock:", "");
+
         for (int i = 0; i < lockRetry; i++) {
-            Object cached = chatMessageRedisTemplate.opsForValue().get(redisKey);
-            if (cached != null) {
-                log.info("📦 [Redis HIT after Lock 실패 - 재시도 {}회] (Key: {})", i + 1, redisKey);
-                return cached;
+            List<Object> rawCached = chatMessageRedisTemplate.opsForList().range(actualDataKey, 0, -1);
+            if (rawCached != null && !rawCached.isEmpty()) {
+                List<ChatResponseDto> cached = rawCached.stream()
+                        .map(obj -> (ChatResponseDto) obj)
+                        .toList();
+                int size = cached.size();
+                log.info("📦 [Redis HIT after Lock 실패 - 재시도 {}회] (Key: {})", i + 1, actualDataKey);
+                return new PageImpl<>(cached, PageRequest.of(0, size == 0 ? 1 : size), size);
             }
+
             Thread.sleep(delayMillis);
         }
 
         return null;
     }
+
+
 
     /**
      * SpEL 표현식을 실제 파라미터로 변환하여 키 생성

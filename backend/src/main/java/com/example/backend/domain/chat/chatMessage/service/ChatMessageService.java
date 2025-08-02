@@ -50,9 +50,6 @@ public class ChatMessageService {
     private final TokenService tokenService;
 
 
-    @Autowired
-    private RedisTemplate<String, ChatResponseDto> chatMessageRedisTemplate;
-
     private final ChatMessageRedisService chatMessageRedisService;
 
     // for 알림
@@ -155,8 +152,57 @@ public class ChatMessageService {
         return chatMessageRepository.save(chatMessage);
     }
 
-    @RedisCacheLock(key = "'chatroom:' + #roomId + ':messages:page:0'")
+//    @RedisCacheLock(key = "'chatroom:' + #roomId + ':messages:page:' + #pageable.pageNumber")
+//    public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable) {
+//        User user = userService.findById(tokenService.getIdFromToken());
+//        ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
+//
+//        if (chatUserRepository.findByUserAndChatRoom(user, chatRoom).isEmpty()) {
+//            throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
+//        }
+//
+//        List<ChatResponseDto> cached = chatMessageRedisService.getCachedMessages(roomId,pageable.getPageNumber());
+//
+//        // 락을 잡은 뒤에도 누군가 캐시를 넣었을 수 있으니 다시 확인 (더블 체크)
+//        if (cached != null && !cached.isEmpty()) {
+//            //캐시 HIT일 경우: 가져온 메시지 리스트를 바로 응답
+//            //PageImpl은 Spring Data의 페이지 응답 객체
+//            return new PageImpl<>(cached, pageable, cached.size());
+//        }
+//
+//        //아니면 DB에서 조회
+//        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom, pageable);
+//        List<ChatResponseDto> result = chatMessagePage.map(ChatResponseDto::new).toList();
+//
+//        //redis에 저장
+//        chatMessageRedisService.cacheMessages(roomId,result,Duration.ofSeconds(chatMessageRedisService.messageTTL),pageable.getPageNumber());
+//
+//        return new PageImpl<>(result, pageable, result.size());
+//    }
+
     public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable) {
+
+        List<ChatResponseDto> cached = chatMessageRedisService.getCachedMessages(roomId, pageable.getPageNumber());
+
+        // 🔁 캐시 HIT → 락 안 거치고 바로 반환
+        if (cached != null && !cached.isEmpty()) {
+            return new PageImpl<>(cached, pageable, cached.size());
+        }
+
+        // 🔒 캐시 MISS → 락 거는 메서드 따로 분리
+        return getChatMessageWithLock(roomId, pageable);
+    }
+
+    @RedisCacheLock(key = "'chatroom:' + #roomId + ':messages:page:' + #pageable.pageNumber")
+    public Page<ChatResponseDto> getChatMessageWithLock(Long roomId, Pageable pageable) {
+        // 이 안에서는 DB 조회 + 캐싱
+
+        //한번 더 체크
+        List<ChatResponseDto> cached = chatMessageRedisService.getCachedMessages(roomId, pageable.getPageNumber());
+        if (cached != null && !cached.isEmpty()) {
+            return new PageImpl<>(cached, pageable, cached.size());
+        }
+
         User user = userService.findById(tokenService.getIdFromToken());
         ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
 
@@ -164,22 +210,10 @@ public class ChatMessageService {
             throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
         }
 
-        List<ChatResponseDto> cached = chatMessageRedisService.getCachedMessages(roomId);
-
-        // 락을 잡은 뒤에도 누군가 캐시를 넣었을 수 있으니 다시 확인 (더블 체크)
-        if (cached != null && !cached.isEmpty()) {
-            //캐시 HIT일 경우: 가져온 메시지 리스트를 바로 응답
-            //PageImpl은 Spring Data의 페이지 응답 객체
-            return new PageImpl<>(cached, pageable, cached.size());
-        }
-
-        //아니면 DB에서 조회
         Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom, pageable);
         List<ChatResponseDto> result = chatMessagePage.map(ChatResponseDto::new).toList();
 
-
-        //redis에 저장
-        chatMessageRedisService.cacheMessages(roomId,result,Duration.ofSeconds(chatMessageRedisService.messageTTL));
+        chatMessageRedisService.cacheMessages(roomId,result,Duration.ofSeconds(chatMessageRedisService.messageTTL),pageable.getPageNumber());
 
         return new PageImpl<>(result, pageable, result.size());
     }

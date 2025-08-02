@@ -1,6 +1,9 @@
 package com.example.backend.global.redis;
 
 import com.example.backend.domain.chat.chatMessage.dto.response.ChatResponseDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -73,11 +76,20 @@ public class RedisConfig {
      * ✅ 채팅 메시지 캐시를 저장할 때 타입 안전성 보장
      */
     @Bean
-    public RedisTemplate<String, ChatResponseDto> chatMessageRedisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, ChatResponseDto> template = new RedisTemplate<>();
+    public RedisTemplate<String, Object> chatMessageRedisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer()); // JSON 직렬화
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        template.setValueSerializer(serializer);
+        template.setHashValueSerializer(serializer);
+
+        template.afterPropertiesSet();
         return template;
     }
 

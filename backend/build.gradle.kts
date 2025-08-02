@@ -96,6 +96,9 @@ dependencies {
 
     //redis 분산락 구현
     implementation("org.redisson:redisson-spring-boot-starter:3.23.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
 
 }
 
