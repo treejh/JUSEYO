@@ -20,10 +20,10 @@ public class ChatMessageRedisService {
 
     @Getter
     @Value("${redis-custom.chat-message-TTL}")
-    public int messageTTL;
+    public int messageTTL=1000;
 
 
-    private String getMessageCacheKey(Long roomId) {
+    public String getMessageCacheKey(Long roomId) {
         return "chatroom:" + roomId + ":messages:page:0";
     }
 
@@ -43,10 +43,6 @@ public class ChatMessageRedisService {
 
     public RLock getMessageLock(Long roomId) {
         return redissonClient.getLock("lock:chatroom:" + roomId + ":page:0");
-    }
-
-    public String getChatMessageCacheKey(Long roomId) {
-        return "chatroom:" + roomId + ":messages:page:0";
     }
 
 }

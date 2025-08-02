@@ -164,8 +164,7 @@ public class ChatMessageService {
             throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
         }
 
-        String redisKey = chatMessageRedisService.getChatMessageCacheKey(roomId);
-        List<ChatResponseDto> cached = chatMessageRedisTemplate.opsForList().range(redisKey, 0, -1);
+        List<ChatResponseDto> cached = chatMessageRedisService.getCachedMessages(roomId);
 
         // 락을 잡은 뒤에도 누군가 캐시를 넣었을 수 있으니 다시 확인 (더블 체크)
         if (cached != null && !cached.isEmpty()) {
@@ -178,9 +177,9 @@ public class ChatMessageService {
         Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom, pageable);
         List<ChatResponseDto> result = chatMessagePage.map(ChatResponseDto::new).toList();
 
-        chatMessageRedisTemplate.opsForList().rightPushAll(redisKey, result.toArray(new ChatResponseDto[0]));
-        //TTL 설정: 60초 후 캐시 자동 삭제
-        chatMessageRedisTemplate.expire(redisKey, Duration.ofSeconds(chatMessageRedisService.messageTTL));
+
+        //redis에 저장
+        chatMessageRedisService.cacheMessages(roomId,result,Duration.ofSeconds(chatMessageRedisService.messageTTL));
 
         return new PageImpl<>(result, pageable, result.size());
     }
