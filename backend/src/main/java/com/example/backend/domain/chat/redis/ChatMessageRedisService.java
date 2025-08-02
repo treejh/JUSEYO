@@ -38,7 +38,11 @@ public class ChatMessageRedisService {
 
 
     public void cacheMessages(Long roomId, List<ChatResponseDto> messages, Duration ttl, int page) {
+        String key = getMessageCacheKey(roomId, page);
+        chatMessageRedisTemplate.delete(key);
         if (messages == null || messages.isEmpty()) {
+            chatMessageRedisTemplate.opsForList().rightPush(key, "__empty__");
+            chatMessageRedisTemplate.expire(key, ttl);
             log.warn("📭 캐시 저장 시 빈 메시지 리스트 - 저장 생략 (roomId: {}, page: {})", roomId, page);
             return;
         }

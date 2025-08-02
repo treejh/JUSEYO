@@ -24,6 +24,7 @@ import com.example.backend.domain.user.service.UserService;
 import com.example.backend.global.utils.dto.ApiResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -188,6 +189,8 @@ public class ChatMessageService {
         if (cached != null && !cached.isEmpty()) {
             return new PageImpl<>(cached, pageable, cached.size());
         }
+
+        // 실제 메시지가 없다는 표시를 Redis에 남김 → 예: "__empty__" 같은 마커
 
         // 🔒 캐시 MISS → 락 거는 메서드 따로 분리
         return getChatMessageWithLock(roomId, pageable);
