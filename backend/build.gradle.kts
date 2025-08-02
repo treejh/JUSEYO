@@ -93,6 +93,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
 
+
+    //redis 분산락 구현
+    implementation("org.redisson:redisson-spring-boot-starter:3.23.1")
+
 }
 
 

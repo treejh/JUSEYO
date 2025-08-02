@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,9 @@ public class ChatMessageService {
     private final ChatRoomService chatRoomService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final TokenService tokenService;
+
+
+    private final RedisTemplate redisTemplate;
 
     // for 알림
     private final ApplicationEventPublisher eventPublisher;
@@ -143,7 +147,7 @@ public class ChatMessageService {
         return chatMessageRepository.save(chatMessage);
     }
 
-    public Page<ChatMessage> getChatMessage(Long roomId, Pageable pageable){
+    public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable){
         User user = userService.findById(tokenService.getIdFromToken());
         ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
 
@@ -151,8 +155,15 @@ public class ChatMessageService {
         if(chatUserRepository.findByUserAndChatRoom(user,chatRoom).isEmpty()){
             throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
         };
+        List<ChatResponseDto> cached = redisTemplate.opsForList().range(key, 0, -1);
+        if (cached != null && !cached.isEmpty()) return cached; // 캐시 HIT
 
-        return chatMessageRepository.findByChatRoom(chatRoom,pageable);
+
+        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom,pageable);
+
+        return chatMessagePage.map(ChatResponseDto::new);
+
+
     }
 
 
