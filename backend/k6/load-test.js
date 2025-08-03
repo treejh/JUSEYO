@@ -2,12 +2,73 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 export const options = {
-    vus: 10, // 가상 유저 10명
-    duration: '1m', // 30초 동안 테스트 -> 30s
+    stages: [
+        { duration: '10s', target: 100 },
+        { duration: '10s', target: 300 },
+        { duration: '10s', target: 500 },
+        { duration: '10s', target: 1000 },
+        { duration: '10s', target: 0 }, // 종료
+    ],
 };
 
-export default function () {
-    const res = http.get('http://host.docker.internal:8080/actuator/health');
-    check(res, { 'status was 200': (r) => r.status === 200 });
-    sleep(1); // 1초 대기
+const BASE_URL = 'http://host.docker.internal:8080';
+const LOGIN_ENDPOINT = `${BASE_URL}/api/v1/users/login`;
+const CHAT_ENDPOINT = (roomId, page, size = 10) => `${BASE_URL}/api/v1/chats/${roomId}?page=${page}&size=${size}`;
+
+// 로그인 후 Authorization 헤더에서 accessToken 추출
+export function setup() {
+    const payload = JSON.stringify({
+        email: 'test@email.com',
+        password: '0b146162-3',
+    });
+
+    const res = http.post(LOGIN_ENDPOINT, payload, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const authHeader = res.headers['Authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.error('❌ Authorization 헤더가 없거나 형식이 잘못됨:', authHeader);
+        return;
+    }
+
+    const accessToken = authHeader.replace('Bearer ', '');
+    console.log(`✅ 추출된 accessToken: ${accessToken}`);
+
+    return { accessToken };
 }
+
+export default function (data) {
+    const roomId = 1;
+    const page = Math.floor(Math.random() * 4) + 1; // page = 1~4
+
+    const res = http.get(CHAT_ENDPOINT(roomId, page), {
+        headers: {
+            'Authorization': `Bearer ${data.accessToken}`,
+        },
+    });
+
+    check(res, {
+        '✅ 200 OK': (r) => r.status === 200,
+        '✅ 응답 구조 확인 (data.content 존재)': (r) => {
+            try {
+                const json = JSON.parse(r.body);
+                const exists = json.data && Array.isArray(json.data.content);
+                if (!exists) {
+                    // console.error(`❌ content 필드 누락 또는 비정상 구조: ${r.body}`);
+                } else if (json.data.content.length === 0) {
+                    //console.log(`ℹ️ 빈 content 배열 (정상 처리): page=${json.data.pageable?.pageNumber}`);
+                }
+                return exists;
+            } catch (e) {
+                console.error(`❌ JSON 파싱 실패: ${r.body}`);
+                return false;
+            }
+        }
+    });
+
+    sleep(1);
+}
+
+

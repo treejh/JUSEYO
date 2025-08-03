@@ -20,8 +20,6 @@ public class RedisService {
         redisTemplate.opsForValue().set(key, value);
     }
 
-
-
     // 저장 + 만료 시간 설정
     public void saveData(String key, String value, Duration timeout) {
         redisTemplate.opsForValue().set(key, value, timeout);

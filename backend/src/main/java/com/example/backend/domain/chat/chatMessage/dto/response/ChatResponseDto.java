@@ -7,8 +7,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class ChatResponseDto {
 

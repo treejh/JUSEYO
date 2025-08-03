@@ -164,6 +164,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
     public String getAccessToken(HttpServletRequest request){
+        //헤더에 있는지 확인
+        String authorization = request.getHeader("Authorization");
+        if(StringUtils.hasText(authorization) && authorization.startsWith("Bearer ")){
+            return authorization.substring(7);
+        }
 
         //쿠키에 있는지 확인
         Cookie[] cookies = request.getCookies();

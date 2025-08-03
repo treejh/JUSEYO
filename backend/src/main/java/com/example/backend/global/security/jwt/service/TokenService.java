@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +32,12 @@ public class TokenService {
 
 
     public String getTokenFromRequest() {
+
+        //헤더에 있는지 확인
+        String authorization = httpServletRequest.getHeader("Authorization");
+        if(StringUtils.hasText(authorization) && authorization.startsWith("Bearer ")){
+            return authorization.substring(7);
+        }
 
         //쿠키에 있는지 확인
         Cookie[] cookies = httpServletRequest.getCookies();
@@ -116,6 +123,9 @@ public class TokenService {
 
         httpServletResponse.addCookie(accessTokenCookie);
         httpServletResponse.addCookie(refreshTokenCookie);
+
+        //k6 테스트용
+        httpServletResponse.setHeader("Authorization", "Bearer " + accessToken);
     }
 
     public void generateAccessToken(String name, String value) {

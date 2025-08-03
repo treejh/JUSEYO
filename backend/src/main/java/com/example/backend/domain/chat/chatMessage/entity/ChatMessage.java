@@ -50,7 +50,4 @@ public class ChatMessage extends Auditable {
     @Column(name = "message", nullable = false, length = 100)
     private String message;
 
-
-
-
 }

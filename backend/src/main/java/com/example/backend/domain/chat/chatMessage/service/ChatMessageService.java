@@ -11,6 +11,8 @@ import com.example.backend.domain.chat.chatUser.entity.ChatUser;
 import com.example.backend.domain.chat.chatUser.repository.ChatUserRepository;
 import com.example.backend.domain.chat.chatroom.entity.ChatRoom;
 import com.example.backend.domain.chat.chatroom.service.ChatRoomService;
+import com.example.backend.domain.chat.redis.ChatMessageRedisService;
+import com.example.backend.domain.chat.redis.RedisCacheLock;
 import com.example.backend.enums.ChatMessageStatus;
 import com.example.backend.enums.ChatStatus;
 import com.example.backend.global.exception.BusinessLogicException;
@@ -20,13 +22,18 @@ import com.example.backend.global.security.jwt.service.TokenService;
 import com.example.backend.domain.user.entity.User;
 import com.example.backend.domain.user.service.UserService;
 import com.example.backend.global.utils.dto.ApiResponse;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +49,9 @@ public class ChatMessageService {
     private final ChatRoomService chatRoomService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final TokenService tokenService;
+
+
+    private final ChatMessageRedisService chatMessageRedisService;
 
     // for 알림
     private final ApplicationEventPublisher eventPublisher;
@@ -143,17 +153,44 @@ public class ChatMessageService {
         return chatMessageRepository.save(chatMessage);
     }
 
-    public Page<ChatMessage> getChatMessage(Long roomId, Pageable pageable){
+    public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable) {
+
+        List<ChatResponseDto> cached = chatMessageRedisService.getCachedMessages(roomId, pageable.getPageNumber());
+
+        // ✅ null만 MISS → empty 포함해서 HIT
+        if (cached != null) {
+            return new PageImpl<>(cached, pageable, cached.size());
+        }
+
+        // 🔒 캐시 MISS → 락 거는 메서드 따로 분리
+        return getChatMessageWithLock(roomId, pageable);
+    }
+
+    @RedisCacheLock(key = "'chatroom:' + #roomId + ':messages:page:' + #pageable.pageNumber")
+    public Page<ChatResponseDto> getChatMessageWithLock(Long roomId, Pageable pageable) {
+        // 이 안에서는 DB 조회 + 캐싱
+
+        //한번 더 체크
+        List<ChatResponseDto> cached = chatMessageRedisService.getCachedMessages(roomId, pageable.getPageNumber());
+        if (cached != null && !cached.isEmpty()) {
+            return new PageImpl<>(cached, pageable, cached.size());
+        }
+
         User user = userService.findById(tokenService.getIdFromToken());
         ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
 
-        //참여중인 채팅방 아니면 메시지 조회 못함
-        if(chatUserRepository.findByUserAndChatRoom(user,chatRoom).isEmpty()){
+        if (chatUserRepository.findByUserAndChatRoom(user, chatRoom).isEmpty()) {
             throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
-        };
+        }
 
-        return chatMessageRepository.findByChatRoom(chatRoom,pageable);
+        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom, pageable);
+        List<ChatResponseDto> result = chatMessagePage.map(ChatResponseDto::new).toList();
+
+        chatMessageRedisService.cacheMessages(roomId,result,Duration.ofSeconds(chatMessageRedisService.messageTTL),pageable.getPageNumber());
+
+        return new PageImpl<>(result, pageable, result.size());
     }
+
 
 
 }
