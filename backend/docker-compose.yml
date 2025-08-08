@@ -99,12 +99,44 @@ services:
       - juseyo-network
 
 
+  mongodb:
+    image: mongo:6.0
+    container_name: juseyo-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_DATABASE: juseyo-chat
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - juseyo-network
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+    depends_on:
+      - mongodb
+    networks:
+      - juseyo-network
+
+
 
 
 volumes:
   mysql-data:
   redis-data:
   grafana-data:
+  mongo-data:
 
 networks:
   juseyo-network:

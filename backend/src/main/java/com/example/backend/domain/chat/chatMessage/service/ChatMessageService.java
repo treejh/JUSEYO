@@ -89,6 +89,7 @@ public class ChatMessageService {
                         .build();
             }
             case TALK -> {
+                log.info("TALK 입장");
                 // 메시지 저장
                 chatMessage = ChatMessage.builder()
                         .message(chatMessageRequestDto.getMessage())
@@ -121,7 +122,6 @@ public class ChatMessageService {
                                     user.getName(),
                                     chatRoom.getRoomType()
                             ));
-                            System.out.println("================newChatEvent 실행 ================");
                         }
 
                         //가장 최근에 글이 입력된 채팅방 가져오기 위해서

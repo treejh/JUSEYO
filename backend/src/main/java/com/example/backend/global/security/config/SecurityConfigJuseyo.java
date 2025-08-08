@@ -43,6 +43,7 @@ public class SecurityConfigJuseyo {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api/v1/admin/**"
+                                ,"/ws-stomp/**" //검증은 stomp에서
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/biz/check").permitAll()
                         //핸드폰

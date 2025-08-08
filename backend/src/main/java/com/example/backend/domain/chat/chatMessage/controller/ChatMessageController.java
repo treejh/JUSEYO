@@ -41,6 +41,9 @@ public class ChatMessageController {
     @MessageMapping("/chat/{roomId}")
     public void enterUser(@DestinationVariable(value = "roomId") final Long roomId,
                           @Payload ChatMessageRequestDto chatMessageRequestDto, SimpMessageHeaderAccessor headerAccessor){
+        String accessToken = (String) headerAccessor.getSessionAttributes().get("accessToken");
+        log.info("💬 WebSocket 메시지 수신 - accessToken: {}", accessToken);
+
 
         ChatResponseDto responseMessage = new ChatResponseDto(chatMessageService.sendMessage(chatMessageRequestDto));
 

@@ -24,7 +24,10 @@ spring:
         highlight_sql: true
         use_sql_comments: true
         dialect: org.hibernate.dialect.MySQL8Dialect
-
+#  data:
+#    mongodb:
+#      uri: mongodb://${mongo.user}:${mongo.pass}@juseyo-mongo:27017/juseyo-chat
+#      database: juseyo-chat
   servlet:
     multipart:
       max-file-size: 500MB
