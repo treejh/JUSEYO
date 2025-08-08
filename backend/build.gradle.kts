@@ -99,6 +99,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
+    //mongoDB 의존성 추가
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+
 
 }
 

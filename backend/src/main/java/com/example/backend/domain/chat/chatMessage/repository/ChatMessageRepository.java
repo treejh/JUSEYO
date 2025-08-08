@@ -9,12 +9,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
+public interface ChatMessageRepository extends MongoRepository<ChatMessage, String> {
 
     // 채팅방에 해당하는 모든 메시지 삭제
     void deleteAllByChatRoom(ChatRoom chatRoom);
 
     Page<ChatMessage> findByChatRoom(ChatRoom chatRoom, Pageable pageable);
-    Optional<ChatMessage> findTopByChatRoomOrderByCreatedAtDesc(ChatRoom chatRoom);
 
+    Optional<ChatMessage> findTopByChatRoomOrderByCreatedAtDesc(ChatRoom chatRoom);
 }
