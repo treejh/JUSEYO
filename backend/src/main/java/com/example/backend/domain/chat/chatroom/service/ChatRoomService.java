@@ -166,7 +166,7 @@ public class ChatRoomService {
     public Page<ChatRoom> getChatRoomList(ChatRoomType chatRoomType, Pageable pageable) {
         User user = userService.findUserByToken();
 
-        return chatRoomRepository.findRoomsByUserAndRoomTypeOrderByCreatorFirstAndLatestMessage(
+        return chatRoomRepository.findRoomsByUserAndRoomTypeWithoutMessage(
                 user,
                 chatRoomType,
                 List.of(ChatStatus.ENTER, ChatStatus.CREATE),
@@ -399,15 +399,18 @@ public class ChatRoomService {
             return false; // 또는 true 로 로직에 맞게 선택
         }
 
-        Optional<ChatMessage> optionalMessage = chatMessageRepository.findTopByChatRoomOrderByCreatedAtDesc(chatRoom);
+        Optional<ChatMessage> optionalMessage = chatMessageRepository.findTopByChatRoomIdOrderByCreatedAtDesc(chatRoom.getId());
 
         LocalDateTime lastMessageTime = optionalMessage
                 .map(ChatMessage::getCreatedAt)
                 .orElse(LocalDateTime.MIN);
 
         User sender = optionalMessage
-                .map(ChatMessage::getUser)
-                .orElse(null); // 또는 예외처리 가능
+                .map(ChatMessage::getUserId) // userId 가져오기
+                .map(userService::findById)  // userId로 User 조회
+                .orElse(null); // 또는 orElseThrow()
+
+
 
         //본인이 보낸 메시지면 false이도록 -> 본인 메시지면 new 뜰 필요가 없음
         if(user.equals(sender)){

@@ -101,14 +101,15 @@ services:
 
   mongodb:
     image: mongo:6.0
-    container_name: juseyo-mongo
+    container_name: mongodb
     restart: always
     ports:
       - "27017:27017"
-    env_file:
-      - .env
     environment:
       MONGO_INITDB_DATABASE: juseyo-chat
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root1234
+    command: ["mongod", "--bind_ip_all"]  # 이 부분 추가
     volumes:
       - mongo-data:/data/db
     networks:
@@ -120,10 +121,14 @@ services:
     restart: always
     ports:
       - "8081:8081"
-    env_file:
-      - .env
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root1234
+      ME_CONFIG_MONGODB_URL: mongodb://root:root1234@mongodb:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_USERNAME: root #로그인에 사용됨
+      ME_CONFIG_BASICAUTH_PASSWORD: root1234
     depends_on:
       - mongodb
     networks:

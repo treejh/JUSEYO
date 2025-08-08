@@ -22,11 +22,11 @@ public class ChatResponseDto {
     private ChatMessageStatus chatStatus; //메시지 타입
 
     public ChatResponseDto(ChatMessage chatMessage) {
-        this.roomId = chatMessage.getChatRoom().getId();
-        this.sender = chatMessage.getUser().getName();
+        this.roomId = chatMessage.getChatRoomId();
+        this.sender = chatMessage.getUserName();
         this.message = chatMessage.getMessage();
         this.createDate = chatMessage.getCreatedAt();
         this.chatStatus = chatMessage.getMessageStatus();
-        this.userId  = chatMessage.getUser().getId();
+        this.userId  = chatMessage.getUserId();
     }
 }

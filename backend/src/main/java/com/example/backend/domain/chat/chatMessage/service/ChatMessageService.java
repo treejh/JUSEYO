@@ -86,8 +86,9 @@ public class ChatMessageService {
 
         ChatMessage enterMessage = ChatMessage.builder()
                 .message(user.getName() + "님이 입장하셨습니다")
-                .chatRoom(chatRoom)
-                .user(user)
+                .chatRoomId(chatRoom.getId())
+                .userId(user.getId())
+                .userName(user.getName())
                 .messageStatus(ChatMessageStatus.ENTER)
                 .build();
 
@@ -97,8 +98,9 @@ public class ChatMessageService {
     private ChatMessage handleTalkMessage(User sender, ChatRoom chatRoom, String messageContent) {
         ChatMessage talkMessage = ChatMessage.builder()
                 .message(messageContent)
-                .chatRoom(chatRoom)
-                .user(sender)
+                .chatRoomId(chatRoom.getId())
+                .userId(sender.getId())
+                .userName(sender.getName())
                 .messageStatus(ChatMessageStatus.TALK)
                 .build();
 
@@ -112,8 +114,9 @@ public class ChatMessageService {
 
                 ChatMessage enterMessage = ChatMessage.builder()
                         .message(chatUser.getUser().getName() + "님이 입장하셨습니다.")
-                        .chatRoom(chatRoom)
-                        .user(chatUser.getUser())
+                        .chatRoomId(chatRoom.getId())
+                        .userId(chatUser.getUser().getId())
+                        .userName(chatUser.getUser().getName())
                         .messageStatus(ChatMessageStatus.ENTER)
                         .build();
 
@@ -143,8 +146,9 @@ public class ChatMessageService {
     private ChatMessage handleLeaveMessage(User user, ChatRoom chatRoom) {
         ChatMessage leaveMessage = ChatMessage.builder()
                 .message(user.getName() + "님이 퇴장하셨습니다.")
-                .chatRoom(chatRoom)
-                .user(user)
+                .chatRoomId(chatRoom.getId())
+                .userId(user.getId())
+                .userName(user.getName())
                 .messageStatus(ChatMessageStatus.LEAVE)
                 .build();
 
@@ -183,7 +187,8 @@ public class ChatMessageService {
             throw new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM);
         }
 
-        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoom(chatRoom, pageable);
+        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByChatRoomId(chatRoom.getId(), pageable);
+        log.info("여기 메시지!!!!! " + chatMessagePage.getContent().get(0).getMessage());
         List<ChatResponseDto> result = chatMessagePage.map(ChatResponseDto::new).toList();
 
         chatMessageRedisService.cacheMessages(roomId,result,Duration.ofSeconds(chatMessageRedisService.messageTTL),pageable.getPageNumber());

@@ -88,9 +88,5 @@ public class User extends Auditable { // Auditable 상속
     List<ChatUser> chatUserList = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.EAGER)
-    List<ChatMessage> chatMessageList = new ArrayList<>();
-
-
 
 }
