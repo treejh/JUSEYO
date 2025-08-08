@@ -66,92 +66,92 @@ public class ChatMessageService {
         ChatUser chatUser = chatUserRepository.findByUserAndChatRoom(user, chatRoom)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_ENTER_CHAT_ROOM));
 
-        ChatMessage chatMessage;
+        return switch (chatMessageRequestDto.getType()) {
+            case ENTER -> handleEnterMessage(user, chatRoom, chatUser);
+            case TALK -> handleTalkMessage(user, chatRoom, chatMessageRequestDto.getMessage());
+            case LEAVE -> handleLeaveMessage(user, chatRoom);
+            default -> throw new BusinessLogicException(ExceptionCode.INVALID_CHAT_ROOM_TYPE);
+        };
+    }
 
-        switch (chatMessageRequestDto.getType()) {
-            case ENTER -> {
-                //chatUser가 create가 아니면 이미 참여 상태인거임
-                if (!chatUser.getChatStatus().equals(ChatStatus.CREATE)) {
-                    throw new BusinessLogicException(ExceptionCode.ALREADY_ENTER_CHAT_ROOM);
-                }
+    private ChatMessage handleEnterMessage(User user, ChatRoom chatRoom, ChatUser chatUser) {
+        if (!chatUser.getChatStatus().equals(ChatStatus.CREATE)) {
+            throw new BusinessLogicException(ExceptionCode.ALREADY_ENTER_CHAT_ROOM);
+        }
 
-                //create가 맞는 경우는 enter로 변경
+        chatUser.setChatStatus(ChatStatus.ENTER);
+        chatUser.setModifiedAt(LocalDateTime.now());
+        chatUser.setLastEnterTime(LocalDateTime.now());
+        chatUserRepository.save(chatUser);
+
+        ChatMessage enterMessage = ChatMessage.builder()
+                .message(user.getName() + "님이 입장하셨습니다")
+                .chatRoom(chatRoom)
+                .user(user)
+                .messageStatus(ChatMessageStatus.ENTER)
+                .build();
+
+        return chatMessageRepository.save(enterMessage);
+    }
+
+    private ChatMessage handleTalkMessage(User sender, ChatRoom chatRoom, String messageContent) {
+        ChatMessage talkMessage = ChatMessage.builder()
+                .message(messageContent)
+                .chatRoom(chatRoom)
+                .user(sender)
+                .messageStatus(ChatMessageStatus.TALK)
+                .build();
+
+        // INVITED → ENTER 처리 + 입장 메시지 전송
+        List<ChatUser> chatUsers = chatUserRepository.findByChatRoom(chatRoom);
+        for (ChatUser chatUser : chatUsers) {
+            if (chatUser.getChatStatus() == ChatStatus.INVITED) {
                 chatUser.setChatStatus(ChatStatus.ENTER);
                 chatUser.setModifiedAt(LocalDateTime.now());
                 chatUser.setLastEnterTime(LocalDateTime.now());
-                chatUserRepository.save(chatUser);
 
-                chatMessage = ChatMessage.builder()
-                        .message(user.getName() + "님이 입장하셨습니다")
+                ChatMessage enterMessage = ChatMessage.builder()
+                        .message(chatUser.getUser().getName() + "님이 입장하셨습니다.")
                         .chatRoom(chatRoom)
-                        .user(user)
-                        .messageStatus(ENTER)
-                        .build();
-            }
-            case TALK -> {
-                log.info("TALK 입장");
-                // 메시지 저장
-                chatMessage = ChatMessage.builder()
-                        .message(chatMessageRequestDto.getMessage())
-                        .chatRoom(chatRoom)
-                        .user(user)
-                        .messageStatus(ChatMessageStatus.TALK)
+                        .user(chatUser.getUser())
+                        .messageStatus(ChatMessageStatus.ENTER)
                         .build();
 
-                // 채팅 참여 처리
-                List<ChatUser> chatUserList = chatUserRepository.findByChatRoom(chatRoom);
+                chatMessageRepository.save(enterMessage);
 
-                for (ChatUser userList : chatUserList) {
-                    if (userList.getChatStatus() == ChatStatus.INVITED) {
-                        userList.setChatStatus(ChatStatus.ENTER);
-
-                        ChatMessage enterMessage = ChatMessage.builder()
-                                .message(userList.getUser().getName() + "님이 입장하셨습니다.")
-                                .chatRoom(chatRoom)
-                                .user(userList.getUser()) // ✅ 올바른 유저로 설정
-                                .messageStatus(ChatMessageStatus.ENTER)
-                                .build();
-
-                        chatMessageRepository.save(enterMessage);
-
-                        if (!userList.getUser().getId().equals(user.getId())) {
-                            eventPublisher.publishEvent(new NewChatEvent(
-                                    userList.getUser().getId(),
-                                    chatRoom.getId(),
-                                    user.getRole().getRole(),
-                                    user.getName(),
-                                    chatRoom.getRoomType()
-                            ));
-                        }
-
-                        //가장 최근에 글이 입력된 채팅방 가져오기 위해서
-                        userList.setModifiedAt(LocalDateTime.now());
-                        userList.setLastEnterTime(LocalDateTime.now());
-                        simpMessagingTemplate.convertAndSend(
-                                "/sub/chat/" + chatRoom.getId(),
-                                ApiResponse.of(200, "입장 메시지", new ChatResponseDto(enterMessage))
-                        );
-                    }
+                if (!chatUser.getUser().getId().equals(sender.getId())) {
+                    eventPublisher.publishEvent(new NewChatEvent(
+                            chatUser.getUser().getId(),
+                            chatRoom.getId(),
+                            sender.getRole().getRole(),
+                            sender.getName(),
+                            chatRoom.getRoomType()
+                    ));
                 }
 
-
-                chatUserRepository.saveAll(chatUserList);
+                simpMessagingTemplate.convertAndSend(
+                        "/sub/chat/" + chatRoom.getId(),
+                        ApiResponse.of(200, "입장 메시지", new ChatResponseDto(enterMessage))
+                );
             }
-            case LEAVE -> {
-                chatMessage = ChatMessage.builder()
-                        .message(user.getName() + "님이 퇴장하셨습니다.")
-                        .chatRoom(chatRoom)
-                        .user(user)
-                        .messageStatus(ChatMessageStatus.LEAVE)
-                        .build();
-                log.info("message확인 1 + " + chatMessage.getMessage());
-
-            }
-            default -> throw new BusinessLogicException(ExceptionCode.INVALID_CHAT_ROOM_TYPE);
         }
-        log.info("message확인 2 + " + chatMessage.getMessage());
-        return chatMessageRepository.save(chatMessage);
+
+        chatUserRepository.saveAll(chatUsers);
+        return chatMessageRepository.save(talkMessage);
     }
+
+    private ChatMessage handleLeaveMessage(User user, ChatRoom chatRoom) {
+        ChatMessage leaveMessage = ChatMessage.builder()
+                .message(user.getName() + "님이 퇴장하셨습니다.")
+                .chatRoom(chatRoom)
+                .user(user)
+                .messageStatus(ChatMessageStatus.LEAVE)
+                .build();
+
+        return chatMessageRepository.save(leaveMessage);
+    }
+
+
 
     public Page<ChatResponseDto> getChatMessage(Long roomId, Pageable pageable) {
 
