@@ -99,13 +99,28 @@ services:
       - juseyo-network
 
 
+  rabbitmq:
+    image: rabbitmq:3.12-management  # 관리자 UI 포함 이미지
+    container_name: juseyo-rabbitmq
+    ports:
+      - "5672:5672"     # AMQP (Spring AMQP 등에서 사용)
+      - "15672:15672"   # RabbitMQ Web 관리 UI
+      - "61613:61613"   # STOMP 포트
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - juseyo-network
+
 
 
 volumes:
   mysql-data:
   redis-data:
   grafana-data:
-
+  rabbitmq-data:
 networks:
   juseyo-network:
     driver: bridge
